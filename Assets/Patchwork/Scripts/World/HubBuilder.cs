@@ -14,7 +14,7 @@ namespace Patchwork
             info.Id = SceneName;
             info.IsHub = true;
             info.Title = "The Sewing Room";
-            info.Subtitle = "Practise your forms, then step through the doorway.";
+            info.Subtitle = "Practice your forms, then step through the doorway.";
             info.Spawn = new Vector3(0f, 0.1f, -7f);
             info.SpawnYaw = 0f;
             info.KillY = -10f;
