@@ -5,7 +5,7 @@ _Last updated: 2026-10-22_
 ## Current milestone
 **Prototype 3 — verified ✅** (saved as the `prototype-3` branch on GitHub; `prototype-2` and `prototype-1` are earlier restore points)
 
-Compiled and played on 2026-10-22.
+Compiled and played on 2026-10-22. Follow-up cleanup (unused code removed, L1/R1 Form Wheel option) also verified and on `main`.
 
 ## Done
 - [x] Unity 6 URP project baseline in Git (`main`)
