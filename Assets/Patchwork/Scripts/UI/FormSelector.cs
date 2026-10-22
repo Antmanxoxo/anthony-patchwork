@@ -86,7 +86,7 @@ namespace Patchwork
             float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(openTime / 0.12f));
             float W = UIKit.Width, H = UIKit.Height;
 
-            UIKit.Fill(new Rect(0f, 0f, W, H), new Color(0.12f, 0.08f, 0.18f, 0.45f * k));
+            UIKit.Fill(new Rect(0f, 0f, W, H), new Color(0.1f, 0.07f, 0.15f, 0.62f * k));
 
             Vector2 c = new Vector2(W * 0.5f, H * 0.47f);
             float ringD = 640f * Mathf.Lerp(0.85f, 1f, k);
@@ -115,8 +115,11 @@ namespace Patchwork
                 UIKit.Icon(new Rect(p.x - iconSize * 0.5f, p.y - iconSize * 0.5f, iconSize, iconSize),
                     unlocked ? PatchworkAssets.IconFor(form) : PatchworkAssets.IconLock, new Color(1f, 1f, 1f, k));
 
-                var nameStyle = UIKit.Style(hi ? 26 : 22, true, TextAnchor.MiddleCenter, new Color(UIKit.Ink.r, UIKit.Ink.g, UIKit.Ink.b, k));
-                UIKit.Label(new Rect(p.x - 120f, p.y + d * 0.5f + 4f, 240f, 32f), def.DisplayName, nameStyle);
+                var nameStyle = UIKit.Style(hi ? 24 : 21, true, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, k));
+                float nw = UIKit.TextWidth(def.DisplayName, nameStyle) + 30f;
+                var nameRect = new Rect(p.x - nw * 0.5f, p.y + d * 0.5f + 4f, nw, 36f);
+                UIKit.Pill(nameRect, k);
+                UIKit.Label(nameRect, def.DisplayName, nameStyle);
 
                 if (form == current)
                 {
@@ -140,10 +143,15 @@ namespace Patchwork
             float w1 = 44f + 10f + UIKit.TextWidth(transformLabel, UIKit.Style(24, true, TextAnchor.MiddleLeft, white));
             float w2 = 44f + 10f + UIKit.TextWidth("Cancel", UIKit.Style(24, true, TextAnchor.MiddleLeft, white));
             float x = c.x - (w1 + w2 + 40f) * 0.5f;
+            UIKit.Pill(new Rect(x - 24f, y - 12f, w1 + w2 + 40f + 48f, 68f), k);
             x += UIKit.PromptLabel(x, y, 44f, PromptAction.Confirm, transformLabel, kb, Color.white, k) + 40f;
             UIKit.PromptLabel(x, y, 44f, PromptAction.Cancel, "Cancel", kb, Color.white, k);
             string pointHint = kb ? "WASD / Arrows / 1-2-3 to choose" : "Left stick or D-pad to choose";
-            UIKit.Label(new Rect(c.x - 250f, y + 52f, 500f, 30f), pointHint, UIKit.Style(18, false, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, 0.8f * k)), true);
+            var hintStyle = UIKit.Style(18, true, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, k));
+            float hw = UIKit.TextWidth(pointHint, hintStyle) + 40f;
+            var hintRect = new Rect(c.x - hw * 0.5f, y + 64f, hw, 34f);
+            UIKit.Pill(hintRect, k);
+            UIKit.Label(hintRect, pointHint, hintStyle);
         }
     }
 }

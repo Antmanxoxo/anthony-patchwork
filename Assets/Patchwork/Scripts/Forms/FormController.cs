@@ -107,6 +107,7 @@ namespace Patchwork
                 return false;
             }
 
+            FormType previous = Current;
             Ability.OnExit();
             Current = target;
             ApplyDefinition();
@@ -120,9 +121,7 @@ namespace Patchwork
             m.ExternalControl = false;
             if (m.Velocity.y > 4f) m.Velocity = new Vector3(m.Velocity.x, 4f, m.Velocity.z);
 
-            player.Visuals.SetForm(Current, true);
-            Sfx.Play(SfxId.Transform, 0.7f);
-            TransformBurst.Spawn(m.Center, def.PrimaryColor, def.SecondaryColor, 16, 0.9f);
+            player.Visuals.BeginTransition(previous, Current);
             return true;
         }
 

@@ -1,5 +1,16 @@
 # Development Log — Patchwork
 
+## 2026-10-22 — Prototype 2 changes (unverified)
+Feedback after Prototype 1, all addressed on `dev`:
+- **PS5 prompts missing:** device detection treated tiny mouse movements (e.g. the cursor unlocking) as keyboard use. Now only deliberate input switches, and the Pause menu can force PlayStation prompts.
+- **Screechy audio:** rewrote `Sfx` with sines and low-passed noise only; new gust whoosh, bubbling loop for rising in fountains, airy glide loop (`Sfx.RequestLoop`).
+- **Music:** `MusicPlayer` synthesises a 72 BPM lo-fi loop (e-piano chords, bass, music box, brushes) once and keeps it across scenes.
+- **Characters:** `FormVisuals` rebuilt. Yarn toy with leg/arm walk cycle and a yarn arm that points at the anchor (tether starts at the hand). Water is a transparent jiggling bubble (`PatchworkAssets.Bubble`). Wind is a floating smiling cloud.
+- **Transitions:** `FormVisuals.BeginTransition` plays a 0.6 s two-phase animation per element pair with `FxBurst` particles (drips, steam, rain, threads, splash, puff). Gameplay switches instantly; only visuals animate.
+- **Menus:** dark pill backings and outlined text wherever white text sat on the scene.
+- **Enclosure:** `LevelKit.Enclosure` walls in hub and level (quilt bands, giant buttons, bunting, lamps; no shadows so sunlight still reaches in).
+- **Portal:** embroidery-hoop portal with four counter-rotating rings, spiralling sparkles and a pulsing light; `PatchworkGame.EnterPortal` pulls Patch in, spins and shrinks him, then fades to white.
+
 ## 2026-10-22 — Prototype 1 verified
 - Opened the project in Unity, it compiled, and the game played.
 - Pulled back the files Unity generated on first open (`Resources/PW_Lit.mat`, URP project settings).

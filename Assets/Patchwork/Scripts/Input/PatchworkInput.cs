@@ -43,8 +43,29 @@ namespace Patchwork
         public readonly InputAction Pick2;
         public readonly InputAction Pick3;
 
-        /// <summary>True when the most recent input came from keyboard/mouse (used for button prompts).</summary>
-        public bool UsingKeyboard { get; private set; }
+        public enum PromptMode { Auto = 0, PlayStation = 1, Keyboard = 2 }
+        const string PromptModeKey = "pw_prompt_mode";
+
+        bool detectedKeyboard;
+
+        /// <summary>Which button prompts to show. Auto follows the last device used.</summary>
+        public PromptMode Prompts
+        {
+            get { return (PromptMode)Mathf.Clamp(PlayerPrefs.GetInt(PromptModeKey, 0), 0, 2); }
+            set { PlayerPrefs.SetInt(PromptModeKey, (int)value); PlayerPrefs.Save(); }
+        }
+
+        /// <summary>True when keyboard prompts should be shown (and the mouse may steer the camera).</summary>
+        public bool UsingKeyboard
+        {
+            get
+            {
+                var mode = Prompts;
+                if (mode == PromptMode.PlayStation) return false;
+                if (mode == PromptMode.Keyboard) return true;
+                return detectedKeyboard;
+            }
+        }
 
         public PatchworkInput()
         {
@@ -77,7 +98,7 @@ namespace Patchwork
             Pick3 = Button("Pick3", "<Keyboard>/3");
 
             map.Enable();
-            UsingKeyboard = Gamepad.current == null;
+            detectedKeyboard = Gamepad.current == null;
         }
 
         InputAction Button(string name, params string[] paths)
@@ -95,7 +116,11 @@ namespace Patchwork
             map.Enable();
         }
 
-        /// <summary>Call once per frame to track which device the player is using.</summary>
+        /// <summary>
+        /// Call once per frame to track which device the player is using.
+        /// Only deliberate input counts (buttons, sticks, keys, clicks); mouse drift is ignored so
+        /// the prompts don't flicker back to keyboard when the cursor unlocks.
+        /// </summary>
         public void UpdateDeviceKind()
         {
             var pad = Gamepad.current;
@@ -103,10 +128,14 @@ namespace Patchwork
             {
                 if (pad.buttonSouth.wasPressedThisFrame || pad.buttonEast.wasPressedThisFrame ||
                     pad.buttonWest.wasPressedThisFrame || pad.buttonNorth.wasPressedThisFrame ||
-                    pad.leftShoulder.wasPressedThisFrame || pad.startButton.wasPressedThisFrame ||
-                    pad.leftStick.ReadValue().sqrMagnitude > 0.25f || pad.rightStick.ReadValue().sqrMagnitude > 0.25f)
+                    pad.leftShoulder.wasPressedThisFrame || pad.rightShoulder.wasPressedThisFrame ||
+                    pad.leftTrigger.wasPressedThisFrame || pad.rightTrigger.wasPressedThisFrame ||
+                    pad.startButton.wasPressedThisFrame || pad.selectButton.wasPressedThisFrame ||
+                    pad.dpad.up.wasPressedThisFrame || pad.dpad.down.wasPressedThisFrame ||
+                    pad.dpad.left.wasPressedThisFrame || pad.dpad.right.wasPressedThisFrame ||
+                    pad.leftStick.ReadValue().sqrMagnitude > 0.3f || pad.rightStick.ReadValue().sqrMagnitude > 0.3f)
                 {
-                    UsingKeyboard = false;
+                    detectedKeyboard = false;
                     return;
                 }
             }
@@ -114,17 +143,18 @@ namespace Patchwork
             var kb = Keyboard.current;
             if (kb != null && kb.anyKey.wasPressedThisFrame)
             {
-                UsingKeyboard = true;
+                detectedKeyboard = true;
                 return;
             }
 
             var mouse = Mouse.current;
-            if (mouse != null && (mouse.leftButton.wasPressedThisFrame || mouse.delta.ReadValue().sqrMagnitude > 25f))
+            if (mouse != null && (mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame))
             {
-                UsingKeyboard = true;
+                // A click right after a controller was in use is usually just focusing the Game view.
+                if (pad == null) detectedKeyboard = true;
             }
 
-            if (pad == null) UsingKeyboard = true;
+            if (pad == null) detectedKeyboard = true;
         }
 
         public void Dispose()

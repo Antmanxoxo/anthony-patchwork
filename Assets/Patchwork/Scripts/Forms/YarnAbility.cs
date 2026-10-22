@@ -37,7 +37,7 @@ namespace Patchwork
             line = go.AddComponent<LineRenderer>();
             line.useWorldSpace = true;
             line.positionCount = 2;
-            line.widthMultiplier = 0.08f;
+            line.widthMultiplier = 0.1f;
             line.numCapVertices = 3;
             line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             line.sharedMaterial = PatchworkAssets.Glow(FormLibrary.Get(FormType.Yarn).PrimaryColor, 0.4f);
@@ -108,6 +108,7 @@ namespace Patchwork
                 Motor.Velocity = new Vector3(Motor.Velocity.x, 2f, Motor.Velocity.z);
 
             line.enabled = true;
+            Player.Visuals.SetTether(true, anchor.Position);
             UpdateLine();
             anchor.Pulse();
             Sfx.Play(SfxId.TetherAttach, 0.6f);
@@ -119,6 +120,7 @@ namespace Patchwork
             Attached = false;
             Motor.ExternalControl = false;
             line.enabled = false;
+            Player.Visuals.SetTether(false, Vector3.zero);
             attachedAnchor = null;
             reattachTimer = ReattachDelay;
 
@@ -187,7 +189,7 @@ namespace Patchwork
         void UpdateLine()
         {
             if (attachedAnchor == null) return;
-            line.SetPosition(0, Motor.Center + Vector3.up * 0.25f);
+            line.SetPosition(0, Player.Visuals.HandPosition);
             line.SetPosition(1, attachedAnchor.Position);
         }
 

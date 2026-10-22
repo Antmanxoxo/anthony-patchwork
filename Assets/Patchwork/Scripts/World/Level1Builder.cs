@@ -31,6 +31,10 @@ namespace Patchwork
             info.Sky = new Color(0.8f, 0.87f, 0.96f);
 
             kit.Backdrop(-40f);
+            // Enclose the course in a big quilted room so it feels cosy and focused.
+            kit.Enclosure(new Vector3(-26f, -45f, -22f), new Vector3(26f, 32f, 108f),
+                new[] { LevelKit.Palette.Denim, LevelKit.Palette.Sage, LevelKit.Palette.Butter, LevelKit.Palette.Sky },
+                new Color(0.62f, 0.55f, 0.78f));
 
             // ---------------------------------------------------------------- 1. Start meadow
             kit.Quilt(new Vector3(0f, -0.5f, 2f), new Vector3(14f, 1f, 20f), meadow, 3.5f, "StartMeadow");

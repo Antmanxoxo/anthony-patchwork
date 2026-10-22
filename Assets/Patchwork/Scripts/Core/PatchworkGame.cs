@@ -12,6 +12,7 @@ namespace Patchwork
         Satchel,
         Paused,
         Complete,
+        Warping,
         Loading
     }
 
@@ -40,6 +41,14 @@ namespace Patchwork
         public HintZone ActiveHint { get; private set; }
         public float TitleTimer { get; private set; }
         public float Fade { get; private set; }
+        public Color FadeColor { get; private set; }
+
+        static readonly Color DefaultFadeColor = new Color(0.16f, 0.1f, 0.2f);
+        static Color carriedFadeColor = new Color(0.16f, 0.1f, 0.2f);
+
+        Portal warpPortal;
+        float warpTime;
+        Vector3 warpStart;
 
         Checkpoint activeCheckpoint;
         Vector3 respawnPoint;
@@ -57,6 +66,7 @@ namespace Patchwork
         public static void Boot(LevelId level)
         {
             PatchworkAssets.EnsureInit();
+            MusicPlayer.EnsurePlaying();
             var go = new GameObject("Patchwork Game");
             var game = go.AddComponent<PatchworkGame>();
             game.Init(level);
@@ -103,6 +113,8 @@ namespace Patchwork
 
             Mode = UIMode.Gameplay;
             Fade = 1f;
+            FadeColor = carriedFadeColor;
+            carriedFadeColor = DefaultFadeColor;
             TitleTimer = 4.5f;
 
             gameObject.AddComponent<PatchworkHUD>().Game = this;
@@ -171,6 +183,9 @@ namespace Patchwork
                 case UIMode.Complete:
                     if (Input.Confirm.WasPressedThisFrame()) LoadScene(HubBuilder.SceneName);
                     break;
+                case UIMode.Warping:
+                    UpdateWarp(udt);
+                    break;
             }
 
             if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel)
@@ -192,6 +207,7 @@ namespace Patchwork
                 if (Player.transform.position.y < Level.KillY) Respawn(true);
             }
 
+            Sfx.TickLoops(udt);
             if (ToastTimer > 0f) ToastTimer -= udt;
             if (TitleTimer > 0f) TitleTimer -= udt;
             UpdateFade(udt);
@@ -347,13 +363,50 @@ namespace Patchwork
             TransformBurst.Spawn(Player.Motor.Center + Vector3.up, new Color(1f, 0.8f, 0.25f), Color.white, 30, 1.4f);
         }
 
+        /// <summary>Starts the portal warp: Patch is pulled into the vortex, spins, shrinks, then the scene loads.</summary>
+        public void EnterPortal(Portal portal)
+        {
+            if (Mode != UIMode.Gameplay && Mode != UIMode.FormWheel) return;
+            Player.Forms.CancelAll();
+            warpPortal = portal;
+            warpTime = 0f;
+            warpStart = Player.transform.position;
+            SetMode(UIMode.Warping, 1f);
+            Player.Motor.Controller.enabled = false;
+            portal.Excite();
+            Sfx.Play(SfxId.PortalWarp, 0.8f);
+        }
+
+        void UpdateWarp(float udt)
+        {
+            const float Duration = 1.1f;
+            warpTime += udt;
+            float k = Mathf.Clamp01(warpTime / Duration);
+            float ease = k * k * (3f - 2f * k);
+            Vector3 target = warpPortal != null ? warpPortal.Center - Vector3.up * 0.5f : Player.transform.position;
+            Player.transform.position = Vector3.Lerp(warpStart, target, ease);
+            Player.Visuals.SetWarp(1f - ease);
+            Player.Visuals.Tick(Player.Motor, udt);
+            if (k > 0.55f && Mathf.Repeat(warpTime, 0.12f) < udt) FxBurst.Spawn(FxBurst.Kind.Sparkle, target, new Color(0.85f, 0.7f, 1f));
+            if (k >= 1f && warpPortal != null)
+            {
+                string scene = warpPortal.TargetScene;
+                warpPortal = null;
+                FadeColor = new Color(0.97f, 0.93f, 1f);
+                carriedFadeColor = FadeColor;
+                LoadScene(scene);
+            }
+        }
+
         public void LoadScene(string sceneName)
         {
             if (Mode == UIMode.Loading) return;
+            if (carriedFadeColor == DefaultFadeColor) FadeColor = DefaultFadeColor;
             GameState.Save();
             pendingScene = sceneName;
             SetMode(UIMode.Loading, 1f);
             Player.Forms.CancelAll();
+            Sfx.StopLoops();
         }
 
         public void QuitGame()

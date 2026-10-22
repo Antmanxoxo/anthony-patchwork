@@ -17,7 +17,6 @@ namespace Patchwork
         public bool Gliding { get; private set; }
 
         float cooldown;
-        float glideSoundTimer;
         float failToastTimer;
 
         protected override void OnInit()
@@ -54,12 +53,7 @@ namespace Patchwork
             if (Gliding)
             {
                 Motor.FallSpeedCap = GlideFallSpeed;
-                glideSoundTimer -= dt;
-                if (glideSoundTimer <= 0f)
-                {
-                    Sfx.Play(SfxId.Glide, 0.25f);
-                    glideSoundTimer = 0.28f;
-                }
+                Sfx.RequestLoop(LoopId.Glide);
             }
             Player.Visuals.SetGliding(Gliding);
 
@@ -75,7 +69,7 @@ namespace Patchwork
                     if (!Motor.Grounded) GustReady = false;
                     cooldown = GustCooldown;
                     Sfx.Play(SfxId.Gust, 0.6f);
-                    TransformBurst.Spawn(Motor.Center - dir * 0.4f, new Color(1f, 1f, 1f), new Color(0.7f, 0.92f, 0.9f), 10, 0.5f);
+                    FxBurst.Spawn(FxBurst.Kind.Puff, Motor.Center - dir * 0.5f, new Color(1f, 1f, 1f), -dir);
                     Player.Visuals.PunchScale(new Vector3(1.3f, 0.8f, 1.3f));
                 }
                 else if (failToastTimer <= 0f)

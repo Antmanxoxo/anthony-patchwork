@@ -16,7 +16,7 @@ namespace Patchwork
             UIKit.Begin();
             bool kb = Game.Input.UsingKeyboard;
 
-            if (Game.Mode != UIMode.Loading)
+            if (Game.Mode != UIMode.Loading && Game.Mode != UIMode.Warping)
             {
                 DrawAnchorPrompt(kb);
                 DrawFormBadge(kb);
@@ -36,7 +36,10 @@ namespace Patchwork
             }
 
             if (Game.Fade > 0.001f)
-                UIKit.Fill(new Rect(0f, 0f, UIKit.Width, UIKit.Height), new Color(0.16f, 0.1f, 0.2f, Game.Fade));
+            {
+                Color fc = Game.FadeColor;
+                UIKit.Fill(new Rect(0f, 0f, UIKit.Width, UIKit.Height), new Color(fc.r, fc.g, fc.b, Game.Fade));
+            }
         }
 
         void DrawFormBadge(bool kb)
@@ -124,7 +127,7 @@ namespace Patchwork
             for (int i = 0; i < labels.Length; i++)
                 total += EstimatePromptWidth(actions[i], kb, h) + 10f + UIKit.TextWidth(labels[i], style) + 30f;
             var bg = new Rect(UIKit.Width - total - 50f, y - 12f, total + 30f, h + 24f);
-            UIKit.Fill(bg, new Color(0.13f, 0.11f, 0.19f, 0.55f), 18f);
+            UIKit.Pill(bg);
             float x = bg.x + 16f;
             for (int i = 0; i < labels.Length; i++)
                 x += UIKit.PromptLabel(x, y, h, actions[i], labels[i], kb, c) + 30f;
@@ -169,6 +172,8 @@ namespace Patchwork
             var title = UIKit.Style(54, true, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, a));
             var sub = UIKit.Style(24, false, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, a));
             float y = UIKit.Height * 0.3f;
+            float tw = Mathf.Max(UIKit.TextWidth(Game.Level.Title, title), UIKit.TextWidth(Game.Level.Subtitle, sub)) + 90f;
+            UIKit.Pill(new Rect((UIKit.Width - tw) * 0.5f, y - 14f, tw, 136f), a);
             UIKit.Label(new Rect(0f, y, UIKit.Width, 70f), Game.Level.Title, title, true);
             UIKit.Label(new Rect(0f, y + 66f, UIKit.Width, 40f), Game.Level.Subtitle, sub, true);
         }
@@ -187,13 +192,15 @@ namespace Patchwork
             float s = 64f;
             UIKit.Circle(new Vector2(gx, gy + bob), s + 18f, new Color(1f, 0.55f, 0.7f, 0.45f));
             UIKit.Prompt(gx - s * 0.5f, gy - s * 0.5f + bob, s, PromptAction.Ability, kb);
-            UIKit.Label(new Rect(gx - 60f, gy + s * 0.5f + bob + 4f, 120f, 30f), "HOLD", UIKit.Style(20, true, TextAnchor.MiddleCenter, Color.white), true);
+            var holdRect = new Rect(gx - 42f, gy + s * 0.5f + bob + 6f, 84f, 30f);
+            UIKit.Pill(holdRect);
+            UIKit.Label(holdRect, "HOLD", UIKit.Style(20, true, TextAnchor.MiddleCenter, Color.white));
         }
 
         void DrawComplete(bool kb)
         {
             float W = UIKit.Width, H = UIKit.Height;
-            UIKit.Fill(new Rect(0f, 0f, W, H), new Color(0.12f, 0.08f, 0.18f, 0.4f));
+            UIKit.Fill(new Rect(0f, 0f, W, H), new Color(0.12f, 0.08f, 0.18f, 0.6f));
             var panel = new Rect((W - 640f) * 0.5f, (H - 380f) * 0.5f, 640f, 380f);
             UIKit.Panel(panel, new Color(0.99f, 0.95f, 0.88f, 0.97f), UIKit.Thread);
             var ink = UIKit.Ink;

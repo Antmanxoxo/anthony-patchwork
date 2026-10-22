@@ -110,16 +110,26 @@ namespace Patchwork
             }
         }
 
-        public static void Label(Rect r, string text, GUIStyle style, bool shadow = false)
+        /// <summary>Draws text. With outline=true the text gets a dark outline so it reads on any background.</summary>
+        public static void Label(Rect r, string text, GUIStyle style, bool outline = false)
         {
-            if (shadow)
+            if (outline)
             {
                 var prev = style.normal.textColor;
-                style.normal.textColor = new Color(0f, 0f, 0f, 0.35f * prev.a);
-                GUI.Label(new Rect(r.x + 2f, r.y + 2f, r.width, r.height), text, style);
+                style.normal.textColor = new Color(0.08f, 0.05f, 0.12f, 0.85f * prev.a);
+                for (int dx = -1; dx <= 1; dx++)
+                    for (int dy = -1; dy <= 1; dy++)
+                        if (dx != 0 || dy != 0)
+                            GUI.Label(new Rect(r.x + dx * 2f, r.y + dy * 2f, r.width, r.height), text, style);
                 style.normal.textColor = prev;
             }
             GUI.Label(r, text, style);
+        }
+
+        /// <summary>Dark rounded backing for white text.</summary>
+        public static void Pill(Rect r, float alpha = 1f)
+        {
+            Fill(r, new Color(0.13f, 0.1f, 0.19f, 0.88f * alpha), Mathf.Min(r.height * 0.5f, 26f));
         }
 
         public static float TextWidth(string text, GUIStyle style)
@@ -203,7 +213,8 @@ namespace Patchwork
             float w = Prompt(x, y, h, action, keyboard, alpha);
             var style = Style(Mathf.RoundToInt(h * 0.55f), true, TextAnchor.MiddleLeft, new Color(textColor.r, textColor.g, textColor.b, textColor.a * alpha));
             float tw = TextWidth(label, style);
-            GUI.Label(new Rect(x + w + 10f, y, tw + 4f, h), label, style);
+            bool light = textColor.r + textColor.g + textColor.b > 2f;
+            Label(new Rect(x + w + 10f, y, tw + 4f, h), label, style, light);
             return w + 10f + tw;
         }
     }

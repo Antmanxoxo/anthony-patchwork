@@ -23,6 +23,10 @@ namespace Patchwork
             info.Sky = new Color(0.86f, 0.82f, 0.95f);
 
             kit.Backdrop(-35f);
+            // The Sewing Room really is a room: quilted walls, a ceiling with bunting and lamps.
+            kit.Enclosure(new Vector3(-34f, -40f, -24f), new Vector3(34f, 26f, 30f),
+                new[] { LevelKit.Palette.Walnut, LevelKit.Palette.Rose, LevelKit.Palette.Cream, LevelKit.Palette.Lavender },
+                new Color(0.85f, 0.7f, 0.6f));
 
             // Main floor.
             kit.Quilt(new Vector3(0f, -0.5f, 0f), new Vector3(24f, 1f, 24f), LevelKit.Palette.Quilt, 4f, "HubFloor");

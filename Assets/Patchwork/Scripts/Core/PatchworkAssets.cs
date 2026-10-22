@@ -103,6 +103,38 @@ namespace Patchwork
             return Get("wind", color, WindTex, 0.3f, color * 0.2f);
         }
 
+        /// <summary>See-through, glossy material (URP Lit set to Transparent) for the water bubble.</summary>
+        public static Material Bubble(Color color)
+        {
+            EnsureInit();
+            string key = "bubble_" + ColorUtility.ToHtmlStringRGBA(color);
+            Material m;
+            if (cache.TryGetValue(key, out m) && m != null) return m;
+
+            m = litTemplate != null ? new Material(litTemplate) : new Material(litShader);
+            m.name = "PW_" + key;
+            m.SetColor("_BaseColor", color);
+            m.SetColor("_Color", color);
+            m.SetTexture("_BaseMap", WaterTex);
+            m.SetFloat("_Smoothness", 0.95f);
+            m.SetFloat("_Surface", 1f);
+            m.SetFloat("_Blend", 0f);
+            m.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            m.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            m.SetFloat("_SrcBlendAlpha", (float)UnityEngine.Rendering.BlendMode.One);
+            m.SetFloat("_DstBlendAlpha", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            m.SetFloat("_ZWrite", 0f);
+            m.SetOverrideTag("RenderType", "Transparent");
+            m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            m.DisableKeyword("_ALPHATEST_ON");
+            m.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+            m.SetShaderPassEnabled("ShadowCaster", false);
+            m.EnableKeyword("_EMISSION");
+            m.SetColor("_EmissionColor", new Color(color.r, color.g, color.b) * 0.15f);
+            cache[key] = m;
+            return m;
+        }
+
         public static Material Glow(Color color, float intensity)
         {
             return Get("glow" + intensity.ToString("0.0"), color, FeltTex, 0.2f, color * intensity);

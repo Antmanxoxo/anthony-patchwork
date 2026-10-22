@@ -46,6 +46,7 @@ namespace Patchwork
             m.HasLift = true;
             m.LiftTargetSpeed = LiftSpeed;
             m.LiftAcceleration = 70f;
+            Sfx.RequestLoop(LoopId.Bubbles);
             if (!splashed)
             {
                 splashed = true;

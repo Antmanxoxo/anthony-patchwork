@@ -61,7 +61,7 @@ namespace Patchwork
             {
                 Type = FormType.Water,
                 DisplayName = "Water Form",
-                Tagline = "A wobbly droplet that slips through drain grates and rides blue fountains.",
+                Tagline = "A jiggly bubble with big eyes. Slips through drain grates and rides blue fountains.",
                 AbilityHint = "Slip through blue drain grates. Step into blue fountains to ride them up.",
                 PrimaryColor = new Color(0.36f, 0.66f, 0.95f),
                 SecondaryColor = new Color(0.78f, 0.92f, 1f),
@@ -77,7 +77,7 @@ namespace Patchwork
             {
                 Type = FormType.Yarn,
                 DisplayName = "Yarn Form",
-                Tagline = "Patch's handmade self. Tethers to pink button-anchors and swings across gaps.",
+                Tagline = "Patch's little knitted self. Throws a yarn arm at pink anchors and swings across gaps.",
                 AbilityHint = "Near a glowing pink anchor, hold Ability to swing. Let go (or Jump) to launch.",
                 PrimaryColor = new Color(0.93f, 0.45f, 0.58f),
                 SecondaryColor = new Color(1f, 0.85f, 0.6f),
@@ -86,14 +86,14 @@ namespace Patchwork
                 GravityScale = 1f,
                 ControllerHeight = 1.4f,
                 ControllerRadius = 0.45f,
-                HeadHeight = 1.38f
+                HeadHeight = 1.4f
             };
 
             wind = new FormDefinition
             {
                 Type = FormType.Wind,
                 DisplayName = "Wind Form",
-                Tagline = "A breezy puff. Glides, falls slowly and bursts forward on a gust.",
+                Tagline = "A happy floating cloud. Glides, falls slowly and bursts forward on a gust.",
                 AbilityHint = "Hold Jump in the air to glide. Press Ability for a gust (once per jump). White updrafts lift you.",
                 PrimaryColor = new Color(0.86f, 0.95f, 0.97f),
                 SecondaryColor = new Color(0.55f, 0.85f, 0.8f),
@@ -103,7 +103,7 @@ namespace Patchwork
                 GravityScale = 0.8f,
                 ControllerHeight = 1.4f,
                 ControllerRadius = 0.45f,
-                HeadHeight = 1.3f
+                HeadHeight = 1.2f
             };
         }
     }
