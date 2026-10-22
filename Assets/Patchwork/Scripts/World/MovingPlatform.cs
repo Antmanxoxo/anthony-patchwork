@@ -3,10 +3,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// A big felt button that glides back and forth between two points, pausing at each end.
-    /// Moved by the game before the player each frame; the player is carried by <see cref="Delta"/>.
-    /// </summary>
+    // A big felt button that glides back and forth between two points, pausing at each end.
+    // Moved by the game before the player each frame; the player is carried by Delta.
     public class MovingPlatform : MonoBehaviour
     {
         public static readonly List<MovingPlatform> All = new List<MovingPlatform>();
@@ -17,7 +15,7 @@ namespace Patchwork
         public float PauseTime = 0.7f;
         public float Phase;            // 0..1 offset so several platforms can alternate
 
-        /// <summary>How far the platform moved this frame.</summary>
+        // How far the platform moved this frame.
         public Vector3 Delta { get; private set; }
 
         float clock;
@@ -25,7 +23,7 @@ namespace Patchwork
         void OnEnable() { All.Add(this); }
         void OnDisable() { All.Remove(this); }
 
-        /// <summary>Call after setting the points/timing; places the platform at its starting phase.</summary>
+        // Call after setting the points/timing; places the platform at its starting phase.
         public void Init()
         {
             clock = Phase * Cycle;

@@ -9,10 +9,8 @@ namespace Patchwork
         Wind = 2
     }
 
-    /// <summary>
-    /// Movement parameters, collision size and presentation data for one form.
-    /// Shared movement code reads these; form-specific behaviour lives in FormAbility subclasses.
-    /// </summary>
+    // Movement parameters, collision size and presentation data for one form.
+    // Shared movement code reads these; form-specific behaviour lives in FormAbility subclasses.
     public class FormDefinition
     {
         public FormType Type;

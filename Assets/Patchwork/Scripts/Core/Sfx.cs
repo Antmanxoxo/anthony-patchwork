@@ -35,17 +35,15 @@ namespace Patchwork
         PlatformThunk
     }
 
-    /// <summary>Continuous sounds that fade in while something requests them each frame.</summary>
+    // Continuous sounds that fade in while something requests them each frame.
     public enum LoopId
     {
         Bubbles,   // Water Form rising in a fountain
         Glide      // Wind Form gliding
     }
 
-    /// <summary>
-    /// Tiny synthesised sound kit (no audio files needed). Everything is soft and rounded:
-    /// sines and low-passed noise only, no harsh square waves or bright white noise.
-    /// </summary>
+    // Tiny synthesised sound kit (no audio files needed). Everything is soft and rounded:
+    // sines and low-passed noise only, no harsh square waves or bright white noise.
     public static class Sfx
     {
         const int Rate = 44100;
@@ -87,13 +85,13 @@ namespace Patchwork
                 source.PlayOneShot(clip, volume);
         }
 
-        /// <summary>Ask for a loop to be audible this frame. Call every frame while it should play.</summary>
+        // Ask for a loop to be audible this frame. Call every frame while it should play.
         public static void RequestLoop(LoopId id)
         {
             if (loopTargets != null) loopTargets[(int)id] = 1f;
         }
 
-        /// <summary>Fades loops in/out. Called once per frame by the game after gameplay has run.</summary>
+        // Fades loops in/out. Called once per frame by the game after gameplay has run.
         public static void TickLoops(float dt)
         {
             if (loopSources == null) return;
@@ -198,7 +196,7 @@ namespace Patchwork
             return ToClip(name, data);
         }
 
-        /// <summary>Plucked-yarn notes (Karplus–Strong string), played as a little arpeggio.</summary>
+        // Plucked-yarn notes (Karplus-Strong string), played as a little arpeggio.
         static AudioClip Pluck(string name, float[] notes, float gap, float duration)
         {
             int n = Mathf.CeilToInt(duration * Rate);
@@ -225,7 +223,7 @@ namespace Patchwork
             return ToClip(name, data);
         }
 
-        /// <summary>Breeze + a few soft wind-chime tings.</summary>
+        // Breeze + a few soft wind-chime tings.
         static AudioClip WindChime()
         {
             float duration = 0.9f;
@@ -250,7 +248,7 @@ namespace Patchwork
             return ToClip("windchime", data);
         }
 
-        /// <summary>Soft airy whoosh: low-passed noise with a cutoff that swells and settles.</summary>
+        // Soft airy whoosh: low-passed noise with a cutoff that swells and settles.
         static AudioClip Whoosh(string name, float duration, float lowCut, float highCut, float volume)
         {
             int n = Mathf.CeilToInt(duration * Rate);
@@ -294,7 +292,7 @@ namespace Patchwork
             return ToClip("portal", data);
         }
 
-        /// <summary>2 s seamless loop of soft bubbles rising (for Water Form in fountains).</summary>
+        // 2 second loop of little bubbles for riding fountains as Water.
         static AudioClip BubbleLoop()
         {
             float duration = 2f;
@@ -317,7 +315,7 @@ namespace Patchwork
                     float f = f0 * (1f + 0.8f * (t / len));
                     phase += 2f * Mathf.PI * f / Rate;
                     float env = Mathf.Clamp01(t / 0.005f) * Mathf.Pow(1f - t / len, 2f);
-                    int idx = (s0 + i) % n; // wrap so the loop is seamless
+                    int idx = (s0 + i) % n; // wrap around so the loop has no gap
                     data[idx] += Mathf.Sin(phase) * env * vol;
                 }
             }
@@ -334,7 +332,7 @@ namespace Patchwork
             return ToClip("bubbles", data);
         }
 
-        /// <summary>Soft airy loop for gliding.</summary>
+        // Soft airy loop for gliding.
         static AudioClip AirLoop()
         {
             float duration = 2f;
@@ -351,7 +349,7 @@ namespace Patchwork
                 y2 += a * (y - y2);
                 data[i] = y2 * 1.6f;
             }
-            // Crossfade the end into the start for a seamless loop.
+            // Blend the end into the start so the loop doesn't click.
             int fade = Rate / 10;
             for (int i = 0; i < fade; i++)
             {
@@ -410,7 +408,7 @@ namespace Patchwork
             return a * r * r;
         }
 
-        /// <summary>Soft bell / music-box tone.</summary>
+        // Soft bell / music-box tone.
         static float Bell(float t, float f, float d)
         {
             if (t < 0f) return 0f;
@@ -418,7 +416,7 @@ namespace Patchwork
             return (Sine(t, f) + 0.25f * Sine(t, f * 2f) + 0.08f * Sine(t, f * 3f)) * env;
         }
 
-        /// <summary>A single water "bloop": quick upward pitch bend with a fast decay.</summary>
+        // A single water "bloop": quick upward pitch bend with a fast decay.
         static float Bloop(float t, float f0, float len)
         {
             if (t < 0f || t > len) return 0f;

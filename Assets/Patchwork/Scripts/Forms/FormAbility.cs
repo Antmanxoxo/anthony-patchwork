@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>One frame of gameplay input, already converted to camera-relative world space.</summary>
+    // One frame of gameplay input, already converted to camera-relative world space.
     public struct PlayerInputFrame
     {
         public Vector2 Move;
@@ -18,10 +18,8 @@ namespace Patchwork
         }
     }
 
-    /// <summary>
-    /// Base class for a form's special behaviour. Movement itself stays in PlayerMotor;
-    /// abilities only add to it (or, for the tether, briefly take it over).
-    /// </summary>
+    // Base class for a form's special behaviour. Movement itself stays in PlayerMotor;
+    // abilities only add to it (or, for the tether, briefly take it over).
     public abstract class FormAbility
     {
         protected PatchworkPlayer Player;
@@ -35,25 +33,25 @@ namespace Patchwork
 
         protected virtual void OnInit() { }
 
-        /// <summary>Called when the player becomes this form.</summary>
+        // Called when the player becomes this form.
         public virtual void OnEnter() { }
 
-        /// <summary>Called when the player leaves this form. Must leave no ability active.</summary>
+        // Called when the player leaves this form. Must leave no ability active.
         public virtual void OnExit() { }
 
-        /// <summary>Runs every gameplay frame before the motor moves the player.</summary>
+        // Runs every gameplay frame before the motor moves the player.
         public virtual void PreMove(PlayerInputFrame input, float dt) { }
 
-        /// <summary>Runs every gameplay frame after the motor has moved the player.</summary>
+        // Runs every gameplay frame after the motor has moved the player.
         public virtual void PostMove(float dt) { }
 
-        /// <summary>Cancel everything immediately (respawn / scene change). No launch, no effects.</summary>
+        // Cancel everything immediately (respawn / scene change). No launch, no effects.
         public virtual void ForceCancel() { }
 
-        /// <summary>While true, transformation requests are deferred until it becomes false.</summary>
+        // While true, transformation requests are deferred until it becomes false.
         public virtual bool BlocksTransform { get { return false; } }
 
-        /// <summary>Message shown when a transformation is deferred because of this ability.</summary>
+        // Message shown when a transformation is deferred because of this ability.
         public virtual string BlockReason { get { return ""; } }
     }
 }

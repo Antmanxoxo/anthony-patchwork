@@ -2,10 +2,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// Small persistent save layer (PlayerPrefs). Keeps form state, cosmetics and
-    /// collectibles in separate keys so changing one never erases another.
-    /// </summary>
+    // Small persistent save layer (PlayerPrefs). Keeps form state, cosmetics and
+    // collectibles in separate keys so changing one never erases another.
     public static class GameState
     {
         const string KeyForm = "pw_current_form";
@@ -21,7 +19,7 @@ namespace Patchwork
             set { PlayerPrefs.SetInt(KeyForm, (int)value); }
         }
 
-        /// <summary>Bitmask of unlocked forms. All three are unlocked by default in the prototype.</summary>
+        // Bitmask of unlocked forms. All three are unlocked by default in the prototype.
         static int UnlockedMask
         {
             get { return PlayerPrefs.GetInt(KeyUnlocked, 0b111); }

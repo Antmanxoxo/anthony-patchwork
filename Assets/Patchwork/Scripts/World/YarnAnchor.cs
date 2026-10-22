@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>A big pink felt button hanging from a thread. Yarn Form can tether to it.</summary>
+    // A big pink felt button hanging from a thread. Yarn Form can tether to it.
     public class YarnAnchor : MonoBehaviour
     {
         public static readonly List<YarnAnchor> All = new List<YarnAnchor>();

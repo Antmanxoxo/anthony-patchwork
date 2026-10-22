@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>A little flag on a pin. Touching it makes it the respawn point.</summary>
+    // A little flag on a pin. Touching it makes it the respawn point.
     public class Checkpoint : PlayerVolume
     {
         public Vector3 SpawnPoint;

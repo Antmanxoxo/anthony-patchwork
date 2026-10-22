@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>A column of rising ribbons. Lifts Wind Form only.</summary>
+    // A column of rising ribbons. Lifts Wind Form only.
     public class WindUpdraft : PlayerVolume
     {
         public float LiftSpeed = 7f;

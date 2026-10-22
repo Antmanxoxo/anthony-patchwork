@@ -4,13 +4,10 @@ using UnityEngine;
 
 namespace Patchwork.EditorTools
 {
-    /// <summary>
-    /// Makes the project "press Play and go":
-    ///  - Play always starts from the Hub scene (whatever scene is open),
-    ///  - opens the Hub scene the first time the project loads,
-    ///  - creates a URP material in Resources so the Lit shader is kept in builds.
-    /// Everything is also available from the "Patchwork" menu.
-    /// </summary>
+    // Editor helpers so I can just hit Play:
+    // Play always starts in the Hub, the Hub opens the first time the project loads,
+    // and a URP material gets saved in Resources so the Lit shader isn't stripped from builds.
+    // There's also a Patchwork menu with shortcuts.
     [InitializeOnLoad]
     public static class PatchworkEditorSetup
     {

@@ -1,16 +1,16 @@
 # Patchwork
 
-A small, handmade-looking 3D platformer prototype made in **Unity 6 (URP, C#)**.
-You play **Patch**, a little yarn creature who can transform between three forms:
+A small handmade-looking 3D platformer I'm making in **Unity 6 (URP, C#)**.
+You play **Patch**, a little yarn creature who can switch between three forms:
 
 | Form | What it does |
 |---|---|
-| 💧 **Water** | Shrinks into a droplet that slips through blue drain grates and rides blue fountains upward. |
-| 🧶 **Yarn** | Patch's handmade self. Tethers to glowing pink button-anchors and swings across big gaps. |
-| 🌬️ **Wind** | A breezy puff that glides, falls slowly, and bursts forward with one gust per jump. |
+| 💧 **Water** | Turns into a jiggly bubble that slips through drain grates and rides fountains up. |
+| 🧶 **Yarn** | A little knitted toy. Throws his yarn arm at pink anchors and swings across big gaps. |
+| 🌬️ **Wind** | A happy cloud that glides, falls slowly, and gets one gust per jump. |
 
-The prototype has a hub (**The Sewing Room**) and one level (**The Quilted Meadow**) with three
-optional golden buttons to find.
+Right now there's a hub (**The Sewing Room**) and one level (**The Sewing Basket Garden**) with
+golden buttons and thread spools to find.
 
 ## How to play it
 1. Open the project in **Unity 6000.6.7f1** (Unity Hub → Add → this folder).
@@ -37,4 +37,4 @@ lower-left, Wind is lower-right. Time slows while the wheel is open.
 - `Assets/Patchwork/Scenes`: `Hub` and `Level1` (built from code when you press Play)
 - `Assets/Patchwork/Editor`: editor helpers (**Patchwork** menu in the Unity menu bar)
 
-See `PROJECT_STATUS.md` for what works now and `DEVELOPMENT_LOG.md` for history.
+`PROJECT_STATUS.md` has what's working, `DEVELOPMENT_LOG.md` has the history.

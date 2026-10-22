@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>A little floating spool of thread. Collect them along the way (counted per visit).</summary>
+    // A little floating spool of thread. Collect them along the way (counted per visit).
     public class ThreadSpool : PlayerVolume
     {
         Transform visual;

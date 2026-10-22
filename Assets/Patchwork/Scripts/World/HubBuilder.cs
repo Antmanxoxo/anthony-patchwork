@@ -2,10 +2,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// The hub — "The Sewing Room". A small, safe quilt with a practice spot for each form and the
-    /// stitched doorway to Level 1.
-    /// </summary>
+    // The hub - "The Sewing Room". A small, safe quilt with a practice spot for each form and the
+    // stitched doorway to Level 1.
     public static class HubBuilder
     {
         public const string SceneName = "Hub";

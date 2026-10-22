@@ -1,6 +1,6 @@
 namespace Patchwork
 {
-    /// <summary>The end of a level.</summary>
+    // The end of a level.
     public class GoalZone : PlayerVolume
     {
         protected override void OnPlayerEnter(PatchworkPlayer player)

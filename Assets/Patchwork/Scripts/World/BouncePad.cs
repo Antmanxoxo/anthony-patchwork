@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>A squishy pin-cushion. Landing on it (in any form) bounces Patch high into the air.</summary>
+    // A squishy pin-cushion. Landing on it (in any form) bounces Patch high into the air.
     public class BouncePad : PlayerVolume
     {
         public float LaunchSpeed = 14f;

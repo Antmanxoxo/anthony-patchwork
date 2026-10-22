@@ -16,11 +16,9 @@ namespace Patchwork
         Loading
     }
 
-    /// <summary>
-    /// One per scene. Builds the level, camera, light and player, then drives everything from a
-    /// single Update so the order is always: input → menus → player → camera.
-    /// Only one menu can be open at a time, so the form wheel can never trigger pause or the satchel.
-    /// </summary>
+    // Main game object, one per scene. Builds the level, camera, light and player,
+    // then runs everything from one Update: input, then menus, then player, then camera.
+    // Only one menu can be open at once so the wheel/pause/satchel never clash.
     public class PatchworkGame : MonoBehaviour
     {
         public static PatchworkGame Instance { get; private set; }
@@ -40,7 +38,7 @@ namespace Patchwork
         public string ToastText { get; private set; }
         public float ToastTimer { get; private set; }
         public HintZone ActiveHint { get; private set; }
-        /// <summary>How long a tutorial card stays up before sliding away.</summary>
+        // How long a tutorial card stays up before sliding away.
         public const float HintDuration = 7f;
         public float HintAge { get; private set; }
         public float TitleTimer { get; private set; }
@@ -278,7 +276,7 @@ namespace Patchwork
             Sfx.Play(SfxId.MenuOpen, 0.5f);
         }
 
-        /// <summary>Closes the form wheel; if confirmed, asks the form controller to transform.</summary>
+        // Closes the form wheel; if confirmed, asks the form controller to transform.
         public void CloseWheel(bool confirm, FormType choice)
         {
             SetMode(UIMode.Gameplay, 1f);
@@ -344,13 +342,13 @@ namespace Patchwork
             }
         }
 
-        /// <summary>Leaving the zone makes the card slide away early.</summary>
+        // Leaving the zone makes the card slide away early.
         public void ClearHint(HintZone zone)
         {
             if (ActiveHint == zone && HintAge < HintDuration - 0.45f) HintAge = HintDuration - 0.45f;
         }
 
-        /// <summary>Thread spools picked up this visit.</summary>
+        // Thread spools picked up this visit.
         public int ThreadsCollected { get; private set; }
 
         public void CollectThread()
@@ -395,7 +393,7 @@ namespace Patchwork
             FxBurst.Spawn(FxBurst.Kind.Sparkle, Player.Motor.Center + Vector3.up, Color.white);
         }
 
-        /// <summary>Starts the portal warp: Patch is pulled into the vortex, spins, shrinks, then the scene loads.</summary>
+        // Starts the portal warp: Patch is pulled into the vortex, spins, shrinks, then the scene loads.
         public void EnterPortal(Portal portal)
         {
             if (Mode != UIMode.Gameplay && Mode != UIMode.FormWheel) return;

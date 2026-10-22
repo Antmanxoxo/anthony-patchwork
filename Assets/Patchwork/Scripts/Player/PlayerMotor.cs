@@ -2,11 +2,9 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// Shared movement for every form: camera-relative running, jumping (with coyote time and
-    /// jump buffering), gravity and landing. Forms change behaviour only through
-    /// <see cref="Params"/> and the per-frame modifiers below, so there is one controller, not three.
-    /// </summary>
+    // Movement shared by every form: running, jumping (coyote time + jump buffer),
+    // gravity and landing. Forms only change the numbers in Params and a few per-frame
+    // tweaks, so there's one controller instead of three.
     [RequireComponent(typeof(CharacterController))]
     public class PlayerMotor : MonoBehaviour
     {
@@ -23,13 +21,13 @@ namespace Patchwork
         public bool JustLanded { get; private set; }
         public bool JustJumped { get; private set; }
 
-        /// <summary>When true another system (the yarn tether) moves the controller this frame.</summary>
+        // When true another system (the yarn tether) moves the controller this frame.
         public bool ExternalControl;
 
         // ---- Per-frame modifiers, set by abilities/volumes before Step() and cleared after ----
-        /// <summary>Caps downward speed this frame (glide). Negative = unused.</summary>
+        // Caps downward speed this frame (glide). Negative = unused.
         [System.NonSerialized] public float FallSpeedCap = -1f;
-        /// <summary>If set, vertical velocity is pushed towards this value this frame (currents, updrafts).</summary>
+        // If set, vertical velocity is pushed towards this value this frame (currents, updrafts).
         [System.NonSerialized] public bool HasLift;
         [System.NonSerialized] public float LiftTargetSpeed;
         [System.NonSerialized] public float LiftAcceleration;
@@ -43,7 +41,7 @@ namespace Patchwork
         float airTime;
 
 
-        /// <summary>The collider Patch is standing on (for moving platforms). Null when airborne.</summary>
+        // The collider Patch is standing on (for moving platforms). Null when airborne.
         public Collider GroundCollider { get; private set; }
         Collider groundHit;
 
@@ -52,7 +50,7 @@ namespace Patchwork
             if (hit.normal.y > 0.6f) groundHit = hit.collider;
         }
 
-        /// <summary>Launches straight up (bounce pads). Keeps horizontal speed.</summary>
+        // Launches straight up (bounce pads). Keeps horizontal speed.
         public void Bounce(float upSpeed)
         {
             Velocity = new Vector3(Velocity.x, upSpeed, Velocity.z);
@@ -74,7 +72,7 @@ namespace Patchwork
             Controller.center = new Vector3(0f, def.ControllerHeight * 0.5f, 0f);
         }
 
-        /// <summary>Starts a short horizontal burst (Wind gust).</summary>
+        // Starts a short horizontal burst (Wind gust).
         public void StartDash(Vector3 velocity, float duration)
         {
             dashVelocity = velocity;
@@ -82,7 +80,7 @@ namespace Patchwork
             Velocity = new Vector3(velocity.x, Mathf.Max(Velocity.y, 1.5f), velocity.z);
         }
 
-        /// <summary>Clears every temporary movement state (used on transform, respawn and tether release).</summary>
+        // Clears every temporary movement state (used on transform, respawn and tether release).
         public void ResetTransientState()
         {
             dashTimer = 0f;
@@ -91,7 +89,7 @@ namespace Patchwork
             jumpBufferTimer = 0f;
         }
 
-        /// <summary>Marks the current upward motion as a launch (tether/gust) so releasing Jump won't cut it short.</summary>
+        // Marks the current upward motion as a launch (tether/gust) so releasing Jump won't cut it short.
         public void MarkLaunched()
         {
             allowJumpCut = false;
@@ -108,7 +106,7 @@ namespace Patchwork
             ResetTransientState();
         }
 
-        /// <param name="moveWorld">Desired move direction on the ground plane (magnitude 0..1).</param>
+        // moveWorld: Desired move direction on the ground plane (magnitude 0..1).
         public void Step(Vector3 moveWorld, bool jumpPressed, bool jumpHeld, float dt)
         {
             JustLanded = false;
@@ -210,7 +208,7 @@ namespace Patchwork
             ClearFrameModifiers();
         }
 
-        /// <summary>Called by the tether while it owns movement, to keep grounded/air state truthful.</summary>
+        // Called by the tether while it owns movement, to keep grounded/air state truthful.
         public void SetAirborneFromExternal(bool grounded)
         {
             Grounded = grounded;
@@ -223,7 +221,7 @@ namespace Patchwork
             HasLift = false;
         }
 
-        /// <summary>Centre of the capsule in world space.</summary>
+        // Centre of the capsule in world space.
         public Vector3 Center
         {
             get { return transform.position + Vector3.up * (Controller != null ? Controller.height * 0.5f : 0.7f); }

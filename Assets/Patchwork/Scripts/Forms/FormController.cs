@@ -3,14 +3,10 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// Owns the current form and performs transformations safely:
-    ///  - refuses locked forms,
-    ///  - defers while an ability is mid-action (e.g. swinging on yarn),
-    ///  - refuses if the new body would not fit (prevents getting stuck in walls/grates),
-    ///  - keeps the feet position fixed so the player never teleports or falls through floors,
-    ///  - clears temporary movement state so no ability stays active.
-    /// </summary>
+    // Keeps track of the current form and handles switching.
+    // Won't switch if the form is locked or the new body wouldn't fit, waits until you
+    // let go if you're swinging, and keeps your feet where they are so you don't pop
+    // through the floor. Also clears leftover movement stuff from the old form.
     public class FormController
     {
         readonly PatchworkPlayer player;
@@ -42,7 +38,7 @@ namespace Patchwork
             return null;
         }
 
-        /// <summary>Sets the starting form with no effects. Falls back to any form that fits.</summary>
+        // Sets the starting form with no effects. Falls back to any form that fits.
         public void Initialise(FormType start)
         {
             if (!GameState.IsFormUnlocked(start)) start = FirstUnlocked();
@@ -57,7 +53,7 @@ namespace Patchwork
             return GameState.IsFormUnlocked(form);
         }
 
-        /// <summary>Ask to transform. Returns true if the change happened or was queued.</summary>
+        // Ask to transform. Returns true if the change happened or was queued.
         public bool Request(FormType target)
         {
             if (target == Current && !hasPending) return true;
@@ -89,7 +85,7 @@ namespace Patchwork
             }
         }
 
-        /// <summary>Immediately cancels abilities and any queued transformation (respawn/scene change).</summary>
+        // Immediately cancels abilities and any queued transformation (respawn/scene change).
         public void CancelAll()
         {
             hasPending = false;
@@ -132,7 +128,7 @@ namespace Patchwork
             player.Motor.ApplyControllerShape(def);
         }
 
-        /// <summary>Would a capsule of this form's size fit at the player's feet right now?</summary>
+        // Would a capsule of this form's size fit at the player's feet right now?
         public bool HasRoomFor(FormDefinition def, bool ignoreGrates)
         {
             var controller = player.Motor.Controller;

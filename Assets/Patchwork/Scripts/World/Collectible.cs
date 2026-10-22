@@ -2,10 +2,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// A golden sewing button. Optional; placed where a form ability is needed to reach it.
-    /// Already-collected buttons appear as pale "ghost" buttons.
-    /// </summary>
+    // A golden sewing button. Optional; placed where a form ability is needed to reach it.
+    // Already-collected buttons appear as pale "ghost" buttons.
     public class Collectible : PlayerVolume
     {
         public string Id;

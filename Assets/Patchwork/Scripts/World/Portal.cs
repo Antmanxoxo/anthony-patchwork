@@ -2,10 +2,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// The embroidery-hoop portal. Rings spin, sparkles spiral inward and the light pulses.
-    /// Walking in starts a warp: Patch is pulled to the centre, spins and shrinks away, then the next scene loads.
-    /// </summary>
+    // The embroidery-hoop portal. Rings spin, sparkles spiral inward and the light pulses.
+    // Walking in starts a warp: Patch is pulled to the centre, spins and shrinks away, then the next scene loads.
     public class Portal : PlayerVolume
     {
         public string TargetScene;
@@ -16,10 +14,10 @@ namespace Patchwork
         Transform[] motes;
         float[] motePhase;
         Light glow;
-        float excite;   // 0 normal → 1 warping
+        float excite;   // 0 normal -> 1 warping
         float time;
 
-        /// <summary>World position of the vortex centre (where the player is pulled to).</summary>
+        // World position of the vortex centre (where the player is pulled to).
         public Vector3 Center
         {
             get { return visual != null ? visual.position : transform.position + Vector3.up; }
@@ -36,7 +34,7 @@ namespace Patchwork
             for (int i = 0; i < motes.Length; i++) motePhase[i] = i / (float)motes.Length;
         }
 
-        /// <summary>Spin everything up for the warp.</summary>
+        // Spin everything up for the warp.
         public void Excite()
         {
             excite = 0.01f;

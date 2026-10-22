@@ -3,10 +3,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// An axis-aligned box that reacts when the player's centre is inside it. Checked manually each
-    /// frame (no physics triggers), which is simple and completely predictable.
-    /// </summary>
+    // An axis-aligned box that reacts when the player's centre is inside it. Checked manually each
+    // frame (no physics triggers), which is simple and completely predictable.
     public abstract class PlayerVolume : MonoBehaviour
     {
         public static readonly List<PlayerVolume> All = new List<PlayerVolume>();

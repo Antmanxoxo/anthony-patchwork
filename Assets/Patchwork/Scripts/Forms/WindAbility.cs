@@ -2,10 +2,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// Wind Form: hold Jump while falling to glide (capped fall speed), press Ability for one
-    /// short horizontal gust per jump. It extends jumps; it never flies indefinitely.
-    /// </summary>
+    // Wind Form: hold Jump while falling to glide (capped fall speed), press Ability for one
+    // short horizontal gust per jump. It extends jumps; it never flies indefinitely.
     public class WindAbility : FormAbility
     {
         public const float GlideFallSpeed = 2.0f;

@@ -2,10 +2,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// Lightweight particle bursts built from primitives (no particle-system assets needed).
-    /// Each kind has its own motion so transformations can read as soaking, steaming, raining, unravelling...
-    /// </summary>
+    // Lightweight particle bursts built from primitives (no particle-system assets needed).
+    // Each kind has its own motion so transformations can read as soaking, steaming, raining, unravelling...
     public class FxBurst : MonoBehaviour
     {
         public enum Kind

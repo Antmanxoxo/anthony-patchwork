@@ -2,11 +2,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// Procedural surface textures with matching normal maps, so materials have real tactile
-    /// bumps: knitted stitches, fuzzy felt, woven cloth, wicker, stitched grass and wood grain.
-    /// Each pattern is described by a height function; albedo shading and normals come from it.
-    /// </summary>
+    // Makes the bumpy textures (knit, felt, cloth, wicker, grass, wood, wound yarn).
+    // Each one is just a height function - colour shading and the normal map come from it.
     public static class PatchworkTextures
     {
         public class Pair
@@ -105,7 +102,7 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ Patterns
 
-        /// <summary>Stockinette knitting: rows of little "V" stitches.</summary>
+        // Stockinette knitting: rows of little "V" stitches.
         static float KnitHeight(float u, float v, int x, int y)
         {
             const int cells = 8;
@@ -121,13 +118,13 @@ namespace Patchwork
             return strand * twist + ValueNoise(u, v, 32, 3) * 0.08f;
         }
 
-        /// <summary>Soft fuzzy felt.</summary>
+        // Soft fuzzy felt.
         static float FeltHeight(float u, float v, int x, int y)
         {
             return ValueNoise(u, v, 8, 1) * 0.5f + ValueNoise(u, v, 16, 2) * 0.3f + Hash(x, y) * 0.2f;
         }
 
-        /// <summary>Plain-weave cloth with a raised running stitch around the patch.</summary>
+        // Plain-weave cloth with a raised running stitch around the patch.
         static float WeaveHeight(float u, float v, int x, int y)
         {
             int size = 128;
@@ -146,7 +143,7 @@ namespace Patchwork
             return h;
         }
 
-        /// <summary>Basket weave: horizontal reeds passing over and under vertical stakes.</summary>
+        // Basket weave: horizontal reeds passing over and under vertical stakes.
         static float WickerHeight(float u, float v, int x, int y)
         {
             const int rows = 8, stakes = 4;
@@ -165,7 +162,7 @@ namespace Patchwork
             return Mathf.Max(reedH, stakeH) * 0.9f + fibre;
         }
 
-        /// <summary>Felt lawn with little stitched grass tufts.</summary>
+        // Felt lawn with little stitched grass tufts.
         static float GrassHeight(float u, float v, int x, int y)
         {
             float h = ValueNoise(u, v, 8, 7) * 0.35f + Hash(x, y) * 0.12f;
@@ -188,7 +185,7 @@ namespace Patchwork
             return grain * 0.6f + ValueNoise(u, v, 16, 4) * 0.4f;
         }
 
-        /// <summary>Strands wound around a ball of yarn.</summary>
+        // Strands wound around a ball of yarn.
         static float WrapHeight(float u, float v, int x, int y)
         {
             float a = Mathf.Sin((v * 22f + Mathf.Sin(u * Mathf.PI * 4f) * 1.6f) * Mathf.PI * 2f) * 0.5f + 0.5f;

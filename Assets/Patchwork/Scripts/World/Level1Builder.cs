@@ -2,19 +2,16 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// Level 1 — "The Sewing Basket Garden". A felt garden growing inside a giant wicker sewing basket,
-    /// with a stitched felt sun, yarn-ball boulders, knitting needles, thimbles and felt mushrooms.
-    /// A straight, readable course along +Z that teaches one form at a time, now with toys to play with:
-    ///   1. Garden start: thread spools + a bouncy pin-cushion up to a ledge
-    ///   2. Wicker wall with a low drain-grate tunnel (Water)
-    ///   3. Dye pond: fountain to a high shelf (Water, golden button) + threads up the jet
-    ///   4. Button Bridge: two sliding felt buttons carry you over a pit (any form)
-    ///   5. 15 m gap with a pink anchor (Yarn; golden button and threads along the swing)
-    ///   6. 9 m gap with pinwheels (Wind) + bounce pad thread tower
-    ///   7. Updraft to a high shelf (Wind, golden button), then the goal arch
-    /// Gap sizes are tuned to the movement numbers: normal jump ≈ 5 m, Wind glide+gust ≈ 12 m.
-    /// </summary>
+    // Level 1 - The Sewing Basket Garden. A felt garden inside a giant wicker basket.
+    // Goes in a straight line and each part teaches one thing:
+    // 1. garden start with threads and a bouncy pin-cushion
+    // 2. wicker wall with a drain grate (Water)
+    // 3. dye pond with a fountain up to a golden button (Water)
+    // 4. button bridge - two sliding buttons over a pit
+    // 5. 15m gap with a swing anchor (Yarn)
+    // 6. 9m gap with pinwheels (Wind)
+    // 7. updraft up to the last golden button (Wind), then the goal
+    // Gap sizes are based on the movement numbers: normal jump ~5m, Wind glide+gust ~12m.
     public static class Level1Builder
     {
         public const string SceneName = "Level1";

@@ -30,10 +30,8 @@ namespace Patchwork
         }
     }
 
-    /// <summary>
-    /// Helpers for building handcrafted levels from code: quilted platforms, walls, and all the
-    /// interactive pieces (anchors, grates, fountains, updrafts, checkpoints, buttons, goal, portal).
-    /// </summary>
+    // Helpers for building handcrafted levels from code: quilted platforms, walls, and all the
+    // interactive pieces (anchors, grates, fountains, updrafts, checkpoints, buttons, goal, portal).
     public class LevelKit
     {
         public static class Palette
@@ -72,7 +70,7 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ Geometry
 
-        /// <summary>A solid box with a stitched-fabric look.</summary>
+        // A solid box with a stitched-fabric look.
         public Transform Block(Vector3 center, Vector3 size, Color color, string name = "Block", Material material = null)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -87,10 +85,8 @@ namespace Patchwork
             return t;
         }
 
-        /// <summary>
-        /// A walkable platform: one invisible collider plus a grid of coloured quilt patches on top.
-        /// "center"/"size" describe the whole slab.
-        /// </summary>
+        // A walkable platform: one invisible collider plus a grid of coloured quilt patches on top.
+        // "center"/"size" describe the whole slab.
         public Transform Quilt(Vector3 center, Vector3 size, Color[] palette, float cell = 3.5f, string name = "Platform", bool grass = false)
         {
             var slab = new GameObject(name).transform;
@@ -135,7 +131,7 @@ namespace Patchwork
             r.SetPropertyBlock(mpb);
         }
 
-        /// <summary>Decoration without collision.</summary>
+        // Decoration without collision.
         public Transform Deco(PrimitiveType type, Vector3 position, Vector3 scale, Material mat, Vector3 euler = default(Vector3), Transform parent = null)
         {
             var go = GameObject.CreatePrimitive(type);
@@ -245,7 +241,7 @@ namespace Patchwork
             s.BobSpeed = 0.4f;
         }
 
-        /// <summary>Huge quilt far below the level so gaps feel deep (no collision).</summary>
+        // Huge quilt far below the level so gaps feel deep (no collision).
         public void Backdrop(float y)
         {
             var g = Group("Backdrop", new Vector3(0f, y, 40f));
@@ -318,7 +314,7 @@ namespace Patchwork
             return anchor;
         }
 
-        /// <summary>A blue drain grate filling an opening. "size" is the opening size.</summary>
+        // A blue drain grate filling an opening. "size" is the opening size.
         public WaterGrate Grate(Vector3 center, Vector3 size)
         {
             var g = Group("DrainGrate", center);
@@ -399,10 +395,8 @@ namespace Patchwork
             return goal;
         }
 
-        /// <summary>
-        /// A swirling embroidery-hoop portal: a wooden hoop with stitched trim, four counter-rotating
-        /// glowing rings, sparkles spiralling into the centre and a soft pulsing light.
-        /// </summary>
+        // A swirling embroidery-hoop portal: a wooden hoop with stitched trim, four counter-rotating
+        // glowing rings, sparkles spiralling into the centre and a soft pulsing light.
         public Portal AddPortal(Vector3 feet, float yaw, string targetScene, bool completed)
         {
             Quaternion rot = Quaternion.Euler(0f, yaw, 0f);
@@ -479,7 +473,7 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ Interactive pieces
 
-        /// <summary>A squishy pin-cushion bounce pad, low enough to walk onto.</summary>
+        // A squishy pin-cushion bounce pad, low enough to walk onto.
         public BouncePad AddBouncePad(Vector3 feet, float launchSpeed = 14f)
         {
             var pad = Volume<BouncePad>(feet + Vector3.up * 0.7f, new Vector3(2.2f, 1.4f, 2.2f), "BouncePad");
@@ -504,7 +498,7 @@ namespace Patchwork
             return pad;
         }
 
-        /// <summary>A big felt button that slides between two points. a/b are the top-centre positions.</summary>
+        // A big felt button that slides between two points. a/b are the top-centre positions.
         public MovingPlatform MovingButton(Vector3 a, Vector3 b, float phase, Color color, float travel = 3f)
         {
             var go = new GameObject("MovingButton");
@@ -530,7 +524,7 @@ namespace Patchwork
             return mp;
         }
 
-        /// <summary>A floating thread spool to collect.</summary>
+        // A floating thread spool to collect.
         public ThreadSpool Thread(Vector3 pos, Color color)
         {
             Info.ThreadTotal++;
@@ -556,7 +550,7 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ Garden decorations
 
-        /// <summary>A giant ball of yarn (solid) with a loose strand trailing on the ground.</summary>
+        // A giant ball of yarn (solid) with a loose strand trailing on the ground.
         public void YarnBall(Vector3 groundPos, float radius, Color color)
         {
             var g = Group("YarnBall", groundPos + Vector3.up * radius * 0.9f);
@@ -575,7 +569,7 @@ namespace Patchwork
             }
         }
 
-        /// <summary>A giant knitting needle leaning against the scenery (decorative).</summary>
+        // A giant knitting needle leaning against the scenery (decorative).
         public void KnittingNeedle(Vector3 a, Vector3 b, Color knob)
         {
             Vector3 d = b - a;
@@ -609,7 +603,7 @@ namespace Patchwork
             }
         }
 
-        /// <summary>A big stitched felt sun pinned to a wall, facing direction "facing".</summary>
+        // A big stitched felt sun pinned to a wall, facing direction "facing".
         public void FeltSun(Vector3 pos, float radius, Vector3 facing)
         {
             var g = Group("FeltSun", pos);
@@ -637,11 +631,9 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ Enclosure
 
-        /// <summary>
-        /// Walls and a ceiling around the whole play space so the world feels like a cosy sewing room
-        /// instead of an endless sky. Walls are striped quilt bands with giant buttons; the ceiling has
-        /// bunting and warm hanging lamps. Nothing here casts shadows, so the sunlight still reaches in.
-        /// </summary>
+        // Walls and a ceiling around the whole play space so the world feels like a cosy sewing room
+        // instead of an endless sky. Walls are striped quilt bands with giant buttons; the ceiling has
+        // bunting and warm hanging lamps. Nothing here casts shadows, so the sunlight still reaches in.
         public void Enclosure(Vector3 min, Vector3 max, Color[] bands, Color ceiling, bool wicker = false)
         {
             var g = Group("Enclosure", Vector3.zero);

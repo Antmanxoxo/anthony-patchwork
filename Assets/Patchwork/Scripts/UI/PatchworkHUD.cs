@@ -2,10 +2,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// On-screen HUD: current form badge with ability hints, golden buttons, control reminders,
-    /// tutorial cards, toasts, the anchor prompt, plus whichever menu is open.
-    /// </summary>
+    // On-screen HUD: current form badge with ability hints, golden buttons, control reminders,
+    // tutorial cards, toasts, the anchor prompt, plus whichever menu is open.
     public class PatchworkHUD : MonoBehaviour
     {
         public PatchworkGame Game;
@@ -45,7 +43,7 @@ namespace Patchwork
             badgeSlide = Mathf.MoveTowards(badgeSlide, target, dt * (target > badgeSlide ? 4f : 2.5f));
         }
 
-        /// <summary>Pop the form panel back up (e.g. after a gust or when the Satchel closes).</summary>
+        // Pop the form panel back up (e.g. after a gust or when the Satchel closes).
         public void PokeBadge()
         {
             badgeTimer = BadgeShowTime;
@@ -151,7 +149,7 @@ namespace Patchwork
 
         float threadPop;
 
-        /// <summary>Little bounce on the thread counter when a spool is picked up.</summary>
+        // Little bounce on the thread counter when a spool is picked up.
         public void PokeThreads()
         {
             threadPop = 1f;

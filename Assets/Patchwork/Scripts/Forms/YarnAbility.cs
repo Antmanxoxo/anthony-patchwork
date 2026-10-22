@@ -2,11 +2,9 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// Yarn Form: hold Ability near a YarnAnchor to tether and swing; release Ability (or press Jump)
-    /// to let go and launch. The swing is a simple constrained pendulum (a rope that can go slack but
-    /// never stretch) moved through the CharacterController, so walls and floors still collide.
-    /// </summary>
+    // Yarn: hold Ability near an anchor to swing, let go (or jump) to launch.
+    // The swing is a simple rope that can go slack but never stretch, and it moves
+    // through the CharacterController so you still hit walls and floors.
     public class YarnAbility : FormAbility
     {
         const float PumpAcceleration = 9f;

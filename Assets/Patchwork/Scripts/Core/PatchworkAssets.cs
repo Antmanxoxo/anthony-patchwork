@@ -3,10 +3,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// Creates every material, texture and UI icon at runtime so the prototype needs no imported art.
-    /// The look is "handmade": woven fabric with stitched borders, wrapped yarn, soft pastel colours.
-    /// </summary>
+    // Creates every material, texture and UI icon at runtime so the prototype needs no imported art.
+    // The look is "handmade": woven fabric with stitched borders, wrapped yarn, soft pastel colours.
     public static class PatchworkAssets
     {
         public const string LitMaterialResource = "PW_Lit";
@@ -82,7 +80,7 @@ namespace Patchwork
             return Get("felt", color, t.Albedo, 0.02f, Color.black, t.Normal, 0.6f);
         }
 
-        /// <summary>Wound yarn (balls of yarn, strings, ropes).</summary>
+        // Wound yarn (balls of yarn, strings, ropes).
         public static Material Yarn(Color color)
         {
             EnsureInit();
@@ -90,7 +88,7 @@ namespace Patchwork
             return Get("yarn", color, t.Albedo, 0.05f, Color.black, t.Normal, 1f);
         }
 
-        /// <summary>Knitted stitches (Patch's yarn body).</summary>
+        // Knitted stitches (Patch's yarn body).
         public static Material Knit(Color color)
         {
             EnsureInit();
@@ -124,7 +122,7 @@ namespace Patchwork
             return Get("water", color, WaterTex, 0.92f, color * 0.25f);
         }
 
-        /// <summary>See-through, glossy material (URP Lit set to Transparent) for the water bubble.</summary>
+        // See-through, glossy material (URP Lit set to Transparent) for the water bubble.
         public static Material Bubble(Color color)
         {
             EnsureInit();
@@ -202,7 +200,7 @@ namespace Patchwork
             return m;
         }
 
-        /// <summary>Creates a unique (non-cached) material, for things that animate their colour.</summary>
+        // Creates a unique (non-cached) material, for things that animate their colour.
         public static Material Unique(Material source)
         {
             return new Material(source);
@@ -260,7 +258,7 @@ namespace Patchwork
             return c;
         }
 
-        /// <summary>PlayStation face-button glyphs: 0 cross, 1 circle, 2 square.</summary>
+        // PlayStation face-button glyphs: 0 cross, 1 circle, 2 square.
         static Texture2D MakeGlyph(int kind, Color symbol)
         {
             const int size = 64;
@@ -301,7 +299,7 @@ namespace Patchwork
             return t;
         }
 
-        /// <summary>0 water drop, 1 yarn ball, 2 wind swirl, 3 sewing button, 4 lock.</summary>
+        // 0 water drop, 1 yarn ball, 2 wind swirl, 3 sewing button, 4 lock.
         static Texture2D MakeIcon(int kind)
         {
             const int size = 128;

@@ -2,10 +2,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// The player root ("Patch"). Holds the motor, form controller and visuals, and runs them
-    /// in a fixed order each frame so abilities, volumes and movement never fight each other.
-    /// </summary>
+    // The player root ("Patch"). Holds the motor, form controller and visuals, and runs them
+    // in a fixed order each frame so abilities, volumes and movement never fight each other.
     public class PatchworkPlayer : MonoBehaviour
     {
         public PlayerMotor Motor { get; private set; }
@@ -66,7 +64,7 @@ namespace Patchwork
             Visuals.Tick(Motor, dt);
         }
 
-        /// <summary>Safe respawn: cancels abilities, restores collision, puts the player on the checkpoint.</summary>
+        // Safe respawn: cancels abilities, restores collision, puts the player on the checkpoint.
         public void Respawn(Vector3 feet, float yaw)
         {
             Forms.CancelAll();

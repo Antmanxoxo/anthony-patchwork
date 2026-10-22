@@ -3,12 +3,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// Pause menu (Options / Esc). Drops in with a bounce, options slide in one after another,
-    /// and the highlighted option glows, grows and plays its own little icon animation:
-    /// Resume pulses, Restart spins, the house hops, the controller wiggles, the music note dances,
-    /// the door swings. D-pad/stick to move, Cross to choose, Circle to resume.
-    /// </summary>
+    // Pause menu. Drops in with a bounce and each option has its own little icon animation
+    // when it's highlighted. D-pad/stick to move, X to pick, Circle to go back.
     public class PauseMenu
     {
         enum Item { Resume, Restart, ReturnToHub, Prompts, WheelButton, Music, Quit }
@@ -275,7 +271,7 @@ namespace Patchwork
             }
         }
 
-        /// <summary>A running-stitch border whose dashes march around the rectangle.</summary>
+        // A running-stitch border whose dashes march around the rectangle.
         static void MarchingStitches(Rect r, Color c, float phase)
         {
             const float dash = 12f, gap = 8f, thick = 3f;

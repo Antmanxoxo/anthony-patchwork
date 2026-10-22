@@ -2,11 +2,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// The radial Form Wheel. Opens with L1 (Q), slows time, and lets the player point a stick
-    /// (or press D-pad / 1-2-3) at a form. Cross confirms, Circle or L1 cancels.
-    ///   Yarn: top · Water: lower-left · Wind: lower-right
-    /// </summary>
+    // The Form Wheel. Opens with L1 (or Q), slows time down, and you point a stick at a form.
+    // Yarn is at the top, Water bottom-left, Wind bottom-right. X picks, Circle cancels.
     public class FormSelector
     {
         static readonly FormType[] Slots = { FormType.Yarn, FormType.Water, FormType.Wind };

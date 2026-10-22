@@ -2,11 +2,9 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// Chill background music, synthesised once at start-up and looped across scenes:
-    /// warm electric-piano chords, a round bass, a soft music-box melody and a light brushed beat.
-    /// 72 BPM, 8 bars (≈ 27 s) — Fmaj7 · Em7 · Dm9 · Cmaj7 · Fmaj7 · Em7 · Dm7 · G6sus.
-    /// </summary>
+    // Background music. Built once when the game starts and loops between scenes.
+    // Lo-fi style: e-piano chords, bass, a little music box tune and soft brushes.
+    // 72 BPM, 8 bars: Fmaj7 Em7 Dm9 Cmaj7 Fmaj7 Em7 Dm7 G6sus
     public class MusicPlayer : MonoBehaviour
     {
         const string PrefKey = "pw_music_on";
@@ -31,7 +29,7 @@ namespace Patchwork
             }
         }
 
-        /// <summary>Starts the music if it isn't already playing. Survives scene loads.</summary>
+        // Starts the music if it isn't already playing. Survives scene loads.
         public static void EnsurePlaying()
         {
             if (instance != null) return;

@@ -1,6 +1,6 @@
 namespace Patchwork
 {
-    /// <summary>Which element a tutorial card belongs to (sets its colours, art and sound).</summary>
+    // Which element a tutorial card belongs to (sets its colours, art and sound).
     public enum HintTheme
     {
         Neutral,
@@ -9,7 +9,7 @@ namespace Patchwork
         Wind
     }
 
-    /// <summary>Shows a themed tutorial card when the player walks in; it slides away after a few seconds.</summary>
+    // Shows a themed tutorial card when the player walks in; it slides away after a few seconds.
     public class HintZone : PlayerVolume
     {
         public string Title;

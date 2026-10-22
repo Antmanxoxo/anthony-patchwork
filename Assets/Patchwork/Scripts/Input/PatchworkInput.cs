@@ -3,22 +3,11 @@ using UnityEngine.InputSystem;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// All input bindings in one place. Controller-first (PlayStation layout), with keyboard/mouse fallback.
-    ///
-    ///   Action          PlayStation        Keyboard / Mouse
-    ///   Move            Left stick         WASD
-    ///   Camera          Right stick        Mouse
-    ///   Jump / Glide    Cross              Space
-    ///   Ability         Square             E / Left mouse
-    ///   Form wheel      L1                 Q
-    ///   Confirm (menus) Cross              Enter / Space
-    ///   Cancel (menus)  Circle             Backspace / Esc
-    ///   Satchel (HUD)   Touchpad / Create  Tab
-    ///   Pause           Options            Esc
-    ///
-    /// The form wheel button is configurable via <see cref="SetFormWheelBinding"/>.
-    /// </summary>
+    // All the controls in one place. PlayStation controller first, keyboard as backup.
+    // Move: left stick / WASD      Camera: right stick / mouse
+    // Jump: X / Space              Ability: Square / E or left click
+    // Form Wheel: L1 or R1 / Q     Satchel: touchpad / Tab     Pause: Options / Esc
+    // Menus: X / Enter to confirm, Circle / Esc to back out
     public class PatchworkInput
     {
         public const string DefaultFormWheelGamepadPath = "<Gamepad>/leftShoulder";
@@ -48,14 +37,14 @@ namespace Patchwork
 
         bool detectedKeyboard;
 
-        /// <summary>Which button prompts to show. Auto follows the last device used.</summary>
+        // Which button prompts to show. Auto follows the last device used.
         public PromptMode Prompts
         {
             get { return (PromptMode)Mathf.Clamp(PlayerPrefs.GetInt(PromptModeKey, 0), 0, 2); }
             set { PlayerPrefs.SetInt(PromptModeKey, (int)value); PlayerPrefs.Save(); }
         }
 
-        /// <summary>True when keyboard prompts should be shown (and the mouse may steer the camera).</summary>
+        // True when keyboard prompts should be shown (and the mouse may steer the camera).
         public bool UsingKeyboard
         {
             get
@@ -112,10 +101,10 @@ namespace Patchwork
 
         const string WheelOnR1Key = "pw_wheel_r1";
 
-        /// <summary>Button label shown in prompts for the Form Wheel ("L1" or "R1").</summary>
+        // Button label shown in prompts for the Form Wheel ("L1" or "R1").
         public static string FormWheelPadLabel = "L1";
 
-        /// <summary>True when the Form Wheel is on R1 instead of L1 (saved).</summary>
+        // True when the Form Wheel is on R1 instead of L1 (saved).
         public bool FormWheelOnR1
         {
             get { return PlayerPrefs.GetInt(WheelOnR1Key, 0) == 1; }
@@ -128,7 +117,7 @@ namespace Patchwork
             }
         }
 
-        /// <summary>Rebind the gamepad button that opens the form wheel (e.g. "&lt;Gamepad&gt;/rightShoulder").</summary>
+        // Rebind the gamepad button that opens the form wheel (e.g. "<Gamepad>/rightShoulder").
         public void SetFormWheelBinding(string gamepadPath)
         {
             map.Disable();
@@ -136,11 +125,9 @@ namespace Patchwork
             map.Enable();
         }
 
-        /// <summary>
-        /// Call once per frame to track which device the player is using.
-        /// Only deliberate input counts (buttons, sticks, keys, clicks); mouse drift is ignored so
-        /// the prompts don't flicker back to keyboard when the cursor unlocks.
-        /// </summary>
+        // Call once per frame to track which device the player is using.
+        // Only deliberate input counts (buttons, sticks, keys, clicks); mouse drift is ignored so
+        // the prompts don't flicker back to keyboard when the cursor unlocks.
         public void UpdateDeviceKind()
         {
             var pad = Gamepad.current;

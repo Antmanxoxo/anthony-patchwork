@@ -3,14 +3,11 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// Builds and animates Patch's three bodies and the transitions between them:
-    ///  - Yarn: a little knitted toy with legs and arms; walks, jumps, and reaches a yarn arm up to swing.
-    ///  - Water: a wobbly, see-through bubble with big eyes that jiggles when it moves.
-    ///  - Wind: a happy little cloud that floats above the ground with a smile and drifting wisps.
-    /// Transitions play a short element-specific animation (yarn soaks → water, water steams → wind,
-    /// wind rains → water, etc.). Cosmetics live on their own transform and never reset with form.
-    /// </summary>
+    // Builds Patch's three bodies and animates them:
+    // Yarn is a little knitted toy (walks, flails when jumping, throws his arm out to swing),
+    // Water is a jiggly see-through bubble with big eyes, Wind is a floating happy cloud.
+    // Also does the short change animations between forms (soak, steam, rain, unravel...).
+    // Hats sit on their own transform so changing form never resets them.
     public class FormVisuals
     {
         public static readonly string[] HatNames = { "No Hat", "Red Beanie", "Felt Top Hat", "Daisy Clip" };
@@ -76,13 +73,13 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ API
 
-        /// <summary>World position of Yarn's right hand (where the tether starts).</summary>
+        // World position of Yarn's right hand (where the tether starts).
         public Vector3 HandPosition
         {
             get { return handR != null ? handR.position : root.position + Vector3.up; }
         }
 
-        /// <summary>Instantly show a form (used at spawn).</summary>
+        // Instantly show a form (used at spawn).
         public void SetForm(FormType newForm, bool punchIt)
         {
             EndTransition();
@@ -91,7 +88,7 @@ namespace Patchwork
             if (punchIt) PunchScale(new Vector3(0.6f, 1.4f, 0.6f));
         }
 
-        /// <summary>Plays the element-specific transformation from one body to the other.</summary>
+        // Plays the element-specific transformation from one body to the other.
         public void BeginTransition(FormType from, FormType to)
         {
             EndTransition();
@@ -134,7 +131,7 @@ namespace Patchwork
             tetherTarget = target;
         }
 
-        /// <summary>1 = normal, 0 = fully shrunk (portal warp).</summary>
+        // 1 = normal, 0 = fully shrunk (portal warp).
         public void SetWarp(float scale) { warp = scale; }
 
         public void PunchScale(Vector3 s) { punch = s; }
@@ -288,7 +285,7 @@ namespace Patchwork
                     spinDeg = 540f * k * k;
                 }
                 else
-                {   // Yarn ↔ Wind: unravelling / spinning up.
+                {   // Yarn / Wind: unravelling / spinning up.
                     tint = fromForm == FormType.Yarn ? new Color(1f, 0.85f, 0.9f) : FormLibrary.Get(FormType.Yarn).PrimaryColor;
                     scale = Vector3.one * (1f - 0.7f * k);
                     spinDeg = 900f * k * k;
@@ -317,7 +314,7 @@ namespace Patchwork
                     Sfx.Play(SfxId.Transform, 0.55f);
                 }
                 float k2 = Mathf.Clamp01((transT - Phase1) / Phase2);
-                // Back-out overshoot: 0 → 1.15 → 1
+                // Back-out overshoot: 0 -> 1.15 -> 1
                 float s = 1f + 2.2f * Mathf.Pow(k2 - 1f, 3f) + 1.2f * Mathf.Pow(k2 - 1f, 2f);
                 to.Root.localScale = Vector3.one * s;
                 to.Root.localRotation = toForm == FormType.Yarn ? Quaternion.Euler(0f, (1f - k2) * 360f, 0f) : Quaternion.identity;
@@ -603,7 +600,7 @@ namespace Patchwork
             hats[3] = daisy.gameObject;
         }
 
-        /// <summary>Visual-only primitive (collider removed, player layer).</summary>
+        // Visual-only primitive (collider removed, player layer).
         public static Transform Prim(PrimitiveType type, Transform parent, Vector3 localPos, Vector3 localScale, Material mat, Vector3 euler = default(Vector3))
         {
             var go = GameObject.CreatePrimitive(type);

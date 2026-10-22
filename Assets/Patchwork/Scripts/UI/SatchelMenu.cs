@@ -2,11 +2,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// "Patch's Satchel" — the character-held HUD. Shows the three forms and what each does,
-    /// golden buttons found, and the cosmetic hat (changed here, independent of form).
-    /// Transforming is NOT done here; the Form Wheel stays the fast path.
-    /// </summary>
+    // Patch's Satchel - shows the three forms, golden buttons found, and lets you swap hats.
+    // Changing form isn't done here, that's what the Form Wheel is for.
     public class SatchelMenu
     {
         readonly PatchworkGame game;

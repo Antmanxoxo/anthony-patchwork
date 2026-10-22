@@ -15,10 +15,8 @@ namespace Patchwork
         Navigate
     }
 
-    /// <summary>
-    /// Immediate-mode UI helpers. Everything is drawn in a virtual 1080p-tall space, so it scales to any
-    /// resolution. Panels are soft rounded "felt" cards with stitched borders.
-    /// </summary>
+    // Immediate-mode UI helpers. Everything is drawn in a virtual 1080p-tall space, so it scales to any
+    // resolution. Panels are soft rounded "felt" cards with stitched borders.
     public static class UIKit
     {
         public const float RefHeight = 1080f;
@@ -84,7 +82,7 @@ namespace Patchwork
             GUI.DrawTexture(r, tex, ScaleMode.ScaleToFit, true, 0f, tint, 0f, 0f);
         }
 
-        /// <summary>A felt card with a dashed running-stitch border.</summary>
+        // A felt card with a dashed running-stitch border.
         public static void Panel(Rect r, Color fill, Color stitch, float radius = 22f)
         {
             Fill(new Rect(r.x + 4f, r.y + 6f, r.width, r.height), new Color(0f, 0f, 0f, 0.18f * fill.a), radius);
@@ -110,7 +108,7 @@ namespace Patchwork
             }
         }
 
-        /// <summary>Draws text. With outline=true the text gets a dark outline so it reads on any background.</summary>
+        // Draws text. With outline=true the text gets a dark outline so it reads on any background.
         public static void Label(Rect r, string text, GUIStyle style, bool outline = false)
         {
             if (outline)
@@ -126,7 +124,7 @@ namespace Patchwork
             GUI.Label(r, text, style);
         }
 
-        /// <summary>Tiles a pattern texture across a rect (tileSize in virtual pixels), with a scrolling offset.</summary>
+        // Tiles a pattern texture across a rect (tileSize in virtual pixels), with a scrolling offset.
         public static void PatternFill(Rect r, Texture tex, Color tint, float tileSize, Vector2 offset)
         {
             if (tex == null) return;
@@ -137,7 +135,7 @@ namespace Patchwork
             GUI.color = prev;
         }
 
-        /// <summary>Draws an icon rotated (degrees) and scaled around its centre.</summary>
+        // Draws an icon rotated (degrees) and scaled around its centre.
         public static void IconTransformed(Rect r, Texture tex, Color tint, float angle, float scale)
         {
             if (tex == null) return;
@@ -163,7 +161,7 @@ namespace Patchwork
             return 1f - x * x * x;
         }
 
-        /// <summary>Dark rounded backing for white text.</summary>
+        // Dark rounded backing for white text.
         public static void Pill(Rect r, float alpha = 1f)
         {
             Fill(r, new Color(0.13f, 0.1f, 0.19f, 0.88f * alpha), Mathf.Min(r.height * 0.5f, 26f));
@@ -215,7 +213,7 @@ namespace Patchwork
             }
         }
 
-        /// <summary>Draws a PlayStation glyph or a key cap. Returns the width used.</summary>
+        // Draws a PlayStation glyph or a key cap. Returns the width used.
         public static float Prompt(float x, float y, float h, PromptAction action, bool keyboard, float alpha = 1f)
         {
             Color tint = new Color(1f, 1f, 1f, alpha);
@@ -244,7 +242,7 @@ namespace Patchwork
             return w;
         }
 
-        /// <summary>Prompt + label pair. Returns the total width.</summary>
+        // Prompt + label pair. Returns the total width.
         public static float PromptLabel(float x, float y, float h, PromptAction action, string label, bool keyboard, Color textColor, float alpha = 1f)
         {
             float w = Prompt(x, y, h, action, keyboard, alpha);

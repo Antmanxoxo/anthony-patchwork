@@ -2,10 +2,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// Generated UI art: themed card patterns (waves, knit, swirls) and the pause-menu icons.
-    /// Icons are white silhouettes so they can be tinted.
-    /// </summary>
+    // Generated UI art: themed card patterns (waves, knit, swirls) and the pause-menu icons.
+    // Icons are white silhouettes so they can be tinted.
     public static class UIArt
     {
         public static Texture2D PatternWaves { get; private set; }
@@ -49,7 +47,7 @@ namespace Patchwork
             return (pa - ba * h).magnitude;
         }
 
-        /// <summary>Tileable 64×64 white-on-transparent patterns.</summary>
+        // Tileable 64x64 white-on-transparent patterns.
         static Texture2D Pattern(int kind)
         {
             const int size = 64;
@@ -104,7 +102,7 @@ namespace Patchwork
             return t;
         }
 
-        /// <summary>128×128 white icons (y up).</summary>
+        // 128x128 white icons (y up).
         static Texture2D Icon(int kind)
         {
             const int size = 128;

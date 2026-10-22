@@ -2,10 +2,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// A blue fountain. Water Form is carried upward; other forms are told what would work.
-    /// The visible rings rise continuously so the route reads as "flowing up".
-    /// </summary>
+    // A blue fountain. Water Form is carried upward; other forms are told what would work.
+    // The visible rings rise continuously so the route reads as "flowing up".
     public class WaterCurrent : PlayerVolume
     {
         public float LiftSpeed = 9f;

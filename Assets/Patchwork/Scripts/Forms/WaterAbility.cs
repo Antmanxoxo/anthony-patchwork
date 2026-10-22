@@ -2,12 +2,9 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// Water Form: a smaller collision capsule plus permission to pass through WaterGrate colliders.
-    /// Fountains (WaterCurrent volumes) check for this form and lift the player.
-    /// Leaving the form is refused while inside a grate or a space too small for the other forms
-    /// (FormController checks room before switching).
-    /// </summary>
+    // Water: smaller body that can pass through drain grates.
+    // Fountains check for this form themselves. FormController won't let you change back
+    // while you're inside a grate or somewhere too small.
     public class WaterAbility : FormAbility
     {
         bool ignoring;
@@ -30,8 +27,8 @@ namespace Patchwork
 
         public override void PreMove(PlayerInputFrame input, float dt)
         {
-            // Cheap and robust: keep the ignore pairs applied every frame (covers teleports
-            // and grates that were created after the player transformed).
+            // Just re-apply the ignore every frame - cheap, and it covers teleports
+            // and grates made after you transformed.
             SetGrateCollision(true);
         }
 

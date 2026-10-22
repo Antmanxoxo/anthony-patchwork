@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>A blue drain grate. Solid for every form except Water.</summary>
+    // A blue drain grate. Solid for every form except Water.
     public class WaterGrate : MonoBehaviour
     {
         public static readonly List<WaterGrate> All = new List<WaterGrate>();

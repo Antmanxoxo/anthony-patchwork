@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>Decorative spin + bob (pinwheels, spools, floating buttons).</summary>
+    // Decorative spin + bob (pinwheels, spools, floating buttons).
     public class Spinner : MonoBehaviour
     {
         public Vector3 Axis = Vector3.up;

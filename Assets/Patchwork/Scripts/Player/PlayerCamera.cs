@@ -2,10 +2,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    /// <summary>
-    /// Third-person orbit camera. Right stick / mouse orbits; it gently follows the player and
-    /// pulls in when something is between it and the player.
-    /// </summary>
+    // Third-person orbit camera. Right stick / mouse orbits; it gently follows the player and
+    // pulls in when something is between it and the player.
     public class PlayerCamera : MonoBehaviour
     {
         public Transform Target;
@@ -79,7 +77,7 @@ namespace Patchwork
             transform.rotation = rot;
         }
 
-        /// <summary>Converts stick input into a world direction relative to the camera.</summary>
+        // Converts stick input into a world direction relative to the camera.
         public Vector3 ToWorld(Vector2 input)
         {
             Quaternion flat = Quaternion.Euler(0f, yaw, 0f);
