@@ -1,5 +1,9 @@
 # Development Log — Patchwork
 
+## 2026-10-22 — Prototype 2 verified
+- Confirmed the Water eyes fix in Unity; everything compiles and plays.
+- Merged `dev` into `main` and saved the **`prototype-2`** branch as a frozen restore point.
+
 ## 2026-10-22 — Water eyes fix
 - Bug: the water bubble's blink/jiggle code reset the eye pivot's height to ~0 every frame, so the eyes sank to the bottom of the bubble.
   Now the jiggle offsets from the eyes' rest position.

@@ -3,10 +3,9 @@
 _Last updated: 2026-10-22_
 
 ## Current milestone
-**Prototype 1 — verified ✅** (saved as the `prototype-1` branch on GitHub)
+**Prototype 2 — verified ✅** (saved as the `prototype-2` branch on GitHub; `prototype-1` is the earlier restore point)
 
-Compiled and played on the PC on 2026-10-22. This is the restore point before the
-owner's next round of changes.
+Compiled and played on the PC on 2026-10-22, including the Water eyes fix.
 
 ## Done
 - [x] Unity 6 URP project baseline in Git (`main`)
@@ -25,7 +24,7 @@ owner's next round of changes.
 - [x] Level 1 with Water / Yarn / Wind challenges and 3 optional golden buttons
 - [x] Docs: README, DEV_NOTES.md, PROJECT_STATUS, DEVELOPMENT_LOG
 
-## In progress — Prototype 2 (on `dev`, awaiting play test)
+## Prototype 2 additions
 - [x] PS5 prompts fixed (mouse drift no longer flips to keyboard) + Pause option: Button Prompts Auto / PlayStation / Keyboard
 - [x] Softer sounds: gust whoosh, bubbling loop while Water rises, airy glide loop, gentler chimes
 - [x] Chill background music (procedural lo-fi loop) + Pause option: Music On/Off
@@ -34,9 +33,10 @@ owner's next round of changes.
 - [x] Readable menus (dark backings + outlined white text)
 - [x] Hub and Level 1 enclosed in quilted rooms (walls, ceiling, bunting, lamps)
 - [x] New embroidery-hoop portal with spinning rings, sparkles, light, and a warp-in animation
+- [x] Water bubble eyes fixed (sit on the surface, stay at face height while jiggling)
 
 ## Next
-1. Play-test Prototype 2 and tune
+1. Owner's next round of changes
 2. Tune feel (swing strength, glide distance, camera) from play feedback
 3. Polish: nicer form models/animations, real sound effects, UI Toolkit menus
 4. Rebinding UI for the Form Wheel button (code hook exists: `PatchworkInput.SetFormWheelBinding`)
