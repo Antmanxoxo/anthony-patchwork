@@ -3,12 +3,12 @@
 _Last updated: 2026-10-22_
 
 ## Current milestone
-**M1: Form system + all three forms + Hub + Level 1 (code complete, awaiting first Play test)**
+**Prototype 1 — verified ✅** (Git tag `prototype-1` on `main`)
 
-Written but **not yet verified in Unity**. This milestone becomes
-"verified" only after it compiles with no Console errors and has been played on the PC.
+Compiled and played on the PC on 2026-10-22. This is the restore point before the
+owner's next round of changes.
 
-## Done (pending verification)
+## Done
 - [x] Unity 6 URP project baseline in Git (`main`)
 - [x] Controller-first input (PS layout) + keyboard fallback, no conflicting actions
 - [x] Shared movement motor (coyote time, jump buffer, variable jump), orbit camera
@@ -26,12 +26,11 @@ Written but **not yet verified in Unity**. This milestone becomes
 - [x] Docs: README, DEV_NOTES.md, PROJECT_STATUS, DEVELOPMENT_LOG
 
 ## Next
-1. First Play test on the PC → fix any Console errors → push a verified checkpoint
+1. Owner's requested changes (Prototype 2)
 2. Tune feel (swing strength, glide distance, camera) from play feedback
 3. Polish: nicer form models/animations, real sound effects, UI Toolkit menus
 4. Rebinding UI for the Form Wheel button (code hook exists: `PatchworkInput.SetFormWheelBinding`)
 
 ## Known limits / risks
-- Not compiled yet (written without access to Unity). Expect a first round of small fixes.
 - Everything is built from code, so level edits happen in `Level1Builder.cs`/`HubBuilder.cs`, not the Scene view.
 - Windows builds are untested; play in the Editor for now.
