@@ -1,6 +1,11 @@
 # Development Log — Patchwork
 
-## 2026-10-22 — Prototype 2 changes (unverified)
+## 2026-10-22 — Water eyes fix
+- Bug: the water bubble's blink/jiggle code reset the eye pivot's height to ~0 every frame, so the eyes sank to the bottom of the bubble.
+  Now the jiggle offsets from the eyes' rest position.
+- Eyes rebuilt as cartoon eyes (white eyeball, dark pupil, sparkle) placed on the bubble's outer surface and angled to follow its curve, so they look crisp instead of cloudy through the see-through shell. Smile moved onto the surface too.
+
+## 2026-10-22 — Prototype 2 changes (verified: compiles and runs)
 Feedback after Prototype 1, all addressed on `dev`:
 - **PS5 prompts missing:** device detection treated tiny mouse movements (e.g. the cursor unlocking) as keyboard use. Now only deliberate input switches, and the Pause menu can force PlayStation prompts.
 - **Screechy audio:** rewrote `Sfx` with sines and low-passed noise only; new gust whoosh, bubbling loop for rising in fountains, airy glide loop (`Sfx.RequestLoop`).

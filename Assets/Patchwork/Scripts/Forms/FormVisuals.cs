@@ -35,6 +35,7 @@ namespace Patchwork
         Transform yarnTorso, yarnHead, hipL, hipR, shoulderL, shoulderR, armR, handR;
         // Water rig
         Transform bubble, bubbleEyes;
+        Vector3 bubbleEyesBase;
         readonly Transform[] miniBubbles = new Transform[2];
         // Wind rig
         Transform cloud;
@@ -225,7 +226,7 @@ namespace Patchwork
             float w2 = Mathf.Sin(time * 9f + 1.3f) * jiggle * 0.6f;
             float stretch = Mathf.Clamp(motor.Velocity.y * 0.015f, -0.12f, 0.15f);
             bubble.localScale = new Vector3(1f + w - stretch * 0.5f, 1f - w + stretch, 1f + w2 - stretch * 0.5f);
-            bubbleEyes.localPosition = new Vector3(0f, w * 0.06f, 0f);
+            bubbleEyes.localPosition = bubbleEyesBase + new Vector3(0f, w * 0.06f, 0f);
             // Blink every few seconds.
             float blink = Mathf.Repeat(time, 3.7f) < 0.12f ? 0.15f : 1f;
             bubbleEyes.localScale = new Vector3(1f, blink, 1f);
@@ -471,15 +472,36 @@ namespace Patchwork
             Part(PrimitiveType.Sphere, bubble, new Vector3(-0.18f, 0.6f, 0.24f), new Vector3(0.14f, 0.09f, 0.05f), shine, new Vector3(0f, 0f, 30f));
             Part(PrimitiveType.Sphere, bubble, new Vector3(-0.26f, 0.5f, 0.22f), Vector3.one * 0.04f, shine);
 
-            // Big friendly eyes (they blink).
-            bubbleEyes = Pivot("Eyes", bubble, new Vector3(0f, 0.44f, 0f));
-            var black = PatchworkAssets.Plain(new Color(0.06f, 0.08f, 0.15f), 0.8f);
+            // Big friendly cartoon eyes sitting ON the bubble's surface (not inside it), so they stay
+            // crisp instead of looking cloudy through the see-through shell. They blink.
+            Vector3 bubbleCenter = new Vector3(0f, 0.4f, 0f);
+            const float bubbleRadius = 0.4f;
+            const float eyeHeight = 0.07f;   // above the bubble centre
+            bubbleEyes = Pivot("Eyes", bubble, bubbleCenter + Vector3.up * eyeHeight);
+            bubbleEyesBase = bubbleEyes.localPosition;
+            var white = PatchworkAssets.Plain(new Color(0.98f, 0.98f, 1f), 0.85f);
+            var black = PatchworkAssets.Plain(new Color(0.05f, 0.07f, 0.14f), 0.85f);
             for (int side = -1; side <= 1; side += 2)
             {
-                Part(PrimitiveType.Sphere, bubbleEyes, new Vector3(side * 0.12f, 0f, 0.33f), new Vector3(0.12f, 0.17f, 0.06f), black);
-                Part(PrimitiveType.Sphere, bubbleEyes, new Vector3(side * 0.12f + 0.03f, 0.04f, 0.36f), Vector3.one * 0.04f, shine);
+                // Direction from the bubble centre to where this eye sits on the surface.
+                Vector3 n = new Vector3(side * 0.36f, eyeHeight / bubbleRadius, 1f).normalized;
+                Vector3 onSurface = n * (bubbleRadius - 0.02f);
+                Vector3 local = onSurface - Vector3.up * eyeHeight;   // relative to the Eyes pivot
+                Vector3 euler = Quaternion.LookRotation(n, Vector3.up).eulerAngles;
+                // Eyeball, pupil (nudged slightly inward for a cute look), sparkle.
+                Part(PrimitiveType.Sphere, bubbleEyes, local, new Vector3(0.17f, 0.22f, 0.08f), white, euler);
+                Vector3 inward = new Vector3(-side * 0.012f, -0.01f, 0f);
+                Part(PrimitiveType.Sphere, bubbleEyes, local + n * 0.025f + inward, new Vector3(0.11f, 0.15f, 0.06f), black, euler);
+                Part(PrimitiveType.Sphere, bubbleEyes, local + n * 0.05f + new Vector3(0.025f, 0.035f, 0f), new Vector3(0.04f, 0.04f, 0.02f), shine, euler);
             }
-            AddSmile(bubble, new Vector3(0f, 0.31f, 0.36f), 0.06f, black, 0.025f);
+
+            // Little smile on the surface, just below the eyes.
+            for (int i = 0; i < 5; i++)
+            {
+                float t = (i / 4f) * 2f - 1f;
+                Vector3 n = new Vector3(t * 0.13f, -0.2f - (1f - t * t) * 0.07f, 1f).normalized;
+                Part(PrimitiveType.Sphere, bubble, bubbleCenter + n * (bubbleRadius - 0.005f), Vector3.one * 0.03f, black);
+            }
 
             var tiny = PatchworkAssets.Bubble(new Color(0.8f, 0.92f, 1f, 0.5f));
             for (int i = 0; i < miniBubbles.Length; i++)
