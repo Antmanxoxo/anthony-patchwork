@@ -1,8 +1,10 @@
 # Development Log
 
 ## Build prep
-- Added three small materials in Resources so the build keeps the shader versions for the bumpy
+- Added small materials in Resources so the build keeps the shader versions for the bumpy
   textures, glow and the see-through bubble (Unity strips unused ones from builds).
+- Gave those materials a real normal texture and the emissive flag, since URP was quietly
+  turning their bumpy and glow settings off on import.
 - Fixed "Practise" -> "Practice" in the hub title.
 
 ## Cleanup
