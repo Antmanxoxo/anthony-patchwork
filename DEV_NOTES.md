@@ -48,5 +48,6 @@ Change movement numbers → re-check gap sizes in `Level1Builder`.
   have existed since Unity 2021).
 - Keep `.meta` files committed; never regenerate GUIDs for existing files
   (`LevelBootstrap.cs.meta` GUID is referenced by both scenes).
+- After copying files to the PC, stage them back and verify the content arrived (a copy once reported success but delivered an outdated file).
 - Commit at each milestone; push to `origin/main` only after it compiles and plays.
 - Update `PROJECT_STATUS.md` and `DEVELOPMENT_LOG.md` with every milestone.
