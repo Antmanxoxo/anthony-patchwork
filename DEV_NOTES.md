@@ -26,7 +26,7 @@ Changes are tested by opening Unity, pressing Play, and checking the Console and
 | Core | `PatchworkGame`, `LevelBootstrap`, `GameState`, `PatchworkAssets`, `Sfx` | Boot, frame order, UI modes, checkpoints, scene loads, save data, generated assets |
 | Input | `PatchworkInput` | All bindings (PS controller + keyboard) |
 | Player | `PatchworkPlayer`, `PlayerMotor`, `PlayerCamera` | One shared CharacterController motor for every form; orbit camera |
-| Forms | `FormDefinition`/`FormLibrary`, `FormController`, `FormAbility` + `WaterAbility`/`YarnAbility`/`WindAbility`, `FormVisuals`, `TransformBurst` | Form state, safe transforms, abilities, appearance, cosmetics |
+| Forms | `FormDefinition`/`FormLibrary`, `FormController`, `FormAbility` + `WaterAbility`/`YarnAbility`/`WindAbility`, `FormVisuals`, `FxBurst` | Form state, safe transforms, abilities, appearance, cosmetics |
 | World | `LevelKit`, `HubBuilder`, `Level1Builder`, `PlayerVolume` + volumes, `YarnAnchor`, `WaterGrate` | Level construction and interactive pieces |
 | UI | `UIKit`, `PatchworkHUD`, `FormSelector`, `SatchelMenu`, `PauseMenu` | HUD, radial Form Wheel, character-held Satchel, pause |
 
@@ -48,7 +48,6 @@ Change movement numbers → re-check gap sizes in `Level1Builder`.
   have existed since Unity 2021).
 - Keep `.meta` files committed; never regenerate GUIDs for existing files
   (`LevelBootstrap.cs.meta` GUID is referenced by both scenes).
-- Copying files to the PC: put files in a NEW folder under `/mnt/user-data/outputs/` each time (e.g. `sync-<timestamp>/`). Re-using the same staged path can deliver a stale cached copy even though the copy reports success. Afterwards, stage the files back and diff them to verify.
 - Commits are authored as Antmanxoxo, with no extra credit or trailer lines in the message.
 - Commit at each milestone; push to `origin/main` only after it compiles and plays.
 - Update `PROJECT_STATUS.md` and `DEVELOPMENT_LOG.md` with every milestone.

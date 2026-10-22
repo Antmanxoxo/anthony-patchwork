@@ -15,23 +15,17 @@ namespace Patchwork
         static Material litTemplate;
         static readonly Dictionary<string, Material> cache = new Dictionary<string, Material>();
 
-        public static Texture2D FabricTex { get; private set; }
-        public static Texture2D YarnTex { get; private set; }
         public static Texture2D WaterTex { get; private set; }
-        public static Texture2D WindTex { get; private set; }
-        public static Texture2D FeltTex { get; private set; }
 
         // UI
         public static Texture2D GlyphCross { get; private set; }
         public static Texture2D GlyphCircle { get; private set; }
         public static Texture2D GlyphSquare { get; private set; }
-        public static Texture2D GlyphTriangle { get; private set; }
         public static Texture2D IconWater { get; private set; }
         public static Texture2D IconYarn { get; private set; }
         public static Texture2D IconWind { get; private set; }
         public static Texture2D IconButton { get; private set; }
         public static Texture2D IconLock { get; private set; }
-        public static Texture2D SoftCircle { get; private set; }
 
         static bool initialised;
 
@@ -50,22 +44,16 @@ namespace Patchwork
 
             PatchworkTextures.EnsureBuilt();
             UIArt.EnsureBuilt();
-            FabricTex = MakeFabric(128);
-            FeltTex = MakeFelt(64);
-            YarnTex = MakeYarn(128);
             WaterTex = MakeWater(64);
-            WindTex = MakeWind(64);
 
             GlyphCross = MakeGlyph(0, new Color(0.49f, 0.70f, 0.91f));
             GlyphCircle = MakeGlyph(1, new Color(1f, 0.42f, 0.45f));
             GlyphSquare = MakeGlyph(2, new Color(0.90f, 0.62f, 0.90f));
-            GlyphTriangle = MakeGlyph(3, new Color(0.25f, 0.89f, 0.65f));
             IconWater = MakeIcon(0);
             IconYarn = MakeIcon(1);
             IconWind = MakeIcon(2);
             IconButton = MakeIcon(3);
             IconLock = MakeIcon(4);
-            SoftCircle = MakeIcon(5);
         }
 
         public static Texture2D IconFor(FormType form)
@@ -136,11 +124,6 @@ namespace Patchwork
             return Get("water", color, WaterTex, 0.92f, color * 0.25f);
         }
 
-        public static Material Wind(Color color)
-        {
-            return Get("wind", color, WindTex, 0.3f, color * 0.2f);
-        }
-
         /// <summary>See-through, glossy material (URP Lit set to Transparent) for the water bubble.</summary>
         public static Material Bubble(Color color)
         {
@@ -175,7 +158,8 @@ namespace Patchwork
 
         public static Material Glow(Color color, float intensity)
         {
-            return Get("glow" + intensity.ToString("0.0"), color, FeltTex, 0.2f, color * intensity);
+            EnsureInit();
+            return Get("glow" + intensity.ToString("0.0"), color, PatchworkTextures.Felt.Albedo, 0.2f, color * intensity);
         }
 
         public static Material Plain(Color color, float smoothness)
@@ -235,90 +219,6 @@ namespace Patchwork
             return t;
         }
 
-        static float Hash(int x, int y)
-        {
-            unchecked
-            {
-                int h = x * 374761393 + y * 668265263;
-                h = (h ^ (h >> 13)) * 1274126177;
-                return ((h ^ (h >> 16)) & 0xFFFF) / 65535f;
-            }
-        }
-
-        /// <summary>Woven fabric with a dashed running stitch around the border (a quilt patch).</summary>
-        static Texture2D MakeFabric(int size)
-        {
-            var t = NewTex(size, true);
-            var px = new Color[size * size];
-            for (int y = 0; y < size; y++)
-            {
-                for (int x = 0; x < size; x++)
-                {
-                    float weaveX = Mathf.Sin(x * Mathf.PI * 0.5f) * 0.5f + 0.5f;
-                    float weaveY = Mathf.Sin(y * Mathf.PI * 0.5f) * 0.5f + 0.5f;
-                    bool over = ((x / 2) + (y / 2)) % 2 == 0;
-                    float weave = over ? weaveX : weaveY;
-                    float v = 0.84f + weave * 0.08f + (Hash(x, y) - 0.5f) * 0.07f;
-
-                    // Seam shadow at the very edge
-                    int edge = Mathf.Min(Mathf.Min(x, y), Mathf.Min(size - 1 - x, size - 1 - y));
-                    if (edge < 2) v *= 0.78f;
-
-                    Color c = new Color(v, v, v, 1f);
-
-                    // Running stitch: dashes 7px long, 5px gap, 8px in from the edge
-                    int inset = 8;
-                    bool onH = (y >= inset - 1 && y <= inset) || (y >= size - 1 - inset && y <= size - inset);
-                    bool onV = (x >= inset - 1 && x <= inset) || (x >= size - 1 - inset && x <= size - inset);
-                    bool inSpanX = x >= inset && x <= size - 1 - inset;
-                    bool inSpanY = y >= inset && y <= size - 1 - inset;
-                    if ((onH && inSpanX && (x % 12) < 7) || (onV && inSpanY && (y % 12) < 7))
-                        c = new Color(1f, 0.97f, 0.9f, 1f);
-
-                    px[y * size + x] = c;
-                }
-            }
-            t.SetPixels(px);
-            t.Apply(true);
-            return t;
-        }
-
-        static Texture2D MakeFelt(int size)
-        {
-            var t = NewTex(size, true);
-            var px = new Color[size * size];
-            for (int y = 0; y < size; y++)
-                for (int x = 0; x < size; x++)
-                {
-                    float v = 0.9f + (Hash(x * 3, y * 7) - 0.5f) * 0.12f;
-                    px[y * size + x] = new Color(v, v, v, 1f);
-                }
-            t.SetPixels(px);
-            t.Apply(true);
-            return t;
-        }
-
-        /// <summary>Wrapped strands for a ball of yarn (sphere UVs).</summary>
-        static Texture2D MakeYarn(int size)
-        {
-            var t = NewTex(size, true);
-            var px = new Color[size * size];
-            for (int y = 0; y < size; y++)
-                for (int x = 0; x < size; x++)
-                {
-                    float u = x / (float)size, w = y / (float)size;
-                    float a = Mathf.Sin((w * 22f + Mathf.Sin(u * Mathf.PI * 4f) * 1.6f) * Mathf.PI * 2f);
-                    float b = Mathf.Sin(((u + w) * 18f) * Mathf.PI * 2f);
-                    float strand = Mathf.Max(a, b * 0.7f);
-                    float v = 0.72f + 0.28f * Mathf.SmoothStep(-0.2f, 1f, strand);
-                    v += (Hash(x, y) - 0.5f) * 0.05f;
-                    px[y * size + x] = new Color(v, v, v, 1f);
-                }
-            t.SetPixels(px);
-            t.Apply(true);
-            return t;
-        }
-
         static Texture2D MakeWater(int size)
         {
             var t = NewTex(size, true);
@@ -329,22 +229,6 @@ namespace Patchwork
                     float n = Mathf.PerlinNoise(x * 0.09f, y * 0.09f);
                     float v = 0.82f + n * 0.18f;
                     px[y * size + x] = new Color(v, v, 1f, 1f);
-                }
-            t.SetPixels(px);
-            t.Apply(true);
-            return t;
-        }
-
-        static Texture2D MakeWind(int size)
-        {
-            var t = NewTex(size, true);
-            var px = new Color[size * size];
-            for (int y = 0; y < size; y++)
-                for (int x = 0; x < size; x++)
-                {
-                    float s = Mathf.Sin((y / (float)size * 6f + Mathf.Sin(x / (float)size * Mathf.PI * 2f) * 0.5f) * Mathf.PI * 2f);
-                    float v = 0.88f + Mathf.Max(0f, s) * 0.12f;
-                    px[y * size + x] = new Color(v, v, v, 1f);
                 }
             t.SetPixels(px);
             t.Apply(true);
@@ -376,7 +260,7 @@ namespace Patchwork
             return c;
         }
 
-        /// <summary>PlayStation face-button glyphs: 0 cross, 1 circle, 2 square, 3 triangle.</summary>
+        /// <summary>PlayStation face-button glyphs: 0 cross, 1 circle, 2 square.</summary>
         static Texture2D MakeGlyph(int kind, Color symbol)
         {
             const int size = 64;
@@ -405,12 +289,8 @@ namespace Patchwork
                         case 1:
                             d = Mathf.Abs(r - 12f) - 3f;
                             break;
-                        case 2:
-                            d = Mathf.Abs(Mathf.Max(Mathf.Abs(p.x), Mathf.Abs(p.y)) - 11f) - 2.8f;
-                            break;
                         default:
-                            Vector2 a = new Vector2(0, 13), b = new Vector2(-12.5f, -9), cc = new Vector2(12.5f, -9);
-                            d = Mathf.Min(SegDist(p, a, b), Mathf.Min(SegDist(p, b, cc), SegDist(p, cc, a))) - 2.8f;
+                            d = Mathf.Abs(Mathf.Max(Mathf.Abs(p.x), Mathf.Abs(p.y)) - 11f) - 2.8f;
                             break;
                     }
                     c = Over(c, symbol, Smooth(d, aa));
@@ -421,7 +301,7 @@ namespace Patchwork
             return t;
         }
 
-        /// <summary>0 water drop, 1 yarn ball, 2 wind swirl, 3 sewing button, 4 lock, 5 soft circle.</summary>
+        /// <summary>0 water drop, 1 yarn ball, 2 wind swirl, 3 sewing button, 4 lock.</summary>
         static Texture2D MakeIcon(int kind)
         {
             const int size = 128;
@@ -504,7 +384,7 @@ namespace Patchwork
                             }
                             break;
                         }
-                        case 4: // lock
+                        default: // lock
                         {
                             float body = Mathf.Max(Mathf.Abs(p.x) - 0.5f, Mathf.Abs(p.y + 0.25f) - 0.38f);
                             float shackle = Mathf.Abs((p - new Vector2(0f, 0.15f)).magnitude - 0.32f) - 0.08f;
@@ -513,12 +393,7 @@ namespace Patchwork
                             c = Over(c, new Color(0.85f, 0.85f, 0.9f, 1f), Smooth(d / px1, aa));
                             break;
                         }
-                        default: // soft circle
-                        {
-                            float r = p.magnitude;
-                            c = new Color(1f, 1f, 1f, Mathf.Clamp01(1f - r) * Mathf.Clamp01(1f - r));
-                            break;
-                        }
+
                     }
                     px[y * size + x] = c;
                 }

@@ -380,7 +380,7 @@ namespace Patchwork
             Player.Respawn(respawnPoint, respawnYaw);
             CameraRig.SnapBehind(respawnYaw);
             Sfx.Play(SfxId.Respawn, 0.5f);
-            TransformBurst.Spawn(respawnPoint + Vector3.up, new Color(1f, 1f, 1f), FormLibrary.Get(Player.Forms.Current).PrimaryColor, 12, 0.7f);
+            FxBurst.Spawn(FxBurst.Kind.Scraps, respawnPoint + Vector3.up, FormLibrary.Get(Player.Forms.Current).PrimaryColor);
             if (fell) ShowToast("Oops! Back to the last checkpoint.");
         }
 
@@ -391,7 +391,8 @@ namespace Patchwork
             SetMode(UIMode.Complete, 1f);
             Player.Forms.CancelAll();
             Sfx.Play(SfxId.Complete, 0.8f);
-            TransformBurst.Spawn(Player.Motor.Center + Vector3.up, new Color(1f, 0.8f, 0.25f), Color.white, 30, 1.4f);
+            FxBurst.Spawn(FxBurst.Kind.Scraps, Player.Motor.Center + Vector3.up, new Color(1f, 0.8f, 0.25f));
+            FxBurst.Spawn(FxBurst.Kind.Sparkle, Player.Motor.Center + Vector3.up, Color.white);
         }
 
         /// <summary>Starts the portal warp: Patch is pulled into the vortex, spins, shrinks, then the scene loads.</summary>

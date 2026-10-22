@@ -24,7 +24,7 @@ optional golden buttons to find.
 | Camera | Right stick | Mouse |
 | Jump (hold in air as Wind to glide) | ✕ Cross | Space |
 | Ability (Yarn swing / Wind gust) | ▢ Square | E or Left click |
-| Form Wheel | L1 | Q |
+| Form Wheel | L1 (or R1, set in Pause) | Q |
 | Confirm / Cancel in menus | ✕ / ◯ | Enter or Space / Esc or Backspace |
 | Satchel (forms, buttons, hats) | Touchpad (or Create) | Tab |
 | Pause | Options | Esc |

@@ -42,7 +42,6 @@ namespace Patchwork
         bool allowJumpCut;
         float airTime;
 
-        public float AirTime { get { return airTime; } }
 
         /// <summary>The collider Patch is standing on (for moving platforms). Null when airborne.</summary>
         public Collider GroundCollider { get; private set; }
@@ -96,11 +95,6 @@ namespace Patchwork
         public void MarkLaunched()
         {
             allowJumpCut = false;
-            coyoteTimer = 0f;
-        }
-
-        public void ConsumeCoyote()
-        {
             coyoteTimer = 0f;
         }
 

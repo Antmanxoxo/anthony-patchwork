@@ -43,11 +43,6 @@ namespace Patchwork
             }
         }
 
-        public static void ResetAllInsideFlags()
-        {
-            for (int i = 0; i < All.Count; i++) if (All[i] != null) All[i].inside = false;
-        }
-
         protected virtual void OnPlayerEnter(PatchworkPlayer player) { }
         protected virtual void OnPlayerStay(PatchworkPlayer player, float dt) { }
         protected virtual void OnPlayerExit(PatchworkPlayer player) { }

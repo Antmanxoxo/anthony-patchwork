@@ -75,13 +75,5 @@ namespace Patchwork
         {
             PlayerPrefs.Save();
         }
-
-        /// <summary>Clears collectibles/completion but keeps cosmetics.</summary>
-        public static void ResetProgress(string[] collectibleIds, string[] levelIds)
-        {
-            foreach (var id in collectibleIds) PlayerPrefs.DeleteKey(KeyCollectPrefix + id);
-            foreach (var id in levelIds) PlayerPrefs.DeleteKey(KeyCompletePrefix + id);
-            PlayerPrefs.Save();
-        }
     }
 }

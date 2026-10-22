@@ -206,7 +206,7 @@ namespace Patchwork
         {
             string text;
             if (kb) text = a == PromptAction.FormWheel ? "Q" : a == PromptAction.Satchel ? "Tab" : "Esc";
-            else text = a == PromptAction.FormWheel ? "L1" : a == PromptAction.Satchel ? "TOUCHPAD" : "OPTIONS";
+            else text = a == PromptAction.FormWheel ? PatchworkInput.FormWheelPadLabel : a == PromptAction.Satchel ? "TOUCHPAD" : "OPTIONS";
             var s = UIKit.Style(Mathf.RoundToInt(h * 0.42f), true, TextAnchor.MiddleCenter, Color.white);
             return Mathf.Max(h, UIKit.TextWidth(text, s) + h * 0.55f);
         }

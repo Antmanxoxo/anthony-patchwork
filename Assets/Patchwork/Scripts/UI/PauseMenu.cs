@@ -11,7 +11,7 @@ namespace Patchwork
     /// </summary>
     public class PauseMenu
     {
-        enum Item { Resume, Restart, ReturnToHub, Prompts, Music, Quit }
+        enum Item { Resume, Restart, ReturnToHub, Prompts, WheelButton, Music, Quit }
 
         readonly PatchworkGame game;
         readonly List<Item> items = new List<Item>();
@@ -34,6 +34,7 @@ namespace Patchwork
             items.Add(Item.Restart);
             if (!game.Level.IsHub) items.Add(Item.ReturnToHub);
             items.Add(Item.Prompts);
+            items.Add(Item.WheelButton);
             items.Add(Item.Music);
             items.Add(Item.Quit);
             index = 0;
@@ -58,6 +59,7 @@ namespace Patchwork
                     string m = mode == PatchworkInput.PromptMode.Auto ? "Auto" : mode == PatchworkInput.PromptMode.PlayStation ? "PlayStation" : "Keyboard";
                     return "Button Prompts:  " + m;
                 }
+                case Item.WheelButton: return "Form Wheel Button:  " + (game.Input.FormWheelOnR1 ? "R1" : "L1");
                 case Item.Music: return "Music:  " + (MusicPlayer.Enabled ? "On" : "Off");
                 default: return "Quit";
             }
@@ -70,7 +72,8 @@ namespace Patchwork
                 case Item.Resume: return UIArt.IconPlay;
                 case Item.Restart: return UIArt.IconRestart;
                 case Item.ReturnToHub: return UIArt.IconHome;
-                case Item.Prompts: return UIArt.IconPad;
+                case Item.Prompts:
+                case Item.WheelButton: return UIArt.IconPad;
                 case Item.Music: return UIArt.IconNote;
                 default: return UIArt.IconDoor;
             }
@@ -84,6 +87,7 @@ namespace Patchwork
                 case Item.Restart: return new Color(0.95f, 0.6f, 0.3f);
                 case Item.ReturnToHub: return new Color(0.85f, 0.4f, 0.55f);
                 case Item.Prompts: return new Color(0.4f, 0.55f, 0.9f);
+                case Item.WheelButton: return new Color(0.3f, 0.65f, 0.75f);
                 case Item.Music: return new Color(0.65f, 0.45f, 0.85f);
                 default: return new Color(0.6f, 0.5f, 0.45f);
             }
@@ -137,6 +141,9 @@ namespace Patchwork
                         break;
                     case Item.Prompts:
                         input.Prompts = (PatchworkInput.PromptMode)(((int)input.Prompts + 1) % 3);
+                        break;
+                    case Item.WheelButton:
+                        input.FormWheelOnR1 = !input.FormWheelOnR1;
                         break;
                     case Item.Music:
                         MusicPlayer.Enabled = !MusicPlayer.Enabled;
@@ -242,6 +249,7 @@ namespace Patchwork
                     scale = 1f + Mathf.Max(0f, -Mathf.Sin(s * 6f)) * 0.06f;
                     break;
                 case Item.Prompts:      // wiggle like it's being played
+                case Item.WheelButton:
                     angle = Mathf.Sin(s * 18f) * 12f * Mathf.Clamp01(1.2f - Mathf.Repeat(s, 1.5f));
                     break;
                 case Item.Music:        // dance

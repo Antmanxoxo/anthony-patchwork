@@ -40,7 +40,7 @@ namespace Patchwork
             bool isNew = !GameState.IsCollected(Id);
             GameState.SetCollected(Id);
             Sfx.Play(SfxId.Collect, 0.8f);
-            TransformBurst.Spawn(transform.position, new Color(1f, 0.82f, 0.25f), Color.white, 14, 0.8f);
+            FxBurst.Spawn(FxBurst.Kind.Scraps, transform.position, new Color(1f, 0.82f, 0.25f));
             player.Game.ShowToast(isNew ? "Golden button found!" : "Button already in your satchel.");
             gameObject.SetActive(false);
         }

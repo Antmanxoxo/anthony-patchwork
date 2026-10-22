@@ -442,7 +442,7 @@ namespace Patchwork
             for (int i = 0; i < colors.Length; i++)
             {
                 var mat = PatchworkAssets.Unique(PatchworkAssets.Glow(colors[i], 0.9f + i * 0.3f));
-                mat.SetTexture("_BaseMap", PatchworkAssets.YarnTex);
+                mat.SetTexture("_BaseMap", PatchworkTextures.Wrap.Albedo);
                 rings[i] = Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, 0.05f - i * 0.05f), new Vector3(sizes[i], 0.02f, sizes[i]), mat, new Vector3(90f, 0f, 0f), g);
                 rings[i].GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }

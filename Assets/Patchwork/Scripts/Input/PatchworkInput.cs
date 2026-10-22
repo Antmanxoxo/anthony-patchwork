@@ -99,6 +99,8 @@ namespace Patchwork
 
             map.Enable();
             detectedKeyboard = Gamepad.current == null;
+            if (FormWheelOnR1) FormWheelOnR1 = true; // apply the saved choice
+            else FormWheelPadLabel = "L1";
         }
 
         InputAction Button(string name, params string[] paths)
@@ -106,6 +108,24 @@ namespace Patchwork
             var action = map.AddAction(name, InputActionType.Button);
             foreach (var p in paths) action.AddBinding(p);
             return action;
+        }
+
+        const string WheelOnR1Key = "pw_wheel_r1";
+
+        /// <summary>Button label shown in prompts for the Form Wheel ("L1" or "R1").</summary>
+        public static string FormWheelPadLabel = "L1";
+
+        /// <summary>True when the Form Wheel is on R1 instead of L1 (saved).</summary>
+        public bool FormWheelOnR1
+        {
+            get { return PlayerPrefs.GetInt(WheelOnR1Key, 0) == 1; }
+            set
+            {
+                PlayerPrefs.SetInt(WheelOnR1Key, value ? 1 : 0);
+                PlayerPrefs.Save();
+                SetFormWheelBinding(value ? "<Gamepad>/rightShoulder" : DefaultFormWheelGamepadPath);
+                FormWheelPadLabel = value ? "R1" : "L1";
+            }
         }
 
         /// <summary>Rebind the gamepad button that opens the form wheel (e.g. "&lt;Gamepad&gt;/rightShoulder").</summary>

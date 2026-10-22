@@ -1,5 +1,9 @@
 # Development Log — Patchwork
 
+## 2026-10-22 — Cleanup
+- Removed unused code: old flat texture makers (fabric, felt, yarn, wind), the unused Wind material, the triangle glyph and soft-circle icon, `TransformBurst` (callers now use `FxBurst` directly), and small unused helpers (`ResetAllInsideFlags`, `AirTime`, `ConsumeCoyote`, `ResetProgress`).
+- The Form Wheel button can now be switched between L1 and R1 from the Pause menu (saved); button prompts follow the choice.
+
 ## 2026-10-22 — Prototype 3 verified
 - Plays well. Merged `dev` into `main` and saved the **`prototype-3`** branch as a restore point.
 - Renamed the notes file to `DEV_NOTES.md`.

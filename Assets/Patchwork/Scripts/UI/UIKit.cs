@@ -207,7 +207,7 @@ namespace Patchwork
         {
             switch (a)
             {
-                case PromptAction.FormWheel: return "L1";
+                case PromptAction.FormWheel: return PatchworkInput.FormWheelPadLabel;
                 case PromptAction.Satchel: return "TOUCHPAD";
                 case PromptAction.Pause: return "OPTIONS";
                 case PromptAction.Navigate: return "D-PAD";
