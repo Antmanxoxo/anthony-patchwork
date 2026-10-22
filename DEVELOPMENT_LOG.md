@@ -1,5 +1,12 @@
 # Development Log — Patchwork
 
+## 2026-10-22 — Prototype 3 changes (unverified)
+- **Auto-hiding pop-ups:** `PatchworkHUD` slides the form panel out after 4.5 s (kept up while swinging, gliding, gust recharging, transform pending). Tutorial cards (`HintZone`) now last 7 s, slide in/out, and slide away early when you leave.
+- **Themed cards:** `HintTheme` (Neutral/Water/Yarn/Wind) picks colours, a tiled pattern (`UIArt`: waves / knit / swirls / dots), animated decorations (rising bubbles, swinging yarn strand, drifting clouds) and a sound (`HintWater` bloops, `HintYarn` Karplus-Strong yarn pluck, `HintWind` breeze + chimes).
+- **Pause menu:** drop-in with overshoot, staggered option slide-in, animated highlight with marching stitches, generated icons with per-option animations (pulse, spin, hop, wiggle, dance, sway).
+- **Textures:** `PatchworkTextures` builds albedo + normal maps from height functions; materials gain `_BumpMap`. New material helpers: `Knit`, `Wicker`, `Grass`, `Wood`.
+- **Level 1:** rebuilt as the Sewing Basket Garden with a Button Bridge section (two `MovingPlatform`s; player carried via `PlayerMotor.GroundCollider`), `BouncePad` pin-cushions (`PlayerMotor.Bounce`), and `ThreadSpool` collectibles (per-visit count). Core Water/Yarn/Wind challenge distances unchanged.
+
 ## 2026-10-22 — Prototype 2 verified
 - Confirmed the Water eyes fix in Unity; everything compiles and plays.
 - Merged `dev` into `main` and saved the **`prototype-2`** branch as a frozen restore point.

@@ -30,6 +30,7 @@ namespace Patchwork
         public PlayerCamera CameraRig { get; private set; }
         public LevelInfo Level { get; private set; }
         public UIMode Mode { get; private set; }
+        public PatchworkHUD Hud { get; private set; }
 
         public FormSelector Selector { get; private set; }
         public SatchelMenu Satchel { get; private set; }
@@ -39,6 +40,9 @@ namespace Patchwork
         public string ToastText { get; private set; }
         public float ToastTimer { get; private set; }
         public HintZone ActiveHint { get; private set; }
+        /// <summary>How long a tutorial card stays up before sliding away.</summary>
+        public const float HintDuration = 7f;
+        public float HintAge { get; private set; }
         public float TitleTimer { get; private set; }
         public float Fade { get; private set; }
         public Color FadeColor { get; private set; }
@@ -117,7 +121,8 @@ namespace Patchwork
             carriedFadeColor = DefaultFadeColor;
             TitleTimer = 4.5f;
 
-            gameObject.AddComponent<PatchworkHUD>().Game = this;
+            Hud = gameObject.AddComponent<PatchworkHUD>();
+            Hud.Game = this;
         }
 
         void SetupEnvironment(Camera cam)
@@ -202,12 +207,18 @@ namespace Patchwork
                     frame.AbilityHeld = Input.Ability.IsPressed();
                     frame.JumpHeld = Input.Jump.IsPressed();
                 }
+                MovingPlatform.TickAll(dt);
                 Player.Tick(frame, dt);
 
                 if (Player.transform.position.y < Level.KillY) Respawn(true);
             }
 
             Sfx.TickLoops(udt);
+            if (ActiveHint != null)
+            {
+                HintAge += udt;
+                if (HintAge >= HintDuration) ActiveHint = null;
+            }
             if (ToastTimer > 0f) ToastTimer -= udt;
             if (TitleTimer > 0f) TitleTimer -= udt;
             UpdateFade(udt);
@@ -294,6 +305,7 @@ namespace Patchwork
         public void CloseSatchel()
         {
             SetMode(UIMode.Gameplay, 1f);
+            if (Hud != null) Hud.PokeBadge();
             Sfx.Play(SfxId.MenuCancel, 0.4f);
         }
 
@@ -320,12 +332,31 @@ namespace Patchwork
 
         public void ShowHint(HintZone zone)
         {
+            if (ActiveHint == zone && HintAge < HintDuration) return;
             ActiveHint = zone;
+            HintAge = 0f;
+            switch (zone.Theme)
+            {
+                case HintTheme.Water: Sfx.Play(SfxId.HintWater, 0.55f); break;
+                case HintTheme.Yarn: Sfx.Play(SfxId.HintYarn, 0.6f); break;
+                case HintTheme.Wind: Sfx.Play(SfxId.HintWind, 0.55f); break;
+                default: Sfx.Play(SfxId.HintNeutral, 0.45f); break;
+            }
         }
 
+        /// <summary>Leaving the zone makes the card slide away early.</summary>
         public void ClearHint(HintZone zone)
         {
-            if (ActiveHint == zone) ActiveHint = null;
+            if (ActiveHint == zone && HintAge < HintDuration - 0.45f) HintAge = HintDuration - 0.45f;
+        }
+
+        /// <summary>Thread spools picked up this visit.</summary>
+        public int ThreadsCollected { get; private set; }
+
+        public void CollectThread()
+        {
+            ThreadsCollected++;
+            if (Hud != null) Hud.PokeThreads();
         }
 
         public void SetCheckpoint(Checkpoint cp)

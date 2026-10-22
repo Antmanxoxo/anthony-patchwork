@@ -126,6 +126,43 @@ namespace Patchwork
             GUI.Label(r, text, style);
         }
 
+        /// <summary>Tiles a pattern texture across a rect (tileSize in virtual pixels), with a scrolling offset.</summary>
+        public static void PatternFill(Rect r, Texture tex, Color tint, float tileSize, Vector2 offset)
+        {
+            if (tex == null) return;
+            var prev = GUI.color;
+            GUI.color = tint;
+            var coords = new Rect(offset.x, offset.y, r.width / tileSize, r.height / tileSize);
+            GUI.DrawTextureWithTexCoords(r, tex, coords, true);
+            GUI.color = prev;
+        }
+
+        /// <summary>Draws an icon rotated (degrees) and scaled around its centre.</summary>
+        public static void IconTransformed(Rect r, Texture tex, Color tint, float angle, float scale)
+        {
+            if (tex == null) return;
+            Matrix4x4 saved = GUI.matrix;
+            Vector3 c = new Vector3(r.center.x, r.center.y, 0f);
+            GUI.matrix = saved * Matrix4x4.TRS(c, Quaternion.Euler(0f, 0f, angle), new Vector3(scale, scale, 1f)) * Matrix4x4.TRS(-c, Quaternion.identity, Vector3.one);
+            GUI.DrawTexture(r, tex, ScaleMode.ScaleToFit, true, 0f, tint, 0f, 0f);
+            GUI.matrix = saved;
+        }
+
+        public static float EaseOutBack(float t)
+        {
+            t = Mathf.Clamp01(t);
+            const float c1 = 1.70158f, c3 = c1 + 1f;
+            float x = t - 1f;
+            return 1f + c3 * x * x * x + c1 * x * x;
+        }
+
+        public static float EaseOutCubic(float t)
+        {
+            t = Mathf.Clamp01(t);
+            float x = 1f - t;
+            return 1f - x * x * x;
+        }
+
         /// <summary>Dark rounded backing for white text.</summary>
         public static void Pill(Rect r, float alpha = 1f)
         {

@@ -10,6 +10,47 @@ namespace Patchwork
     {
         public PatchworkGame Game;
 
+        // Form panel auto-hide
+        const float BadgeShowTime = 4.5f;
+        float badgeTimer = BadgeShowTime;
+        float badgeSlide;
+        FormType lastForm;
+        bool firstFrame = true;
+
+        void Update()
+        {
+            if (Game == null || Game.Player == null) return;
+            float dt = Time.unscaledDeltaTime;
+            var forms = Game.Player.Forms;
+            if (firstFrame) { lastForm = forms.Current; firstFrame = false; }
+            if (forms.Current != lastForm) { lastForm = forms.Current; badgeTimer = BadgeShowTime; }
+
+            // Keep it up while it's telling you something useful right now.
+            bool relevant = forms.HasPending || Game.Mode == UIMode.FormWheel;
+            if (forms.Current == FormType.Yarn)
+            {
+                var yarn = forms.Get<YarnAbility>();
+                relevant |= yarn.Attached || yarn.Target != null;
+            }
+            else if (forms.Current == FormType.Wind)
+            {
+                var wind = forms.Get<WindAbility>();
+                relevant |= wind.Gliding || !wind.GustReady;
+            }
+            if (relevant) badgeTimer = Mathf.Max(badgeTimer, 1.5f);
+
+            threadPop = Mathf.MoveTowards(threadPop, 0f, dt * 2f);
+            badgeTimer -= dt;
+            float target = badgeTimer > 0f ? 1f : 0f;
+            badgeSlide = Mathf.MoveTowards(badgeSlide, target, dt * (target > badgeSlide ? 4f : 2.5f));
+        }
+
+        /// <summary>Pop the form panel back up (e.g. after a gust or when the Satchel closes).</summary>
+        public void PokeBadge()
+        {
+            badgeTimer = BadgeShowTime;
+        }
+
         void OnGUI()
         {
             if (Game == null || Game.Player == null) return;
@@ -47,7 +88,9 @@ namespace Patchwork
             var forms = Game.Player.Forms;
             var def = forms.Definition;
             var ink = UIKit.Ink;
-            var panel = new Rect(28f, UIKit.Height - 206f, 640f, 178f);
+            if (badgeSlide <= 0.001f) return;
+            float slide = badgeSlide < 1f ? (target01(badgeSlide)) : 1f;
+            var panel = new Rect(28f - (1f - slide) * 720f, UIKit.Height - 206f, 640f, 178f);
             UIKit.Panel(panel, UIKit.Paper, UIKit.Thread);
 
             var iconCenter = new Vector2(panel.x + 92f, panel.y + 89f);
@@ -101,16 +144,42 @@ namespace Patchwork
             }
         }
 
+        static float target01(float t)
+        {
+            return UIKit.EaseOutBack(t);
+        }
+
+        float threadPop;
+
+        /// <summary>Little bounce on the thread counter when a spool is picked up.</summary>
+        public void PokeThreads()
+        {
+            threadPop = 1f;
+        }
+
         void DrawButtons()
         {
             var level = Game.Level;
             int total = level.CollectibleIds.Count;
-            if (total == 0) return;
-            var r = new Rect(28f, 24f, 230f, 84f);
-            UIKit.Panel(r, UIKit.Paper, UIKit.Thread, 20f);
-            UIKit.Icon(new Rect(r.x + 18f, r.y + 14f, 56f, 56f), PatchworkAssets.IconButton, Color.white);
-            UIKit.Label(new Rect(r.x + 88f, r.y + 14f, 130f, 56f), level.CollectedCount() + " / " + total,
-                UIKit.Style(34, true, TextAnchor.MiddleLeft, UIKit.Ink));
+            float y = 24f;
+            if (total > 0)
+            {
+                var r = new Rect(28f, y, 230f, 84f);
+                UIKit.Panel(r, UIKit.Paper, UIKit.Thread, 20f);
+                UIKit.Icon(new Rect(r.x + 18f, r.y + 14f, 56f, 56f), PatchworkAssets.IconButton, Color.white);
+                UIKit.Label(new Rect(r.x + 88f, r.y + 14f, 130f, 56f), level.CollectedCount() + " / " + total,
+                    UIKit.Style(34, true, TextAnchor.MiddleLeft, UIKit.Ink));
+                y += 96f;
+            }
+            if (level.ThreadTotal > 0)
+            {
+                float pop = 1f + Mathf.Sin(threadPop * Mathf.PI) * 0.15f;
+                var r = new Rect(28f, y, 230f * pop, 70f * pop);
+                UIKit.Panel(r, new Color(1f, 0.93f, 0.95f, 0.94f), new Color(0.85f, 0.4f, 0.55f, 0.9f), 20f);
+                UIKit.IconTransformed(new Rect(r.x + 18f, r.y + 11f, 48f, 48f), PatchworkAssets.IconYarn, Color.white, threadPop * 360f, 1f);
+                UIKit.Label(new Rect(r.x + 80f, r.y + 10f, 140f, 50f), Game.ThreadsCollected + " / " + level.ThreadTotal,
+                    UIKit.Style(28, true, TextAnchor.MiddleLeft, new Color(0.5f, 0.15f, 0.3f)));
+            }
         }
 
         void DrawControls(bool kb)
@@ -146,12 +215,105 @@ namespace Patchwork
         {
             var hint = Game.ActiveHint;
             if (hint == null || Game.Mode != UIMode.Gameplay) return;
-            float w = 760f;
-            var r = new Rect((UIKit.Width - w) * 0.5f, 26f, w, 132f);
-            UIKit.Panel(r, UIKit.Paper, UIKit.Thread);
-            UIKit.Label(new Rect(r.x + 36f, r.y + 20f, w - 72f, 34f), hint.Title, UIKit.Style(26, true, TextAnchor.MiddleLeft, UIKit.Ink));
-            UIKit.Label(new Rect(r.x + 36f, r.y + 56f, w - 72f, 70f), hint.Body,
-                UIKit.Style(19, false, TextAnchor.UpperLeft, new Color(UIKit.Ink.r, UIKit.Ink.g, UIKit.Ink.b, 0.9f), true));
+            float age = Game.HintAge;
+            float D = PatchworkGame.HintDuration;
+            float tin = UIKit.EaseOutBack(age / 0.45f);
+            float tout = age > D - 0.45f ? UIKit.EaseOutCubic((age - (D - 0.45f)) / 0.45f) : 0f;
+
+            Color bg, pattern, stitch, title, iconBg;
+            Texture2D pat, icon;
+            switch (hint.Theme)
+            {
+                case HintTheme.Water:
+                    bg = new Color(0.86f, 0.95f, 1f, 0.97f); pattern = new Color(0.45f, 0.7f, 0.95f, 0.28f);
+                    stitch = new Color(0.35f, 0.6f, 0.9f, 0.9f); title = new Color(0.1f, 0.3f, 0.55f); iconBg = new Color(0.36f, 0.66f, 0.95f);
+                    pat = UIArt.PatternWaves; icon = PatchworkAssets.IconWater;
+                    break;
+                case HintTheme.Yarn:
+                    bg = new Color(1f, 0.92f, 0.94f, 0.97f); pattern = new Color(0.93f, 0.45f, 0.58f, 0.2f);
+                    stitch = new Color(0.85f, 0.4f, 0.55f, 0.9f); title = new Color(0.5f, 0.15f, 0.3f); iconBg = new Color(0.93f, 0.45f, 0.58f);
+                    pat = UIArt.PatternKnit; icon = PatchworkAssets.IconYarn;
+                    break;
+                case HintTheme.Wind:
+                    bg = new Color(0.93f, 0.99f, 0.97f, 0.97f); pattern = new Color(0.45f, 0.8f, 0.75f, 0.25f);
+                    stitch = new Color(0.4f, 0.75f, 0.7f, 0.9f); title = new Color(0.12f, 0.4f, 0.38f); iconBg = new Color(0.55f, 0.85f, 0.8f);
+                    pat = UIArt.PatternSwirl; icon = PatchworkAssets.IconWind;
+                    break;
+                default:
+                    bg = UIKit.Paper; pattern = new Color(0.85f, 0.6f, 0.4f, 0.14f);
+                    stitch = UIKit.Thread; title = UIKit.Ink; iconBg = new Color(1f, 0.8f, 0.3f);
+                    pat = UIArt.PatternDots; icon = PatchworkAssets.IconButton;
+                    break;
+            }
+
+            float w = 800f, h = 148f;
+            float y = Mathf.LerpUnclamped(-h - 20f, 24f, tin) - tout * (h + 60f);
+            var r = new Rect((UIKit.Width - w) * 0.5f, y, w, h);
+            float t = Time.unscaledTime;
+
+            UIKit.Fill(new Rect(r.x + 4f, r.y + 7f, r.width, r.height), new Color(0f, 0f, 0f, 0.18f), 24f);
+            UIKit.Fill(r, bg, 24f);
+            UIKit.PatternFill(new Rect(r.x + 16f, r.y + 16f, r.width - 32f, r.height - 32f), pat, pattern, 64f, new Vector2(t * 0.05f, t * 0.03f));
+
+            // Theme decorations on the right edge.
+            switch (hint.Theme)
+            {
+                case HintTheme.Water:
+                    for (int i = 0; i < 4; i++)
+                    {
+                        float k = Mathf.Repeat(t * 0.35f + i * 0.25f, 1f);
+                        float bx = r.xMax - 60f + Mathf.Sin(t * 2f + i) * 10f - i * 14f;
+                        float by = r.yMax - 20f - k * (h - 30f);
+                        float size = 10f + i * 4f;
+                        UIKit.CircleOutline(new Vector2(bx, by), size, new Color(0.35f, 0.6f, 0.9f, 0.6f * (1f - k)), 2f);
+                    }
+                    break;
+                case HintTheme.Wind:
+                    for (int i = 0; i < 3; i++)
+                    {
+                        float k = Mathf.Repeat(t * 0.15f + i * 0.33f, 1f);
+                        float cx = r.xMax - 150f + k * 120f;
+                        float cy = r.y + 36f + i * 34f;
+                        float a = Mathf.Sin(k * Mathf.PI) * 0.7f;
+                        UIKit.Circle(new Vector2(cx, cy), 22f, new Color(1f, 1f, 1f, a));
+                        UIKit.Circle(new Vector2(cx + 14f, cy - 4f), 28f, new Color(1f, 1f, 1f, a));
+                        UIKit.Circle(new Vector2(cx + 30f, cy), 20f, new Color(1f, 1f, 1f, a));
+                    }
+                    break;
+                case HintTheme.Yarn:
+                {
+                    // A dangling strand of yarn swinging from the top-right corner.
+                    float sway = Mathf.Sin(t * 2f) * 10f;
+                    for (int i = 0; i < 10; i++)
+                    {
+                        float k = i / 9f;
+                        float sx = r.xMax - 70f + sway * k * k;
+                        float sy = r.y + 8f + k * 70f;
+                        UIKit.Circle(new Vector2(sx, sy), 7f, new Color(0.93f, 0.45f, 0.58f, 0.85f));
+                    }
+                    UIKit.Icon(new Rect(r.xMax - 70f + sway - 18f, r.y + 70f, 36f, 36f), PatchworkAssets.IconYarn, Color.white);
+                    break;
+                }
+            }
+
+            UIKit.Stitches(new Rect(r.x + 10f, r.y + 10f, r.width - 20f, r.height - 20f), stitch);
+
+            // Icon medallion.
+            float bob = Mathf.Sin(t * 3f) * 3f;
+            var ic = new Vector2(r.x + 78f, r.y + h * 0.5f + bob);
+            UIKit.Circle(ic, 92f, iconBg);
+            UIKit.CircleOutline(ic, 80f, new Color(1f, 1f, 1f, 0.85f), 3f);
+            UIKit.Icon(new Rect(ic.x - 30f, ic.y - 30f, 60f, 60f), icon, Color.white);
+
+            float tx = r.x + 140f;
+            float tw = w - 140f - (hint.Theme == HintTheme.Neutral ? 40f : 110f);
+            UIKit.Label(new Rect(tx, r.y + 22f, tw, 36f), hint.Title, UIKit.Style(27, true, TextAnchor.MiddleLeft, title));
+            UIKit.Label(new Rect(tx, r.y + 60f, tw, 76f), hint.Body,
+                UIKit.Style(19, false, TextAnchor.UpperLeft, new Color(title.r * 0.6f + 0.1f, title.g * 0.6f + 0.1f, title.b * 0.6f + 0.1f, 0.95f), true));
+
+            // Thread "timer" running down along the bottom.
+            float remain = Mathf.Clamp01(1f - age / D);
+            UIKit.Fill(new Rect(r.x + 24f, r.yMax - 8f, (r.width - 48f) * remain, 3f), new Color(stitch.r, stitch.g, stitch.b, 0.5f), 1.5f);
         }
 
         void DrawToast()
@@ -201,7 +363,7 @@ namespace Patchwork
         {
             float W = UIKit.Width, H = UIKit.Height;
             UIKit.Fill(new Rect(0f, 0f, W, H), new Color(0.12f, 0.08f, 0.18f, 0.6f));
-            var panel = new Rect((W - 640f) * 0.5f, (H - 380f) * 0.5f, 640f, 380f);
+            var panel = new Rect((W - 640f) * 0.5f, (H - 440f) * 0.5f, 640f, 440f);
             UIKit.Panel(panel, new Color(0.99f, 0.95f, 0.88f, 0.97f), UIKit.Thread);
             var ink = UIKit.Ink;
             UIKit.Label(new Rect(panel.x, panel.y + 40f, panel.width, 60f), "Level Complete!", UIKit.Style(48, true, TextAnchor.MiddleCenter, ink));
@@ -209,6 +371,12 @@ namespace Patchwork
             UIKit.Icon(new Rect(panel.x + 200f, panel.y + 150f, 90f, 90f), PatchworkAssets.IconButton, Color.white);
             UIKit.Label(new Rect(panel.x + 305f, panel.y + 150f, 200f, 90f),
                 Game.Level.CollectedCount() + " / " + Game.Level.CollectibleIds.Count, UIKit.Style(44, true, TextAnchor.MiddleLeft, ink));
+            if (Game.Level.ThreadTotal > 0)
+            {
+                UIKit.Icon(new Rect(panel.x + 210f, panel.y + 236f, 70f, 70f), PatchworkAssets.IconYarn, Color.white);
+                UIKit.Label(new Rect(panel.x + 305f, panel.y + 236f, 260f, 70f),
+                    Game.ThreadsCollected + " / " + Game.Level.ThreadTotal + " threads", UIKit.Style(30, true, TextAnchor.MiddleLeft, ink));
+            }
             float x = panel.x + 150f;
             UIKit.PromptLabel(x, panel.yMax - 90f, 44f, PromptAction.Confirm, "Back to the Sewing Room", kb, ink);
         }

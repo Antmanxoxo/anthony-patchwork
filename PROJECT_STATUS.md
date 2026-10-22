@@ -35,8 +35,17 @@ Compiled and played on the PC on 2026-10-22, including the Water eyes fix.
 - [x] New embroidery-hoop portal with spinning rings, sparkles, light, and a warp-in animation
 - [x] Water bubble eyes fixed (sit on the surface, stay at face height while jiggling)
 
+## In progress — Prototype 3 (on `dev`, awaiting play test)
+- [x] Form panel and tutorial cards slide away after a few seconds (form panel returns when it has something useful to show)
+- [x] Tutorial cards themed Water / Yarn / Wind / neutral: matching colours, animated art, element sound effect, thread "timer"
+- [x] Animated pause menu: bounce-in panel, staggered options, sliding highlight with marching stitches, per-option icon animations
+- [x] Normal-mapped procedural textures: knit (Yarn toy), fuzzy felt, woven cloth, wicker, stitched grass, wood, wound yarn
+- [x] Level 1 rebuilt as **The Sewing Basket Garden**: wicker basket walls, felt sky + sun, yarn balls, knitting needles, thimbles, mushrooms
+- [x] New toys: bouncy pin-cushions, sliding button platforms (Button Bridge section), ~35 collectible thread spools with HUD counter
+- [x] Hub hints themed; hub gets a bounce pad and a few threads
+
 ## Next
-1. Owner's next round of changes
+1. Play-test Prototype 3 and tune
 2. Tune feel (swing strength, glide distance, camera) from play feedback
 3. Polish: nicer form models/animations, real sound effects, UI Toolkit menus
 4. Rebinding UI for the Form Wheel button (code hook exists: `PatchworkInput.SetFormWheelBinding`)

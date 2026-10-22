@@ -24,7 +24,15 @@ namespace Patchwork
         PortalWarp,
         Soak,
         Steam,
-        Unravel
+        Unravel,
+        HintWater,
+        HintYarn,
+        HintWind,
+        HintNeutral,
+        Boing,
+        Thread,
+        PauseOpen,
+        PlatformThunk
     }
 
     /// <summary>Continuous sounds that fade in while something requests them each frame.</summary>
@@ -157,6 +165,21 @@ namespace Patchwork
             clips[SfxId.Soak] = Make("soak", 0.45f, (t, d) =>
                 Bloop(t, 220f, 0.1f) * 0.4f + Bloop(t - 0.12f, 300f, 0.1f) * 0.35f + Bloop(t - 0.24f, 200f, 0.12f) * 0.35f, 2200f);
             clips[SfxId.Steam] = Whoosh("steam", 0.5f, 900f, 2200f, 0.35f);
+            // Pop-up chimes, one per element.
+            clips[SfxId.HintWater] = Make("hintwater", 0.6f, (t, d) =>
+                Bloop(t, 260f, 0.13f) * 0.5f + Bloop(t - 0.1f, 350f, 0.13f) * 0.45f + Bloop(t - 0.2f, 470f, 0.15f) * 0.4f +
+                Bell(t - 0.25f, 784f, d) * 0.12f, 3000f);
+            clips[SfxId.HintYarn] = Pluck("hintyarn", new float[] { 392f, 523f, 659f }, 0.09f, 0.9f);
+            clips[SfxId.HintWind] = WindChime();
+            clips[SfxId.HintNeutral] = Make("hintneutral", 0.5f, (t, d) =>
+                Bell(t, 523f, d) * 0.3f + Bell(t - 0.09f, 784f, d) * 0.25f, 3500f);
+            clips[SfxId.Boing] = Make("boing", 0.45f, (t, d) =>
+                Sine(t, 180f + 140f * Mathf.Sin(t * 38f) * Mathf.Exp(-t * 6f) + 160f * (t / d)) * Env(t, d, 0.005f) * 0.55f, 2000f);
+            clips[SfxId.Thread] = Make("thread", 0.22f, (t, d) =>
+                Bell(t, 1175f, d) * 0.25f + Bell(t - 0.04f, 1568f, d) * 0.15f, 5000f);
+            clips[SfxId.PauseOpen] = Pluck("pause", new float[] { 523f, 659f, 784f, 1047f }, 0.05f, 0.8f);
+            clips[SfxId.PlatformThunk] = Make("thunk", 0.2f, (t, d) =>
+                Sine(t, Mathf.Lerp(120f, 70f, t / d)) * Env(t, d, 0.002f) * 0.4f, 900f);
             clips[SfxId.Unravel] = Make("unravel", 0.4f, (t, d) =>
                 Sine(t, 440f + Mathf.Sin(t * 60f) * 60f) * Env(t, d, 0.02f) * 0.3f, 2500f);
         }
@@ -173,6 +196,58 @@ namespace Patchwork
             LowPass(data, lowpassHz);
             FadeEdges(data, 0.004f);
             return ToClip(name, data);
+        }
+
+        /// <summary>Plucked-yarn notes (Karplus–Strong string), played as a little arpeggio.</summary>
+        static AudioClip Pluck(string name, float[] notes, float gap, float duration)
+        {
+            int n = Mathf.CeilToInt(duration * Rate);
+            var data = new float[n];
+            var rng = new System.Random(17);
+            for (int k = 0; k < notes.Length; k++)
+            {
+                int period = Mathf.Max(2, Mathf.RoundToInt(Rate / notes[k]));
+                var buf = new float[period];
+                for (int i = 0; i < period; i++) buf[i] = (float)(rng.NextDouble() * 2.0 - 1.0);
+                int start = Mathf.RoundToInt(k * gap * Rate);
+                int idx = 0;
+                for (int i = start; i < n; i++)
+                {
+                    int next = (idx + 1) % period;
+                    float v = buf[idx];
+                    buf[idx] = 0.497f * (buf[idx] + buf[next]); // soft decay = woolly tone
+                    idx = next;
+                    data[i] += v * 0.35f * (1f - (i - start) / (float)(n - start + 1));
+                }
+            }
+            LowPass(data, 2600f);
+            FadeEdges(data, 0.004f);
+            return ToClip(name, data);
+        }
+
+        /// <summary>Breeze + a few soft wind-chime tings.</summary>
+        static AudioClip WindChime()
+        {
+            float duration = 0.9f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var data = new float[n];
+            var rng = new System.Random(23);
+            float y = 0f, y2 = 0f;
+            float[] tings = { 1319f, 1760f, 1568f };
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                float k = t / duration;
+                float a = Alpha(Mathf.Lerp(400f, 1100f, Mathf.Sin(Mathf.PI * k)));
+                y += a * ((float)(rng.NextDouble() * 2.0 - 1.0) - y);
+                y2 += a * (y - y2);
+                float breeze = y2 * Mathf.Sin(Mathf.PI * k) * 1.6f;
+                float chime = 0f;
+                for (int c = 0; c < tings.Length; c++) chime += Bell(t - 0.08f - c * 0.13f, tings[c], duration) * 0.1f;
+                data[i] = breeze + chime;
+            }
+            FadeEdges(data, 0.01f);
+            return ToClip("windchime", data);
         }
 
         /// <summary>Soft airy whoosh: low-passed noise with a cutoff that swells and settles.</summary>

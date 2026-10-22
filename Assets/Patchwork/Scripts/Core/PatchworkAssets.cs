@@ -48,6 +48,8 @@ namespace Patchwork
             if (litShader == null) litShader = Shader.Find("Universal Render Pipeline/Simple Lit");
             if (litShader == null) litShader = Shader.Find("Standard");
 
+            PatchworkTextures.EnsureBuilt();
+            UIArt.EnsureBuilt();
             FabricTex = MakeFabric(128);
             FeltTex = MakeFelt(64);
             YarnTex = MakeYarn(128);
@@ -80,17 +82,53 @@ namespace Patchwork
 
         public static Material Fabric(Color color)
         {
-            return Get("fabric", color, FabricTex, 0.08f, Color.black);
+            EnsureInit();
+            var t = PatchworkTextures.Weave;
+            return Get("fabric", color, t.Albedo, 0.08f, Color.black, t.Normal, 0.8f);
         }
 
         public static Material Felt(Color color)
         {
-            return Get("felt", color, FeltTex, 0.02f, Color.black);
+            EnsureInit();
+            var t = PatchworkTextures.Felt;
+            return Get("felt", color, t.Albedo, 0.02f, Color.black, t.Normal, 0.6f);
         }
 
+        /// <summary>Wound yarn (balls of yarn, strings, ropes).</summary>
         public static Material Yarn(Color color)
         {
-            return Get("yarn", color, YarnTex, 0.05f, Color.black);
+            EnsureInit();
+            var t = PatchworkTextures.Wrap;
+            return Get("yarn", color, t.Albedo, 0.05f, Color.black, t.Normal, 1f);
+        }
+
+        /// <summary>Knitted stitches (Patch's yarn body).</summary>
+        public static Material Knit(Color color)
+        {
+            EnsureInit();
+            var t = PatchworkTextures.Knit;
+            return Get("knit", color, t.Albedo, 0.04f, Color.black, t.Normal, 1.2f);
+        }
+
+        public static Material Wicker(Color color)
+        {
+            EnsureInit();
+            var t = PatchworkTextures.Wicker;
+            return Get("wicker", color, t.Albedo, 0.1f, Color.black, t.Normal, 1.3f);
+        }
+
+        public static Material Grass(Color color)
+        {
+            EnsureInit();
+            var t = PatchworkTextures.Grass;
+            return Get("grass", color, t.Albedo, 0.03f, Color.black, t.Normal, 1f);
+        }
+
+        public static Material Wood(Color color)
+        {
+            EnsureInit();
+            var t = PatchworkTextures.Wood;
+            return Get("wood", color, t.Albedo, 0.25f, Color.black, t.Normal, 0.7f);
         }
 
         public static Material Water(Color color)
@@ -145,7 +183,8 @@ namespace Patchwork
             return Get("plain" + smoothness.ToString("0.00"), color, null, smoothness, Color.black);
         }
 
-        static Material Get(string kind, Color color, Texture2D tex, float smoothness, Color emission)
+        static Material Get(string kind, Color color, Texture2D tex, float smoothness, Color emission,
+            Texture2D normal = null, float bumpScale = 1f)
         {
             EnsureInit();
             string key = kind + "_" + ColorUtility.ToHtmlStringRGBA(color);
@@ -163,6 +202,12 @@ namespace Patchwork
             }
             m.SetFloat("_Smoothness", smoothness);
             m.SetFloat("_Glossiness", smoothness);
+            if (normal != null)
+            {
+                m.SetTexture("_BumpMap", normal);
+                m.SetFloat("_BumpScale", bumpScale);
+                m.EnableKeyword("_NORMALMAP");
+            }
             if (emission.maxColorComponent > 0.001f)
             {
                 m.EnableKeyword("_EMISSION");

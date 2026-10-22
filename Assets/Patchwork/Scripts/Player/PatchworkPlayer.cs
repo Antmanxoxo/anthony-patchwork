@@ -39,6 +39,13 @@ namespace Patchwork
 
         public void Tick(PlayerInputFrame input, float dt)
         {
+            // Ride moving platforms: move with whatever we're standing on.
+            if (Motor.Grounded && !Motor.ExternalControl && Motor.GroundCollider != null)
+            {
+                var platform = Motor.GroundCollider.GetComponentInParent<MovingPlatform>();
+                if (platform != null && platform.Delta.sqrMagnitude > 0f) Motor.Controller.Move(platform.Delta);
+            }
+
             Forms.Tick(dt);
             Forms.Ability.PreMove(input, dt);
             PlayerVolume.UpdateAll(this, dt);

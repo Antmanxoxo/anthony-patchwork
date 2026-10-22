@@ -43,6 +43,24 @@ namespace Patchwork
         float airTime;
 
         public float AirTime { get { return airTime; } }
+
+        /// <summary>The collider Patch is standing on (for moving platforms). Null when airborne.</summary>
+        public Collider GroundCollider { get; private set; }
+        Collider groundHit;
+
+        void OnControllerColliderHit(ControllerColliderHit hit)
+        {
+            if (hit.normal.y > 0.6f) groundHit = hit.collider;
+        }
+
+        /// <summary>Launches straight up (bounce pads). Keeps horizontal speed.</summary>
+        public void Bounce(float upSpeed)
+        {
+            Velocity = new Vector3(Velocity.x, upSpeed, Velocity.z);
+            Grounded = false;
+            dashTimer = 0f;
+            MarkLaunched();
+        }
         public bool IsDashing { get { return dashTimer > 0f; } }
 
         void Awake()
@@ -163,8 +181,10 @@ namespace Patchwork
 
             // ---------------- Move ----------------
             bool wasGrounded = Grounded;
+            groundHit = null;
             CollisionFlags flags = Controller.Move(Velocity * dt);
             Grounded = Controller.isGrounded;
+            GroundCollider = Grounded ? groundHit : null;
 
             if ((flags & CollisionFlags.Above) != 0 && Velocity.y > 0f)
                 Velocity = new Vector3(Velocity.x, 0f, Velocity.z);

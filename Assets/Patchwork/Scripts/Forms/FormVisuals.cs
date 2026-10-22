@@ -411,9 +411,9 @@ namespace Patchwork
             var def = FormLibrary.Get(FormType.Yarn);
             building = yarn;
             yarn.Root = Pivot("YarnForm", root, Vector3.zero);
-            var body = PatchworkAssets.Yarn(def.PrimaryColor);
+            var body = PatchworkAssets.Knit(def.PrimaryColor);
             var cream = PatchworkAssets.Felt(def.SecondaryColor);
-            var dark = PatchworkAssets.Yarn(new Color(0.62f, 0.25f, 0.38f));
+            var dark = PatchworkAssets.Knit(new Color(0.62f, 0.25f, 0.38f));
 
             // Legs (pivot at the hip so they swing).
             hipL = Pivot("HipL", yarn.Root, new Vector3(-0.16f, 0.4f, 0f));
