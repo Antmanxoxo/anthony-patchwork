@@ -3,9 +3,9 @@
 _Last updated: 2026-10-22_
 
 ## Current milestone
-**Prototype 2 — verified ✅** (saved as the `prototype-2` branch on GitHub; `prototype-1` is the earlier restore point)
+**Prototype 3 — verified ✅** (saved as the `prototype-3` branch on GitHub; `prototype-2` and `prototype-1` are earlier restore points)
 
-Compiled and played on the PC on 2026-10-22, including the Water eyes fix.
+Compiled and played on 2026-10-22.
 
 ## Done
 - [x] Unity 6 URP project baseline in Git (`main`)
@@ -35,7 +35,7 @@ Compiled and played on the PC on 2026-10-22, including the Water eyes fix.
 - [x] New embroidery-hoop portal with spinning rings, sparkles, light, and a warp-in animation
 - [x] Water bubble eyes fixed (sit on the surface, stay at face height while jiggling)
 
-## In progress — Prototype 3 (on `dev`, awaiting play test)
+## Prototype 3 additions
 - [x] Form panel and tutorial cards slide away after a few seconds (form panel returns when it has something useful to show)
 - [x] Tutorial cards themed Water / Yarn / Wind / neutral: matching colours, animated art, element sound effect, thread "timer"
 - [x] Animated pause menu: bounce-in panel, staggered options, sliding highlight with marching stitches, per-option icon animations
@@ -45,7 +45,7 @@ Compiled and played on the PC on 2026-10-22, including the Water eyes fix.
 - [x] Hub hints themed; hub gets a bounce pad and a few threads
 
 ## Next
-1. Play-test Prototype 3 and tune
+1. Next round of changes
 2. Tune feel (swing strength, glide distance, camera) from play feedback
 3. Polish: nicer form models/animations, real sound effects, UI Toolkit menus
 4. Rebinding UI for the Form Wheel button (code hook exists: `PatchworkInput.SetFormWheelBinding`)

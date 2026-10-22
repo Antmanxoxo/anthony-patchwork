@@ -1,6 +1,10 @@
 # Development Log — Patchwork
 
-## 2026-10-22 — Prototype 3 changes (unverified)
+## 2026-10-22 — Prototype 3 verified
+- Plays well. Merged `dev` into `main` and saved the **`prototype-3`** branch as a restore point.
+- Renamed the notes file to `DEV_NOTES.md`.
+
+## 2026-10-22 — Prototype 3 changes
 - **Auto-hiding pop-ups:** `PatchworkHUD` slides the form panel out after 4.5 s (kept up while swinging, gliding, gust recharging, transform pending). Tutorial cards (`HintZone`) now last 7 s, slide in/out, and slide away early when you leave.
 - **Themed cards:** `HintTheme` (Neutral/Water/Yarn/Wind) picks colours, a tiled pattern (`UIArt`: waves / knit / swirls / dots), animated decorations (rising bubbles, swinging yarn strand, drifting clouds) and a sound (`HintWater` bloops, `HintYarn` Karplus-Strong yarn pluck, `HintWind` breeze + chimes).
 - **Pause menu:** drop-in with overshoot, staggered option slide-in, animated highlight with marching stitches, generated icons with per-option animations (pulse, spin, hop, wiggle, dance, sway).
