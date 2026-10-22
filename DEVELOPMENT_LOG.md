@@ -3,7 +3,7 @@
 ## 2026-10-22 — Prototype 1 verified
 - Opened the project in Unity, it compiled, and the game played.
 - Pulled back the files Unity generated on first open (`Resources/PW_Lit.mat`, URP project settings).
-- Merged `dev` into `main` and tagged **`prototype-1`** as the restore point.
+- Merged `dev` into `main` and saved the **`prototype-1`** branch as a frozen restore point.
 
 ## 2026-10-22 — Project set-up and Milestone 1 (unverified)
 - Confirmed the engine: **Unity 6 (6000.6.7f1), URP, C#** (an empty Unreal project in another folder is unrelated and was not touched).

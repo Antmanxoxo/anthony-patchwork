@@ -3,7 +3,7 @@
 _Last updated: 2026-10-22_
 
 ## Current milestone
-**Prototype 1 — verified ✅** (Git tag `prototype-1` on `main`)
+**Prototype 1 — verified ✅** (saved as the `prototype-1` branch on GitHub)
 
 Compiled and played on the PC on 2026-10-22. This is the restore point before the
 owner's next round of changes.
