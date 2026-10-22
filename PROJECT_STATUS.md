@@ -1,7 +1,5 @@
 # Project Status
 
-_Last updated: Oct 22, 2026_
-
 ## Where it's at
 **Prototype 3 works.** Saved as the `prototype-3` branch (`prototype-1` and `prototype-2` are older backups).
 
