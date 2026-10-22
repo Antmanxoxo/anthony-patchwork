@@ -27,6 +27,7 @@ namespace Patchwork.EditorTools
         {
             ApplyPlayModeStartScene();
             EnsureLitMaterial();
+            EnsureVariantMaterials();
 
             if (!SessionState.GetBool(OpenedHubKey, false))
             {
@@ -57,6 +58,57 @@ namespace Patchwork.EditorTools
             var mat = new Material(shader);
             AssetDatabase.CreateAsset(mat, MaterialPath);
             AssetDatabase.SaveAssets();
+        }
+
+        // The game turns on shader features at runtime (bumpy textures, glow, see-through bubble).
+        // Builds only keep shader versions some material in the build uses, so these three
+        // materials in Resources make sure those versions are kept.
+        static void EnsureVariantMaterials()
+        {
+            var shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null) return;
+            if (!AssetDatabase.IsValidFolder(MaterialFolder))
+                AssetDatabase.CreateFolder("Assets/Patchwork", "Resources");
+            bool made = false;
+
+            string bumpPath = MaterialFolder + "/PW_Keep_Bumpy.mat";
+            if (AssetDatabase.LoadAssetAtPath<Material>(bumpPath) == null)
+            {
+                var m = new Material(shader);
+                m.EnableKeyword("_NORMALMAP");
+                AssetDatabase.CreateAsset(m, bumpPath);
+                made = true;
+            }
+
+            string glowPath = MaterialFolder + "/PW_Keep_Glow.mat";
+            if (AssetDatabase.LoadAssetAtPath<Material>(glowPath) == null)
+            {
+                var m = new Material(shader);
+                m.EnableKeyword("_EMISSION");
+                m.SetColor("_EmissionColor", Color.white);
+                AssetDatabase.CreateAsset(m, glowPath);
+                made = true;
+            }
+
+            string seeThroughPath = MaterialFolder + "/PW_Keep_SeeThrough.mat";
+            if (AssetDatabase.LoadAssetAtPath<Material>(seeThroughPath) == null)
+            {
+                var m = new Material(shader);
+                m.SetFloat("_Surface", 1f);
+                m.SetFloat("_Blend", 0f);
+                m.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                m.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                m.SetFloat("_ZWrite", 0f);
+                m.SetOverrideTag("RenderType", "Transparent");
+                m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                m.EnableKeyword("_EMISSION");
+                m.SetColor("_EmissionColor", Color.white);
+                m.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+                AssetDatabase.CreateAsset(m, seeThroughPath);
+                made = true;
+            }
+
+            if (made) AssetDatabase.SaveAssets();
         }
 
         [MenuItem("Patchwork/Open Hub Scene", false, 1)]

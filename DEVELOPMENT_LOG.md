@@ -1,5 +1,10 @@
 # Development Log
 
+## Build prep
+- Added three small materials in Resources so the build keeps the shader versions for the bumpy
+  textures, glow and the see-through bubble (Unity strips unused ones from builds).
+- Fixed "Practise" -> "Practice" in the hub title.
+
 ## Cleanup
 - Took out code that wasn't being used anymore (old flat textures, an unused material, a couple of
   icons, and some small helper functions).
