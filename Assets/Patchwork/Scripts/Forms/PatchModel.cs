@@ -94,13 +94,19 @@ namespace Patchwork
             if (skinned.Length == 0) return false;
 
             // One material for everything: the baked colour and stitch/knit bumps.
-            var albedo = Resources.Load<Texture2D>(ModelPath + "_Albedo");
-            var normal = Resources.Load<Texture2D>(ModelPath + "_Normal");
+            var albedo = LoadTexture("Patch_Albedo");
+            var normal = LoadTexture("Patch_Normal");
             var template = Resources.Load<Material>(PatchworkAssets.LitMaterialResource);
             var mat = template != null ? new Material(template) : new Material(Shader.Find("Universal Render Pipeline/Lit"));
             mat.name = "Patch";
-            if (albedo != null) { mat.SetTexture("_BaseMap", albedo); mat.mainTexture = albedo; }
+            if (albedo != null)
+            {
+                mat.SetTexture("_BaseMap", albedo);
+                mat.SetTexture("_MainTex", albedo);
+                mat.mainTexture = albedo;
+            }
             mat.SetColor("_BaseColor", Color.white);
+            mat.SetColor("_Color", Color.white);
             if (normal != null)
             {
                 mat.SetTexture("_BumpMap", normal);
@@ -111,9 +117,12 @@ namespace Patchwork
             mat.SetFloat("_Metallic", 0f);
 
             SkinnedMeshRenderer body = null;
+            patchMaterial = mat;
             foreach (var r in skinned)
             {
-                r.sharedMaterial = mat;
+                var mats = new Material[Mathf.Max(1, r.sharedMesh != null ? r.sharedMesh.subMeshCount : 1)];
+                for (int i = 0; i < mats.Length; i++) mats[i] = mat;
+                r.sharedMaterials = mats;
                 r.updateWhenOffscreen = true;
                 Renderers.Add(r);
                 string n = r.name;
@@ -128,15 +137,20 @@ namespace Patchwork
             armR = FindDeep(modelRoot, "arm.R");
             head = FindDeep(modelRoot, "head");
 
-            // Face forward: turn the model so his face points along the player's forward.
-            Vector3 bodyCenter = transform.InverseTransformPoint(body.bounds.center);
-            Renderer faceRef = faces[0] != null ? faces[0] : faces[1];
-            if (faceRef != null)
+            // Face forward. In Blender he faces -Y with his rope arm ("arm.R") on +X. Importing into
+            // Unity mirrors the handedness, so his front is up x (arm.R - arm.L) here.
+            var armL = FindDeep(modelRoot, "arm.L");
+            float yaw = 0f;
+            if (armR != null && armL != null)
             {
-                Vector3 d = transform.InverseTransformPoint(faceRef.bounds.center) - bodyCenter;
-                d.y = 0f;
-                if (d.sqrMagnitude > 1e-6f)
-                    modelRoot.localRotation = Quaternion.Euler(0f, -Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg, 0f) * modelRoot.localRotation;
+                Vector3 side = transform.InverseTransformDirection(armR.position - armL.position);
+                Vector3 front = Vector3.Cross(Vector3.up, side);
+                front.y = 0f;
+                if (front.sqrMagnitude > 1e-8f)
+                {
+                    yaw = -Mathf.Atan2(front.x, front.z) * Mathf.Rad2Deg;
+                    modelRoot.localRotation = Quaternion.Euler(0f, yaw, 0f) * modelRoot.localRotation;
+                }
             }
 
             // Size: whatever units the file came in, make the head top land at TargetHeadTop.
@@ -151,6 +165,14 @@ namespace Patchwork
 
             SetFace(CurrentFace);
             BuildGraph(model);
+
+            Debug.Log("[PatchModel] renderers=" + skinned.Length +
+                      " albedo=" + (albedo != null ? albedo.width + "x" + albedo.height : "MISSING") +
+                      " normal=" + (normal != null ? normal.width + "x" + normal.height : "MISSING") +
+                      " shader=" + mat.shader.name + " baseMap=" + (mat.GetTexture("_BaseMap") != null) +
+                      " submeshes=" + (body.sharedMesh != null ? body.sharedMesh.subMeshCount : -1) +
+                      " yaw=" + yaw.ToString("0") + " scale=" + modelRoot.localScale.y.ToString("0.###") +
+                      " clips=" + ClipCount());
             return true;
         }
 
@@ -185,6 +207,25 @@ namespace Patchwork
             weights[(int)Anim.Idle] = 1f;
             for (int i = 0; i < weights.Length; i++) mixer.SetInputWeight(i, weights[i]);
             graph.Play();
+        }
+
+        Material patchMaterial;
+        bool reportedSwap;
+
+        int ClipCount()
+        {
+            int n = 0;
+            for (int i = 0; i < hasClip.Length; i++) if (hasClip[i]) n++;
+            return n;
+        }
+
+        static Texture2D LoadTexture(string name)
+        {
+            var t = Resources.Load<Texture2D>("Characters/" + name);
+            if (t != null) return t;
+            foreach (var c in Resources.LoadAll<Texture2D>("Characters"))
+                if (c != null && c.name == name) return c;
+            return null;
         }
 
         // Called every frame while Yarn is the active form.
@@ -262,6 +303,19 @@ namespace Patchwork
 
         void LateUpdate()
         {
+            // If anything swapped his material out, put it back (and say so once in the Console).
+            if (patchMaterial != null)
+            {
+                foreach (var r in Renderers)
+                {
+                    if (r == null || r.sharedMaterial == patchMaterial) continue;
+                    if (!reportedSwap) { reportedSwap = true; Debug.LogWarning("[PatchModel] material was replaced by " + (r.sharedMaterial != null ? r.sharedMaterial.name : "null") + "; restoring it."); }
+                    var mats = r.sharedMaterials;
+                    for (int i = 0; i < mats.Length; i++) mats[i] = patchMaterial;
+                    r.sharedMaterials = mats;
+                }
+            }
+
             // After the animation: aim the yarn arm at the anchor so the rope lines up.
             if (!tethered || armR == null || HandR == null) return;
             Vector3 cur = HandR.position - armR.position;
