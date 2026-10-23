@@ -47,6 +47,7 @@ namespace Patchwork.EditorTools
             if (!InFolder) return;
             var ti = (TextureImporter)assetImporter;
             ti.textureType = assetPath.EndsWith("_Normal.png") ? TextureImporterType.NormalMap : TextureImporterType.Default;
+            ti.textureShape = TextureImporterShape.Texture2D;
             ti.maxTextureSize = 2048;
             ti.mipmapEnabled = true;
         }
@@ -61,10 +62,16 @@ namespace Patchwork.EditorTools
                                mi.clipAnimations.Length == 0))
                 AssetDatabase.ImportAsset(fbx, ImportAssetOptions.ForceUpdate);
 
-            string normal = Folder + "/Patch_Normal.png";
-            var ti = AssetImporter.GetAtPath(normal) as TextureImporter;
-            if (ti != null && ti.textureType != TextureImporterType.NormalMap)
-                AssetDatabase.ImportAsset(normal, ImportAssetOptions.ForceUpdate);
+            foreach (var name in new[] { "Patch_Albedo", "Patch_Normal" })
+            {
+                string path = Folder + "/" + name + ".png";
+                var ti = AssetImporter.GetAtPath(path) as TextureImporter;
+                if (ti == null) continue;
+                bool wantNormal = name.EndsWith("_Normal");
+                if (ti.textureShape != TextureImporterShape.Texture2D ||
+                    (ti.textureType == TextureImporterType.NormalMap) != wantNormal)
+                    AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            }
         }
     }
 }
