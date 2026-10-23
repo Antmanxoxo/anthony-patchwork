@@ -12,10 +12,11 @@
 - Music and sound effects
 - Hub (The Sewing Room) and Level 1 (The Sewing Basket Garden) with golden buttons and thread spools
 - Bounce pads and moving platforms
+- Patch's Yarn form is now a real rigged, animated model made in Blender, with swappable faces
 
 ## Next
 - Play more and tune how the swing, glide and camera feel
-- Better models and animations
+- Models for the Water and Wind forms
 - Maybe move menus to UI Toolkit
 
 ## Known issues

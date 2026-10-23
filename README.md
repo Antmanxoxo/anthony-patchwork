@@ -6,7 +6,7 @@ You play **Patch**, a little yarn creature who can switch between three forms:
 | Form | What it does |
 |---|---|
 | 💧 **Water** | Turns into a jiggly bubble that slips through drain grates and rides fountains up. |
-| 🧶 **Yarn** | A little knitted toy. Throws his yarn arm at pink anchors and swings across big gaps. |
+| 🧶 **Yarn** | A knitted toy with a yarn-ball head, button eyes and a stitched suit. Throws his yarn arm at pink anchors and swings across big gaps. |
 | 🌬️ **Wind** | A happy cloud that glides, falls slowly, and gets one gust per jump. |
 
 Right now there's a hub (**The Sewing Room**) and one level (**The Sewing Basket Garden**) with
@@ -28,6 +28,7 @@ golden buttons and thread spools to find.
 | Confirm / Cancel in menus | ✕ / ◯ | Enter or Space / Esc or Backspace |
 | Satchel (forms, buttons, hats) | Touchpad (or Create) | Tab |
 | Pause | Options | Esc |
+| Yarn's face (happy / sad / angry) | D-pad Up / Down / Right | 1 / 2 / 3 |
 
 In the Form Wheel, point either stick (or the D-pad) at a form: Yarn is at the top, Water is
 lower-left, Wind is lower-right. Time slows while the wheel is open.

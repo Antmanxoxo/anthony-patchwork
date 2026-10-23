@@ -173,6 +173,9 @@ namespace Patchwork
                     if (Input.Pause.WasPressedThisFrame()) OpenPause();
                     else if (Input.FormWheel.WasPressedThisFrame()) OpenWheel();
                     else if (Input.Satchel.WasPressedThisFrame()) OpenSatchel();
+                    else if (Input.FaceHappy.WasPressedThisFrame()) SetPatchFace(PatchModel.Face.Happy);
+                    else if (Input.FaceSad.WasPressedThisFrame()) SetPatchFace(PatchModel.Face.Sad);
+                    else if (Input.FaceAngry.WasPressedThisFrame()) SetPatchFace(PatchModel.Face.Angry);
                     break;
                 case UIMode.FormWheel:
                     Selector.Update(udt);
@@ -380,6 +383,15 @@ namespace Patchwork
             Sfx.Play(SfxId.Respawn, 0.5f);
             FxBurst.Spawn(FxBurst.Kind.Scraps, respawnPoint + Vector3.up, FormLibrary.Get(Player.Forms.Current).PrimaryColor);
             if (fell) ShowToast("Oops! Back to the last checkpoint.");
+        }
+
+        // Swap Yarn's face. A little pop and sound so it's obvious it worked (only when you can see it).
+        void SetPatchFace(PatchModel.Face face)
+        {
+            Player.Visuals.SetFace(face);
+            if (Player.Forms.Current != FormType.Yarn) return;
+            Player.Visuals.PunchScale(new Vector3(1.08f, 0.94f, 1.08f));
+            Sfx.Play(SfxId.HintYarn, 0.3f);
         }
 
         public void CompleteLevel()

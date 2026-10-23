@@ -1,5 +1,14 @@
 # Development Log
 
+## Patch model
+- Made a proper 3D model of Patch in Blender for the Yarn form: yarn-ball head with wound yarn,
+  mismatched button eyes, cardboard eyebrows, a paper mouth, felt cheeks, and a stitched knit suit
+  with a bowtie, pockets, coat tails and a worn knee patch. His right arm unravels into a yarn rope.
+- Rigged him (14 bones) and animated Idle, Walk, Run, Jump, Fall, Land, Swing, Wave and Celebrate.
+- Three faces you can swap with the D-pad (or 1 / 2 / 3): happy, sad and angry.
+- Baked his materials into one colour texture and one normal map so Unity can use them.
+- In game his animation follows what he's doing, and his yarn arm points at the anchor while swinging.
+
 ## Build prep
 - Added small materials in Resources so the build keeps the shader versions for the bumpy
   textures, glow and the see-through bubble (Unity strips unused ones from builds).

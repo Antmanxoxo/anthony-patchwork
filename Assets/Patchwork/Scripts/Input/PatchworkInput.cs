@@ -7,6 +7,7 @@ namespace Patchwork
     // Move: left stick / WASD      Camera: right stick / mouse
     // Jump: X / Space              Ability: Square / E or left click
     // Form Wheel: L1 or R1 / Q     Satchel: touchpad / Tab     Pause: Options / Esc
+    // Yarn's face: D-pad up / down / right (or 1 / 2 / 3) for happy / sad / angry
     // Menus: X / Enter to confirm, Circle / Esc to back out
     public class PatchworkInput
     {
@@ -31,6 +32,9 @@ namespace Patchwork
         public readonly InputAction Pick1;
         public readonly InputAction Pick2;
         public readonly InputAction Pick3;
+        public readonly InputAction FaceHappy;
+        public readonly InputAction FaceSad;
+        public readonly InputAction FaceAngry;
 
         public enum PromptMode { Auto = 0, PlayStation = 1, Keyboard = 2 }
         const string PromptModeKey = "pw_prompt_mode";
@@ -85,6 +89,9 @@ namespace Patchwork
             Pick1 = Button("Pick1", "<Keyboard>/1");
             Pick2 = Button("Pick2", "<Keyboard>/2");
             Pick3 = Button("Pick3", "<Keyboard>/3");
+            FaceHappy = Button("FaceHappy", "<Gamepad>/dpad/up", "<Keyboard>/1");
+            FaceSad = Button("FaceSad", "<Gamepad>/dpad/down", "<Keyboard>/2");
+            FaceAngry = Button("FaceAngry", "<Gamepad>/dpad/right", "<Keyboard>/3");
 
             map.Enable();
             detectedKeyboard = Gamepad.current == null;

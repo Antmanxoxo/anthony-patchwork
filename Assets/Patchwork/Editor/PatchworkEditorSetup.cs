@@ -28,6 +28,7 @@ namespace Patchwork.EditorTools
             ApplyPlayModeStartScene();
             EnsureLitMaterial();
             EnsureVariantMaterials();
+            PatchModelImport.EnsureImported();
 
             if (!SessionState.GetBool(OpenedHubKey, false))
             {

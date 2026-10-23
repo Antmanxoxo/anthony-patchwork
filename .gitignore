@@ -37,3 +37,7 @@ crashlytics-build.properties
 # OS
 .DS_Store
 Thumbs.db
+
+# Blender previews
+/Art/Previews/
+/Art/*.blend1

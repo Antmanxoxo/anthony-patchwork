@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Patchwork
 {
     // Builds Patch's three bodies and animates them:
-    // Yarn is a little knitted toy (walks, flails when jumping, throws his arm out to swing),
+    // Yarn is the Blender-made knitted toy (PatchModel), with a block-built backup if it's missing,
     // Water is a jiggly see-through bubble with big eyes, Wind is a floating happy cloud.
     // Also does the short change animations between forms (soak, steam, rain, unravel...).
     // Hats sit on their own transform so changing form never resets them.
@@ -28,7 +28,8 @@ namespace Patchwork
         readonly GameObject[] hats = new GameObject[4];
         static MaterialPropertyBlock mpb;
 
-        // Yarn rig
+        // Yarn rig (the Blender model if it's there, otherwise the block-built toy)
+        PatchModel patchModel;
         Transform yarnTorso, yarnHead, hipL, hipR, shoulderL, shoulderR, armR, handR;
         // Water rig
         Transform bubble, bubbleEyes;
@@ -129,6 +130,14 @@ namespace Patchwork
         {
             tethered = on;
             tetherTarget = target;
+            if (patchModel != null) patchModel.SetTether(on, target);
+        }
+
+        // Yarn's face (happy / sad / angry). Remembered even while in another form.
+        public void SetFace(PatchModel.Face face)
+        {
+            if (patchModel != null) patchModel.SetFace(face);
+            else PatchModel.CurrentFace = face;
         }
 
         // 1 = normal, 0 = fully shrunk (portal warp).
@@ -162,6 +171,7 @@ namespace Patchwork
             float hatY = FormLibrary.Get(form).HeadHeight;
             if (form == FormType.Wind && cloud != null) hatY += cloud.localPosition.y;
             if (form == FormType.Yarn && yarnHead != null) hatY += yarnTorso.localPosition.y;
+            if (form == FormType.Yarn && patchModel != null) hatY = patchModel.HatHeight(root);
             if (form == FormType.Water && bubble != null) hatY *= bubble.localScale.y;
             Vector3 ap = accessoryRoot.localPosition;
             ap.y = Mathf.Lerp(ap.y, hatY, 1f - Mathf.Exp(-14f * dt));
@@ -171,6 +181,7 @@ namespace Patchwork
         void AnimateYarn(PlayerMotor motor, float speed, Vector3 localVel, float dt)
         {
             if (!yarn.Root.gameObject.activeSelf) return;
+            if (patchModel != null) { patchModel.Tick(motor, dt); return; }
             bool air = !motor.Grounded;
             float stride = Mathf.Clamp01(speed / 3f);
             walkPhase += speed * dt * 2.6f;
@@ -408,6 +419,16 @@ namespace Patchwork
             var def = FormLibrary.Get(FormType.Yarn);
             building = yarn;
             yarn.Root = Pivot("YarnForm", root, Vector3.zero);
+
+            patchModel = PatchModel.Create(yarn.Root);
+            if (patchModel != null)
+            {
+                foreach (var r in patchModel.Renderers) { yarn.Renderers.Add(r); yarn.Colors.Add(Color.white); }
+                handR = patchModel.HandR;
+                building = null;
+                return;
+            }
+
             var body = PatchworkAssets.Knit(def.PrimaryColor);
             var cream = PatchworkAssets.Felt(def.SecondaryColor);
             var dark = PatchworkAssets.Knit(new Color(0.62f, 0.25f, 0.38f));
