@@ -45,9 +45,12 @@ namespace Patchwork
             public static readonly Color Sage = new Color(0.62f, 0.78f, 0.6f);
             public static readonly Color Peach = new Color(0.98f, 0.72f, 0.6f);
             public static readonly Color Lavender = new Color(0.75f, 0.68f, 0.9f);
-            public static readonly Color Sky = new Color(0.6f, 0.78f, 0.95f);
+            // Rose and Sky are toned down for decoration, so the bright pink of yarn anchors and the
+            // bright blue of water things are only ever on objects you can use.
+            public static readonly Color Sky = new Color(0.64f, 0.74f, 0.84f);
             public static readonly Color Butter = new Color(0.98f, 0.88f, 0.55f);
-            public static readonly Color Rose = new Color(0.95f, 0.62f, 0.7f);
+            public static readonly Color Rose = new Color(0.84f, 0.64f, 0.68f);
+            public static readonly Color AnchorPink = new Color(0.95f, 0.45f, 0.62f);
             public static readonly Color Denim = new Color(0.38f, 0.5f, 0.72f);
             public static readonly Color Walnut = new Color(0.55f, 0.4f, 0.3f);
             public static readonly Color Moss = new Color(0.45f, 0.62f, 0.45f);
@@ -236,7 +239,8 @@ namespace Patchwork
         public void Cloud(Vector3 pos, float size)
         {
             var g = Group("Cloud", pos);
-            var m = PatchworkAssets.Felt(new Color(1f, 1f, 1f));
+            // Warm cream, not white, so scenery clouds never look like Wind Form or an updraft.
+            var m = PatchworkAssets.Felt(new Color(0.98f, 0.91f, 0.84f));
             Deco(PrimitiveType.Sphere, Vector3.zero, new Vector3(2f, 1.1f, 1.3f) * size, m, default(Vector3), g);
             Deco(PrimitiveType.Sphere, new Vector3(0.9f, 0.3f, 0f) * size, new Vector3(1.4f, 1.2f, 1.1f) * size, m, default(Vector3), g);
             Deco(PrimitiveType.Sphere, new Vector3(-0.9f, 0.15f, 0.1f) * size, new Vector3(1.3f, 0.9f, 1f) * size, m, default(Vector3), g);
@@ -304,8 +308,8 @@ namespace Patchwork
             anchor.Range = range;
             var vis = new GameObject("Visual").transform;
             vis.SetParent(g, false);
-            var disc = Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1.5f, 0.14f, 1.5f), PatchworkAssets.Felt(Palette.Rose), new Vector3(90f, 0f, 0f), vis);
-            var rim = Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, 0f), new Vector3(1.75f, 0.1f, 1.75f), PatchworkAssets.Felt(Palette.Rose), new Vector3(90f, 0f, 0f), vis);
+            var disc = Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1.5f, 0.14f, 1.5f), PatchworkAssets.Felt(Palette.AnchorPink), new Vector3(90f, 0f, 0f), vis);
+            var rim = Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, 0f), new Vector3(1.75f, 0.1f, 1.75f), PatchworkAssets.Felt(Palette.AnchorPink), new Vector3(90f, 0f, 0f), vis);
             var hole = PatchworkAssets.Plain(new Color(0.45f, 0.12f, 0.25f), 0.3f);
             for (int i = 0; i < 4; i++)
             {
@@ -314,7 +318,7 @@ namespace Patchwork
                 Deco(PrimitiveType.Cylinder, new Vector3(x, y, 0f), new Vector3(0.18f, 0.16f, 0.18f), hole, new Vector3(90f, 0f, 0f), vis);
             }
             // The thread it hangs from, disappearing into the sky.
-            Deco(PrimitiveType.Cylinder, pos + Vector3.up * 20f, new Vector3(0.05f, 19.2f, 0.05f), PatchworkAssets.Yarn(Palette.Rose));
+            Deco(PrimitiveType.Cylinder, pos + Vector3.up * 20f, new Vector3(0.05f, 19.2f, 0.05f), PatchworkAssets.Yarn(Palette.AnchorPink));
             anchor.Setup(vis, new Renderer[] { disc.GetComponent<Renderer>(), rim.GetComponent<Renderer>() }, new Color(1f, 0.45f, 0.65f));
             return anchor;
         }

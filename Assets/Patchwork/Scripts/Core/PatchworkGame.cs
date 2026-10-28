@@ -41,6 +41,11 @@ namespace Patchwork
         // How long a tutorial card stays up before sliding away.
         public const float HintDuration = 7f;
         public float HintAge { get; private set; }
+        bool hintPlayerInside;
+        public bool HintHeld { get { return hintPlayerInside; } }
+        // After walking out of a hint zone, the card stays this long before sliding away.
+        const float HintLinger = 1.5f;
+        const float HintSlideOut = 0.45f;
         public float TitleTimer { get; private set; }
         public float Fade { get; private set; }
         public Color FadeColor { get; private set; }
@@ -263,6 +268,8 @@ namespace Patchwork
             if (ActiveHint != null)
             {
                 HintAge += udt;
+                // The card waits while you're standing in its zone, so slow readers can finish it.
+                if (hintPlayerInside) HintAge = Mathf.Min(HintAge, HintDuration - HintSlideOut - 0.01f);
                 if (HintAge >= HintDuration) ActiveHint = null;
             }
             if (ToastTimer > 0f) ToastTimer -= udt;
@@ -404,7 +411,13 @@ namespace Patchwork
 
         public void ShowHint(HintZone zone)
         {
-            if (ActiveHint == zone && HintAge < HintDuration) return;
+            if (ActiveHint == zone && HintAge < HintDuration)
+            {
+                // Walked back in before it slid away: keep it up.
+                hintPlayerInside = true;
+                HintAge = Mathf.Min(HintAge, HintDuration - HintSlideOut - 0.01f);
+                return;
+            }
             // Level cards only show the first time; the hub's practice cards always show.
             if (!Level.IsHub)
             {
@@ -414,6 +427,7 @@ namespace Patchwork
             }
             ActiveHint = zone;
             HintAge = 0f;
+            hintPlayerInside = true;
             switch (zone.Theme)
             {
                 case HintTheme.Water: Sfx.Play(SfxId.HintWater, 0.55f); break;
@@ -426,7 +440,9 @@ namespace Patchwork
         // Leaving the zone makes the card slide away early.
         public void ClearHint(HintZone zone)
         {
-            if (ActiveHint == zone && HintAge < HintDuration - 0.45f) HintAge = HintDuration - 0.45f;
+            if (ActiveHint != zone) return;
+            hintPlayerInside = false;
+            HintAge = Mathf.Max(HintAge, HintDuration - HintSlideOut - HintLinger);
         }
 
         // Thread spools picked up this visit.

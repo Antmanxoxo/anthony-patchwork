@@ -19,6 +19,12 @@ namespace Patchwork
         float confirmFlash;
         float sideCooldown;
 
+        // "Are you sure?" card for options that lose progress. Starts on No.
+        bool confirming;
+        Item confirmItem;
+        bool confirmYes;
+        float confirmTime;
+
         public PauseMenu(PatchworkGame game)
         {
             this.game = game;
@@ -42,6 +48,7 @@ namespace Patchwork
             openTime = 0f;
             stickCooldown = 0f;
             confirmFlash = 0f;
+            confirming = false;
             Sfx.Play(SfxId.PauseOpen, 0.45f);
         }
 
@@ -113,17 +120,22 @@ namespace Patchwork
             }
         }
 
-        // Change a 0..10 setting and give a taste of the new level straight away.
+        // Change a 0..10 setting and give a taste of the new level straight away. The little tick
+        // climbs in pitch as the value goes up and drops as it goes down.
         void SetSlider(Item item, int value)
         {
             value = Mathf.Clamp(value, 0, 10);
             switch (item)
             {
                 case Item.Music: MusicPlayer.Volume = value; break;
-                case Item.Sounds: Sfx.Volume = value; Sfx.Play(SfxId.MenuMove, 0.6f); break;
+                case Item.Sounds: Sfx.Volume = value; break;
                 default: Haptics.Strength = value; Haptics.Preview(); break;
             }
             PlayerPrefs.Save();
+            float pitch = Mathf.Lerp(0.7f, 1.6f, value / 10f);
+            // The sound slider's tick also gets louder or quieter with it; the others stay at a
+            // fixed loudness (and still make a quiet tick at 0 so you know it registered).
+            Sfx.PlayPitched(SfxId.MenuMove, item == Item.Sounds ? 0.7f : 0.5f, pitch);
         }
 
         public void Update(float udt)
@@ -134,6 +146,12 @@ namespace Patchwork
             confirmFlash = Mathf.MoveTowards(confirmFlash, 0f, udt * 3f);
             highlightPos = Mathf.Lerp(highlightPos, index, 1f - Mathf.Exp(-16f * udt));
             var input = game.Input;
+
+            if (confirming)
+            {
+                UpdateConfirm(udt);
+                return;
+            }
 
             if (openTime > 0.05f && (input.Pause.WasPressedThisFrame() || input.Cancel.WasPressedThisFrame()))
             {
@@ -169,9 +187,7 @@ namespace Patchwork
                 if (side != 0)
                 {
                     sideCooldown = 0.18f;
-                    int before = SliderValue(cur);
-                    SetSlider(cur, before + side);
-                    if (cur != Item.Sounds && SliderValue(cur) != before) Sfx.Play(SfxId.MenuMove, 0.4f);
+                    SetSlider(cur, SliderValue(cur) + side);
                     selectTime = 0f;
                 }
             }
@@ -187,11 +203,9 @@ namespace Patchwork
                         game.ClosePause();
                         break;
                     case Item.Restart:
-                        game.ClosePause();
-                        game.Respawn(false);
-                        break;
                     case Item.ReturnToHub:
-                        game.LoadScene(HubBuilder.SceneName);
+                    case Item.Quit:
+                        OpenConfirm(items[index]);
                         break;
                     case Item.Prompts:
                         input.Prompts = (PatchworkInput.PromptMode)(((int)input.Prompts + 1) % 3);
@@ -206,11 +220,138 @@ namespace Patchwork
                         int v = SliderValue(items[index]);
                         SetSlider(items[index], v >= 10 ? 0 : v + 1);
                         break;
+                }
+            }
+        }
+
+        void OpenConfirm(Item item)
+        {
+            confirming = true;
+            confirmItem = item;
+            confirmYes = false;
+            confirmTime = 0f;
+        }
+
+        void UpdateConfirm(float udt)
+        {
+            confirmTime += udt;
+            var input = game.Input;
+            if (confirmTime < 0.05f) return;
+
+            if (input.Cancel.WasPressedThisFrame() || input.Pause.WasPressedThisFrame())
+            {
+                confirming = false;
+                Sfx.Play(SfxId.MenuCancel, 0.4f);
+                return;
+            }
+
+            float sx = input.Move.ReadValue<Vector2>().x;
+            bool left = input.NavLeft.WasPressedThisFrame() || input.NavUp.WasPressedThisFrame();
+            bool right = input.NavRight.WasPressedThisFrame() || input.NavDown.WasPressedThisFrame();
+            if (Mathf.Abs(sx) > 0.6f && sideCooldown <= 0f) { if (sx < 0f) left = true; else right = true; }
+            if (Mathf.Abs(sx) < 0.3f) sideCooldown = 0f;
+            sideCooldown -= udt;
+            if (left || right)
+            {
+                sideCooldown = 0.25f;
+                bool want = right; // No on the left, Yes on the right
+                if (want != confirmYes)
+                {
+                    confirmYes = want;
+                    Sfx.Play(SfxId.MenuMove, 0.5f);
+                }
+            }
+
+            if (input.Confirm.WasPressedThisFrame())
+            {
+                confirming = false;
+                if (!confirmYes)
+                {
+                    Sfx.Play(SfxId.MenuCancel, 0.4f);
+                    return;
+                }
+                Sfx.Play(SfxId.MenuConfirm, 0.5f);
+                switch (confirmItem)
+                {
+                    case Item.Restart:
+                        game.ClosePause();
+                        game.Respawn(false);
+                        break;
+                    case Item.ReturnToHub:
+                        game.LoadScene(HubBuilder.SceneName);
+                        break;
                     case Item.Quit:
                         game.QuitGame();
                         break;
                 }
             }
+        }
+
+        void ConfirmText(out string title, out string body)
+        {
+            switch (confirmItem)
+            {
+                case Item.Restart:
+                    title = "Back to the last checkpoint?";
+                    body = "You'll start again from the last pin you touched.";
+                    break;
+                case Item.ReturnToHub:
+                    title = "Head back to the Sewing Room?";
+                    body = "Golden buttons are saved, but thread spools from this visit will be lost.";
+                    break;
+                default:
+                    title = "Quit Patchwork?";
+                    body = "Golden buttons are saved, but thread spools from this visit will be lost.";
+                    break;
+            }
+        }
+
+        void DrawConfirm(bool kb, Color ink)
+        {
+            float W = UIKit.Width, H = UIKit.Height;
+            float k = Mathf.Clamp01(confirmTime / 0.15f);
+            UIKit.Fill(new Rect(0f, 0f, W, H), new Color(0.1f, 0.07f, 0.15f, 0.45f * k));
+
+            string title, body;
+            ConfirmText(out title, out body);
+            float pw = 720f, ph = 340f;
+            float pop = UIKit.EaseOutBack(confirmTime / 0.3f);
+            var panel = new Rect((W - pw) * 0.5f, (H - ph) * 0.5f + (1f - pop) * 40f, pw, ph);
+            UIKit.Panel(panel, new Color(0.99f, 0.95f, 0.88f, 0.98f * k), UIKit.Thread);
+            UIKit.Label(new Rect(panel.x + 40f, panel.y + 34f, pw - 80f, 50f), title,
+                UIKit.Style(32, true, TextAnchor.MiddleCenter, new Color(ink.r, ink.g, ink.b, k)));
+            UIKit.Label(new Rect(panel.x + 60f, panel.y + 94f, pw - 120f, 80f), body,
+                UIKit.Style(24, false, TextAnchor.UpperCenter, new Color(ink.r, ink.g, ink.b, 0.85f * k), true));
+
+            // No / Yes buttons.
+            float bw = 220f, bh = 64f, gap = 40f;
+            float bx = panel.x + (pw - bw * 2f - gap) * 0.5f, by = panel.y + 186f;
+            for (int i = 0; i < 2; i++)
+            {
+                bool isYes = i == 1;
+                bool sel = isYes == confirmYes;
+                var r = new Rect(bx + i * (bw + gap), by, bw, bh);
+                Color c = isYes ? new Color(0.9f, 0.45f, 0.45f) : new Color(0.35f, 0.7f, 0.5f);
+                if (sel)
+                {
+                    float grow = 4f + Mathf.Sin(Time.unscaledTime * 4f) * 1.5f;
+                    var g = new Rect(r.x - grow, r.y - grow * 0.5f, r.width + grow * 2f, r.height + grow);
+                    UIKit.Fill(g, new Color(c.r, c.g, c.b, k), 20f);
+                    MarchingStitches(new Rect(g.x + 6f, g.y + 6f, g.width - 12f, g.height - 12f), new Color(1f, 1f, 1f, 0.85f * k), Time.unscaledTime * 40f);
+                }
+                else
+                {
+                    UIKit.Fill(r, new Color(1f, 1f, 1f, 0.7f * k), 18f);
+                    UIKit.Outline(r, new Color(ink.r, ink.g, ink.b, 0.25f * k), 2f, 18f);
+                }
+                UIKit.Label(r, isYes ? "Yes" : "No", UIKit.Style(26, true, TextAnchor.MiddleCenter,
+                    sel ? new Color(1f, 1f, 1f, k) : new Color(ink.r, ink.g, ink.b, k)));
+            }
+
+            float py = panel.yMax - 62f;
+            float px = panel.x + 150f;
+            px += UIKit.PromptLabel(px, py, 38f, PromptAction.Confirm, "Choose", kb, ink, k) + 30f;
+            UIKit.PromptLabel(px, py, 38f, PromptAction.Cancel, "Back", kb, ink, k);
         }
 
         public void Draw()
@@ -290,6 +431,8 @@ namespace Patchwork
             float px = panel.x + 70f;
             px += UIKit.PromptLabel(px, py, 38f, PromptAction.Confirm, "Select", kb, ink, fade) + 30f;
             UIKit.PromptLabel(px, py, 38f, PromptAction.Cancel, "Back to game", kb, ink, fade);
+
+            if (confirming) DrawConfirm(kb, ink);
         }
 
         // Ten little stitched pills, filled up to the current value.

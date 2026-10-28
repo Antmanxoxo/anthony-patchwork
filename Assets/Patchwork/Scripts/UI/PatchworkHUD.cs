@@ -112,7 +112,7 @@ namespace Patchwork
             {
                 case FormType.Water:
                     UIKit.Label(new Rect(x, y, 440f, 90f), "Slip through blue drain grates.\nRide blue fountains upward.",
-                        UIKit.Style(20, false, TextAnchor.UpperLeft, ink, true));
+                        UIKit.Style(23, false, TextAnchor.UpperLeft, ink, true));
                     break;
 
                 case FormType.Yarn:
@@ -251,7 +251,7 @@ namespace Patchwork
                     break;
             }
 
-            float w = 800f, h = 148f;
+            float w = 940f, h = 182f;
             float y = Mathf.LerpUnclamped(-h - 20f, 24f, tin) - tout * (h + 60f);
             var r = new Rect((UIKit.Width - w) * 0.5f, y, w, h);
             float t = Time.unscaledTime;
@@ -312,12 +312,12 @@ namespace Patchwork
 
             float tx = r.x + 140f;
             float tw = w - 140f - (hint.Theme == HintTheme.Neutral ? 40f : 110f);
-            UIKit.Label(new Rect(tx, r.y + 22f, tw, 36f), hint.Title, UIKit.Style(27, true, TextAnchor.MiddleLeft, title));
-            UIKit.Label(new Rect(tx, r.y + 60f, tw, 76f), hint.Body,
-                UIKit.Style(19, false, TextAnchor.UpperLeft, new Color(title.r * 0.6f + 0.1f, title.g * 0.6f + 0.1f, title.b * 0.6f + 0.1f, 0.95f), true));
+            UIKit.Label(new Rect(tx, r.y + 22f, tw, 40f), hint.Title, UIKit.Style(29, true, TextAnchor.MiddleLeft, title));
+            UIKit.Label(new Rect(tx, r.y + 66f, tw, 104f), hint.Body,
+                UIKit.Style(24, false, TextAnchor.UpperLeft, new Color(title.r * 0.6f + 0.1f, title.g * 0.6f + 0.1f, title.b * 0.6f + 0.1f, 0.95f), true));
 
-            // Thread "timer" running down along the bottom.
-            float remain = Mathf.Clamp01(1f - age / D);
+            // Thread "timer" along the bottom: full while you're in the zone, runs down once you leave.
+            float remain = Game.HintHeld ? 1f : Mathf.Clamp01((D - 0.45f - age) / 1.5f);
             UIKit.Fill(new Rect(r.x + 24f, r.yMax - 8f, (r.width - 48f) * remain, 3f), new Color(stitch.r, stitch.g, stitch.b, 0.5f), 1.5f);
         }
 

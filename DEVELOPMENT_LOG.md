@@ -1,5 +1,18 @@
 # Development Log
 
+## Polish pass 3
+- Changing Music, Sound or Rumble in the pause menu plays a tick that goes up in pitch as the
+  setting goes up, and down as it goes down.
+- Form Wheel: the description moved to its own card above the wheel, so the text no longer runs
+  into the form pictures. Only the form's name sits in the middle.
+- Restart, Return to the Sewing Room and Quit now ask "Are you sure?" first (starts on No).
+- Bigger text on tutorial cards, the form panel, the Form Wheel and the Satchel.
+- Tutorial cards stay up while you're standing in their area, and slide away 1.5 seconds after
+  you leave.
+- Decorations use softer pink and blue, so bright pink means a yarn anchor and bright blue means
+  water. Scenery clouds are cream so they don't look like Wind Form.
+- Text can use crafted fonts from `Resources/Fonts` (Fredoka, Sniglet).
+
 ## Polish pass 2
 - Wind's gust no longer re-launches the glide, so Wind can't skip the Yarn swing any more.
   Made the Wind gap 7m so gliding alone gets you over.

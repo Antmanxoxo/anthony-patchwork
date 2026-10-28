@@ -126,12 +126,17 @@ namespace Patchwork
                 }
             }
 
-            // Centre description.
+            // Only the name sits in the middle, in the gap between the three pictures. The longer
+            // description goes in its own card above the wheel so it never runs into them.
             var hdef = FormLibrary.Get(Highlight);
-            UIKit.Label(new Rect(c.x - 150f, c.y - 50f, 300f, 40f), hdef.DisplayName,
+            UIKit.Label(new Rect(c.x - 110f, c.y - 34f, 220f, 44f), hdef.DisplayName,
                 UIKit.Style(30, true, TextAnchor.MiddleCenter, new Color(UIKit.Ink.r, UIKit.Ink.g, UIKit.Ink.b, k)));
-            UIKit.Label(new Rect(c.x - 140f, c.y - 8f, 280f, 120f), hdef.Tagline,
-                UIKit.Style(17, false, TextAnchor.UpperCenter, new Color(UIKit.Ink.r, UIKit.Ink.g, UIKit.Ink.b, 0.85f * k), true));
+
+            var tagStyle = UIKit.Style(24, false, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, k), true);
+            const float tagW = 860f, tagH = 84f;
+            var tagRect = new Rect(c.x - tagW * 0.5f, c.y - ringD * 0.5f - tagH - 34f, tagW, tagH);
+            UIKit.Pill(tagRect, k);
+            UIKit.Label(new Rect(tagRect.x + 30f, tagRect.y + 6f, tagRect.width - 60f, tagRect.height - 12f), hdef.Tagline, tagStyle);
 
             // Prompts.
             float y = c.y + ringD * 0.5f + 28f;

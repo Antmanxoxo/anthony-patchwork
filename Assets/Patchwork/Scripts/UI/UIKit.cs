@@ -39,6 +39,30 @@ namespace Patchwork
             GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(Scale, Scale, 1f));
         }
 
+        // Crafted fonts (Resources/Fonts): Fredoka for everyday text, Sniglet's puffy cut-felt letters
+        // for big titles. If they're missing, Unity's default font is used so nothing breaks.
+        static Font bodyFont, bodyBoldFont, titleFont;
+        static bool fontsLoaded;
+        const int TitleSize = 30;
+
+        static void LoadFonts()
+        {
+            if (fontsLoaded && (bodyFont != null || bodyBoldFont != null || titleFont != null)) return;
+            fontsLoaded = true;
+            bodyFont = Resources.Load<Font>("Fonts/Fredoka-Medium");
+            bodyBoldFont = Resources.Load<Font>("Fonts/Fredoka-SemiBold");
+            titleFont = Resources.Load<Font>("Fonts/Sniglet-ExtraBold");
+            if (bodyBoldFont == null) bodyBoldFont = bodyFont;
+            if (titleFont == null) titleFont = bodyBoldFont;
+        }
+
+        static Font FontFor(int size, bool bold)
+        {
+            LoadFonts();
+            if (bold && size >= TitleSize && titleFont != null) return titleFont;
+            return bold ? bodyBoldFont : bodyFont;
+        }
+
         public static GUIStyle Style(int size, bool bold, TextAnchor anchor, Color color, bool wrap = false)
         {
             int key = (size & 0xFF) | (bold ? 1 << 8 : 0) | ((int)anchor << 9) | (wrap ? 1 << 13 : 0);
@@ -50,7 +74,10 @@ namespace Patchwork
             }
             s = new GUIStyle(GUI.skin.label);
             s.fontSize = size;
-            s.fontStyle = bold ? FontStyle.Bold : FontStyle.Normal;
+            var font = FontFor(size, bold);
+            s.font = font;
+            // The crafted fonts have real bold cuts, so don't fake-bold them on top.
+            s.fontStyle = bold && font == null ? FontStyle.Bold : FontStyle.Normal;
             s.alignment = anchor;
             s.wordWrap = wrap;
             s.richText = false;

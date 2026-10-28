@@ -65,8 +65,8 @@ namespace Patchwork
             var ink = UIKit.Ink;
 
             UIKit.Label(new Rect(panel.x + 50f, panel.y + 36f, 600f, 50f), "Patch's Satchel", UIKit.Style(40, true, TextAnchor.MiddleLeft, ink));
-            UIKit.Label(new Rect(panel.x + 50f, panel.y + 84f, 700f, 30f), "Your forms, your finds, your hat. (Change form any time with the Form Wheel.)",
-                UIKit.Style(18, false, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.75f)));
+            UIKit.Label(new Rect(panel.x + 50f, panel.y + 84f, 940f, 30f), "Your forms, your finds, your hat. (Change form any time with the Form Wheel.)",
+                UIKit.Style(21, false, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.75f)));
 
             // Forms column.
             float y = panel.y + 135f;
@@ -83,9 +83,9 @@ namespace Patchwork
                 string status = !unlocked ? "LOCKED" : form == current ? "WEARING" : "READY";
                 var tag = new Rect(row.xMax - 130f, row.y + 16f, 110f, 28f);
                 UIKit.Fill(tag, form == current ? ink : new Color(ink.r, ink.g, ink.b, 0.45f), 14f);
-                UIKit.Label(tag, status, UIKit.Style(15, true, TextAnchor.MiddleCenter, Color.white));
+                UIKit.Label(tag, status, UIKit.Style(18, true, TextAnchor.MiddleCenter, Color.white));
                 UIKit.Label(new Rect(row.x + 128f, row.y + 48f, 455f, 76f), def.AbilityHint,
-                    UIKit.Style(16, false, TextAnchor.UpperLeft, new Color(ink.r, ink.g, ink.b, 0.85f), true));
+                    UIKit.Style(20, false, TextAnchor.UpperLeft, new Color(ink.r, ink.g, ink.b, 0.85f), true));
                 y += 140f;
             }
 
@@ -107,7 +107,7 @@ namespace Patchwork
             }
             UIKit.Label(new Rect(rx + 130f, ry + 62f, 180f, 50f), count, UIKit.Style(40, true, TextAnchor.MiddleLeft, ink));
             UIKit.Label(new Rect(rx + 130f, ry + 110f, 180f, 30f), level.IsHub ? "in Level 1" : "in this level",
-                UIKit.Style(16, false, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.7f)));
+                UIKit.Style(20, false, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.7f)));
 
             var hatBox = new Rect(rx, ry + 210f, 320f, 190f);
             UIKit.Fill(hatBox, new Color(1f, 1f, 1f, 0.5f), 18f);
@@ -115,7 +115,7 @@ namespace Patchwork
             string hatName = FormVisuals.HatNames[Mathf.Clamp(GameState.HatIndex, 0, FormVisuals.HatNames.Length - 1)];
             UIKit.Label(new Rect(rx + 20f, ry + 266f, 280f, 50f), "<   " + hatName + "   >", UIKit.Style(26, true, TextAnchor.MiddleCenter, ink));
             UIKit.Label(new Rect(rx + 24f, ry + 320f, 280f, 60f), "Hats stay on in every form.",
-                UIKit.Style(16, false, TextAnchor.UpperCenter, new Color(ink.r, ink.g, ink.b, 0.7f), true));
+                UIKit.Style(20, false, TextAnchor.UpperCenter, new Color(ink.r, ink.g, ink.b, 0.7f), true));
 
             // Prompts
             float py = panel.yMax - 66f;

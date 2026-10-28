@@ -138,7 +138,8 @@ namespace Patchwork
             PlayPitched(id, volume, PickupSteps[pickupStep]);
         }
 
-        static void PlayPitched(SfxId id, float volume, float pitch)
+        // Play at an exact pitch (1 = normal, 2 = an octave up).
+        public static void PlayPitched(SfxId id, float volume, float pitch)
         {
             if (voices == null) return;
             AudioClip clip;

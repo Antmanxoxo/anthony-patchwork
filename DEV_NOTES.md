@@ -48,6 +48,10 @@ Stuff I need to remember about how Patchwork is put together.
 - Rumble goes through `Haptics` only (never call the gamepad directly), so pausing and quitting
   always stop it.
 - Saved settings: `pw_music_volume`, `pw_sfx_volume`, `pw_rumble` (0-10).
+- Colour rule: saturated pink (`Palette.AnchorPink`) is only for yarn anchors, bright blue only for
+  water things, white only for Wind/updrafts. Decoration uses the softer `Rose` / `Sky`.
+- Fonts: `UIKit.Style` uses `Resources/Fonts/Fredoka-Medium`, `Fredoka-SemiBold` (bold) and
+  `Sniglet-ExtraBold` (bold, 30px and up). Missing files fall back to Unity's default font.
 - Level 1's tutorial cards show once (saved as `pw_hint_<level>_<title>` in PlayerPrefs). Hub cards always show.
   To see them again while testing, clear PlayerPrefs (Edit > Clear All PlayerPrefs).
 - `BlobShadow` puts the shadow disc under Patch; its material copies the see-through + glow setup
