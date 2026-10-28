@@ -34,8 +34,8 @@ namespace Patchwork
 
             // Portal to Level 1.
             kit.AddPortal(new Vector3(0f, 0f, 10f), 0f, Level1Builder.SceneName, GameState.IsLevelComplete(Level1Builder.SceneName));
-            kit.Hint(new Vector3(0f, 1.5f, 7f), new Vector3(6f, 4f, 3f), "Level 1: The Quilted Meadow",
-                "Walk through the doorway to begin. Three golden buttons are hidden inside.");
+            kit.Hint(new Vector3(0f, 1.5f, 7f), new Vector3(6f, 4f, 3f), "Level 1: The Sewing Basket Garden",
+                "Walk through the doorway to begin. Three golden buttons are waiting inside.");
 
             // Yarn practice: an anchor over a gap to a little island (west).
             kit.Quilt(new Vector3(-21f, -0.5f, 0f), new Vector3(6f, 1f, 6f), LevelKit.Palette.Meadow, 3f, "SwingIsland");

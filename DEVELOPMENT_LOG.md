@@ -1,5 +1,18 @@
 # Development Log
 
+## Polish pass 1
+- Set the company name to Little Colossus and gave the game a proper ID.
+- Turned on VSync, with a 120 fps cap as a backup.
+- Saved the shader-keeper materials into the project so builds don't lose the bumpy, glow
+  and see-through looks.
+- Added a soft shadow disc straight under Patch in every form, so it's easier to tell where
+  you'll land. It shrinks and fades the higher you go.
+- The yarn rope now stays attached to Patch's hand instead of lagging a frame behind.
+- Falling into a pit respawns you almost straight away with a quick fade, instead of waiting
+  (gliding Wind used to float down for about 6 seconds).
+- Compressed Patch's textures (about 43 MB down to about 3 MB) with no visible difference.
+- Fixed the hub sign's level name, and Level 1's tutorial cards now only show the first time.
+
 ## Patch model
 - Made a proper 3D model of Patch in Blender for the Yarn form: yarn-ball head with wound yarn,
   mismatched button eyes, cardboard eyebrows, a paper mouth, felt cheeks, and a stitched knit suit

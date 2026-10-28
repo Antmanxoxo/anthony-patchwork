@@ -40,6 +40,9 @@ namespace Patchwork
             line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             line.sharedMaterial = PatchworkAssets.Glow(FormLibrary.Get(FormType.Yarn).PrimaryColor, 0.4f);
             line.enabled = false;
+
+            // Redraw the rope after the arm has been posed, so it never trails a frame behind the hand.
+            Player.Visuals.OnPoseApplied(() => { if (Attached) UpdateLine(); });
         }
 
         public override void OnEnter()

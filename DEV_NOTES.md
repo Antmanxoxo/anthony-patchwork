@@ -43,8 +43,14 @@ Stuff I need to remember about how Patchwork is put together.
 - Patch's animations: Idle, Walk, Run, Jump, Fall, Land, Swing, Wave (if you stand still a while),
   Celebrate (level complete). Played with the Playables API, no Animator Controller asset needed.
 - Only one menu open at a time.
+- Level 1's tutorial cards show once (saved as `pw_hint_<level>_<title>` in PlayerPrefs). Hub cards always show.
+  To see them again while testing, clear PlayerPrefs (Edit > Clear All PlayerPrefs).
+- `BlobShadow` puts the shadow disc under Patch; its material copies the see-through + glow setup
+  so the build already keeps that shader version.
 
 ## Numbers the level depends on
+- Every floor's top is at y = 0. Dropping 3m below that (`LevelInfo.FailY`) counts as a fall,
+  except while swinging on yarn. Don't build anything you're meant to stand on below y = -2.
 - Normal jump goes about 5m. Wind with glide + gust goes about 12m.
 - Yarn gap is 15m, Wind gap is 9m.
 - Water is 0.8m tall (0.32 radius), tunnels are 1m tall. Other forms are 1.4m tall (0.45 radius).

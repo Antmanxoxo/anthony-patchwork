@@ -32,6 +32,7 @@ namespace Patchwork
             player.Visuals = new FormVisuals(go.transform);
             player.Forms = new FormController(player);
             player.Forms.Initialise(GameState.CurrentForm);
+            BlobShadow.Create(player);
             return player;
         }
 

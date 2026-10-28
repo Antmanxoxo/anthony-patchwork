@@ -80,6 +80,12 @@ namespace Patchwork
             get { return handR != null ? handR.position : root.position + Vector3.up; }
         }
 
+        // Runs the callback each frame after Patch's final pose (only when the Blender model is loaded).
+        public void OnPoseApplied(System.Action callback)
+        {
+            if (patchModel != null) patchModel.PoseApplied += callback;
+        }
+
         // Instantly show a form (used at spawn).
         public void SetForm(FormType newForm, bool punchIt)
         {

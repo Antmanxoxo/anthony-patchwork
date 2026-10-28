@@ -154,6 +154,42 @@ namespace Patchwork
             return m;
         }
 
+        // Soft dark see-through disc (the shadow under Patch). Uses the same see-through + glow
+        // shader setup as the bubble so the build already keeps it.
+        public static Material SoftShadow(Texture2D mask)
+        {
+            EnsureInit();
+            const string key = "softshadow";
+            Material m;
+            if (cache.TryGetValue(key, out m) && m != null) return m;
+
+            m = litTemplate != null ? new Material(litTemplate) : new Material(litShader);
+            m.name = "PW_" + key;
+            m.SetColor("_BaseColor", new Color(0.12f, 0.08f, 0.14f, 1f));
+            m.SetColor("_Color", new Color(0.12f, 0.08f, 0.14f, 1f));
+            m.SetTexture("_BaseMap", mask);
+            m.SetTexture("_MainTex", mask);
+            m.SetFloat("_Smoothness", 0f);
+            m.SetFloat("_SpecularHighlights", 0f);
+            m.SetFloat("_EnvironmentReflections", 0f);
+            m.SetFloat("_Surface", 1f);
+            m.SetFloat("_Blend", 0f);
+            m.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            m.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            m.SetFloat("_SrcBlendAlpha", (float)UnityEngine.Rendering.BlendMode.One);
+            m.SetFloat("_DstBlendAlpha", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            m.SetFloat("_ZWrite", 0f);
+            m.SetOverrideTag("RenderType", "Transparent");
+            m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            m.DisableKeyword("_ALPHATEST_ON");
+            m.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent - 10;
+            m.SetShaderPassEnabled("ShadowCaster", false);
+            m.EnableKeyword("_EMISSION");
+            m.SetColor("_EmissionColor", Color.black);
+            cache[key] = m;
+            return m;
+        }
+
         public static Material Glow(Color color, float intensity)
         {
             EnsureInit();

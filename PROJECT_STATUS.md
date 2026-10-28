@@ -21,4 +21,3 @@
 
 ## Known issues
 - Levels are built in code, so changes go in `Level1Builder.cs` / `HubBuilder.cs`, not the Scene view.
-- Haven't tested a Windows build yet, only in the editor.

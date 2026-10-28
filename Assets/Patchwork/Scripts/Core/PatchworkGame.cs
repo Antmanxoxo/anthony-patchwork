@@ -78,6 +78,9 @@ namespace Patchwork
         {
             Instance = this;
             Time.timeScale = 1f;
+            // VSync is on in Quality settings; this cap only matters if a graphics driver forces it off,
+            // so the game never runs at hundreds of frames per second and heats up people's computers.
+            Application.targetFrameRate = 120;
             Input = new PatchworkInput();
 
             // Camera + audio
@@ -211,7 +214,7 @@ namespace Patchwork
                 MovingPlatform.TickAll(dt);
                 Player.Tick(frame, dt);
 
-                if (Player.transform.position.y < Level.KillY) Respawn(true);
+                if (Player.transform.position.y < Level.KillY || (Player.Motor.Center.y < Level.FailY && !Swinging())) Respawn(true);
             }
 
             Sfx.TickLoops(udt);
@@ -334,6 +337,13 @@ namespace Patchwork
         public void ShowHint(HintZone zone)
         {
             if (ActiveHint == zone && HintAge < HintDuration) return;
+            // Level cards only show the first time; the hub's practice cards always show.
+            if (!Level.IsHub)
+            {
+                string id = Level.Id + "_" + zone.Title;
+                if (GameState.IsHintSeen(id)) return;
+                GameState.SetHintSeen(id);
+            }
             ActiveHint = zone;
             HintAge = 0f;
             switch (zone.Theme)
@@ -376,8 +386,20 @@ namespace Patchwork
             }
         }
 
+        bool Swinging()
+        {
+            var yarn = Player.Forms.Ability as YarnAbility;
+            return yarn != null && yarn.Attached;
+        }
+
         public void Respawn(bool fell)
         {
+            if (fell)
+            {
+                // Quick dip to dark so the jump back to the checkpoint isn't a jarring cut.
+                FadeColor = DefaultFadeColor;
+                Fade = Mathf.Max(Fade, 0.65f);
+            }
             Player.Respawn(respawnPoint, respawnYaw);
             CameraRig.SnapBehind(respawnYaw);
             Sfx.Play(SfxId.Respawn, 0.5f);

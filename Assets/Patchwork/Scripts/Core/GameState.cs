@@ -11,6 +11,7 @@ namespace Patchwork
         const string KeyHat = "pw_cosmetic_hat";
         const string KeyCollectPrefix = "pw_collect_";
         const string KeyCompletePrefix = "pw_complete_";
+        const string KeyHintPrefix = "pw_hint_";
 
         // ----- Forms -----
         public static FormType CurrentForm
@@ -67,6 +68,17 @@ namespace Patchwork
         {
             PlayerPrefs.SetInt(KeyCompletePrefix + levelId, 1);
             PlayerPrefs.Save();
+        }
+
+        // ----- Tutorial cards (each level card shows once) -----
+        public static bool IsHintSeen(string id)
+        {
+            return PlayerPrefs.GetInt(KeyHintPrefix + id, 0) == 1;
+        }
+
+        public static void SetHintSeen(string id)
+        {
+            PlayerPrefs.SetInt(KeyHintPrefix + id, 1);
         }
 
         public static void Save()

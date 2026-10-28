@@ -18,6 +18,9 @@ namespace Patchwork
         public Vector3 Spawn;
         public float SpawnYaw;
         public float KillY = -12f;
+        // Falling this far below the floor (y = 0) counts as a fall, so you respawn right away
+        // instead of waiting to drop all the way to KillY. Ignored while swinging on yarn.
+        public float FailY = -3f;
         public Color Sky = new Color(0.78f, 0.86f, 0.95f);
         public readonly List<string> CollectibleIds = new List<string>();
         public int ThreadTotal;

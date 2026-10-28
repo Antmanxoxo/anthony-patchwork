@@ -317,12 +317,20 @@ namespace Patchwork
             }
 
             // After the animation: aim the yarn arm at the anchor so the rope lines up.
-            if (!tethered || armR == null || HandR == null) return;
-            Vector3 cur = HandR.position - armR.position;
-            Vector3 want = tetherTarget - armR.position;
-            if (cur.sqrMagnitude < 1e-6f || want.sqrMagnitude < 1e-6f) return;
-            armR.rotation = Quaternion.FromToRotation(cur, want) * armR.rotation;
+            if (tethered && armR != null && HandR != null)
+            {
+                Vector3 cur = HandR.position - armR.position;
+                Vector3 want = tetherTarget - armR.position;
+                if (cur.sqrMagnitude > 1e-6f && want.sqrMagnitude > 1e-6f)
+                    armR.rotation = Quaternion.FromToRotation(cur, want) * armR.rotation;
+            }
+
+            // The hand is in its final spot now, so anything attached to it (the rope) can follow.
+            if (PoseApplied != null) PoseApplied();
         }
+
+        // Called at the end of every LateUpdate, once the pose and arm aim are final.
+        public System.Action PoseApplied;
 
         void OnDestroy()
         {
