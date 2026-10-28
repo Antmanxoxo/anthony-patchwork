@@ -135,21 +135,28 @@ namespace Patchwork
 
         // Texture repeats are baked into a shared copy of the material (one per material + repeat
         // count) instead of a per-object override, so Unity can still batch the level's draws.
-        static readonly Dictionary<string, Material> tiledMaterials = new Dictionary<string, Material>();
+        static readonly Dictionary<Material, Dictionary<Vector2, Material>> tiledMaterials =
+            new Dictionary<Material, Dictionary<Vector2, Material>>();
 
         static void SetTiling(Renderer r, float x, float y)
         {
             var source = r.sharedMaterial;
             if (source == null) return;
             if (Mathf.Approximately(x, 1f) && Mathf.Approximately(y, 1f)) return;
-            string key = source.GetInstanceID() + "_" + x + "_" + y;
+            Dictionary<Vector2, Material> byTiling;
+            if (!tiledMaterials.TryGetValue(source, out byTiling))
+            {
+                byTiling = new Dictionary<Vector2, Material>();
+                tiledMaterials[source] = byTiling;
+            }
+            var tiling = new Vector2(x, y);
             Material m;
-            if (!tiledMaterials.TryGetValue(key, out m) || m == null)
+            if (!byTiling.TryGetValue(tiling, out m) || m == null)
             {
                 m = new Material(source);
                 m.name = source.name + "_x" + x + "y" + y;
-                m.SetTextureScale("_BaseMap", new Vector2(x, y));
-                tiledMaterials[key] = m;
+                m.SetTextureScale("_BaseMap", tiling);
+                byTiling[tiling] = m;
             }
             r.sharedMaterial = m;
         }
