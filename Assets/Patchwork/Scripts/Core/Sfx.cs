@@ -32,14 +32,26 @@ namespace Patchwork
         Boing,
         Thread,
         PauseOpen,
-        PlatformThunk
+        PlatformThunk,
+        // Footsteps (picked by what you're standing on)
+        StepFelt,
+        StepWicker,
+        StepWood,
+        StepGrass,
+        StepSquelch,   // Water Form on anything
+        // Patch's little voice (pitched per form with Sfx.Voice)
+        VoiceHup,
+        VoiceYay,
+        VoiceAww
     }
 
     // Continuous sounds that fade in while something requests them each frame.
     public enum LoopId
     {
         Bubbles,   // Water Form rising in a fountain
-        Glide      // Wind Form gliding
+        Glide,     // Wind Form gliding
+        Meadow,    // Level 1 background: soft breeze and birds
+        Room       // Hub background: quiet room tone and a ticking clock
     }
 
     // Tiny synthesised sound kit (no audio files needed). Everything is soft and rounded:
@@ -58,8 +70,8 @@ namespace Patchwork
         static AudioSource[] loopSources;
         static AudioLowPassFilter[] loopFilters;
         static float[] loopTargets;
-        static readonly float[] LoopVolumes = { 0.45f, 0.3f };
-        static AudioClip bubbleClip, airClip;
+        static readonly float[] LoopVolumes = { 0.45f, 0.3f, 0.5f, 0.35f };
+        static AudioClip bubbleClip, airClip, meadowClip, roomClip;
         static float loopCutoff = 22000f, loopCutoffTarget = 22000f;
 
         // Pickups in quick succession climb a pentatonic scale, so a row of spools plays a little tune.
@@ -90,6 +102,8 @@ namespace Patchwork
             if (clips.Count == 0 || !clips.TryGetValue(SfxId.Jump, out probe) || probe == null) Build();
             if (bubbleClip == null) bubbleClip = BubbleLoop();
             if (airClip == null) airClip = AirLoop();
+            if (meadowClip == null) meadowClip = MeadowLoop();
+            if (roomClip == null) roomClip = RoomLoop();
 
             int n = System.Enum.GetValues(typeof(LoopId)).Length;
             loopSources = new AudioSource[n];
@@ -105,7 +119,13 @@ namespace Patchwork
                 s.loop = true;
                 s.spatialBlend = 0f;
                 s.volume = 0f;
-                s.clip = i == (int)LoopId.Bubbles ? bubbleClip : airClip;
+                switch ((LoopId)i)
+                {
+                    case LoopId.Bubbles: s.clip = bubbleClip; break;
+                    case LoopId.Glide: s.clip = airClip; break;
+                    case LoopId.Meadow: s.clip = meadowClip; break;
+                    default: s.clip = roomClip; break;
+                }
                 loopSources[i] = s;
                 loopFilters[i] = go.AddComponent<AudioLowPassFilter>();
                 loopFilters[i].cutoffFrequency = 22000f;
@@ -165,6 +185,19 @@ namespace Patchwork
             v.volume = vol;
             v.pitch = pitch;
             v.Play();
+        }
+
+        // Patch's voice: the same little sounds, higher for Water, highest for Wind.
+        public static void Voice(SfxId id, FormType form, float volume)
+        {
+            float pitch = form == FormType.Water ? 1.2f : form == FormType.Wind ? 1.35f : 1f;
+            PlayPitched(id, volume, pitch * (1f + Random.Range(-0.05f, 0.05f)));
+        }
+
+        // A footstep for the surface under Patch. Slight pitch changes so steps never repeat exactly.
+        public static void Step(SfxId id, float volume)
+        {
+            PlayPitched(id, volume, 1f + Random.Range(-0.12f, 0.12f));
         }
 
         // Small random pitch changes on sounds you hear constantly, so they don't sound copy-pasted.
@@ -287,6 +320,25 @@ namespace Patchwork
             clips[SfxId.PauseOpen] = Pluck("pause", new float[] { 523f, 659f, 784f, 1047f }, 0.05f, 0.8f);
             clips[SfxId.PlatformThunk] = Make("thunk", 0.2f, (t, d) =>
                 Sine(t, Mathf.Lerp(120f, 70f, t / d)) * Env(t, d, 0.002f) * 0.4f, 900f);
+            // Footsteps: short filtered noise taps, each surface its own colour.
+            clips[SfxId.StepFelt] = Make("stepfelt", 0.09f, (t, d) =>
+                (Noise(t) * 0.7f + Sine(t, 95f) * 0.5f) * Env(t, d, 0.004f) * 0.5f, 650f);
+            clips[SfxId.StepGrass] = Make("stepgrass", 0.13f, (t, d) =>
+                Noise(t) * Env(t, d, 0.012f) * (0.6f + 0.4f * Mathf.Sin(t * 260f)) * 0.45f, 3200f);
+            clips[SfxId.StepWicker] = Make("stepwicker", 0.11f, (t, d) =>
+                (Noise(t) * 0.35f + (Noise(t * 0.37f) > 0.82f ? 0.9f : 0f)) * Env(t, d, 0.002f) * 0.45f, 2600f);
+            clips[SfxId.StepWood] = Make("stepwood", 0.1f, (t, d) =>
+                (Sine(t, 240f) * 0.6f + Sine(t, 410f) * 0.25f + Noise(t) * 0.2f) * Mathf.Exp(-t * 45f) * 0.55f, 2200f);
+            clips[SfxId.StepSquelch] = Make("squelch", 0.16f, (t, d) =>
+                Bloop(t, 150f, 0.1f) * 0.45f + Bloop(t - 0.035f, 230f, 0.09f) * 0.3f + Noise(t) * Env(t, d, 0.01f) * 0.12f, 1800f);
+            // Voice: a tiny synthesised "vowel" (harmonics shaped by two formants).
+            clips[SfxId.VoiceHup] = Make("hup", 0.15f, (t, d) =>
+                Vowel(t, Mathf.Lerp(330f, 430f, t / d), 620f, 1200f) * Env(t, d, 0.012f) * 0.5f, 4500f);
+            clips[SfxId.VoiceYay] = Make("yay", 0.4f, (t, d) =>
+                Vowel(t, Mathf.Lerp(380f, 540f, Mathf.Clamp01(t / 0.25f)), Mathf.Lerp(560f, 320f, t / d), Mathf.Lerp(1700f, 2300f, t / d))
+                * Env(t, d, 0.02f) * 0.55f, 5000f);
+            clips[SfxId.VoiceAww] = Make("aww", 0.45f, (t, d) =>
+                Vowel(t, Mathf.Lerp(420f, 260f, t / d), 680f, 1000f) * Env(t, d, 0.03f) * 0.5f, 3500f);
             clips[SfxId.Unravel] = Make("unravel", 0.4f, (t, d) =>
                 Sine(t, 440f + Mathf.Sin(t * 60f) * 60f) * Env(t, d, 0.02f) * 0.3f, 2500f);
         }
@@ -468,7 +520,104 @@ namespace Patchwork
             return ToClip("air", data);
         }
 
+        // Level 1 background: a soft breeze that rises and falls, with birds chirping now and then.
+        static AudioClip MeadowLoop()
+        {
+            float duration = 12f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var data = new float[n];
+            var rng = new System.Random(11);
+            float y = 0f, y2 = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                float swell = 0.55f + 0.45f * Mathf.Sin(2f * Mathf.PI * t / duration * 2f);
+                float a = Alpha(300f + 200f * swell);
+                y += a * ((float)(rng.NextDouble() * 2.0 - 1.0) - y);
+                y2 += a * (y - y2);
+                data[i] = y2 * 0.9f * swell;
+            }
+            // Birds: little two- and three-note chirps at fixed times so the loop always sounds the same.
+            float[] when = { 0.8f, 1.05f, 3.6f, 5.2f, 5.4f, 5.6f, 8.1f, 10.3f, 10.5f };
+            float[] pitch = { 2900f, 3300f, 2500f, 3100f, 3500f, 3200f, 2700f, 3400f, 3000f };
+            for (int b = 0; b < when.Length; b++)
+            {
+                int start = Mathf.FloorToInt(when[b] * Rate);
+                float len = 0.09f;
+                int m = Mathf.CeilToInt(len * Rate);
+                float phase = 0f;
+                for (int j = 0; j < m && start + j < n; j++)
+                {
+                    float k = j / (float)m;
+                    float f = pitch[b] * (1f + 0.25f * Mathf.Sin(k * Mathf.PI)) ;
+                    phase += 2f * Mathf.PI * f / Rate;
+                    data[start + j] += Mathf.Sin(phase) * Mathf.Sin(k * Mathf.PI) * 0.12f;
+                }
+            }
+            LoopBlend(data);
+            return ToClip("meadow", data);
+        }
+
+        // Hub background: very quiet low room tone with a slow clock tick.
+        static AudioClip RoomLoop()
+        {
+            float duration = 4f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var data = new float[n];
+            var rng = new System.Random(3);
+            float y = 0f, y2 = 0f;
+            float a = Alpha(180f);
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                y += a * ((float)(rng.NextDouble() * 2.0 - 1.0) - y);
+                y2 += a * (y - y2);
+                float tickT = t % 1f;
+                bool tock = Mathf.FloorToInt(t) % 2 == 1;
+                float tick = tickT < 0.03f ? Mathf.Sin(2f * Mathf.PI * (tock ? 1600f : 2000f) * tickT) * Mathf.Exp(-tickT * 160f) * 0.14f : 0f;
+                data[i] = y2 * 1.2f + tick;
+            }
+            LoopBlend(data);
+            return ToClip("room", data);
+        }
+
+        // Blends the end into the start so a loop doesn't click.
+        static void LoopBlend(float[] data)
+        {
+            int n = data.Length;
+            int fade = Rate / 10;
+            for (int i = 0; i < fade; i++)
+            {
+                float k = i / (float)fade;
+                data[i] = data[i] * k + data[n - fade + i] * (1f - k);
+            }
+        }
+
         // ------------------------------------------------------------------ DSP helpers
+
+        // Repeatable white noise from a time value (so clips sound the same every run).
+        static float Noise(float t)
+        {
+            if (t < 0f) return 0f;
+            uint x = (uint)(t * Rate) * 747796405u + 2891336453u;
+            x = ((x >> (int)((x >> 28) + 4u)) ^ x) * 277803737u;
+            x = (x >> 22) ^ x;
+            return (x / 4294967295f) * 2f - 1f;
+        }
+
+        // A sung vowel: harmonics of f0, loudest near the two formant frequencies.
+        static float Vowel(float t, float f0, float f1, float f2)
+        {
+            if (t < 0f) return 0f;
+            float sum = 0f;
+            for (int h = 1; h <= 10; h++)
+            {
+                float f = f0 * h;
+                float w = Mathf.Exp(-Mathf.Pow((f - f1) / 160f, 2f)) + 0.6f * Mathf.Exp(-Mathf.Pow((f - f2) / 260f, 2f)) + 0.15f / h;
+                sum += Mathf.Sin(2f * Mathf.PI * f * t) * w;
+            }
+            return sum * 0.45f;
+        }
 
         static float Alpha(float cutoffHz)
         {

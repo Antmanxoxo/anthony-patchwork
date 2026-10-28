@@ -643,6 +643,104 @@ namespace Patchwork
             }
         }
 
+        // ------------------------------------------------------------------ Set pieces
+
+        // A giant sewing pin stuck into the ground at an angle (decorative).
+        public void SewingPin(Vector3 groundPos, float length, Color head, Vector3 tilt)
+        {
+            var g = Group("SewingPin", groundPos);
+            g.rotation = Quaternion.Euler(tilt);
+            var steel = PatchworkAssets.Plain(new Color(0.8f, 0.82f, 0.88f), 0.9f);
+            NoShadow(Deco(PrimitiveType.Cylinder, new Vector3(0f, length * 0.5f, 0f), new Vector3(0.18f, length * 0.5f, 0.18f), steel, default(Vector3), g));
+            Deco(PrimitiveType.Sphere, new Vector3(0f, length, 0f), Vector3.one * length * 0.16f, PatchworkAssets.Plain(head, 0.7f), default(Vector3), g);
+        }
+
+        // A huge tomato pincushion with segments, a felt leaf top and pins poking out (solid).
+        public void Pincushion(Vector3 groundPos, float radius, Color body)
+        {
+            var g = Group("Pincushion", groundPos + Vector3.up * radius * 0.55f);
+            var felt = PatchworkAssets.Felt(body);
+            Deco(PrimitiveType.Sphere, Vector3.zero, new Vector3(radius * 2f, radius * 1.3f, radius * 2f), felt, default(Vector3), g);
+            // Stitched segment lines.
+            var seam = PatchworkAssets.Yarn(new Color(body.r * 0.6f, body.g * 0.5f, body.b * 0.5f));
+            for (int i = 0; i < 6; i++)
+            {
+                var ring = Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(radius * 2.02f, 0.03f, radius * 1.32f), seam, new Vector3(90f, i * 30f, 0f), g);
+                ring.localScale = new Vector3(radius * 2.02f, 0.03f, radius * 1.32f);
+            }
+            // Leafy felt top.
+            var leaf = PatchworkAssets.Felt(new Color(0.4f, 0.65f, 0.35f));
+            for (int i = 0; i < 5; i++)
+                Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(i * 1.256f) * radius * 0.25f, radius * 0.62f, Mathf.Sin(i * 1.256f) * radius * 0.25f),
+                    new Vector3(radius * 0.45f, radius * 0.08f, radius * 0.2f), leaf, new Vector3(0f, -i * 72f, 0f), g);
+            // Pins.
+            Color[] heads = { Palette.Gold, Palette.Sky, Palette.Cream, Palette.Lavender, Palette.Rose };
+            for (int i = 0; i < 7; i++)
+            {
+                float a = i * 0.9f + 0.3f;
+                Vector3 n = new Vector3(Mathf.Cos(a) * 0.75f, 0.55f + (i % 3) * 0.12f, Mathf.Sin(a) * 0.75f).normalized;
+                Vector3 p = new Vector3(n.x * radius, n.y * radius * 0.65f, n.z * radius);
+                var pin = Deco(PrimitiveType.Cylinder, p + n * radius * 0.3f, new Vector3(0.08f, radius * 0.3f, 0.08f), PatchworkAssets.Plain(new Color(0.8f, 0.82f, 0.88f), 0.9f), default(Vector3), g);
+                pin.rotation = Quaternion.FromToRotation(Vector3.up, n);
+                Deco(PrimitiveType.Sphere, p + n * radius * 0.62f, Vector3.one * 0.32f, PatchworkAssets.Plain(heads[i % heads.Length], 0.7f), default(Vector3), g);
+            }
+            var col = g.gameObject.AddComponent<SphereCollider>();
+            col.radius = radius * 0.9f;
+        }
+
+        // A pair of giant scissors lying open on the ground (decorative).
+        public void Scissors(Vector3 groundPos, float size, float yaw)
+        {
+            var g = Group("Scissors", groundPos + Vector3.up * 0.15f * size);
+            g.rotation = Quaternion.Euler(0f, yaw, 0f);
+            var steel = PatchworkAssets.Plain(new Color(0.82f, 0.84f, 0.9f), 0.9f);
+            var handle = PatchworkAssets.Plain(new Color(0.9f, 0.35f, 0.4f), 0.5f);
+            for (int s = -1; s <= 1; s += 2)
+            {
+                var blade = new GameObject("Blade").transform;
+                blade.SetParent(g, false);
+                blade.localRotation = Quaternion.Euler(0f, s * 14f, 0f);
+                Deco(PrimitiveType.Cube, new Vector3(0f, 0f, size * 1.1f), new Vector3(size * 0.22f, size * 0.06f, size * 2.2f), steel, default(Vector3), blade);
+                Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, -size * 0.6f), new Vector3(size * 0.7f, size * 0.05f, size * 0.5f), handle, default(Vector3), blade);
+                Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.01f, -size * 0.6f), new Vector3(size * 0.45f, size * 0.06f, size * 0.3f), PatchworkAssets.Plain(new Color(0.3f, 0.2f, 0.25f), 0.3f), default(Vector3), blade);
+            }
+            Deco(PrimitiveType.Cylinder, new Vector3(0f, size * 0.05f, 0f), new Vector3(size * 0.18f, size * 0.06f, size * 0.18f), PatchworkAssets.Plain(Palette.Gold, 0.8f), default(Vector3), g);
+        }
+
+        // A yellow measuring tape lying on the ground from a to b, with tick marks (decorative).
+        public void MeasuringTape(Vector3 a, Vector3 b)
+        {
+            Vector3 d = b - a;
+            float len = d.magnitude;
+            var g = Group("MeasuringTape", (a + b) * 0.5f);
+            g.rotation = Quaternion.LookRotation(d.normalized, Vector3.up);
+            var tape = PatchworkAssets.Felt(new Color(1f, 0.85f, 0.3f));
+            var ink = PatchworkAssets.Plain(new Color(0.2f, 0.15f, 0.2f), 0.2f);
+            NoShadow(Deco(PrimitiveType.Cube, new Vector3(0f, 0.03f, 0f), new Vector3(0.9f, 0.04f, len), tape, default(Vector3), g));
+            for (float z = -len * 0.5f + 0.5f; z < len * 0.5f; z += 0.5f)
+            {
+                bool big = Mathf.Abs(Mathf.Repeat(z + len * 0.5f, 2.5f)) < 0.01f;
+                NoShadow(Deco(PrimitiveType.Cube, new Vector3(-0.3f + (big ? 0.12f : 0f), 0.055f, z), new Vector3(big ? 0.5f : 0.25f, 0.01f, 0.05f), ink, default(Vector3), g));
+            }
+        }
+
+        // A tall stack of thread spools (solid). The top is flat so you can stand on it.
+        public void SpoolTower(Vector3 groundPos, float height, Color[] threads)
+        {
+            int count = Mathf.Max(1, Mathf.RoundToInt(height / 2f));
+            float h = height / count;
+            var wood = PatchworkAssets.Wood(new Color(0.75f, 0.58f, 0.4f));
+            for (int i = 0; i < count; i++)
+            {
+                float y = groundPos.y + i * h;
+                Deco(PrimitiveType.Cylinder, new Vector3(groundPos.x, y + h * 0.5f, groundPos.z), new Vector3(2.2f, h * 0.5f - 0.15f, 2.2f), PatchworkAssets.Yarn(threads[i % threads.Length]));
+                Deco(PrimitiveType.Cylinder, new Vector3(groundPos.x, y + 0.08f, groundPos.z), new Vector3(3f, 0.08f, 3f), wood);
+            }
+            Deco(PrimitiveType.Cylinder, new Vector3(groundPos.x, groundPos.y + height - 0.08f, groundPos.z), new Vector3(3f, 0.08f, 3f), wood);
+            var col = Group("SpoolTowerCollider", groundPos + Vector3.up * height * 0.5f).gameObject.AddComponent<BoxCollider>();
+            col.size = new Vector3(2.6f, height, 2.6f);
+        }
+
         // A big stitched felt sun pinned to a wall, facing direction "facing".
         public void FeltSun(Vector3 pos, float radius, Vector3 facing)
         {

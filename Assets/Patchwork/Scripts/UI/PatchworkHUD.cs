@@ -344,8 +344,8 @@ namespace Patchwork
             float tx = r.x + 140f;
             float tw = w - 140f - (hint.Theme == HintTheme.Neutral ? 40f : 110f);
             UIKit.Label(new Rect(tx, r.y + 22f, tw, 40f), hint.Title, UIKit.Style(29, true, TextAnchor.MiddleLeft, title));
-            UIKit.Label(new Rect(tx, r.y + 66f, tw, 104f), hint.Body,
-                UIKit.Style(24, false, TextAnchor.UpperLeft, new Color(title.r * 0.6f + 0.1f, title.g * 0.6f + 0.1f, title.b * 0.6f + 0.1f, 0.95f), true));
+            UIKit.RichText(new Rect(tx, r.y + 64f, tw, 104f), hint.Body, 24, false,
+                new Color(title.r * 0.6f + 0.1f, title.g * 0.6f + 0.1f, title.b * 0.6f + 0.1f, 0.95f), Game.Input.UsingKeyboard);
 
             // Thread "timer" along the bottom: full while you're in the zone, runs down once you leave.
             float remain = Game.HintHeld ? 1f : Mathf.Clamp01((D - 0.45f - age) / 1.5f);

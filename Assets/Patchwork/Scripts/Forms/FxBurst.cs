@@ -15,7 +15,8 @@ namespace Patchwork
             Rain,     // raindrops falling (condensing)
             Threads,  // yarn strands spiralling (unravelling / spinning up)
             Splash,   // droplets thrown out in a ring
-            Sparkle   // tiny glowing motes
+            Sparkle,  // tiny glowing motes
+            Poof      // big soft cloud that hides the body while a form change swaps it
         }
 
         Transform[] bits;
@@ -76,6 +77,11 @@ namespace Patchwork
                     count = 10; life = 0.9f; gravity = -0.5f; drag = 1f; grow = 0f; size = new Vector2(0.05f, 0.1f);
                     matA = matB = PatchworkAssets.Glow(color, 1.5f);
                     break;
+                case Kind.Poof:
+                    count = 14; life = 0.5f; gravity = -1.2f; drag = 5f; grow = 0.5f; size = new Vector2(0.38f, 0.62f);
+                    matA = PatchworkAssets.Felt(new Color(0.98f, 0.96f, 0.92f));
+                    matB = PatchworkAssets.Felt(Color.Lerp(color, Color.white, 0.45f));
+                    break;
                 default: // Scraps
                     count = 16; life = 0.85f; gravity = 9f; drag = 2.5f; grow = 0f; size = new Vector2(0.08f, 0.2f);
                     prim = PrimitiveType.Cube;
@@ -130,6 +136,14 @@ namespace Patchwork
                     {
                         float a = Random.value * Mathf.PI * 2f;
                         v = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * Random.Range(2f, 4f) + Vector3.up * Random.Range(2f, 4.5f);
+                        break;
+                    }
+                    case Kind.Poof:
+                    {
+                        Vector3 o = Random.onUnitSphere;
+                        o.y *= 0.8f;
+                        local = o * Random.Range(0.25f, 0.55f);
+                        v = o * Random.Range(1.5f, 3f);
                         break;
                     }
                     case Kind.Sparkle:

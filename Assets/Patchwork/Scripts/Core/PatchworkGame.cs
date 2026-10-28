@@ -89,9 +89,12 @@ namespace Patchwork
             game.Init(level);
         }
 
+        LevelId currentLevel;
+
         void Init(LevelId levelId)
         {
             Instance = this;
+            currentLevel = levelId;
             Time.timeScale = 1f;
             // VSync is on in Quality settings; this cap only matters if a graphics driver forces it off,
             // so the game never runs at hundreds of frames per second and heats up people's computers.
@@ -293,6 +296,9 @@ namespace Patchwork
 
             if (Dance.Update(udt) && Mode == UIMode.Dance) Haptics.Pulse(0.15f, 0.05f, 0.08f);
             Player.Visuals.DanceBeat = Dance.Beat;
+            // Background ambience for the level (muffled with everything else while paused).
+            if (currentLevel == LevelId.Hub) Sfx.RequestLoop(LoopId.Room);
+            else Sfx.RequestLoop(LoopId.Meadow);
             Sfx.TickLoops(udt);
             MusicPlayer.SetForm(Player.Forms.Current);
             Haptics.Tick(udt);
@@ -531,6 +537,7 @@ namespace Patchwork
             Player.Respawn(respawnPoint, respawnYaw);
             CameraRig.SnapBehind(respawnYaw);
             Sfx.Play(SfxId.Respawn, 0.5f);
+            if (fell) Sfx.Voice(SfxId.VoiceAww, Player.Forms.Current, 0.45f);
             FxBurst.Spawn(FxBurst.Kind.Scraps, respawnPoint + Vector3.up, FormLibrary.Get(Player.Forms.Current).PrimaryColor);
             if (fell) ShowToast("Oops! Back to the last checkpoint.");
         }
@@ -587,6 +594,12 @@ namespace Patchwork
         {
             if (Mode != UIMode.Gameplay && Mode != UIMode.FormWheel) return;
             GameState.SetLevelComplete(Level.Id);
+            // Best thread count unlocks hats.
+            bool topHat = GameState.IsHatUnlocked(2), daisy = GameState.IsHatUnlocked(3);
+            bool newBest = GameState.RecordThreads(Level.Id, ThreadsCollected, Level.ThreadTotal);
+            if (!daisy && GameState.IsHatUnlocked(3)) ShowToast("Every thread! New hat: Daisy Clip (see the Satchel).");
+            else if (!topHat && GameState.IsHatUnlocked(2)) ShowToast("Half the threads! New hat: Felt Top Hat (see the Satchel).");
+            else if (newBest && Level.ThreadTotal > 0) ShowToast("New best: " + ThreadsCollected + " threads!");
             SetMode(UIMode.Complete, 1f);
             Player.Forms.CancelAll();
             Sfx.Play(SfxId.Complete, 0.8f);

@@ -1,5 +1,25 @@
 # Development Log
 
+## Level 1 rebuild
+- Level 1 is now eight sections that climb out of the sewing basket: the garden, a drain in the
+  wicker wall, the dye pond fountain, Button Bridge, Pincushion Canyon (two swings in a row with
+  a pincushion island between), the Breezy Meadow (a glide gap, then a gust gap), a tall wicker
+  wall you float over as Wind, and a finale up to the basket rim that uses all three forms.
+- New set pieces: giant sewing pins, a tomato pincushion, scissors, a measuring tape and a tall
+  stack of spools.
+- Golden buttons moved to better hiding spots. The fountain one is inside a little hut on the shelf
+  whose only door is a drain, and the secret one on top of the spool tower hums when you're close.
+- Tutorial cards show the real button icons for your controller or keyboard.
+- Your best thread count is saved. Half the threads unlocks the Felt Top Hat, all of them the
+  Daisy Clip. Locked hats show what you need in the Satchel.
+- The Button Box in the Sewing Room is sewn shut until all three golden buttons are found. Inside
+  is the Golden Crown.
+- Changing form now has a quick cloud poof that covers the swap.
+- Footsteps that change with the ground (felt, grass, wicker, wood) and squelches for Water.
+- Background sounds: a breeze with birds in Level 1, a quiet ticking clock in the Sewing Room.
+- Patch has a little voice: a "hup" on some jumps, a "yay" for golden buttons and an "aww" when
+  he falls. Higher for Water, highest for Wind.
+
 ## Settings, saves and tools
 - New Settings page in the pause menu: music, sound and rumble levels, camera speed, invert camera
   up/down and left/right, Yarn swing as hold or tap-on/tap-off, button prompts, Form Wheel button

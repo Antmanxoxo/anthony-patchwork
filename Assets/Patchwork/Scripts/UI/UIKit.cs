@@ -275,6 +275,71 @@ namespace Patchwork
             return w;
         }
 
+        static float PromptWidth(PromptAction action, float h, bool keyboard)
+        {
+            if (!keyboard && PadGlyph(action) != null) return h;
+            string text = keyboard ? KeyName(action) : PadLabel(action);
+            var style = Style(Mathf.RoundToInt(h * 0.42f), true, TextAnchor.MiddleCenter, Color.white);
+            return Mathf.Max(h, TextWidth(text, style) + h * 0.55f);
+        }
+
+        static bool TokenAction(string name, out PromptAction action)
+        {
+            switch (name)
+            {
+                case "Jump": action = PromptAction.Jump; return true;
+                case "Ability": action = PromptAction.Ability; return true;
+                case "Wheel": action = PromptAction.FormWheel; return true;
+                case "Satchel": action = PromptAction.Satchel; return true;
+                case "Pause": action = PromptAction.Pause; return true;
+                default: action = PromptAction.Jump; return false;
+            }
+        }
+
+        // Word-wrapped text where {Jump}, {Ability}, {Wheel}, {Satchel} and {Pause} are drawn as the
+        // actual button for the controller (or key) being used, so hints always match the controls.
+        public static void RichText(Rect r, string text, int size, bool bold, Color color, bool keyboard)
+        {
+            var style = Style(size, bold, TextAnchor.MiddleLeft, color);
+            float lineH = size * 1.4f;
+            float iconH = size * 1.3f;
+            float space = Mathf.Max(4f, TextWidth("a a", style) - TextWidth("aa", style));
+            float x = r.x, y = r.y;
+            foreach (var raw in text.Split(' '))
+            {
+                if (raw.Length == 0) continue;
+                // A word can be "{Ability}" with punctuation after it, e.g. "{Jump}!".
+                PromptAction action;
+                bool hasToken = false;
+                string after = raw;
+                if (raw.StartsWith("{"))
+                {
+                    int close = raw.IndexOf('}');
+                    if (close > 1 && TokenAction(raw.Substring(1, close - 1), out action))
+                    {
+                        hasToken = true;
+                        after = raw.Substring(close + 1);
+                        float iw = PromptWidth(action, iconH, keyboard);
+                        float aw = after.Length > 0 ? TextWidth(after, style) : 0f;
+                        if (x + iw + aw > r.xMax && x > r.x) { x = r.x; y += lineH; }
+                        Prompt(x, y + (lineH - iconH) * 0.5f, iconH, action, keyboard, color.a);
+                        style = Style(size, bold, TextAnchor.MiddleLeft, color);
+                        x += iw;
+                        if (aw > 0f) { GUI.Label(new Rect(x, y, aw + 4f, lineH), after, style); x += aw; }
+                        x += space;
+                        continue;
+                    }
+                }
+                if (hasToken) continue;
+                float w = TextWidth(raw, style);
+                if (x + w > r.xMax && x > r.x) { x = r.x; y += lineH; }
+                // Prompt() can hand out the same style with another colour, so set ours again.
+                style = Style(size, bold, TextAnchor.MiddleLeft, color);
+                GUI.Label(new Rect(x, y, w + 4f, lineH), raw, style);
+                x += w + space;
+            }
+        }
+
         // Prompt + label pair. Returns the total width.
         public static float PromptLabel(float x, float y, float h, PromptAction action, string label, bool keyboard, Color textColor, float alpha = 1f)
         {

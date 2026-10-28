@@ -62,6 +62,12 @@ Stuff I need to remember about how Patchwork is put together.
 - Progress is saved in `save.json` (with a `save.json.bak` backup) in Unity's persistent data folder;
   settings stay in PlayerPrefs. Patchwork > Reset Save Data clears progress but keeps settings.
 - Level 1's tutorial cards show once (stored in the save). Hub cards always show.
+- Hint text can use `{Jump}`, `{Ability}`, `{Wheel}`, `{Satchel}` and `{Pause}`; `UIKit.RichText`
+  swaps them for the button icon.
+- Hats: 0-1 free, 2 = half of Level 1's threads in one run, 3 = all threads, 4 = Golden Crown from the
+  Button Box (`HatPedestal`). Best thread counts are saved as "Level1=23/40".
+- Footstep sound comes from the ground's material name (wicker / wood / grass, otherwise felt).
+- Ambience loops (`LoopId.Meadow`, `LoopId.Room`) are requested every frame by `PatchworkGame`.
 - `BlobShadow` puts the shadow disc under Patch; its material copies the see-through + glow setup
   so the build already keeps that shader version.
 
@@ -70,7 +76,8 @@ Stuff I need to remember about how Patchwork is put together.
   except while swinging on yarn. Don't build anything you're meant to stand on below y = -2.
 - Normal jump goes about 5m. Wind with glide + gust goes about 13.4m (the gust only gives a small
   fixed lift, so it can't re-launch the glide).
-- Yarn gap is 15m, Wind gap is 7m.
+- Yarn gaps are 15m, Wind glide gap is 7m, gust gap is 11m. The rim swing goes from the thimble
+  (top 6m) to the rim (top 6m).
 - Water is 0.8m tall (0.32 radius), tunnels are 1m tall. Other forms are 1.4m tall (0.45 radius).
 - If I change movement numbers I need to re-check the gaps in `Level1Builder`.
 - Falling is 1.5x gravity for Yarn and Water (`FallGravityMultiplier`), but not after a launch

@@ -22,6 +22,8 @@ namespace Patchwork
             public List<string> collected = new List<string>();
             public List<string> completedLevels = new List<string>();
             public List<string> hintsSeen = new List<string>();
+            public List<string> bestThreads = new List<string>();   // "Level1=23/40"
+            public List<int> unlockedHats = new List<int>();         // hats found in the world
         }
 
         static SaveData data;
@@ -112,6 +114,76 @@ namespace Patchwork
             dirty = true;
         }
 
+        // ----- Threads and hat unlocks -----
+
+        // Best number of thread spools collected in one visit to a level, and how many it has.
+        public static int BestThreads(string levelId, out int total)
+        {
+            total = 0;
+            foreach (var e in Data.bestThreads)
+            {
+                if (!e.StartsWith(levelId + "=")) continue;
+                var parts = e.Substring(levelId.Length + 1).Split('/');
+                int best;
+                if (parts.Length == 2 && int.TryParse(parts[0], out best) && int.TryParse(parts[1], out total)) return best;
+            }
+            return 0;
+        }
+
+        // Records a finished visit. Returns true if it's a new best.
+        public static bool RecordThreads(string levelId, int count, int total)
+        {
+            int oldTotal;
+            int best = BestThreads(levelId, out oldTotal);
+            if (count <= best && total == oldTotal) return false;
+            Data.bestThreads.RemoveAll(e => e.StartsWith(levelId + "="));
+            Data.bestThreads.Add(levelId + "=" + Mathf.Max(best, count) + "/" + total);
+            dirty = true;
+            Save();
+            return count > best;
+        }
+
+        // Hats: 0 none and 1 beanie are free. 2 top hat = half of Level 1's threads in one go,
+        // 3 daisy = all of them, 4 crown = found in the hub's Button Box.
+        public static bool IsHatUnlocked(int hat)
+        {
+            if (hat <= 1) return true;
+            if (hat == 2 || hat == 3)
+            {
+                int total;
+                int best = BestThreads(Level1Builder.SceneName, out total);
+                if (total <= 0) return false;
+                return hat == 2 ? best * 2 >= total : best >= total;
+            }
+            return Data.unlockedHats.Contains(hat);
+        }
+
+        public static string HatRequirement(int hat)
+        {
+            switch (hat)
+            {
+                case 2: return "Collect half of Level 1's threads in one run.";
+                case 3: return "Collect every thread in Level 1 in one run.";
+                case 4: return "Hidden in the Sewing Room's Button Box.";
+                default: return "";
+            }
+        }
+
+        public static void UnlockHat(int hat)
+        {
+            if (Data.unlockedHats.Contains(hat)) return;
+            Data.unlockedHats.Add(hat);
+            dirty = true;
+            Save();
+        }
+
+        public static int GoldenButtonCount()
+        {
+            int n = 0;
+            foreach (var id in Level1Builder.CollectibleIds) if (IsCollected(id)) n++;
+            return n;
+        }
+
         // ----- Saving -----
 
         // Writes the file if anything changed. Writes to a temporary file first and keeps the
@@ -168,6 +240,8 @@ namespace Patchwork
             if (data.collected == null) data.collected = new List<string>();
             if (data.completedLevels == null) data.completedLevels = new List<string>();
             if (data.hintsSeen == null) data.hintsSeen = new List<string>();
+            if (data.bestThreads == null) data.bestThreads = new List<string>();
+            if (data.unlockedHats == null) data.unlockedHats = new List<int>();
         }
 
         static SaveData TryRead(string path)

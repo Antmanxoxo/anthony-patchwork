@@ -15,10 +15,14 @@ namespace Patchwork
             this.game = game;
         }
 
+        // The hat being looked at (it might still be locked; only unlocked hats get put on).
+        int viewHat;
+
         public void Open()
         {
             openTime = 0f;
             stickCooldown = 0f;
+            viewHat = GameState.HatIndex;
         }
 
         public void Update(float udt)
@@ -44,11 +48,15 @@ namespace Patchwork
             {
                 stickCooldown = 0.3f;
                 int count = FormVisuals.HatNames.Length;
-                int hat = ((GameState.HatIndex + dir) % count + count) % count;
-                GameState.HatIndex = hat;
-                GameState.Save();
-                game.Player.Visuals.SetHat(hat);
-                Sfx.Play(SfxId.MenuMove, 0.5f);
+                viewHat = ((viewHat + dir) % count + count) % count;
+                if (GameState.IsHatUnlocked(viewHat))
+                {
+                    GameState.HatIndex = viewHat;
+                    GameState.Save();
+                    game.Player.Visuals.SetHat(viewHat);
+                    Sfx.Play(SfxId.MenuMove, 0.5f);
+                }
+                else Sfx.Play(SfxId.TransformFail, 0.3f);
             }
         }
 
@@ -112,10 +120,13 @@ namespace Patchwork
             var hatBox = new Rect(rx, ry + 210f, 320f, 190f);
             UIKit.Fill(hatBox, new Color(1f, 1f, 1f, 0.5f), 18f);
             UIKit.Label(new Rect(rx + 24f, ry + 224f, 280f, 30f), "Cosmetic: Hat", UIKit.Style(22, true, TextAnchor.MiddleLeft, ink));
-            string hatName = FormVisuals.HatNames[Mathf.Clamp(GameState.HatIndex, 0, FormVisuals.HatNames.Length - 1)];
-            UIKit.Label(new Rect(rx + 20f, ry + 266f, 280f, 50f), "<   " + hatName + "   >", UIKit.Style(26, true, TextAnchor.MiddleCenter, ink));
-            UIKit.Label(new Rect(rx + 24f, ry + 320f, 280f, 60f), "Hats stay on in every form.",
-                UIKit.Style(20, false, TextAnchor.UpperCenter, new Color(ink.r, ink.g, ink.b, 0.7f), true));
+            int shown = Mathf.Clamp(viewHat, 0, FormVisuals.HatNames.Length - 1);
+            bool locked = !GameState.IsHatUnlocked(shown);
+            string hatName = FormVisuals.HatNames[shown];
+            UIKit.Label(new Rect(rx + 20f, ry + 266f, 280f, 50f), "<   " + hatName + "   >",
+                UIKit.Style(26, true, TextAnchor.MiddleCenter, locked ? new Color(ink.r, ink.g, ink.b, 0.45f) : ink));
+            UIKit.Label(new Rect(rx + 24f, ry + 316f, 280f, 70f), locked ? "Locked. " + GameState.HatRequirement(shown) : "Hats stay on in every form.",
+                UIKit.Style(locked ? 18 : 20, locked, TextAnchor.UpperCenter, new Color(ink.r, ink.g, ink.b, locked ? 0.85f : 0.7f), true));
 
             // Prompts
             float py = panel.yMax - 66f;

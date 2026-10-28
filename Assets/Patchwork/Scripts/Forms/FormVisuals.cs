@@ -10,7 +10,7 @@ namespace Patchwork
     // Hats sit on their own transform so changing form never resets them.
     public class FormVisuals
     {
-        public static readonly string[] HatNames = { "No Hat", "Red Beanie", "Felt Top Hat", "Daisy Clip" };
+        public static readonly string[] HatNames = { "No Hat", "Red Beanie", "Felt Top Hat", "Daisy Clip", "Golden Crown" };
 
         class Body
         {
@@ -25,7 +25,7 @@ namespace Patchwork
         readonly Transform root;
         readonly Body yarn = new Body(), water = new Body(), wind = new Body();
         readonly Transform accessoryRoot;
-        readonly GameObject[] hats = new GameObject[4];
+        readonly GameObject[] hats = new GameObject[5];
         static MaterialPropertyBlock mpb;
 
         // Yarn rig (the Blender model if it's there, otherwise the block-built toy)
@@ -394,6 +394,8 @@ namespace Patchwork
                     from.Root.gameObject.SetActive(false);
                     Vector3 feet = root.position;
                     var def = FormLibrary.Get(toForm);
+                    // A quick cloud puff covers the moment the bodies swap.
+                    FxBurst.Spawn(FxBurst.Kind.Poof, feet + Vector3.up * (toForm == FormType.Water ? 0.45f : 0.7f), def.PrimaryColor);
                     switch (toForm)
                     {
                         case FormType.Water: FxBurst.Spawn(FxBurst.Kind.Splash, feet + Vector3.up * 0.3f, def.PrimaryColor); break;
@@ -754,6 +756,20 @@ namespace Patchwork
             }
             Prim(PrimitiveType.Sphere, daisy, new Vector3(0.2f, -0.08f, 0.14f), new Vector3(0.09f, 0.09f, 0.05f), PatchworkAssets.Felt(new Color(1f, 0.8f, 0.2f)));
             hats[3] = daisy.gameObject;
+
+            // Golden crown: a felt-lined gold band with five points and a pink gem.
+            var crown = Pivot("Hat_GoldenCrown", accessoryRoot, Vector3.zero);
+            var gold = PatchworkAssets.Glow(new Color(1f, 0.8f, 0.25f), 0.25f);
+            Prim(PrimitiveType.Cylinder, crown, new Vector3(0f, 0.0f, 0f), new Vector3(0.42f, 0.08f, 0.42f), gold);
+            Prim(PrimitiveType.Cylinder, crown, new Vector3(0f, -0.06f, 0f), new Vector3(0.44f, 0.02f, 0.44f), PatchworkAssets.Felt(new Color(0.75f, 0.2f, 0.3f)));
+            for (int i = 0; i < 5; i++)
+            {
+                float a = i * Mathf.PI * 2f / 5f;
+                Prim(PrimitiveType.Sphere, crown, new Vector3(Mathf.Sin(a) * 0.19f, 0.12f, Mathf.Cos(a) * 0.19f), new Vector3(0.09f, 0.18f, 0.09f), gold);
+                Prim(PrimitiveType.Sphere, crown, new Vector3(Mathf.Sin(a) * 0.19f, 0.22f, Mathf.Cos(a) * 0.19f), Vector3.one * 0.06f, gold);
+            }
+            Prim(PrimitiveType.Sphere, crown, new Vector3(0f, 0.02f, 0.21f), new Vector3(0.08f, 0.08f, 0.04f), PatchworkAssets.Glow(new Color(1f, 0.4f, 0.6f), 0.6f));
+            hats[4] = crown.gameObject;
         }
 
         // Visual-only primitive (collider removed, player layer).
