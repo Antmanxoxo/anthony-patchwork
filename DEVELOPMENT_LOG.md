@@ -1,5 +1,16 @@
 # Development Log
 
+## Polish pass 2
+- Wind's gust no longer re-launches the glide, so Wind can't skip the Yarn swing any more.
+  Made the Wind gap 7m so gliding alone gets you over.
+- Shiny things (thimbles, needles, the bubble) now reflect the room instead of looking grey.
+- Sounds you hear a lot (jump, land, bounce) change pitch slightly each time, and picking up
+  spools in a row climbs a little scale.
+- Music goes quiet and muffled when paused, and muffled in the Form Wheel.
+- Pause menu has Music Volume, Sound Volume and Rumble settings (left / right to change).
+- Controller rumble on jump, land, bounce, gust, catching an anchor and while swinging.
+- The HUD no longer makes garbage every frame, and pressing Play twice in a row starts clean.
+
 ## Polish pass 1
 - Set the company name to Little Colossus and gave the game a proper ID.
 - Turned on VSync, with a 120 fps cap as a backup.

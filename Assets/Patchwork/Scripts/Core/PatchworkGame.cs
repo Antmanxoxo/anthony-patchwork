@@ -65,6 +65,12 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ Boot
 
+        public static void ResetStatics()
+        {
+            Instance = null;
+            carriedFadeColor = DefaultFadeColor;
+        }
+
         public static void Boot(LevelId level)
         {
             PatchworkAssets.EnsureInit();
@@ -124,6 +130,7 @@ namespace Patchwork
 
             Hud = gameObject.AddComponent<PatchworkHUD>();
             Hud.Game = this;
+            ApplyAudioMode();
         }
 
         void SetupEnvironment(Camera cam)
@@ -151,12 +158,46 @@ namespace Patchwork
             RenderSettings.fogColor = Level.Sky;
             RenderSettings.fogStartDistance = 55f;
             RenderSettings.fogEndDistance = 190f;
+            // The scenes still point at Unity's default blue sky; it doesn't match the pastel rooms.
+            RenderSettings.skybox = null;
             DynamicGI.UpdateEnvironment();
+            AddReflectionProbe();
+        }
+
+        // One snapshot of the room for shiny things (thimbles, needles, the bubble) to reflect,
+        // so they show the room's colours instead of looking like grey plastic. Taken once at load.
+        void AddReflectionProbe()
+        {
+            Bounds area = Level.Area;
+            if (area.size.sqrMagnitude < 1f) area = new Bounds(new Vector3(0f, 8f, 0f), new Vector3(60f, 30f, 60f));
+            // The walls reach far below the floor; the probe only needs the playable height.
+            float bottom = Mathf.Max(area.min.y, -10f);
+            var box = new Bounds();
+            box.SetMinMax(new Vector3(area.min.x, bottom, area.min.z), area.max);
+
+            var go = new GameObject("Room Reflections");
+            go.transform.position = new Vector3(box.center.x, Mathf.Min(6f, box.max.y - 1f), box.center.z);
+            var probe = go.AddComponent<ReflectionProbe>();
+            probe.mode = ReflectionProbeMode.Realtime;
+            probe.refreshMode = ReflectionProbeRefreshMode.ViaScripting;
+            probe.timeSlicingMode = ReflectionProbeTimeSlicingMode.NoTimeSlicing;
+            probe.boxProjection = true;
+            probe.size = box.size;
+            probe.center = box.center - go.transform.position;
+            probe.resolution = 128;
+            probe.hdr = true;
+            probe.clearFlags = ReflectionProbeClearFlags.SolidColor;
+            probe.backgroundColor = Level.Sky;
+            probe.cullingMask = ~(1 << 2); // leave Patch out of his own reflections
+            probe.shadowDistance = 0f;
+            probe.importance = 1;
+            probe.RenderProbe();
         }
 
         void OnDestroy()
         {
             if (Input != null) Input.Dispose();
+            Haptics.StopAll();
             Time.timeScale = 1f;
             if (Instance == this) Instance = null;
         }
@@ -218,6 +259,7 @@ namespace Patchwork
             }
 
             Sfx.TickLoops(udt);
+            Haptics.Tick(udt);
             if (ActiveHint != null)
             {
                 HintAge += udt;
@@ -273,6 +315,32 @@ namespace Patchwork
             Mode = mode;
             Time.timeScale = timeScale;
             modeChangedThisFrame = true;
+            ApplyAudioMode();
+        }
+
+        // Pause and Satchel sound "behind glass" (quieter, muffled music); the Form Wheel muffles
+        // music and loops so time feels like it thickens. Rumble stops in all three.
+        void ApplyAudioMode()
+        {
+            switch (Mode)
+            {
+                case UIMode.Paused:
+                case UIMode.Satchel:
+                    MusicPlayer.SetMuffle(900f, 0.5f);
+                    Sfx.SetLoopCutoff(900f);
+                    Haptics.SetSilenced(true);
+                    break;
+                case UIMode.FormWheel:
+                    MusicPlayer.SetMuffle(1500f, 1f);
+                    Sfx.SetLoopCutoff(1500f);
+                    Haptics.SetSilenced(true);
+                    break;
+                default:
+                    MusicPlayer.SetMuffle(22000f, 1f);
+                    Sfx.SetLoopCutoff(22000f);
+                    Haptics.SetSilenced(false);
+                    break;
+            }
         }
 
         void OpenWheel()
@@ -471,11 +539,13 @@ namespace Patchwork
             SetMode(UIMode.Loading, 1f);
             Player.Forms.CancelAll();
             Sfx.StopLoops();
+            Haptics.StopAll();
         }
 
         public void QuitGame()
         {
             GameState.Save();
+            Haptics.StopAll();
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else

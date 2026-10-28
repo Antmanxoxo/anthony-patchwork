@@ -55,11 +55,13 @@ namespace Patchwork
             {
                 Visuals.PunchScale(new Vector3(0.8f, 1.25f, 0.8f));
                 Sfx.Play(SfxId.Jump, 0.35f);
+                Haptics.Pulse(0f, 0.1f, 0.05f);
             }
             if (Motor.JustLanded)
             {
                 Visuals.PunchScale(new Vector3(1.25f, 0.75f, 1.25f));
                 Sfx.Play(SfxId.Land, 0.4f);
+                Haptics.Pulse(0.28f, 0f, 0.08f);
             }
 
             Visuals.Tick(Motor, dt);

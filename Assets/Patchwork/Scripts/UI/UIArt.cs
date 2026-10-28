@@ -23,7 +23,7 @@ namespace Patchwork
 
         public static void EnsureBuilt()
         {
-            if (built) return;
+            if (built && IconNeedle != null) return;
             built = true;
             PatternWaves = Pattern(0);
             PatternKnit = Pattern(1);

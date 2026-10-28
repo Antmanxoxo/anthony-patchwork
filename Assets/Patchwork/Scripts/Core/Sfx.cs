@@ -47,42 +47,147 @@ namespace Patchwork
     public static class Sfx
     {
         const int Rate = 44100;
-        static AudioSource source;
+        const int VoiceCount = 8;
+        const string VolumeKey = "pw_sfx_volume";
+
+        static AudioSource[] voices;
+        static int nextVoice;
         static readonly Dictionary<SfxId, AudioClip> clips = new Dictionary<SfxId, AudioClip>();
 
         // Loops
         static AudioSource[] loopSources;
+        static AudioLowPassFilter[] loopFilters;
         static float[] loopTargets;
         static readonly float[] LoopVolumes = { 0.45f, 0.3f };
+        static AudioClip bubbleClip, airClip;
+        static float loopCutoff = 22000f, loopCutoffTarget = 22000f;
+
+        // Pickups in quick succession climb a pentatonic scale, so a row of spools plays a little tune.
+        static readonly float[] PickupSteps = { 1f, 9f / 8f, 5f / 4f, 3f / 2f, 5f / 3f, 2f };
+        const float PickupWindow = 1.5f;
+        static float lastPickupTime = -10f;
+        static int pickupStep;
+
+        // Sound effects volume, 0..10 (saved).
+        public static int Volume
+        {
+            get { return Mathf.Clamp(PlayerPrefs.GetInt(VolumeKey, 10), 0, 10); }
+            set { PlayerPrefs.SetInt(VolumeKey, Mathf.Clamp(value, 0, 10)); }
+        }
 
         public static void Init(GameObject host)
         {
-            source = host.AddComponent<AudioSource>();
-            source.playOnAwake = false;
-            source.spatialBlend = 0f;
-            if (clips.Count == 0) Build();
+            voices = new AudioSource[VoiceCount];
+            for (int i = 0; i < VoiceCount; i++)
+            {
+                var v = host.AddComponent<AudioSource>();
+                v.playOnAwake = false;
+                v.spatialBlend = 0f;
+                voices[i] = v;
+            }
+            nextVoice = 0;
+            AudioClip probe;
+            if (clips.Count == 0 || !clips.TryGetValue(SfxId.Jump, out probe) || probe == null) Build();
+            if (bubbleClip == null) bubbleClip = BubbleLoop();
+            if (airClip == null) airClip = AirLoop();
 
             int n = System.Enum.GetValues(typeof(LoopId)).Length;
             loopSources = new AudioSource[n];
+            loopFilters = new AudioLowPassFilter[n];
             loopTargets = new float[n];
             for (int i = 0; i < n; i++)
             {
-                var s = host.AddComponent<AudioSource>();
+                // Each loop gets its own object so it can have its own muffle filter.
+                var go = new GameObject("Loop " + (LoopId)i);
+                go.transform.SetParent(host.transform, false);
+                var s = go.AddComponent<AudioSource>();
                 s.playOnAwake = false;
                 s.loop = true;
                 s.spatialBlend = 0f;
                 s.volume = 0f;
-                s.clip = i == (int)LoopId.Bubbles ? BubbleLoop() : AirLoop();
+                s.clip = i == (int)LoopId.Bubbles ? bubbleClip : airClip;
                 loopSources[i] = s;
+                loopFilters[i] = go.AddComponent<AudioLowPassFilter>();
+                loopFilters[i].cutoffFrequency = 22000f;
             }
+            loopCutoff = loopCutoffTarget = 22000f;
+        }
+
+        // Forget the audio sources from the last Play session (they belonged to the old camera).
+        public static void ResetStatics()
+        {
+            voices = null;
+            loopSources = null;
+            loopFilters = null;
+            loopTargets = null;
+            lastPickupTime = -10f;
+            pickupStep = 0;
         }
 
         public static void Play(SfxId id, float volume = 0.6f)
         {
-            if (source == null) return;
+            PlayPitched(id, volume, 1f + Random.Range(-1f, 1f) * JitterFor(id));
+        }
+
+        // Thread spools and golden buttons: each pickup soon after the last one is a step higher.
+        public static void PlayPickup(SfxId id, float volume)
+        {
+            float now = Time.unscaledTime;
+            pickupStep = now - lastPickupTime <= PickupWindow ? Mathf.Min(pickupStep + 1, PickupSteps.Length - 1) : 0;
+            lastPickupTime = now;
+            PlayPitched(id, volume, PickupSteps[pickupStep]);
+        }
+
+        static void PlayPitched(SfxId id, float volume, float pitch)
+        {
+            if (voices == null) return;
             AudioClip clip;
-            if (clips.TryGetValue(id, out clip) && clip != null)
-                source.PlayOneShot(clip, volume);
+            if (!clips.TryGetValue(id, out clip) || clip == null) return;
+            float vol = volume * Volume / 10f;
+            if (vol <= 0f) return;
+
+            // Use a free voice if there is one, otherwise cut off the oldest.
+            AudioSource v = null;
+            for (int i = 0; i < VoiceCount; i++)
+            {
+                var c = voices[(nextVoice + i) % VoiceCount];
+                if (c != null && !c.isPlaying) { v = c; nextVoice = (nextVoice + i + 1) % VoiceCount; break; }
+            }
+            if (v == null)
+            {
+                v = voices[nextVoice];
+                nextVoice = (nextVoice + 1) % VoiceCount;
+            }
+            if (v == null) return;
+            v.Stop();
+            v.clip = clip;
+            v.volume = vol;
+            v.pitch = pitch;
+            v.Play();
+        }
+
+        // Small random pitch changes on sounds you hear constantly, so they don't sound copy-pasted.
+        // Important cues (pickups, checkpoints, hints) always sound the same so they're recognisable.
+        static float JitterFor(SfxId id)
+        {
+            switch (id)
+            {
+                case SfxId.Jump:
+                case SfxId.Land:
+                case SfxId.MenuMove:
+                case SfxId.Boing:
+                case SfxId.Splash:
+                case SfxId.TetherAttach:
+                    return 0.04f;
+                default:
+                    return 0f;
+            }
+        }
+
+        // Muffle the gameplay loops (used while paused or in the Form Wheel). 22000 = normal.
+        public static void SetLoopCutoff(float hz)
+        {
+            loopCutoffTarget = hz;
         }
 
         // Ask for a loop to be audible this frame. Call every frame while it should play.
@@ -95,11 +200,14 @@ namespace Patchwork
         public static void TickLoops(float dt)
         {
             if (loopSources == null) return;
+            loopCutoff = Mathf.Lerp(loopCutoff, loopCutoffTarget, 1f - Mathf.Exp(-12f * dt));
+            float master = Volume / 10f;
             for (int i = 0; i < loopSources.Length; i++)
             {
                 var s = loopSources[i];
                 if (s == null) continue;
-                float target = loopTargets[i] * LoopVolumes[i];
+                if (loopFilters[i] != null) loopFilters[i].cutoffFrequency = loopCutoff;
+                float target = loopTargets[i] * LoopVolumes[i] * master;
                 s.volume = Mathf.MoveTowards(s.volume, target, dt * (target > s.volume ? 2.5f : 1.5f));
                 if (s.volume > 0.001f && !s.isPlaying) s.Play();
                 if (s.volume <= 0.001f && s.isPlaying) s.Stop();

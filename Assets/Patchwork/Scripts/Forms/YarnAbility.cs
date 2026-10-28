@@ -113,6 +113,7 @@ namespace Patchwork
             UpdateLine();
             anchor.Pulse();
             Sfx.Play(SfxId.TetherAttach, 0.6f);
+            Haptics.Pulse(0f, 0.35f, 0.06f);
             Player.Visuals.PunchScale(new Vector3(0.85f, 1.2f, 0.85f));
         }
 
@@ -173,6 +174,8 @@ namespace Patchwork
 
             Motor.Velocity = vel;
             Motor.SetAirborneFromExternal(controller.isGrounded);
+            // A faint rumble that grows with swing speed.
+            Haptics.Hold(Mathf.Clamp01(vel.magnitude / MaxSwingSpeed) * 0.08f, 0f);
 
             Vector3 face = new Vector3(vel.x, 0f, vel.z);
             if (face.sqrMagnitude > 0.5f)

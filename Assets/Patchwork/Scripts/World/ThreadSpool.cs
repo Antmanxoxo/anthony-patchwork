@@ -27,7 +27,7 @@ namespace Patchwork
         protected override void OnPlayerEnter(PatchworkPlayer player)
         {
             player.Game.CollectThread();
-            Sfx.Play(SfxId.Thread, 0.5f);
+            Sfx.PlayPickup(SfxId.Thread, 0.5f);
             FxBurst.Spawn(FxBurst.Kind.Sparkle, transform.position, color);
             gameObject.SetActive(false);
         }

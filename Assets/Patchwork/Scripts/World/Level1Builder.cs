@@ -9,9 +9,10 @@ namespace Patchwork
     // 3. dye pond with a fountain up to a golden button (Water)
     // 4. button bridge - two sliding buttons over a pit
     // 5. 15m gap with a swing anchor (Yarn)
-    // 6. 9m gap with pinwheels (Wind)
+    // 6. 7m gap with pinwheels (Wind)
     // 7. updraft up to the last golden button (Wind), then the goal
-    // Gap sizes are based on the movement numbers: normal jump ~5m, Wind glide+gust ~12m.
+    // Gap sizes are based on the movement numbers: normal jump ~5m, Wind glide alone ~8m,
+    // Wind glide + gust ~13.4m (so the 15m Yarn gap still needs Yarn).
     public static class Level1Builder
     {
         public const string SceneName = "Level1";
@@ -157,10 +158,10 @@ namespace Patchwork
             kit.Cloud(new Vector3(-9f, 2f, 61f), 1.4f);
         }
 
-        // ---------------------------------------------------------------- 6. Wind gap (landing 67 .. 82, gap 82 .. 91)
+        // ---------------------------------------------------------------- 6. Wind gap (landing 67 .. 84, gap 84 .. 91)
         static void Section6_WindGap(LevelKit kit)
         {
-            kit.Quilt(new Vector3(0f, -0.5f, 74.5f), new Vector3(14f, 1f, 15f), Lawn, 3.5f, "SwingLanding", true);
+            kit.Quilt(new Vector3(0f, -0.5f, 75.5f), new Vector3(14f, 1f, 17f), Lawn, 3.5f, "SwingLanding", true);
             kit.AddCheckpoint(new Vector3(0f, 0f, 70f), 0f);
 
             // Bounce tower: bounce straight up through a column of threads.
@@ -176,10 +177,10 @@ namespace Patchwork
             kit.Pinwheel(new Vector3(-6f, 0f, 92f), LevelKit.Palette.Sage, LevelKit.Palette.Cream);
             kit.Pinwheel(new Vector3(6f, 0f, 92f), LevelKit.Palette.Butter, LevelKit.Palette.Cream);
             // Threads along the glide.
-            kit.Thread(new Vector3(0f, 1.6f, 84f), LevelKit.Palette.Cream);
-            kit.Thread(new Vector3(0f, 1.2f, 86.5f), LevelKit.Palette.Cream);
-            kit.Thread(new Vector3(0f, 0.9f, 89f), LevelKit.Palette.Cream);
-            kit.Cloud(new Vector3(0f, -4f, 86.5f), 1.6f);
+            kit.Thread(new Vector3(0f, 1.6f, 85.4f), LevelKit.Palette.Cream);
+            kit.Thread(new Vector3(0f, 1.2f, 87.6f), LevelKit.Palette.Cream);
+            kit.Thread(new Vector3(0f, 0.9f, 89.8f), LevelKit.Palette.Cream);
+            kit.Cloud(new Vector3(0f, -4f, 87.5f), 1.6f);
             kit.Mushroom(new Vector3(5.5f, 0f, 69f), 1.3f, new Color(0.4f, 0.6f, 0.95f));
             kit.YarnBall(new Vector3(5f, 0f, 76f), 1.2f, new Color(0.6f, 0.85f, 0.6f));
         }

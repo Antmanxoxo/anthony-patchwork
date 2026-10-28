@@ -29,7 +29,7 @@ namespace Patchwork
 
         public static void EnsureInit()
         {
-            if (initialised) return;
+            if (initialised && WaterTex != null && litShader != null) return;
             initialised = true;
 
             // Prefer the material asset the editor setup creates (keeps the shader in builds);

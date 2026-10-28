@@ -20,7 +20,8 @@ namespace Patchwork
 
         public static void EnsureBuilt()
         {
-            if (built) return;
+            // Also rebuild if Unity has thrown the textures away (Play pressed again).
+            if (built && Wrap != null && Wrap.Albedo != null) return;
             built = true;
             Knit = Build(128, KnitHeight, 0.62f, 0.38f, 3.5f);
             Felt = Build(64, FeltHeight, 0.84f, 0.16f, 1.6f);

@@ -77,7 +77,10 @@ namespace Patchwork
         {
             dashVelocity = velocity;
             dashTimer = duration;
-            Velocity = new Vector3(velocity.x, Mathf.Max(Velocity.y, 1.5f), velocity.z);
+            // Only a small fixed lift. Keeping a bigger upward speed (or adding lift to a fall) let
+            // each gust re-launch the glide, so Wind could reach about 15-17 m and skip the Yarn gap.
+            float lift = Grounded ? 1.5f : Mathf.Clamp(Velocity.y, 0f, 1.5f);
+            Velocity = new Vector3(velocity.x, lift, velocity.z);
         }
 
         // Clears every temporary movement state (used on transform, respawn and tether release).

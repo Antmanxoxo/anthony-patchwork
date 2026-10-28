@@ -7,7 +7,8 @@ namespace Patchwork
     // 72 BPM, 8 bars: Fmaj7 Em7 Dm9 Cmaj7 Fmaj7 Em7 Dm7 G6sus
     public class MusicPlayer : MonoBehaviour
     {
-        const string PrefKey = "pw_music_on";
+        const string OldOnKey = "pw_music_on";
+        const string VolumeKey = "pw_music_volume";
         const int Rate = 32000;
         const float Bpm = 72f;
         const float MaxVolume = 0.32f;
@@ -16,17 +17,32 @@ namespace Patchwork
         static AudioClip clip;
 
         AudioSource source;
-        float targetVolume;
+        AudioLowPassFilter filter;
+        float duck = 1f, duckTarget = 1f;
+        float cutoff = 22000f, cutoffTarget = 22000f;
 
-        public static bool Enabled
+        // Music volume, 0..10 (saved). 0 means off.
+        public static int Volume
         {
-            get { return PlayerPrefs.GetInt(PrefKey, 1) == 1; }
+            get
+            {
+                // Older saves only had an on/off switch.
+                int fallback = PlayerPrefs.GetInt(OldOnKey, 1) == 1 ? 10 : 0;
+                return Mathf.Clamp(PlayerPrefs.GetInt(VolumeKey, fallback), 0, 10);
+            }
             set
             {
-                PlayerPrefs.SetInt(PrefKey, value ? 1 : 0);
+                PlayerPrefs.SetInt(VolumeKey, Mathf.Clamp(value, 0, 10));
                 PlayerPrefs.Save();
-                if (instance != null) instance.targetVolume = value ? MaxVolume : 0f;
             }
+        }
+
+        // Paused / Satchel: quieter and "behind glass". Form Wheel: muffled. Normal: clear.
+        public static void SetMuffle(float cutoffHz, float volumeScale)
+        {
+            if (instance == null) return;
+            instance.cutoffTarget = cutoffHz;
+            instance.duckTarget = volumeScale;
         }
 
         // Starts the music if it isn't already playing. Survives scene loads.
@@ -48,13 +64,22 @@ namespace Patchwork
             source.spatialBlend = 0f;
             source.volume = 0f;
             source.ignoreListenerPause = true;
+            filter = gameObject.AddComponent<AudioLowPassFilter>();
+            filter.cutoffFrequency = 22000f;
             source.Play();
-            targetVolume = Enabled ? MaxVolume : 0f;
         }
 
         void Update()
         {
-            source.volume = Mathf.MoveTowards(source.volume, targetVolume, Time.unscaledDeltaTime * 0.25f);
+            float udt = Time.unscaledDeltaTime;
+            // Ease the muffle over about 0.3 s, in real time so it works while the game is paused.
+            float k = 1f - Mathf.Exp(-10f * udt);
+            cutoff = Mathf.Lerp(cutoff, cutoffTarget, k);
+            duck = Mathf.Lerp(duck, duckTarget, k);
+            filter.cutoffFrequency = cutoff;
+
+            float target = MaxVolume * Volume / 10f * duck;
+            source.volume = Mathf.MoveTowards(source.volume, target, udt * 0.6f);
         }
 
         // ------------------------------------------------------------------ Composition

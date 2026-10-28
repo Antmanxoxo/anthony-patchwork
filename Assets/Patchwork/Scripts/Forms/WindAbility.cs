@@ -67,6 +67,7 @@ namespace Patchwork
                     if (!Motor.Grounded) GustReady = false;
                     cooldown = GustCooldown;
                     Sfx.Play(SfxId.Gust, 0.6f);
+                    Haptics.Pulse(0f, 0.25f, 0.1f);
                     FxBurst.Spawn(FxBurst.Kind.Puff, Motor.Center - dir * 0.5f, new Color(1f, 1f, 1f), -dir);
                     Player.Visuals.PunchScale(new Vector3(1.3f, 0.8f, 1.3f));
                 }

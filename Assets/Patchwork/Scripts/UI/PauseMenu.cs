@@ -7,7 +7,7 @@ namespace Patchwork
     // when it's highlighted. D-pad/stick to move, X to pick, Circle to go back.
     public class PauseMenu
     {
-        enum Item { Resume, Restart, ReturnToHub, Prompts, WheelButton, Music, Quit }
+        enum Item { Resume, Restart, ReturnToHub, Prompts, WheelButton, Music, Sounds, Rumble, Quit }
 
         readonly PatchworkGame game;
         readonly List<Item> items = new List<Item>();
@@ -17,6 +17,7 @@ namespace Patchwork
         float highlightPos;     // animated position of the highlight (in item slots)
         float selectTime;       // time since the current item became selected
         float confirmFlash;
+        float sideCooldown;
 
         public PauseMenu(PatchworkGame game)
         {
@@ -32,6 +33,8 @@ namespace Patchwork
             items.Add(Item.Prompts);
             items.Add(Item.WheelButton);
             items.Add(Item.Music);
+            items.Add(Item.Sounds);
+            items.Add(Item.Rumble);
             items.Add(Item.Quit);
             index = 0;
             highlightPos = 0f;
@@ -56,7 +59,9 @@ namespace Patchwork
                     return "Button Prompts:  " + m;
                 }
                 case Item.WheelButton: return "Form Wheel Button:  " + (game.Input.FormWheelOnR1 ? "R1" : "L1");
-                case Item.Music: return "Music:  " + (MusicPlayer.Enabled ? "On" : "Off");
+                case Item.Music: return "Music Volume";
+                case Item.Sounds: return "Sound Volume";
+                case Item.Rumble: return "Rumble";
                 default: return "Quit";
             }
         }
@@ -70,7 +75,9 @@ namespace Patchwork
                 case Item.ReturnToHub: return UIArt.IconHome;
                 case Item.Prompts:
                 case Item.WheelButton: return UIArt.IconPad;
-                case Item.Music: return UIArt.IconNote;
+                case Item.Music:
+                case Item.Sounds: return UIArt.IconNote;
+                case Item.Rumble: return UIArt.IconPad;
                 default: return UIArt.IconDoor;
             }
         }
@@ -85,8 +92,38 @@ namespace Patchwork
                 case Item.Prompts: return new Color(0.4f, 0.55f, 0.9f);
                 case Item.WheelButton: return new Color(0.3f, 0.65f, 0.75f);
                 case Item.Music: return new Color(0.65f, 0.45f, 0.85f);
+                case Item.Sounds: return new Color(0.85f, 0.45f, 0.65f);
+                case Item.Rumble: return new Color(0.45f, 0.6f, 0.4f);
                 default: return new Color(0.6f, 0.5f, 0.45f);
             }
+        }
+
+        static bool IsSlider(Item item)
+        {
+            return item == Item.Music || item == Item.Sounds || item == Item.Rumble;
+        }
+
+        static int SliderValue(Item item)
+        {
+            switch (item)
+            {
+                case Item.Music: return MusicPlayer.Volume;
+                case Item.Sounds: return Sfx.Volume;
+                default: return Haptics.Strength;
+            }
+        }
+
+        // Change a 0..10 setting and give a taste of the new level straight away.
+        void SetSlider(Item item, int value)
+        {
+            value = Mathf.Clamp(value, 0, 10);
+            switch (item)
+            {
+                case Item.Music: MusicPlayer.Volume = value; break;
+                case Item.Sounds: Sfx.Volume = value; Sfx.Play(SfxId.MenuMove, 0.6f); break;
+                default: Haptics.Strength = value; Haptics.Preview(); break;
+            }
+            PlayerPrefs.Save();
         }
 
         public void Update(float udt)
@@ -118,6 +155,27 @@ namespace Patchwork
                 Sfx.Play(SfxId.MenuMove, 0.5f);
             }
 
+            // Left / right change the volume and rumble settings.
+            var cur = items[index];
+            if (IsSlider(cur))
+            {
+                int side = 0;
+                if (input.NavLeft.WasPressedThisFrame()) side = -1;
+                if (input.NavRight.WasPressedThisFrame()) side = 1;
+                float sx = input.Move.ReadValue<Vector2>().x;
+                if (side == 0 && Mathf.Abs(sx) > 0.6f && sideCooldown <= 0f) side = sx > 0f ? 1 : -1;
+                if (Mathf.Abs(sx) < 0.3f) sideCooldown = 0f;
+                sideCooldown -= udt;
+                if (side != 0)
+                {
+                    sideCooldown = 0.18f;
+                    int before = SliderValue(cur);
+                    SetSlider(cur, before + side);
+                    if (cur != Item.Sounds && SliderValue(cur) != before) Sfx.Play(SfxId.MenuMove, 0.4f);
+                    selectTime = 0f;
+                }
+            }
+
             if (input.Confirm.WasPressedThisFrame())
             {
                 Sfx.Play(SfxId.MenuConfirm, 0.5f);
@@ -142,7 +200,11 @@ namespace Patchwork
                         input.FormWheelOnR1 = !input.FormWheelOnR1;
                         break;
                     case Item.Music:
-                        MusicPlayer.Enabled = !MusicPlayer.Enabled;
+                    case Item.Sounds:
+                    case Item.Rumble:
+                        // Pressing X steps up and wraps back round to 0.
+                        int v = SliderValue(items[index]);
+                        SetSlider(items[index], v >= 10 ? 0 : v + 1);
                         break;
                     case Item.Quit:
                         game.QuitGame();
@@ -216,10 +278,11 @@ namespace Patchwork
                 iconRect.position += shift;
                 if (!sel) UIKit.Circle(iconRect.center, 52f, new Color(c.r, c.g, c.b, 0.9f * alpha));
                 UIKit.IconTransformed(iconRect, IconFor(item), new Color(1f, 1f, 1f, alpha), angle, scale);
-                if (sel && item == Item.Music) DrawFloatingNotes(iconRect, alpha);
+                if (sel && (item == Item.Music || item == Item.Sounds)) DrawFloatingNotes(iconRect, alpha);
 
                 var style = UIKit.Style(sel ? 25 : 23, true, TextAnchor.MiddleLeft, sel ? new Color(1f, 1f, 1f, alpha) : new Color(ink.r, ink.g, ink.b, alpha));
                 UIKit.Label(new Rect(r.x + 82f, r.y, r.width - 100f, r.height), LabelFor(item), style, sel);
+                if (IsSlider(item)) DrawSlider(new Rect(r.xMax - 236f, r.y + 22f, 210f, 22f), SliderValue(item), sel, alpha, ink);
             }
 
             // Prompt row.
@@ -227,6 +290,28 @@ namespace Patchwork
             float px = panel.x + 70f;
             px += UIKit.PromptLabel(px, py, 38f, PromptAction.Confirm, "Select", kb, ink, fade) + 30f;
             UIKit.PromptLabel(px, py, 38f, PromptAction.Cancel, "Back to game", kb, ink, fade);
+        }
+
+        // Ten little stitched pills, filled up to the current value.
+        static void DrawSlider(Rect r, int value, bool sel, float alpha, Color ink)
+        {
+            const int Steps = 10;
+            float gap = 4f;
+            float w = (r.width - gap * (Steps - 1)) / Steps;
+            for (int i = 0; i < Steps; i++)
+            {
+                var pill = new Rect(r.x + i * (w + gap), r.y, w, r.height);
+                bool on = i < value;
+                Color fill = sel
+                    ? new Color(1f, 1f, 1f, (on ? 0.95f : 0.25f) * alpha)
+                    : new Color(ink.r, ink.g, ink.b, (on ? 0.7f : 0.15f) * alpha);
+                UIKit.Fill(pill, fill, 5f);
+            }
+            if (value == 0)
+            {
+                var off = UIKit.Style(16, true, TextAnchor.MiddleRight, sel ? new Color(1f, 1f, 1f, alpha) : new Color(ink.r, ink.g, ink.b, alpha));
+                UIKit.Label(new Rect(r.x - 60f, r.y - 2f, 50f, r.height + 4f), "OFF", off);
+            }
         }
 
         static void AnimateIcon(Item item, float s, ref float angle, ref float scale, ref Vector2 shift)
@@ -246,9 +331,11 @@ namespace Patchwork
                     break;
                 case Item.Prompts:      // wiggle like it's being played
                 case Item.WheelButton:
+                case Item.Rumble:
                     angle = Mathf.Sin(s * 18f) * 12f * Mathf.Clamp01(1.2f - Mathf.Repeat(s, 1.5f));
                     break;
                 case Item.Music:        // dance
+                case Item.Sounds:
                     angle = Mathf.Sin(s * 5f) * 15f;
                     shift = new Vector2(0f, Mathf.Sin(s * 10f) * 4f);
                     break;

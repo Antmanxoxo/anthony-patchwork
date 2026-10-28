@@ -21,6 +21,8 @@ namespace Patchwork
         // Falling this far below the floor (y = 0) counts as a fall, so you respawn right away
         // instead of waiting to drop all the way to KillY. Ignored while swinging on yarn.
         public float FailY = -3f;
+        // The room's walls (set by Enclosure). Used to size the reflection probe.
+        public Bounds Area = new Bounds(Vector3.zero, Vector3.zero);
         public Color Sky = new Color(0.78f, 0.86f, 0.95f);
         public readonly List<string> CollectibleIds = new List<string>();
         public int ThreadTotal;
@@ -639,6 +641,7 @@ namespace Patchwork
         // bunting and warm hanging lamps. Nothing here casts shadows, so the sunlight still reaches in.
         public void Enclosure(Vector3 min, Vector3 max, Color[] bands, Color ceiling, bool wicker = false)
         {
+            Info.Area.SetMinMax(min, max);
             var g = Group("Enclosure", Vector3.zero);
             float t = 2f;
             float height = max.y - min.y;

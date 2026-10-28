@@ -28,7 +28,9 @@ namespace Patchwork
         public static readonly Color Paper = new Color(0.99f, 0.96f, 0.9f, 0.94f);
         public static readonly Color Thread = new Color(0.85f, 0.45f, 0.55f, 0.9f);
 
-        static readonly Dictionary<string, GUIStyle> styles = new Dictionary<string, GUIStyle>();
+        // One style per size/weight/alignment/wrap; the colour is set each time it's handed out.
+        // (Keying on colour made a new style for every fade step and built strings every frame.)
+        static readonly Dictionary<int, GUIStyle> styles = new Dictionary<int, GUIStyle>();
 
         public static void Begin()
         {
@@ -39,9 +41,13 @@ namespace Patchwork
 
         public static GUIStyle Style(int size, bool bold, TextAnchor anchor, Color color, bool wrap = false)
         {
-            string key = size + "_" + bold + "_" + anchor + "_" + ColorUtility.ToHtmlStringRGBA(color) + "_" + wrap;
+            int key = (size & 0xFF) | (bold ? 1 << 8 : 0) | ((int)anchor << 9) | (wrap ? 1 << 13 : 0);
             GUIStyle s;
-            if (styles.TryGetValue(key, out s)) return s;
+            if (styles.TryGetValue(key, out s) && s != null)
+            {
+                s.normal.textColor = color;
+                return s;
+            }
             s = new GUIStyle(GUI.skin.label);
             s.fontSize = size;
             s.fontStyle = bold ? FontStyle.Bold : FontStyle.Normal;

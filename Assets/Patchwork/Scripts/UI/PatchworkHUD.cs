@@ -49,8 +49,15 @@ namespace Patchwork
             badgeTimer = BadgeShowTime;
         }
 
+        void Awake()
+        {
+            useGUILayout = false; // everything is drawn with fixed rects, so skip the layout pass
+        }
+
         void OnGUI()
         {
+            // All input goes through the Input System, so only the draw event matters here.
+            if (Event.current.type != EventType.Repaint) return;
             if (Game == null || Game.Player == null) return;
             UIKit.Begin();
             bool kb = Game.Input.UsingKeyboard;
