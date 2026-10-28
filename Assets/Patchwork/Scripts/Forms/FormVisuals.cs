@@ -35,6 +35,8 @@ namespace Patchwork
         Transform bubble, bubbleEyes;
         Vector3 bubbleEyesBase;
         readonly Transform[] miniBubbles = new Transform[2];
+        // Happy / sad / angry faces for Water and Wind (Yarn's are on the Blender model).
+        readonly GameObject[] waterFaces = new GameObject[3], windFaces = new GameObject[3];
         // Wind rig
         Transform cloud;
         readonly Transform[] wisps = new Transform[3];
@@ -70,6 +72,7 @@ namespace Patchwork
             accessoryRoot.SetParent(root, false);
             BuildHats();
             SetHat(GameState.HatIndex);
+            ShowFace(PatchModel.CurrentFace);
         }
 
         // ------------------------------------------------------------------ API
@@ -139,11 +142,21 @@ namespace Patchwork
             if (patchModel != null) patchModel.SetTether(on, target);
         }
 
-        // Yarn's face (happy / sad / angry). Remembered even while in another form.
+        // Patch's face (happy / sad / angry) on every form. Kept when he changes form.
         public void SetFace(PatchModel.Face face)
         {
             if (patchModel != null) patchModel.SetFace(face);
             else PatchModel.CurrentFace = face;
+            ShowFace(face);
+        }
+
+        void ShowFace(PatchModel.Face face)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (waterFaces[i] != null) waterFaces[i].SetActive(i == (int)face);
+                if (windFaces[i] != null) windFaces[i].SetActive(i == (int)face);
+            }
         }
 
         // 1 = normal, 0 = fully shrunk (portal warp).
@@ -519,13 +532,19 @@ namespace Patchwork
                 Part(PrimitiveType.Sphere, bubbleEyes, local + n * 0.05f + new Vector3(0.025f, 0.035f, 0f), new Vector3(0.04f, 0.04f, 0.02f), shine, euler);
             }
 
-            // Little smile on the surface, just below the eyes.
-            for (int i = 0; i < 5; i++)
-            {
-                float t = (i / 4f) * 2f - 1f;
-                Vector3 n = new Vector3(t * 0.13f, -0.2f - (1f - t * t) * 0.07f, 1f).normalized;
-                Part(PrimitiveType.Sphere, bubble, bubbleCenter + n * (bubbleRadius - 0.005f), Vector3.one * 0.03f, black);
-            }
+            // Mouths (and brows for sad / angry) drawn as little dots on the bubble's surface.
+            // Happy: smile. Sad: frown with brows tilted up in the middle. Angry: flatter frown, brows down.
+            var happy = Pivot("Face_Happy", bubble, Vector3.zero);
+            WaterMouth(happy, bubbleCenter, bubbleRadius, -0.2f, -1f, black);
+            var sad = Pivot("Face_Sad", bubble, Vector3.zero);
+            WaterMouth(sad, bubbleCenter, bubbleRadius, -0.28f, 1f, black);
+            WaterBrows(sad, bubbleCenter, bubbleRadius, -1f, black);
+            var angry = Pivot("Face_Angry", bubble, Vector3.zero);
+            WaterMouth(angry, bubbleCenter, bubbleRadius, -0.25f, 0.5f, black);
+            WaterBrows(angry, bubbleCenter, bubbleRadius, 1f, black);
+            waterFaces[0] = happy.gameObject;
+            waterFaces[1] = sad.gameObject;
+            waterFaces[2] = angry.gameObject;
 
             var tiny = PatchworkAssets.Bubble(new Color(0.8f, 0.92f, 1f, 0.5f));
             for (int i = 0; i < miniBubbles.Length; i++)
@@ -558,7 +577,17 @@ namespace Patchwork
                 Part(PrimitiveType.Sphere, cloud, new Vector3(side * 0.15f + 0.025f, 0.74f, 0.405f), Vector3.one * 0.035f, shine);
             }
             AddCheeks(cloud, new Vector3(0f, 0.6f, 0.36f), 0.28f, 0.11f);
-            AddSmile(cloud, new Vector3(0f, 0.57f, 0.4f), 0.1f, black, 0.03f);
+            var happy = Pivot("Face_Happy", cloud, Vector3.zero);
+            AddMouth(happy, new Vector3(0f, 0.57f, 0.4f), 0.1f, black, 0.03f, 1f);
+            var sad = Pivot("Face_Sad", cloud, Vector3.zero);
+            AddMouth(sad, new Vector3(0f, 0.53f, 0.4f), 0.09f, black, 0.03f, -1f);
+            CloudBrows(sad, -1f, black);
+            var angry = Pivot("Face_Angry", cloud, Vector3.zero);
+            AddMouth(angry, new Vector3(0f, 0.55f, 0.4f), 0.1f, black, 0.03f, -0.5f);
+            CloudBrows(angry, 1f, black);
+            windFaces[0] = happy.gameObject;
+            windFaces[1] = sad.gameObject;
+            windFaces[2] = angry.gameObject;
 
             var wispMat = PatchworkAssets.Glow(def.SecondaryColor, 0.4f);
             for (int i = 0; i < wisps.Length; i++)
@@ -580,13 +609,54 @@ namespace Patchwork
 
         void AddSmile(Transform parent, Vector3 center, float width, Material mat, float dot)
         {
+            AddMouth(parent, center, width, mat, dot, 1f);
+        }
+
+        // A curved line of dots. bend 1 = smile, -1 = frown, in between = flatter.
+        void AddMouth(Transform parent, Vector3 center, float width, Material mat, float dot, float bend)
+        {
             for (int i = 0; i < 5; i++)
             {
                 float t = (i / 4f) * 2f - 1f;          // -1..1
                 float x = t * width;
-                float y = -(1f - t * t) * width * 0.45f; // curve down in the middle
+                float y = -bend * (1f - t * t) * width * 0.45f;
                 Part(PrimitiveType.Sphere, parent, center + new Vector3(x, y, 0f), Vector3.one * dot, mat);
             }
+        }
+
+        // Mouth dots placed on the bubble's round surface. curve -1 = smile, +1 = frown.
+        void WaterMouth(Transform parent, Vector3 center, float radius, float baseY, float curve, Material mat)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                float t = (i / 4f) * 2f - 1f;
+                Vector3 n = new Vector3(t * 0.13f, baseY + curve * (1f - t * t) * 0.07f, 1f).normalized;
+                Part(PrimitiveType.Sphere, parent, center + n * (radius - 0.005f), Vector3.one * 0.03f, mat);
+            }
+        }
+
+        // Eyebrows over the bubble's eyes. slope 1 = angry (inner ends down), -1 = sad (inner ends up).
+        void WaterBrows(Transform parent, Vector3 center, float radius, float slope, Material mat)
+        {
+            for (int side = -1; side <= 1; side += 2)
+                for (int i = 0; i < 4; i++)
+                {
+                    float t = i / 3f;   // 0 = inner end, 1 = outer end
+                    Vector3 n = new Vector3(side * (0.18f + t * 0.34f), 0.66f + slope * (t - 0.5f) * 0.16f, 1f).normalized;
+                    Part(PrimitiveType.Sphere, parent, center + n * (radius - 0.003f), Vector3.one * 0.035f, mat);
+                }
+        }
+
+        // Eyebrows over the cloud's eyes. slope 1 = angry, -1 = sad.
+        void CloudBrows(Transform parent, float slope, Material mat)
+        {
+            for (int side = -1; side <= 1; side += 2)
+                for (int i = 0; i < 4; i++)
+                {
+                    float t = i / 3f;
+                    var p = new Vector3(side * (0.07f + t * 0.16f), 0.84f + slope * (t - 0.5f) * 0.07f, 0.34f);
+                    Part(PrimitiveType.Sphere, parent, p, new Vector3(0.035f, 0.035f, 0.03f), mat);
+                }
         }
 
         void AddCheeks(Transform parent, Vector3 center, float spacing, float size)

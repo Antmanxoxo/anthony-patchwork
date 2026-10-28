@@ -264,6 +264,7 @@ namespace Patchwork
             }
 
             Sfx.TickLoops(udt);
+            MusicPlayer.SetForm(Player.Forms.Current);
             Haptics.Tick(udt);
             if (ActiveHint != null)
             {
@@ -292,6 +293,13 @@ namespace Patchwork
                 // Lower the camera focus for small forms so it fits through tunnels.
                 float wantHeight = Player.Forms.Definition.HeadHeight * 0.75f + 0.2f;
                 CameraRig.TargetHeight = Mathf.MoveTowards(CameraRig.TargetHeight, wantHeight, udt * 2.5f);
+                CameraRig.TargetGrounded = Player.Motor.Grounded;
+                CameraRig.TargetVelocity = Player.Motor.Velocity;
+                var yarn = Player.Forms.Ability as YarnAbility;
+                CameraRig.Swinging = yarn != null && yarn.Attached;
+                if (CameraRig.Swinging) CameraRig.SwingAnchor = yarn.AnchorPosition;
+                var wind = Player.Forms.Ability as WindAbility;
+                CameraRig.Gliding = wind != null && wind.Gliding;
                 CameraRig.Tick(stick, mouse, udt);
             }
         }
@@ -491,11 +499,10 @@ namespace Patchwork
             if (fell) ShowToast("Oops! Back to the last checkpoint.");
         }
 
-        // Swap Yarn's face. A little pop and sound so it's obvious it worked (only when you can see it).
+        // Swap Patch's face (every form has happy / sad / angry). A little pop and sound so it's obvious.
         void SetPatchFace(PatchModel.Face face)
         {
             Player.Visuals.SetFace(face);
-            if (Player.Forms.Current != FormType.Yarn) return;
             Player.Visuals.PunchScale(new Vector3(1.08f, 0.94f, 1.08f));
             Sfx.Play(SfxId.HintYarn, 0.3f);
         }

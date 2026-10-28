@@ -383,6 +383,15 @@ namespace Patchwork
             return up;
         }
 
+        // A box where the camera backs out (and optionally tilts down) a little more.
+        public CameraZone AddCameraZone(Vector3 center, Vector3 size, float extraDistance, float extraPitch = 0f)
+        {
+            var z = Volume<CameraZone>(center, size, "CameraZone");
+            z.ExtraDistance = extraDistance;
+            z.ExtraPitch = extraPitch;
+            return z;
+        }
+
         public HintZone Hint(Vector3 center, Vector3 size, string title, string body, HintTheme theme = HintTheme.Neutral)
         {
             var h = Volume<HintZone>(center, size, "Hint_" + title);

@@ -3,7 +3,9 @@ using UnityEngine;
 namespace Patchwork
 {
     // Background music. Built once when the game starts and loops between scenes.
-    // Lo-fi style: e-piano chords, bass, a little music box tune and soft brushes.
+    // Lo-fi style: e-piano chords, bass and soft brushes underneath, with the tune played by a
+    // different instrument for each form, crossfading when Patch changes:
+    //   Water = music box with little bubble blips, Yarn = plucked strings, Wind = breathy flute and air.
     // 72 BPM, 8 bars: Fmaj7 Em7 Dm9 Cmaj7 Fmaj7 Em7 Dm7 G6sus
     public class MusicPlayer : MonoBehaviour
     {
@@ -12,12 +14,19 @@ namespace Patchwork
         const int Rate = 32000;
         const float Bpm = 72f;
         const float MaxVolume = 0.32f;
+        const float LayerFade = 1.5f;   // seconds to crossfade between form layers
+
+        enum Stem { Base, Water, Yarn, Wind }
+        const int StemCount = 4;
 
         static MusicPlayer instance;
-        static AudioClip clip;
+        static AudioClip[] stems;
 
-        AudioSource source;
-        AudioLowPassFilter filter;
+        readonly AudioSource[] sources = new AudioSource[StemCount];
+        readonly AudioLowPassFilter[] filters = new AudioLowPassFilter[StemCount];
+        readonly float[] layerMix = { 1f, 0f, 1f, 0f };   // 0..1 crossfade position per stem
+        FormType form = FormType.Yarn;
+        float master;
         float duck = 1f, duckTarget = 1f;
         float cutoff = 22000f, cutoffTarget = 22000f;
 
@@ -45,6 +54,12 @@ namespace Patchwork
             instance.duckTarget = volumeScale;
         }
 
+        // Which form's tune layer should be playing. Safe to call every frame.
+        public static void SetForm(FormType f)
+        {
+            if (instance != null) instance.form = f;
+        }
+
         // Starts the music if it isn't already playing. Survives scene loads.
         public static void EnsurePlaying()
         {
@@ -56,17 +71,28 @@ namespace Patchwork
 
         void Awake()
         {
-            if (clip == null) clip = Compose();
-            source = gameObject.AddComponent<AudioSource>();
-            source.clip = clip;
-            source.loop = true;
-            source.playOnAwake = false;
-            source.spatialBlend = 0f;
-            source.volume = 0f;
-            source.ignoreListenerPause = true;
-            filter = gameObject.AddComponent<AudioLowPassFilter>();
-            filter.cutoffFrequency = 22000f;
-            source.Play();
+            if (stems == null || stems[0] == null) stems = Compose();
+            // Start straight on the saved form's layer (no fade-in from another one).
+            form = GameState.CurrentForm;
+            for (int i = 1; i < StemCount; i++) layerMix[i] = StemFor(form) == i ? 1f : 0f;
+            // All layers start on the same audio tick so they stay perfectly in time.
+            double start = AudioSettings.dspTime + 0.2;
+            for (int i = 0; i < StemCount; i++)
+            {
+                var go = new GameObject("Music " + (Stem)i);
+                go.transform.SetParent(transform, false);
+                var src = go.AddComponent<AudioSource>();
+                src.clip = stems[i];
+                src.loop = true;
+                src.playOnAwake = false;
+                src.spatialBlend = 0f;
+                src.volume = 0f;
+                src.ignoreListenerPause = true;
+                filters[i] = go.AddComponent<AudioLowPassFilter>();
+                filters[i].cutoffFrequency = 22000f;
+                sources[i] = src;
+                src.PlayScheduled(start);
+            }
         }
 
         void Update()
@@ -76,10 +102,33 @@ namespace Patchwork
             float k = 1f - Mathf.Exp(-10f * udt);
             cutoff = Mathf.Lerp(cutoff, cutoffTarget, k);
             duck = Mathf.Lerp(duck, duckTarget, k);
-            filter.cutoffFrequency = cutoff;
 
             float target = MaxVolume * Volume / 10f * duck;
-            source.volume = Mathf.MoveTowards(source.volume, target, udt * 0.6f);
+            master = Mathf.MoveTowards(master, target, udt * 0.6f);
+
+            for (int i = 0; i < StemCount; i++)
+            {
+                if (sources[i] == null) continue;
+                if (i != (int)Stem.Base)
+                {
+                    bool on = StemFor(form) == i;
+                    layerMix[i] = Mathf.MoveTowards(layerMix[i], on ? 1f : 0f, udt / LayerFade);
+                }
+                // Equal-power curve so the overall loudness stays even mid-crossfade.
+                float gain = i == (int)Stem.Base ? 1f : Mathf.Sin(layerMix[i] * Mathf.PI * 0.5f);
+                sources[i].volume = master * gain;
+                filters[i].cutoffFrequency = cutoff;
+            }
+        }
+
+        static int StemFor(FormType f)
+        {
+            switch (f)
+            {
+                case FormType.Water: return (int)Stem.Water;
+                case FormType.Wind: return (int)Stem.Wind;
+                default: return (int)Stem.Yarn;
+            }
         }
 
         // ------------------------------------------------------------------ Composition
@@ -116,14 +165,16 @@ namespace Patchwork
             return 440f * Mathf.Pow(2f, (midi - 69f) / 12f);
         }
 
-        static AudioClip Compose()
+        static AudioClip[] Compose()
         {
             float beat = 60f / Bpm;
             float bar = beat * 4f;
             int bars = Chords.Length;
             float total = bar * bars;
             int n = Mathf.CeilToInt(total * Rate);
-            var data = new float[n];
+            var data = new float[StemCount][];
+            for (int i = 0; i < StemCount; i++) data[i] = new float[n];
+            var bed = data[(int)Stem.Base];
 
             for (int b = 0; b < bars; b++)
             {
@@ -133,46 +184,142 @@ namespace Patchwork
                 var chord = Chords[b];
                 for (int c = 0; c < chord.Length; c++)
                 {
-                    AddEPiano(data, barStart, bar * 0.95f, Freq(chord[c]), 0.075f);
-                    AddEPiano(data, barStart + beat * 2.5f, beat * 1.4f, Freq(chord[c]), 0.04f);
+                    AddEPiano(bed, barStart, bar * 0.95f, Freq(chord[c]), 0.075f);
+                    AddEPiano(bed, barStart + beat * 2.5f, beat * 1.4f, Freq(chord[c]), 0.04f);
                 }
 
                 // Round bass on 1 and 3.
-                AddBass(data, barStart, beat * 1.8f, Freq(Bass[b]), 0.22f);
-                AddBass(data, barStart + beat * 2f, beat * 1.6f, Freq(Bass[b] + (b % 2 == 0 ? 7 : 0)), 0.16f);
+                AddBass(bed, barStart, beat * 1.8f, Freq(Bass[b]), 0.22f);
+                AddBass(bed, barStart + beat * 2f, beat * 1.6f, Freq(Bass[b] + (b % 2 == 0 ? 7 : 0)), 0.16f);
 
                 // Brushed beat: soft "tss" on 2 and 4, very quiet shaker on off-beats.
                 for (int q = 0; q < 4; q++)
                 {
                     float t0 = barStart + q * beat;
-                    if (q == 1 || q == 3) AddBrush(data, t0, 0.18f, 0.05f, 1000 + b * 10 + q);
-                    AddBrush(data, t0 + beat * 0.5f, 0.06f, 0.018f, 2000 + b * 10 + q);
+                    if (q == 1 || q == 3) AddBrush(bed, t0, 0.18f, 0.05f, 1000 + b * 10 + q);
+                    AddBrush(bed, t0 + beat * 0.5f, 0.06f, 0.018f, 2000 + b * 10 + q);
                 }
                 // A soft felt "kick" on 1.
-                AddKick(data, barStart, 0.12f);
+                AddKick(bed, barStart, 0.12f);
+
+                // Wind: a breathy air pad that swells on each chord.
+                AddAirPad(data[(int)Stem.Wind], barStart, bar, 0.035f, 3000 + b);
             }
 
-            // Music-box melody.
+            // The tune, played three ways.
             for (int i = 0; i < Melody.GetLength(0); i++)
             {
                 float t0 = Melody[i, 0] * bar + Melody[i, 1] * beat;
-                AddMusicBox(data, t0, Melody[i, 3] * beat + 0.6f, Freq(Melody[i, 2]), 0.07f);
+                float f = Freq(Melody[i, 2]);
+                float len = Melody[i, 3] * beat;
+                // Water: music box, plus a tiny rising "bloop" an octave up.
+                AddMusicBox(data[(int)Stem.Water], t0, len + 0.6f, f, 0.07f);
+                AddBloop(data[(int)Stem.Water], t0 + beat * 0.5f, f * 2f, 0.02f);
+                // Yarn: plucked string, like a little ukulele.
+                AddPluck(data[(int)Stem.Yarn], t0, len + 0.8f, f, 0.12f, 4000 + i);
+                // Wind: soft flute with a gentle vibrato.
+                AddFlute(data[(int)Stem.Wind], t0, len + 0.15f, f, 0.06f);
             }
 
-            // Warm it up: gentle low-pass + soft saturation, then wrap the tail into the start.
-            LowPass(data, 4200f);
+            // Warm everything with the same filter and one shared gain, so the layers sit
+            // at the same level as each other and as the old single track.
+            for (int i = 0; i < StemCount; i++) LowPass(data[i], 4200f);
             float peak = 0.0001f;
-            for (int i = 0; i < n; i++) peak = Mathf.Max(peak, Mathf.Abs(data[i]));
-            float gain = 0.85f / peak;
-            for (int i = 0; i < n; i++)
+            for (int s = 0; s < n; s++)
             {
-                float x = data[i] * gain;
-                data[i] = x / (1f + Mathf.Abs(x) * 0.3f);
+                float loudest = 0f;
+                for (int i = 1; i < StemCount; i++) loudest = Mathf.Max(loudest, Mathf.Abs(data[i][s]));
+                peak = Mathf.Max(peak, Mathf.Abs(bed[s]) + loudest);
             }
-
-            var result = AudioClip.Create("pw_music", n, 1, Rate, false);
-            result.SetData(data, 0);
+            float gain = 0.85f / peak;
+            var result = new AudioClip[StemCount];
+            for (int i = 0; i < StemCount; i++)
+            {
+                var d = data[i];
+                for (int s = 0; s < n; s++)
+                {
+                    float x = d[s] * gain;
+                    d[s] = i == (int)Stem.Base ? x / (1f + Mathf.Abs(x) * 0.3f) : x;
+                }
+                result[i] = AudioClip.Create("pw_music_" + ((Stem)i).ToString().ToLower(), n, 1, Rate, false);
+                result[i].SetData(d, 0);
+            }
             return result;
+        }
+
+        // Plucked string (Karplus-Strong): a burst of noise fed round a short, damped delay line.
+        static void AddPluck(float[] data, float start, float dur, float f, float vol, int seed)
+        {
+            var rng = new System.Random(seed);
+            int period = Mathf.Max(2, Mathf.RoundToInt(Rate / f));
+            var ring = new float[period];
+            for (int i = 0; i < period; i++) ring[i] = (float)(rng.NextDouble() * 2.0 - 1.0);
+            int s0 = Mathf.FloorToInt(start * Rate);
+            int count = Mathf.CeilToInt(dur * Rate);
+            int idx = 0;
+            for (int i = 0; i < count; i++)
+            {
+                float t = i / (float)Rate;
+                int next = (idx + 1) % period;
+                float y = ring[idx];
+                ring[idx] = 0.5f * (ring[idx] + ring[next]) * 0.996f;
+                idx = next;
+                float env = Mathf.Clamp01((dur - t) / 0.08f);
+                Add(data, s0 + i, y * env * vol);
+            }
+        }
+
+        // Soft flute: a sine with a slow-starting vibrato and a little breath noise.
+        static void AddFlute(float[] data, float start, float dur, float f, float vol)
+        {
+            int s0 = Mathf.FloorToInt(start * Rate);
+            int count = Mathf.CeilToInt(dur * Rate);
+            float phase = 0f;
+            uint noise = 22222u;
+            for (int i = 0; i < count; i++)
+            {
+                float t = i / (float)Rate;
+                float vib = 1f + 0.006f * Mathf.Sin(2f * Mathf.PI * 5f * t) * Mathf.Clamp01(t / 0.3f);
+                phase += 2f * Mathf.PI * f * vib / Rate;
+                noise = noise * 1664525u + 1013904223u;
+                float breath = ((noise >> 9) / 4194304f - 1f) * 0.04f;
+                float env = Mathf.Clamp01(t / 0.08f) * Mathf.Clamp01((dur - t) / 0.12f);
+                float w = Mathf.Sin(phase) + 0.15f * Mathf.Sin(phase * 2f) + breath;
+                Add(data, s0 + i, w * env * vol);
+            }
+        }
+
+        // Quiet wash of filtered noise that swells in and out over a bar.
+        static void AddAirPad(float[] data, float start, float dur, float vol, int seed)
+        {
+            var rng = new System.Random(seed);
+            int s0 = Mathf.FloorToInt(start * Rate);
+            int count = Mathf.CeilToInt(dur * Rate);
+            float lp = 0f, lp2 = 0f;
+            for (int i = 0; i < count; i++)
+            {
+                float t = i / (float)Rate;
+                float x = (float)(rng.NextDouble() * 2.0 - 1.0);
+                lp += 0.05f * (x - lp);
+                lp2 += 0.05f * (lp - lp2);
+                float env = Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / dur));
+                Add(data, s0 + i, lp2 * env * vol * 6f);
+            }
+        }
+
+        // Tiny upward "bloop", like a bubble rising.
+        static void AddBloop(float[] data, float start, float f, float vol)
+        {
+            int s0 = Mathf.FloorToInt(start * Rate);
+            int count = Mathf.CeilToInt(0.09f * Rate);
+            float phase = 0f;
+            for (int i = 0; i < count; i++)
+            {
+                float t = i / (float)Rate;
+                phase += 2f * Mathf.PI * f * Mathf.Lerp(0.8f, 1.25f, t / 0.09f) / Rate;
+                float env = Mathf.Clamp01(t / 0.004f) * Mathf.Exp(-t * 35f);
+                Add(data, s0 + i, Mathf.Sin(phase) * env * vol);
+            }
         }
 
         static void AddEPiano(float[] data, float start, float dur, float f, float vol)

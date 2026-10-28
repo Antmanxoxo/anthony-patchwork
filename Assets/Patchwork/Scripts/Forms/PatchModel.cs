@@ -43,6 +43,15 @@ namespace Patchwork
         readonly float[] weights = new float[9];
         Anim current = Anim.Idle;
         float oneShotLeft;
+        readonly float[] targets = new float[9];
+
+        // Lean into speeding up, slowing down and turning (springy, visual only).
+        Quaternion modelBaseRotation;
+        bool haveBaseRotation;
+        Vector3 lastVelocity;
+        float leanPitch, leanRoll, leanPitchVel, leanRollVel;
+        float wantLeanPitch, wantLeanRoll;
+        const float MaxLeanRoll = 12f, MaxLeanPitch = 8f;
         float airTime;
         bool wasGrounded = true;
         float idleTime;
@@ -277,11 +286,38 @@ namespace Patchwork
             if (hasClip[(int)Anim.Walk]) clips[(int)Anim.Walk].SetSpeed(Mathf.Clamp(speed / (maxSpeed * 0.42f), 0.6f, 1.5f));
             if (hasClip[(int)Anim.Run]) clips[(int)Anim.Run].SetSpeed(Mathf.Clamp(speed / (maxSpeed * 0.85f), 0.8f, 1.4f));
 
+            // What each clip should be weighted towards this frame.
+            for (int i = 0; i < targets.Length; i++) targets[i] = 0f;
+            bool locomotion = current == Anim.Idle || current == Anim.Walk || current == Anim.Run;
+            bool airPose = current == Anim.Jump || current == Anim.Fall;
+            if (locomotion)
+            {
+                // Idle, walk and run blend smoothly by speed instead of snapping between them.
+                float moving = Mathf.Clamp01(speed / 1.5f);
+                float run = Mathf.Clamp01((speed - 3.5f) / Mathf.Max(0.5f, maxSpeed * 0.92f - 3.5f));
+                targets[(int)Anim.Idle] = 1f - moving;
+                targets[(int)Anim.Walk] = moving * (1f - run);
+                targets[(int)Anim.Run] = moving * run;
+                if (!hasClip[(int)Anim.Run]) { targets[(int)Anim.Walk] += targets[(int)Anim.Run]; targets[(int)Anim.Run] = 0f; }
+                SyncFeet();
+            }
+            else if (airPose && hasClip[(int)Anim.Jump] && hasClip[(int)Anim.Fall])
+            {
+                // In the air the pose follows how fast he's going up or down: rising looks like the
+                // jump, the top is a mix, and falling turns into the fall pose.
+                float fall = Mathf.Clamp01((2f - v.y) / 4f);
+                targets[(int)Anim.Jump] = 1f - fall;
+                targets[(int)Anim.Fall] = fall;
+            }
+            else targets[(int)current] = 1f;
+
+            UpdateLean(v, grounded, dt);
+
             float step = dt / BlendTime;
             for (int i = 0; i < weights.Length; i++)
             {
                 if (!hasClip[i]) continue;
-                weights[i] = Mathf.MoveTowards(weights[i], i == (int)current ? 1f : 0f, step);
+                weights[i] = Mathf.MoveTowards(weights[i], targets[i], step);
                 mixer.SetInputWeight(i, weights[i]);
                 // Keep looping clips looping even if the importer didn't mark them as loops.
                 var len = clips[i].GetAnimationClip().length;
@@ -289,6 +325,33 @@ namespace Patchwork
                 if (Loops[i] && t > len) clips[i].SetTime(t % len);
                 else if (!Loops[i] && t > len) clips[i].SetTime(len);
             }
+        }
+
+        // Keep walk and run on the same step so blending between them doesn't scramble his feet.
+        void SyncFeet()
+        {
+            int w = (int)Anim.Walk, r = (int)Anim.Run;
+            if (!hasClip[w] || !hasClip[r]) return;
+            float wl = clips[w].GetAnimationClip().length, rl = clips[r].GetAnimationClip().length;
+            if (wl <= 0f || rl <= 0f) return;
+            if (weights[r] > weights[w]) clips[w].SetTime((clips[r].GetTime() % rl) / rl * wl);
+            else clips[r].SetTime((clips[w].GetTime() % wl) / wl * rl);
+        }
+
+        void UpdateLean(Vector3 v, bool grounded, float dt)
+        {
+            Vector3 accel = dt > 0f ? (v - lastVelocity) / dt : Vector3.zero;
+            lastVelocity = v;
+            if (tethered || !grounded) { wantLeanPitch = 0f; wantLeanRoll = 0f; }
+            else
+            {
+                Vector3 local = transform.InverseTransformDirection(accel);
+                wantLeanPitch = Mathf.Clamp(local.z * 0.35f, -MaxLeanPitch, MaxLeanPitch);
+                wantLeanRoll = Mathf.Clamp(-local.x * 0.5f, -MaxLeanRoll, MaxLeanRoll);
+            }
+            // Eased so it settles smoothly instead of snapping.
+            leanPitch = Mathf.SmoothDamp(leanPitch, wantLeanPitch, ref leanPitchVel, 0.12f, Mathf.Infinity, dt);
+            leanRoll = Mathf.SmoothDamp(leanRoll, wantLeanRoll, ref leanRollVel, 0.12f, Mathf.Infinity, dt);
         }
 
         void Play(Anim a)
@@ -314,6 +377,13 @@ namespace Patchwork
                     for (int i = 0; i < mats.Length; i++) mats[i] = patchMaterial;
                     r.sharedMaterials = mats;
                 }
+            }
+
+            // Lean the whole body (around his feet) into acceleration and turns.
+            if (modelRoot != null)
+            {
+                if (!haveBaseRotation) { modelBaseRotation = modelRoot.localRotation; haveBaseRotation = true; }
+                modelRoot.localRotation = Quaternion.Euler(leanPitch, 0f, leanRoll) * modelBaseRotation;
             }
 
             // After the animation: aim the yarn arm at the anchor so the rope lines up.

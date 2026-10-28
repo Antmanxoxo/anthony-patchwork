@@ -12,6 +12,8 @@ namespace Patchwork
         const float CoyoteTime = 0.12f;
         const float JumpBufferTime = 0.14f;
         const float GroundStick = -2f;
+        // Below this upward/downward speed counts as "the top of the jump" for the hang.
+        const float ApexSpeed = 1.5f;
 
         public CharacterController Controller { get; private set; }
         public FormDefinition Params;
@@ -39,6 +41,10 @@ namespace Patchwork
         float jumpBufferTimer;
         bool allowJumpCut;
         float airTime;
+        bool launched;
+
+        // Extra horizontal speed kept in the air (e.g. jumping off a moving platform). Cleared on landing.
+        [System.NonSerialized] public Vector3 Carry;
 
 
         // The collider Patch is standing on (for moving platforms). Null when airborne.
@@ -97,6 +103,7 @@ namespace Patchwork
         {
             allowJumpCut = false;
             coyoteTimer = 0f;
+            launched = true;
         }
 
         public void Teleport(Vector3 feetPosition, float yaw)
@@ -106,6 +113,8 @@ namespace Patchwork
             transform.rotation = Quaternion.Euler(0f, yaw, 0f);
             Controller.enabled = true;
             Velocity = Vector3.zero;
+            Carry = Vector3.zero;
+            launched = false;
             ResetTransientState();
         }
 
@@ -130,7 +139,7 @@ namespace Patchwork
             }
             else
             {
-                Vector3 target = moveWorld * Params.MoveSpeed;
+                Vector3 target = moveWorld * Params.MoveSpeed + (Grounded ? Vector3.zero : Carry);
                 float accel = Grounded ? Params.GroundAcceleration : Params.AirAcceleration;
                 horizontal = Vector3.MoveTowards(horizontal, target, accel * dt);
             }
@@ -148,17 +157,25 @@ namespace Patchwork
                 jumpBufferTimer = 0f;
                 coyoteTimer = 0f;
                 allowJumpCut = true;
+                launched = false;
                 JustJumped = true;
                 Grounded = false;
             }
 
             // ---------------- Gravity ----------------
+            float vyStart = vy;
             bool dashing = dashTimer > 0f;
             if (!Grounded || vy > 0f)
             {
                 float g = gravity;
                 // Short hop when jump is released early
                 if (vy > 0f && !jumpHeld && allowJumpCut && !dashing) { g *= 2.2f; }
+                else if (!launched && !dashing && !HasLift)
+                {
+                    // A little hang at the top while Jump is held, then a quicker drop.
+                    if (jumpHeld && Mathf.Abs(vy) < ApexSpeed) g *= Params.ApexHangMultiplier;
+                    else if (vy < 0f) g *= Params.FallGravityMultiplier;
+                }
                 if (dashing) g *= 0.15f;
                 vy -= g * dt;
             }
@@ -175,9 +192,12 @@ namespace Patchwork
             Velocity = new Vector3(horizontal.x, vy, horizontal.z);
 
             // ---------------- Move ----------------
+            // Move by the average of this frame's start and end vertical speed. With plain
+            // "speed after gravity x time" the jump height changed with the frame rate.
             bool wasGrounded = Grounded;
             groundHit = null;
-            CollisionFlags flags = Controller.Move(Velocity * dt);
+            Vector3 step = new Vector3(horizontal.x, (vyStart + vy) * 0.5f, horizontal.z) * dt;
+            CollisionFlags flags = Controller.Move(step);
             Grounded = Controller.isGrounded;
             GroundCollider = Grounded ? groundHit : null;
 
@@ -192,6 +212,8 @@ namespace Patchwork
                 if (Velocity.y < 0f) Velocity = new Vector3(Velocity.x, GroundStick, Velocity.z);
                 if (!wasGrounded && airTime > 0.15f) JustLanded = true;
                 allowJumpCut = false;
+                launched = false;
+                Carry = Vector3.zero;
                 airTime = 0f;
             }
             else

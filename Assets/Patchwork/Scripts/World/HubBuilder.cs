@@ -40,6 +40,7 @@ namespace Patchwork
             // Yarn practice: an anchor over a gap to a little island (west).
             kit.Quilt(new Vector3(-21f, -0.5f, 0f), new Vector3(6f, 1f, 6f), LevelKit.Palette.Meadow, 3f, "SwingIsland");
             kit.Anchor(new Vector3(-15f, 6.5f, 0f), 13f);
+            kit.AddCameraZone(new Vector3(-16f, 2f, 0f), new Vector3(14f, 20f, 10f), 2f, 5f);
             kit.Hint(new Vector3(-10f, 1.5f, 0f), new Vector3(4f, 4f, 6f), "Practice: Yarn Swing",
                 "In Yarn Form, hold Ability near the pink button to swing over to the island. Swing back the same way.", HintTheme.Yarn);
             kit.YarnTree(new Vector3(-22f, 0f, 1.5f), 2.6f, LevelKit.Palette.Rose);

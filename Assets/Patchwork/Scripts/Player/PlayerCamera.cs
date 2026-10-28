@@ -4,6 +4,13 @@ namespace Patchwork
 {
     // Third-person orbit camera. Right stick / mouse orbits; it gently follows the player and
     // pulls in when something is between it and the player.
+    // Platformer touches:
+    // - holds its height while you jump, so normal jumps don't bob the view (it still follows if
+    //   you go well above or below where you took off)
+    // - looks a little ahead of where you're running
+    // - backs out while swinging (and leans toward the anchor) or gliding, so you can see more
+    // - after a few seconds without touching the camera, slowly swings round behind you
+    // - camera zones in the level can add distance or tilt for a section
     public class PlayerCamera : MonoBehaviour
     {
         public Transform Target;
@@ -14,13 +21,34 @@ namespace Patchwork
         public float MinPitch = -25f;
         public float MaxPitch = 65f;
 
+        // Height band (around where you left the ground) the camera ignores while you're in the air.
+        const float HoldAbove = 2.5f;
+        const float HoldBelow = 1f;
+        const float LookAheadTime = 0.35f;
+        const float LookAheadMax = 2f;
+        const float RecenterDelay = 2.5f;
+        const float RecenterSpeed = 45f;   // degrees per second at full run
+
         public Camera Cam { get; private set; }
+
+        // Set by the game every frame before Tick.
+        [System.NonSerialized] public bool TargetGrounded = true;
+        [System.NonSerialized] public Vector3 TargetVelocity;
+        [System.NonSerialized] public bool Swinging;
+        [System.NonSerialized] public Vector3 SwingAnchor;
+        [System.NonSerialized] public bool Gliding;
 
         float yaw;
         float pitch = 18f;
         Vector3 focus;
         float currentDistance;
         int obstacleMask;
+
+        float heldGroundY;
+        Vector3 lookAhead;
+        float idleLookTime;
+        float extraDistance, extraPitch;
+        CameraZone zone;
 
         public float Yaw { get { return yaw; } }
 
@@ -36,10 +64,19 @@ namespace Patchwork
         {
             yaw = targetYaw;
             pitch = 18f;
-            if (Target != null) focus = Target.position + Vector3.up * TargetHeight;
+            if (Target != null)
+            {
+                heldGroundY = Target.position.y;
+                focus = Target.position + Vector3.up * TargetHeight;
+            }
+            lookAhead = Vector3.zero;
+            idleLookTime = 0f;
             currentDistance = Distance;
             Apply(1f);
         }
+
+        public void EnterZone(CameraZone z) { zone = z; }
+        public void ExitZone(CameraZone z) { if (zone == z) zone = null; }
 
         public void Tick(Vector2 stick, Vector2 mouse, float dt)
         {
@@ -49,24 +86,63 @@ namespace Patchwork
             pitch -= stick.y * StickSpeed * 0.7f * dt + mouse.y * MouseSpeed;
             pitch = Mathf.Clamp(pitch, MinPitch, MaxPitch);
 
-            Vector3 desiredFocus = Target.position + Vector3.up * TargetHeight;
-            // Follow horizontally tightly, vertically a little softer (less bouncy when jumping).
-            float fh = 1f - Mathf.Exp(-14f * dt);
-            float fv = 1f - Mathf.Exp(-6f * dt);
+            bool touched = stick.sqrMagnitude > 0.01f || mouse.sqrMagnitude > 0.01f;
+            idleLookTime = touched ? 0f : idleLookTime + dt;
+
+            Vector3 flatVel = new Vector3(TargetVelocity.x, 0f, TargetVelocity.z);
+            float speed = flatVel.magnitude;
+
+            // Slowly come round behind the player after a while without touching the camera.
+            // Not while running toward the camera (that would spin it all the way round).
+            if (idleLookTime > RecenterDelay && speed > 2f && TargetGrounded && !Swinging)
+            {
+                float moveYaw = Mathf.Atan2(flatVel.x, flatVel.z) * Mathf.Rad2Deg;
+                float diff = Mathf.DeltaAngle(yaw, moveYaw);
+                if (Mathf.Abs(diff) < 120f)
+                {
+                    float rate = RecenterSpeed * Mathf.Clamp01(speed / 6.5f);
+                    yaw = Mathf.MoveTowardsAngle(yaw, moveYaw, rate * dt);
+                }
+            }
+
+            // Hold the height you jumped from unless you go well above or below it.
+            float feetY = Target.position.y;
+            if (TargetGrounded || Swinging) heldGroundY = feetY;
+            else heldGroundY = Mathf.Clamp(heldGroundY, feetY - HoldAbove, feetY + HoldBelow);
+
+            // Look a little ahead of where you're running (never up or down).
+            Vector3 wantAhead = Vector3.ClampMagnitude(flatVel * LookAheadTime, LookAheadMax);
+            lookAhead = Vector3.Lerp(lookAhead, wantAhead, 1f - Mathf.Exp(-3f * dt));
+
+            Vector3 desiredFocus = new Vector3(Target.position.x, heldGroundY, Target.position.z) + Vector3.up * TargetHeight + lookAhead;
+            if (Swinging) desiredFocus = Vector3.Lerp(Target.position + Vector3.up * TargetHeight, SwingAnchor, 0.3f);
+
+            // Follow horizontally tightly, vertically a little softer.
+            float fh = 1f - Mathf.Exp(-12f * dt);
+            float fv = 1f - Mathf.Exp(-5f * dt);
             focus = new Vector3(Mathf.Lerp(focus.x, desiredFocus.x, fh),
                                 Mathf.Lerp(focus.y, desiredFocus.y, fv),
                                 Mathf.Lerp(focus.z, desiredFocus.z, fh));
+
+            // Back out a bit for swings, glides and camera zones.
+            float wantExtraDist = (Swinging ? 1.5f : 0f) + (Gliding ? 1f : 0f) + (zone != null ? zone.ExtraDistance : 0f);
+            float wantExtraPitch = (Gliding ? 5f : 0f) + (zone != null ? zone.ExtraPitch : 0f);
+            float fz = 1f - Mathf.Exp(-2.5f * dt);
+            extraDistance = Mathf.Lerp(extraDistance, wantExtraDist, fz);
+            extraPitch = Mathf.Lerp(extraPitch, wantExtraPitch, fz);
             Apply(dt);
         }
 
         void Apply(float dt)
         {
-            Quaternion rot = Quaternion.Euler(pitch, yaw, 0f);
+            float p = Mathf.Clamp(pitch + extraPitch, MinPitch, MaxPitch);
+            Quaternion rot = Quaternion.Euler(p, yaw, 0f);
             Vector3 back = rot * Vector3.back;
 
-            float wanted = Distance;
+            float dist = Distance + extraDistance;
+            float wanted = dist;
             RaycastHit hit;
-            if (Physics.SphereCast(focus, 0.3f, back, out hit, Distance, obstacleMask, QueryTriggerInteraction.Ignore))
+            if (Physics.SphereCast(focus, 0.3f, back, out hit, dist, obstacleMask, QueryTriggerInteraction.Ignore))
                 wanted = Mathf.Max(1.2f, hit.distance - 0.1f);
 
             // Pull in instantly, ease back out.

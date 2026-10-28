@@ -43,6 +43,9 @@ Stuff I need to remember about how Patchwork is put together.
 - Patch's animations: Idle, Walk, Run, Jump, Fall, Land, Swing, Wave (if you stand still a while),
   Celebrate (level complete). Played with the Playables API, no Animator Controller asset needed.
 - Only one menu open at a time.
+- `CameraZone` boxes (made with `kit.AddCameraZone`) add camera distance/tilt for a section.
+- Music is four stems (base + Water/Yarn/Wind tune) started together with `PlayScheduled`;
+  `MusicPlayer.SetForm` crossfades the tune layer.
 - Play mode doesn't reload scripts, so any new static value that should start fresh needs a line
   in `StaticReset`.
 - Rumble goes through `Haptics` only (never call the gamepad directly), so pausing and quitting
@@ -65,6 +68,8 @@ Stuff I need to remember about how Patchwork is put together.
 - Yarn gap is 15m, Wind gap is 7m.
 - Water is 0.8m tall (0.32 radius), tunnels are 1m tall. Other forms are 1.4m tall (0.45 radius).
 - If I change movement numbers I need to re-check the gaps in `Level1Builder`.
+- Falling is 1.5x gravity for Yarn and Water (`FallGravityMultiplier`), but not after a launch
+  (swing release, gust, bounce pad), so those distances stayed the same.
 
 ## Habits
 - Test every change with Play and check the Console.

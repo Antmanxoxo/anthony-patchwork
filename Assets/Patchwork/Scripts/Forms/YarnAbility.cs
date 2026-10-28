@@ -16,6 +16,8 @@ namespace Patchwork
 
         public bool Attached { get; private set; }
         public YarnAnchor Target { get; private set; }
+        // Where the rope is tied while swinging.
+        public Vector3 AnchorPosition { get { return attachedAnchor != null ? attachedAnchor.Position : Vector3.zero; } }
 
         YarnAnchor attachedAnchor;
         float ropeLength;

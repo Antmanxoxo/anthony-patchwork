@@ -27,6 +27,11 @@ namespace Patchwork
         public float JumpHeight = 2.0f;
         public float GravityScale = 1f;
         public float MaxFallSpeed = 30f;
+        // Gravity is stronger on the way down so jumps feel snappy instead of floaty
+        // (not after launches like swings, gusts and bounce pads, so their distances don't change).
+        public float FallGravityMultiplier = 1.5f;
+        // Holding Jump near the top of a jump hangs there a moment (gravity times this).
+        public float ApexHangMultiplier = 0.6f;
 
         // Collision capsule (pivot is at the feet)
         public float ControllerHeight = 1.4f;
@@ -99,6 +104,9 @@ namespace Patchwork
                 AirAcceleration = 26f,
                 JumpHeight = 2.0f,
                 GravityScale = 0.8f,
+                // Wind's floatiness is the point, and its glide distances are tuned to the level.
+                FallGravityMultiplier = 1f,
+                ApexHangMultiplier = 1f,
                 ControllerHeight = 1.4f,
                 ControllerRadius = 0.45f,
                 HeadHeight = 1.2f

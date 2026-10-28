@@ -1,5 +1,19 @@
 # Development Log
 
+## Feel upgrades
+- The D-pad faces (happy, sad, angry) now work on all three forms: the Water bubble and the
+  Wind cloud got their own frowns and eyebrows.
+- Jump height is now the same at any frame rate.
+- Jumps feel snappier: a quicker drop after the top of a jump and a little hang at the top while
+  Jump is held (Yarn and Water; Wind stays floaty). Swings, gusts and bounce pads are unchanged.
+- Jumping off a moving button keeps its speed.
+- Camera: stays level during normal jumps, looks a little ahead, backs out while swinging or
+  gliding, slowly swings round behind you if you leave it alone, and pulls back over the swing gaps.
+- Patch's walk, run and standing now blend smoothly by speed, his air pose follows whether he's
+  rising or falling, and he leans into starts, stops and turns.
+- Music has a layer for each form that crossfades when you change: music box for Water,
+  plucked strings for Yarn, a breathy flute for Wind.
+
 ## Polish pass 3
 - Changing Music, Sound or Rumble in the pause menu plays a tick that goes up in pitch as the
   setting goes up, and down as it goes down.

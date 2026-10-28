@@ -144,6 +144,8 @@ namespace Patchwork
             kit.Hint(new Vector3(0f, 1.5f, 50.5f), new Vector3(14f, 4f, 3f), "Swing Across",
                 "Too far to jump! As Yarn, run toward the glowing pink button and hold Ability to throw your yarn arm. Let go to fly.", HintTheme.Yarn);
             kit.Anchor(new Vector3(0f, 8f, 59.5f), 13.5f);
+            // Pull the camera back over the whole gap so the full swing arc and the landing fit on screen.
+            kit.AddCameraZone(new Vector3(0f, 2f, 59.5f), new Vector3(16f, 24f, 22f), 2.5f, 6f);
             kit.GoldenButton(CollectibleIds[1], new Vector3(0f, -0.4f, 59.5f));
             // Threads along the swing arc.
             float rope = 8.4f;
