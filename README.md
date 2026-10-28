@@ -39,3 +39,6 @@ lower-left, Wind is lower-right. Time slows while the wheel is open.
 - `Assets/Patchwork/Editor`: editor helpers (**Patchwork** menu in the Unity menu bar)
 
 `PROJECT_STATUS.md` has what's working, `DEVELOPMENT_LOG.md` has the history.
+
+## Fonts
+- Fredoka and Sniglet, both under the SIL Open Font License 1.1 (licence files are next to the fonts in `Assets/Patchwork/Resources/Fonts`).

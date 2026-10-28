@@ -11,7 +11,8 @@
   you leave.
 - Decorations use softer pink and blue, so bright pink means a yarn anchor and bright blue means
   water. Scenery clouds are cream so they don't look like Wind Form.
-- Text can use crafted fonts from `Resources/Fonts` (Fredoka, Sniglet).
+- New crafted fonts: Fredoka (soft and rounded, like felt letters) for normal text and Sniglet
+  (puffy cut-out letters) for big titles.
 
 ## Polish pass 2
 - Wind's gust no longer re-launches the glide, so Wind can't skip the Yarn swing any more.
