@@ -4,6 +4,9 @@ Stuff I need to remember about how Patchwork is put together.
 
 ## Setup
 - Unity 6 (6000.6.7f1), URP, C#. Input System only (old input manager is off).
+- Company name is "Little Colossus", app id `com.LittleColossus.Patchwork`. Don't change these once
+  people have the game: saves and settings live under the company + product name
+  (registry `HKCU\Software\Little Colossus\Patchwork` on Windows), so a rename resets them.
 - There are no hand-built scenes or prefabs. `Hub.unity` and `Level1.unity` only have a Global Volume
   and a `LevelBootstrap`. When you press Play, `PatchworkGame.Boot()` builds the level, lights,
   camera, player and HUD in code.
