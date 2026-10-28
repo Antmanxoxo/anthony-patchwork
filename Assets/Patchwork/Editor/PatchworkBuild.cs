@@ -33,7 +33,7 @@ namespace Patchwork.EditorTools
             var summary = report.summary;
             if (summary.result == BuildResult.Succeeded)
             {
-                Debug.Log("Patchwork: Windows build finished (" + (summary.totalSize / (1024 * 1024)) + " MB) in " + BuildFolder);
+                Debug.Log("Patchwork: Windows build finished (" + (summary.totalSize / 1048576UL) + " MB) in " + BuildFolder);
                 EditorUtility.RevealInFinder(exe);
             }
             else
