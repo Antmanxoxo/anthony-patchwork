@@ -69,13 +69,14 @@ namespace Patchwork
             reattachTimer -= dt;
             failToastTimer -= dt;
 
+            bool grabbedThisFrame = false;
             if (!Attached)
             {
                 SetTarget(reattachTimer <= 0f ? FindBestAnchor() : null);
 
                 if (input.AbilityPressed)
                 {
-                    if (Target != null) Attach(Target);
+                    if (Target != null) { Attach(Target); grabbedThisFrame = true; }
                     else if (failToastTimer <= 0f)
                     {
                         Sfx.Play(SfxId.TransformFail, 0.25f);
@@ -89,7 +90,9 @@ namespace Patchwork
             {
                 if (attachedAnchor == null) { Detach(false, false); return; }
                 if (input.JumpPressed) { Detach(true, true); return; }
-                if (!input.AbilityHeld) { Detach(true, false); return; }
+                // Hold mode: letting go releases. Tap mode (Settings): a second tap releases.
+                bool release = GameSettings.SwingToggle ? input.AbilityPressed && !grabbedThisFrame : !input.AbilityHeld;
+                if (release) { Detach(true, false); return; }
                 Swing(input, dt);
             }
         }

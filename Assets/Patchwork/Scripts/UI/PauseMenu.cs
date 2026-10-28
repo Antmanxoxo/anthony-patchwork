@@ -5,9 +5,11 @@ namespace Patchwork
 {
     // Pause menu. Drops in with a bounce and each option has its own little icon animation
     // when it's highlighted. D-pad/stick to move, X to pick, Circle to go back.
+    // Settings live on their own page (sound, rumble, camera, controls, VSync).
     public class PauseMenu
     {
-        enum Item { Resume, Restart, ReturnToHub, Prompts, WheelButton, Music, Sounds, Rumble, Quit }
+        enum Item { Resume, Restart, ReturnToHub, Settings, Quit,
+                    Music, Sounds, Rumble, CameraSpeed, InvertY, InvertX, SwingMode, Prompts, WheelButton, VSync, Back }
 
         readonly PatchworkGame game;
         readonly List<Item> items = new List<Item>();
@@ -18,6 +20,7 @@ namespace Patchwork
         float selectTime;       // time since the current item became selected
         float confirmFlash;
         float sideCooldown;
+        bool settingsPage;
 
         // "Are you sure?" card for options that lose progress. Starts on No.
         bool confirming;
@@ -32,17 +35,7 @@ namespace Patchwork
 
         public void Open()
         {
-            items.Clear();
-            items.Add(Item.Resume);
-            items.Add(Item.Restart);
-            if (!game.Level.IsHub) items.Add(Item.ReturnToHub);
-            items.Add(Item.Prompts);
-            items.Add(Item.WheelButton);
-            items.Add(Item.Music);
-            items.Add(Item.Sounds);
-            items.Add(Item.Rumble);
-            items.Add(Item.Quit);
-            index = 0;
+            ShowMainPage(0);
             highlightPos = 0f;
             selectTime = 0f;
             openTime = 0f;
@@ -52,10 +45,61 @@ namespace Patchwork
             Sfx.Play(SfxId.PauseOpen, 0.45f);
         }
 
+        void ShowMainPage(int select)
+        {
+            settingsPage = false;
+            items.Clear();
+            items.Add(Item.Resume);
+            items.Add(Item.Restart);
+            if (!game.Level.IsHub) items.Add(Item.ReturnToHub);
+            items.Add(Item.Settings);
+            items.Add(Item.Quit);
+            index = Mathf.Clamp(select, 0, items.Count - 1);
+            selectTime = 0f;
+        }
+
+        void ShowSettingsPage()
+        {
+            settingsPage = true;
+            items.Clear();
+            items.Add(Item.Music);
+            items.Add(Item.Sounds);
+            items.Add(Item.Rumble);
+            items.Add(Item.CameraSpeed);
+            items.Add(Item.InvertY);
+            items.Add(Item.InvertX);
+            items.Add(Item.SwingMode);
+            items.Add(Item.Prompts);
+            items.Add(Item.WheelButton);
+            items.Add(Item.VSync);
+            items.Add(Item.Back);
+            index = 0;
+            highlightPos = 0f;
+            selectTime = 0f;
+            openTime = 0.12f; // replay the row slide-in
+        }
+
+        void BackToMainPage()
+        {
+            ShowMainPage(items.Count > 0 ? 0 : 0);
+            index = items.IndexOf(Item.Settings);
+            highlightPos = index;
+            Sfx.Play(SfxId.MenuCancel, 0.4f);
+        }
+
+        static string OnOff(bool on) { return on ? "On" : "Off"; }
+
         string LabelFor(Item item)
         {
             switch (item)
             {
+                case Item.Settings: return "Settings";
+                case Item.CameraSpeed: return "Camera Speed";
+                case Item.InvertY: return "Invert Camera Up/Down:  " + OnOff(GameSettings.InvertY);
+                case Item.InvertX: return "Invert Camera Left/Right:  " + OnOff(GameSettings.InvertX);
+                case Item.SwingMode: return "Yarn Swing:  " + (GameSettings.SwingToggle ? "Tap on / tap off" : "Hold button");
+                case Item.VSync: return "VSync:  " + OnOff(GameSettings.VSync);
+                case Item.Back: return "Back";
                 case Item.Resume: return "Resume";
                 case Item.Restart: return "Restart from Checkpoint";
                 case Item.ReturnToHub: return "Return to the Sewing Room";
@@ -77,7 +121,14 @@ namespace Patchwork
         {
             switch (item)
             {
-                case Item.Resume: return UIArt.IconPlay;
+                case Item.Resume:
+                case Item.Back: return UIArt.IconPlay;
+                case Item.Settings: return UIArt.IconNeedle;
+                case Item.CameraSpeed:
+                case Item.InvertY:
+                case Item.InvertX:
+                case Item.SwingMode:
+                case Item.VSync: return UIArt.IconPad;
                 case Item.Restart: return UIArt.IconRestart;
                 case Item.ReturnToHub: return UIArt.IconHome;
                 case Item.Prompts:
@@ -101,13 +152,44 @@ namespace Patchwork
                 case Item.Music: return new Color(0.65f, 0.45f, 0.85f);
                 case Item.Sounds: return new Color(0.85f, 0.45f, 0.65f);
                 case Item.Rumble: return new Color(0.45f, 0.6f, 0.4f);
+                case Item.Settings: return new Color(0.55f, 0.5f, 0.8f);
+                case Item.CameraSpeed: return new Color(0.35f, 0.6f, 0.85f);
+                case Item.InvertY:
+                case Item.InvertX: return new Color(0.4f, 0.5f, 0.8f);
+                case Item.SwingMode: return new Color(0.9f, 0.45f, 0.58f);
+                case Item.VSync: return new Color(0.5f, 0.65f, 0.6f);
+                case Item.Back: return new Color(0.35f, 0.7f, 0.5f);
                 default: return new Color(0.6f, 0.5f, 0.45f);
             }
         }
 
         static bool IsSlider(Item item)
         {
-            return item == Item.Music || item == Item.Sounds || item == Item.Rumble;
+            return item == Item.Music || item == Item.Sounds || item == Item.Rumble || item == Item.CameraSpeed;
+        }
+
+        // On/off and multiple-choice settings: X or left/right flips them.
+        static bool IsToggle(Item item)
+        {
+            return item == Item.InvertY || item == Item.InvertX || item == Item.SwingMode || item == Item.VSync
+                || item == Item.Prompts || item == Item.WheelButton;
+        }
+
+        void Toggle(Item item, int dir)
+        {
+            var input = game.Input;
+            switch (item)
+            {
+                case Item.InvertY: GameSettings.InvertY = !GameSettings.InvertY; break;
+                case Item.InvertX: GameSettings.InvertX = !GameSettings.InvertX; break;
+                case Item.SwingMode: GameSettings.SwingToggle = !GameSettings.SwingToggle; break;
+                case Item.VSync: GameSettings.VSync = !GameSettings.VSync; GameSettings.ApplyVSync(); break;
+                case Item.Prompts: input.Prompts = (PatchworkInput.PromptMode)(((int)input.Prompts + (dir < 0 ? 2 : 1)) % 3); break;
+                case Item.WheelButton: input.FormWheelOnR1 = !input.FormWheelOnR1; break;
+            }
+            PlayerPrefs.Save();
+            Sfx.Play(SfxId.MenuMove, 0.5f);
+            selectTime = 0f;
         }
 
         static int SliderValue(Item item)
@@ -116,6 +198,7 @@ namespace Patchwork
             {
                 case Item.Music: return MusicPlayer.Volume;
                 case Item.Sounds: return Sfx.Volume;
+                case Item.CameraSpeed: return GameSettings.CameraSpeed;
                 default: return Haptics.Strength;
             }
         }
@@ -124,11 +207,12 @@ namespace Patchwork
         // climbs in pitch as the value goes up and drops as it goes down.
         void SetSlider(Item item, int value)
         {
-            value = Mathf.Clamp(value, 0, 10);
+            value = Mathf.Clamp(value, item == Item.CameraSpeed ? 1 : 0, 10);
             switch (item)
             {
                 case Item.Music: MusicPlayer.Volume = value; break;
                 case Item.Sounds: Sfx.Volume = value; break;
+                case Item.CameraSpeed: GameSettings.CameraSpeed = value; break;
                 default: Haptics.Strength = value; Haptics.Preview(); break;
             }
             PlayerPrefs.Save();
@@ -153,6 +237,11 @@ namespace Patchwork
                 return;
             }
 
+            if (openTime > 0.05f && settingsPage && input.Cancel.WasPressedThisFrame())
+            {
+                BackToMainPage();
+                return;
+            }
             if (openTime > 0.05f && (input.Pause.WasPressedThisFrame() || input.Cancel.WasPressedThisFrame()))
             {
                 game.ClosePause();
@@ -173,9 +262,9 @@ namespace Patchwork
                 Sfx.Play(SfxId.MenuMove, 0.5f);
             }
 
-            // Left / right change the volume and rumble settings.
+            // Left / right change the sliders and flip the on/off settings.
             var cur = items[index];
-            if (IsSlider(cur))
+            if (IsSlider(cur) || IsToggle(cur))
             {
                 int side = 0;
                 if (input.NavLeft.WasPressedThisFrame()) side = -1;
@@ -186,8 +275,9 @@ namespace Patchwork
                 sideCooldown -= udt;
                 if (side != 0)
                 {
-                    sideCooldown = 0.18f;
-                    SetSlider(cur, SliderValue(cur) + side);
+                    sideCooldown = IsToggle(cur) ? 0.3f : 0.18f;
+                    if (IsToggle(cur)) Toggle(cur, side);
+                    else SetSlider(cur, SliderValue(cur) + side);
                     selectTime = 0f;
                 }
             }
@@ -207,18 +297,22 @@ namespace Patchwork
                     case Item.Quit:
                         OpenConfirm(items[index]);
                         break;
-                    case Item.Prompts:
-                        input.Prompts = (PatchworkInput.PromptMode)(((int)input.Prompts + 1) % 3);
+                    case Item.Settings:
+                        ShowSettingsPage();
                         break;
-                    case Item.WheelButton:
-                        input.FormWheelOnR1 = !input.FormWheelOnR1;
+                    case Item.Back:
+                        BackToMainPage();
                         break;
                     case Item.Music:
                     case Item.Sounds:
                     case Item.Rumble:
-                        // Pressing X steps up and wraps back round to 0.
+                    case Item.CameraSpeed:
+                        // Pressing X steps up and wraps back round to the bottom.
                         int v = SliderValue(items[index]);
                         SetSlider(items[index], v >= 10 ? 0 : v + 1);
+                        break;
+                    default:
+                        if (IsToggle(items[index])) Toggle(items[index], 1);
                         break;
                 }
             }
@@ -363,7 +457,8 @@ namespace Patchwork
             UIKit.Fill(new Rect(0f, 0f, W, H), new Color(0.1f, 0.07f, 0.15f, 0.62f * fade));
 
             // Panel drops in from above with a bounce.
-            const float rowH = 66f, rowGap = 10f;
+            // The settings page has more rows, so they're a little tighter.
+            float rowH = settingsPage ? 58f : 66f, rowGap = settingsPage ? 8f : 10f;
             float pw = 640f, ph = 150f + items.Count * (rowH + rowGap) + 64f;
             float drop = UIKit.EaseOutBack(openTime / 0.4f);
             float py0 = (H - ph) * 0.5f;
@@ -374,7 +469,7 @@ namespace Patchwork
             var ink = UIKit.Ink;
 
             // Title with a little sewing-needle bob.
-            UIKit.Label(new Rect(panel.x, panel.y + 30f, pw, 60f), "Paused", UIKit.Style(46, true, TextAnchor.MiddleCenter, ink));
+            UIKit.Label(new Rect(panel.x, panel.y + 30f, pw, 60f), settingsPage ? "Settings" : "Paused", UIKit.Style(46, true, TextAnchor.MiddleCenter, ink));
             float needleX = panel.x + pw * 0.5f + 110f + Mathf.Sin(t * 3f) * 6f;
             UIKit.IconTransformed(new Rect(needleX, panel.y + 42f, 60f, 36f), UIArt.IconNeedle, new Color(0.6f, 0.6f, 0.68f), -20f + Mathf.Sin(t * 2f) * 6f, 1f);
 
@@ -412,10 +507,11 @@ namespace Patchwork
 
                 // Icon (animated when selected).
                 Color c = ColorFor(item);
-                var iconRect = new Rect(r.x + 18f, r.y + 11f, 44f, 44f);
+                var iconRect = new Rect(r.x + 18f, r.y + (rowH - 44f) * 0.5f, 44f, 44f);
                 float angle = 0f, scale = 1f;
                 Vector2 shift = Vector2.zero;
                 if (sel) AnimateIcon(item, selectTime, ref angle, ref scale, ref shift);
+                if (item == Item.Back) angle += 180f; // the play arrow, pointing back
                 iconRect.position += shift;
                 if (!sel) UIKit.Circle(iconRect.center, 52f, new Color(c.r, c.g, c.b, 0.9f * alpha));
                 UIKit.IconTransformed(iconRect, IconFor(item), new Color(1f, 1f, 1f, alpha), angle, scale);
@@ -423,14 +519,14 @@ namespace Patchwork
 
                 var style = UIKit.Style(sel ? 25 : 23, true, TextAnchor.MiddleLeft, sel ? new Color(1f, 1f, 1f, alpha) : new Color(ink.r, ink.g, ink.b, alpha));
                 UIKit.Label(new Rect(r.x + 82f, r.y, r.width - 100f, r.height), LabelFor(item), style, sel);
-                if (IsSlider(item)) DrawSlider(new Rect(r.xMax - 236f, r.y + 22f, 210f, 22f), SliderValue(item), sel, alpha, ink);
+                if (IsSlider(item)) DrawSlider(new Rect(r.xMax - 236f, r.y + (rowH - 22f) * 0.5f, 210f, 22f), SliderValue(item), sel, alpha, ink);
             }
 
             // Prompt row.
             float py = panel.yMax - 58f;
             float px = panel.x + 70f;
             px += UIKit.PromptLabel(px, py, 38f, PromptAction.Confirm, "Select", kb, ink, fade) + 30f;
-            UIKit.PromptLabel(px, py, 38f, PromptAction.Cancel, "Back to game", kb, ink, fade);
+            UIKit.PromptLabel(px, py, 38f, PromptAction.Cancel, settingsPage ? "Back" : "Back to game", kb, ink, fade);
 
             if (confirming) DrawConfirm(kb, ink);
         }
@@ -471,6 +567,10 @@ namespace Patchwork
                 case Item.ReturnToHub:  // hop
                     shift = new Vector2(0f, -Mathf.Abs(Mathf.Sin(s * 6f)) * 9f);
                     scale = 1f + Mathf.Max(0f, -Mathf.Sin(s * 6f)) * 0.06f;
+                    break;
+                case Item.Settings:     // the needle wobbles like it's sewing
+                    angle = Mathf.Sin(s * 6f) * 18f;
+                    shift = new Vector2(0f, Mathf.Sin(s * 12f) * 3f);
                     break;
                 case Item.Prompts:      // wiggle like it's being played
                 case Item.WheelButton:

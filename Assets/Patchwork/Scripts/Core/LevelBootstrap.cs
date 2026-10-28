@@ -10,7 +10,16 @@ namespace Patchwork
 
         void Awake()
         {
-            PatchworkGame.Boot(Level);
+            var level = Level;
+#if UNITY_EDITOR
+            // Patchwork > Play Test Gym sets this just before entering Play mode.
+            if (UnityEditor.SessionState.GetBool("Patchwork.PlayGym", false))
+            {
+                UnityEditor.SessionState.SetBool("Patchwork.PlayGym", false);
+                level = LevelId.Gym;
+            }
+#endif
+            PatchworkGame.Boot(level);
         }
     }
 }

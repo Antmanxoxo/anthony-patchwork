@@ -135,6 +135,17 @@ namespace Patchwork
 
         public void SetGliding(bool on) { gliding = on; }
 
+        // Dance easter egg. DanceBeat is the song position in beats, set every frame.
+        public float DanceBeat;
+        bool dancing;
+        float danceWeight;
+
+        public void SetDancing(bool on)
+        {
+            dancing = on;
+            if (patchModel != null) patchModel.Dancing = on;
+        }
+
         public void SetTether(bool on, Vector3 target)
         {
             tethered = on;
@@ -180,6 +191,10 @@ namespace Patchwork
             root.localScale = punch * warp;
             if (warp < 0.999f) root.localRotation = Quaternion.Euler(0f, (1f - warp) * 900f, 0f);
             else root.localRotation = Quaternion.identity;
+
+            danceWeight = Mathf.MoveTowards(danceWeight, dancing ? 1f : 0f, dt * 3f);
+            if (danceWeight > 0.001f) ApplyDance(DanceBeat, danceWeight);
+            else root.localPosition = Vector3.zero;
 
             AnimateYarn(motor, speed, localVel, dt);
             AnimateWater(motor, dv, dt);
@@ -242,6 +257,50 @@ namespace Patchwork
                 shoulderR.localRotation = Quaternion.Slerp(shoulderR.localRotation, armRrot, 1f - Mathf.Exp(-16f * dt));
                 armR.localScale = new Vector3(1f, Mathf.Lerp(armR.localScale.y, 1f, 1f - Mathf.Exp(-12f * dt)), 1f);
             }
+        }
+
+        // Each form has its own dance, moving the whole body in time with its song.
+        void ApplyDance(float b, float w)
+        {
+            Vector3 pos = Vector3.zero, scale = Vector3.one;
+            Vector3 euler = Vector3.zero;
+            float frac = b - Mathf.Floor(b);
+            switch (form)
+            {
+                case FormType.Water:
+                {   // Jelly bounce: a hop every beat, squashing flat on each landing, wiggling side to side.
+                    float hop = Mathf.Abs(Mathf.Sin(Mathf.PI * b));
+                    float squash = Mathf.Pow(Mathf.Max(0f, Mathf.Cos(Mathf.PI * 2f * b)), 4f);
+                    pos.y = hop * 0.35f;
+                    scale = new Vector3(1f + 0.25f * squash, 1f - 0.25f * squash + 0.12f * hop, 1f + 0.25f * squash);
+                    euler.y = Mathf.Sin(Mathf.PI * b * 0.5f) * 40f;
+                    euler.z = Mathf.Sin(Mathf.PI * b) * 12f;
+                    // Every 8 beats: a big hop with a full spin.
+                    if (Mathf.Repeat(b, 8f) >= 7f) { pos.y += Mathf.Sin(Mathf.PI * frac) * 0.6f; euler.y += frac * 360f; }
+                    break;
+                }
+                case FormType.Wind:
+                {   // Floaty waltz: twirls round and round, drifting in a figure of eight.
+                    euler.y = b * 120f;
+                    euler.z = Mathf.Cos(Mathf.PI * b / 1.5f) * 15f;
+                    pos = new Vector3(Mathf.Sin(Mathf.PI * b / 3f) * 0.6f, 0.25f + Mathf.Sin(Mathf.PI * b / 1.5f) * 0.18f,
+                                      Mathf.Sin(Mathf.PI * b * 2f / 3f) * 0.3f);
+                    float swell = 1f + 0.08f * Mathf.Sin(Mathf.PI * 2f * b / 3f);
+                    scale = new Vector3(swell, 1f / swell, swell);
+                    break;
+                }
+                default:
+                {   // Hoedown: hops on the beat and sways, with a spin every fourth beat.
+                    pos.y = Mathf.Abs(Mathf.Sin(Mathf.PI * b)) * 0.2f;
+                    euler.z = Mathf.Sin(Mathf.PI * b) * 10f;
+                    if (Mathf.Repeat(b, 4f) >= 3f) euler.y = Mathf.SmoothStep(0f, 1f, frac) * 360f;
+                    else euler.y = Mathf.Sin(Mathf.PI * b * 0.5f) * 20f;
+                    break;
+                }
+            }
+            root.localPosition = pos * w;
+            root.localRotation = Quaternion.Slerp(Quaternion.identity, Quaternion.Euler(euler), w) * root.localRotation;
+            root.localScale = Vector3.Scale(root.localScale, Vector3.Lerp(Vector3.one, scale, w));
         }
 
         void AnimateWater(PlayerMotor motor, Vector3 dv, float dt)

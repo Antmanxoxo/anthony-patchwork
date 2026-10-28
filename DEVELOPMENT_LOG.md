@@ -1,5 +1,18 @@
 # Development Log
 
+## Settings, saves and tools
+- New Settings page in the pause menu: music, sound and rumble levels, camera speed, invert camera
+  up/down and left/right, Yarn swing as hold or tap-on/tap-off, button prompts, Form Wheel button
+  and VSync.
+- Progress is now saved to a file with a backup copy, so a crash can't wipe it. Old saves move
+  over automatically.
+- The level's texture repeats no longer stop Unity from batching draws (smoother on slower PCs).
+- Patchwork > Play Test Gym: a plain room with metre stripes, height steps and gap lanes, with a
+  readout of every jump's distance and height.
+- Patchwork > Build for Windows makes a build in one click.
+- A secret: tap the face buttons over and over and Patch starts dancing to his own song,
+  a different dance and song for each form, with a little cutscene camera.
+
 ## Feel upgrades
 - The D-pad faces (happy, sad, angry) now work on all three forms: the Water bubble and the
   Wind cloud got their own frowns and eyebrows.

@@ -247,6 +247,157 @@ namespace Patchwork
             return result;
         }
 
+        // ------------------------------------------------------------------ Dance songs (easter egg)
+
+        static AudioClip[] danceSongs;
+
+        // Beats per minute and beats per bar for each form's dance song.
+        public static float DanceBpm(FormType f)
+        {
+            switch (f)
+            {
+                case FormType.Water: return 112f;
+                case FormType.Wind: return 96f;
+                default: return 132f;
+            }
+        }
+
+        public static int DanceBeatsPerBar(FormType f) { return f == FormType.Wind ? 3 : 4; }
+
+        // Yarn: a plucky hoedown. Water: a steel-drum calypso. Wind: a floaty waltz. 8 bars each, looping.
+        public static AudioClip DanceSong(FormType f)
+        {
+            if (danceSongs == null) danceSongs = new AudioClip[3];
+            int i = (int)f;
+            if (danceSongs[i] == null)
+            {
+                switch (f)
+                {
+                    case FormType.Water: danceSongs[i] = ComposeCalypso(); break;
+                    case FormType.Wind: danceSongs[i] = ComposeWaltz(); break;
+                    default: danceSongs[i] = ComposeHoedown(); break;
+                }
+            }
+            return danceSongs[i];
+        }
+
+        static int[] Triad(int root, bool minor)
+        {
+            return new[] { root, root + (minor ? 3 : 4), root + 7 };
+        }
+
+        static AudioClip Finish(float[] data, string name)
+        {
+            LowPass(data, 6500f);
+            float peak = 0.0001f;
+            for (int i = 0; i < data.Length; i++) peak = Mathf.Max(peak, Mathf.Abs(data[i]));
+            float gain = 0.8f / peak;
+            for (int i = 0; i < data.Length; i++) data[i] *= gain;
+            var clip = AudioClip.Create(name, data.Length, 1, Rate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        static AudioClip ComposeHoedown()
+        {
+            float beat = 60f / DanceBpm(FormType.Yarn);
+            int[] roots = { 55, 48, 55, 50, 55, 48, 50, 55 };   // G C G D G C D G
+            var data = new float[Mathf.CeilToInt(beat * 4f * roots.Length * Rate)];
+            // Banjo roll: eight notes a bar going round the chord.
+            int[] roll = { 12, 16, 19, 24, 19, 16, 24, 19 };
+            int[][] tune = { new[] { 19, 16, 24, 19 }, new[] { 16, 19, 24, 28 }, new[] { 19, 24, 28, 24 }, new[] { 26, 23, 19, 21 } };
+            for (int b = 0; b < roots.Length; b++)
+            {
+                float t0 = b * beat * 4f;
+                int r = roots[b];
+                for (int e = 0; e < 8; e++)
+                    AddPluck(data, t0 + e * beat * 0.5f, beat * 0.9f, Freq(r + roll[e]), 0.05f, 7000 + b * 8 + e);
+                var line = tune[b % tune.Length];
+                for (int q = 0; q < 4; q++)
+                    AddPluck(data, t0 + q * beat, beat * 1.2f, Freq(r + line[q] + 12), 0.09f, 7500 + b * 4 + q);
+                // Boom-chick: bass on 1 and 3 (root then fifth), brush and a soft kick.
+                AddBass(data, t0, beat * 0.9f, Freq(r - 12), 0.24f);
+                AddBass(data, t0 + beat * 2f, beat * 0.9f, Freq(r - 5), 0.2f);
+                AddKick(data, t0, 0.1f);
+                AddKick(data, t0 + beat * 2f, 0.08f);
+                AddBrush(data, t0 + beat, 0.12f, 0.06f, 7900 + b);
+                AddBrush(data, t0 + beat * 3f, 0.12f, 0.06f, 7950 + b);
+            }
+            return Finish(data, "pw_dance_yarn");
+        }
+
+        static AudioClip ComposeCalypso()
+        {
+            float beat = 60f / DanceBpm(FormType.Water);
+            int[] roots = { 48, 53, 55, 48, 48, 53, 55, 48 };   // C F G C
+            var data = new float[Mathf.CeilToInt(beat * 4f * roots.Length * Rate)];
+            // 3 + 3 + 2 rhythm (in eighths): hits on 0, 1.5 and 3 beats.
+            float[] hits = { 0f, 1.5f, 3f };
+            int[][] tune = { new[] { 24, 28, 31, 28 }, new[] { 24, 21, 28, 24 }, new[] { 26, 23, 31, 26 }, new[] { 28, 24, 19, 24 } };
+            for (int b = 0; b < roots.Length; b++)
+            {
+                float t0 = b * beat * 4f;
+                int r = roots[b];
+                var triad = Triad(r, false);
+                foreach (var h in hits)
+                {
+                    AddBass(data, t0 + h * beat, beat * 1.1f, Freq(r - 12 + (h == 1.5f ? 7 : 0)), 0.22f);
+                    for (int c = 0; c < 3; c++) AddSteelDrum(data, t0 + h * beat, Freq(triad[c] + 12), 0.035f);
+                }
+                var line = tune[b % tune.Length];
+                for (int q = 0; q < 4; q++)
+                {
+                    float at = t0 + q * beat + (q % 2 == 1 ? beat * 0.5f : 0f); // pushed off-beats
+                    AddSteelDrum(data, at, Freq(r + line[q]), 0.08f);
+                }
+                // Shaker on every eighth, a bubble blip at the end of the bar.
+                for (int e = 0; e < 8; e++) AddBrush(data, t0 + e * beat * 0.5f, 0.05f, e % 2 == 0 ? 0.03f : 0.02f, 8100 + b * 8 + e);
+                AddKick(data, t0, 0.1f);
+                AddBloop(data, t0 + beat * 3.5f, Freq(r + 36), 0.03f);
+            }
+            return Finish(data, "pw_dance_water");
+        }
+
+        static AudioClip ComposeWaltz()
+        {
+            float beat = 60f / DanceBpm(FormType.Wind);
+            int[] roots = { 57, 53, 48, 55, 57, 53, 55, 57 };   // Am F C G Am F G Am
+            bool[] minor = { true, false, false, false, true, false, false, true };
+            var data = new float[Mathf.CeilToInt(beat * 3f * roots.Length * Rate)];
+            int[] tune = { 12, 9, 7, 11, 12, 16, 14, 12 };
+            for (int b = 0; b < roots.Length; b++)
+            {
+                float t0 = b * beat * 3f;
+                int r = roots[b];
+                var triad = Triad(r, minor[b]);
+                // Oom-pah-pah: bass on 1, harp chord notes on 2 and 3.
+                AddBass(data, t0, beat * 1.4f, Freq(r - 12), 0.22f);
+                for (int q = 1; q < 3; q++)
+                    for (int c = 0; c < 3; c++) AddMusicBox(data, t0 + q * beat, beat * 1.2f, Freq(triad[c] + 12), 0.03f);
+                // Flute: one long note a bar, with a little pickup into the next.
+                AddFlute(data, t0, beat * 2.2f, Freq(r + tune[b]), 0.08f);
+                AddFlute(data, t0 + beat * 2.4f, beat * 0.5f, Freq(r + tune[b] + 2), 0.05f);
+                AddAirPad(data, t0, beat * 3f, 0.03f, 8300 + b);
+            }
+            return Finish(data, "pw_dance_wind");
+        }
+
+        // Steel drum: a bright, quickly fading tone with slightly out-of-tune upper partials.
+        static void AddSteelDrum(float[] data, float start, float f, float vol)
+        {
+            int s0 = Mathf.FloorToInt(start * Rate);
+            int count = Mathf.CeilToInt(0.6f * Rate);
+            for (int i = 0; i < count; i++)
+            {
+                float t = i / (float)Rate;
+                float env = Mathf.Clamp01(t / 0.003f) * Mathf.Exp(-t * 6f);
+                float w = Mathf.Sin(2f * Mathf.PI * f * t)
+                        + 0.5f * Mathf.Sin(2f * Mathf.PI * f * 2.01f * t) * Mathf.Exp(-t * 10f)
+                        + 0.25f * Mathf.Sin(2f * Mathf.PI * f * 3.02f * t) * Mathf.Exp(-t * 16f);
+                Add(data, s0 + i, w * env * vol);
+            }
+        }
+
         // Plucked string (Karplus-Strong): a burst of noise fed round a short, damped delay line.
         static void AddPluck(float[] data, float start, float dur, float f, float vol, int seed)
         {

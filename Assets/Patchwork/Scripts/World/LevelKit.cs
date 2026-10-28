@@ -6,7 +6,8 @@ namespace Patchwork
     public enum LevelId
     {
         Hub = 0,
-        Level1 = 1
+        Level1 = 1,
+        Gym = 2
     }
 
     public class LevelInfo
@@ -132,11 +133,25 @@ namespace Patchwork
             return slab;
         }
 
+        // Texture repeats are baked into a shared copy of the material (one per material + repeat
+        // count) instead of a per-object override, so Unity can still batch the level's draws.
+        static readonly Dictionary<string, Material> tiledMaterials = new Dictionary<string, Material>();
+
         static void SetTiling(Renderer r, float x, float y)
         {
-            var mpb = new MaterialPropertyBlock();
-            mpb.SetVector("_BaseMap_ST", new Vector4(x, y, 0f, 0f));
-            r.SetPropertyBlock(mpb);
+            var source = r.sharedMaterial;
+            if (source == null) return;
+            if (Mathf.Approximately(x, 1f) && Mathf.Approximately(y, 1f)) return;
+            string key = source.GetInstanceID() + "_" + x + "_" + y;
+            Material m;
+            if (!tiledMaterials.TryGetValue(key, out m) || m == null)
+            {
+                m = new Material(source);
+                m.name = source.name + "_x" + x + "y" + y;
+                m.SetTextureScale("_BaseMap", new Vector2(x, y));
+                tiledMaterials[key] = m;
+            }
+            r.sharedMaterial = m;
         }
 
         // Decoration without collision.

@@ -13,7 +13,8 @@ namespace Patchwork
         Paused,
         Complete,
         Warping,
-        Loading
+        Loading,
+        Dance       // the D-pad easter egg: Patch dances, the camera turns it into a little cutscene
     }
 
     // Main game object, one per scene. Builds the level, camera, light and player,
@@ -29,6 +30,9 @@ namespace Patchwork
         public LevelInfo Level { get; private set; }
         public UIMode Mode { get; private set; }
         public PatchworkHUD Hud { get; private set; }
+        public DanceParty Dance { get; private set; }
+        // Only in the Test Gym: measures jump distance and height.
+        public JumpMeter Meter { get; private set; }
 
         public FormSelector Selector { get; private set; }
         public SatchelMenu Satchel { get; private set; }
@@ -92,6 +96,7 @@ namespace Patchwork
             // VSync is on in Quality settings; this cap only matters if a graphics driver forces it off,
             // so the game never runs at hundreds of frames per second and heats up people's computers.
             Application.targetFrameRate = 120;
+            GameSettings.ApplyVSync();
             Input = new PatchworkInput();
 
             // Camera + audio
@@ -110,10 +115,16 @@ namespace Patchwork
             }
             CameraRig = camGo.AddComponent<PlayerCamera>();
             Sfx.Init(camGo);
+            Dance = new DanceParty(camGo);
 
             // Level
-            var kit = new LevelKit(levelId == LevelId.Hub ? "Hub" : "Level1");
-            Level = levelId == LevelId.Hub ? HubBuilder.Build(kit) : Level1Builder.Build(kit);
+            var kit = new LevelKit(levelId.ToString());
+            switch (levelId)
+            {
+                case LevelId.Level1: Level = Level1Builder.Build(kit); break;
+                case LevelId.Gym: Level = GymBuilder.Build(kit); Meter = new JumpMeter(); break;
+                default: Level = HubBuilder.Build(kit); break;
+            }
             SetupEnvironment(cam);
 
             // Player
@@ -199,6 +210,11 @@ namespace Patchwork
             probe.RenderProbe();
         }
 
+        void OnApplicationQuit()
+        {
+            GameState.Save();
+        }
+
         void OnDestroy()
         {
             if (Input != null) Input.Dispose();
@@ -222,9 +238,20 @@ namespace Patchwork
                     if (Input.Pause.WasPressedThisFrame()) OpenPause();
                     else if (Input.FormWheel.WasPressedThisFrame()) OpenWheel();
                     else if (Input.Satchel.WasPressedThisFrame()) OpenSatchel();
-                    else if (Input.FaceHappy.WasPressedThisFrame()) SetPatchFace(PatchModel.Face.Happy);
-                    else if (Input.FaceSad.WasPressedThisFrame()) SetPatchFace(PatchModel.Face.Sad);
-                    else if (Input.FaceAngry.WasPressedThisFrame()) SetPatchFace(PatchModel.Face.Angry);
+                    else if (FacePressed())
+                    {
+                        SetPatchFace(pressedFace, true);
+                        if (Dance.RegisterTap() && CanDance()) StartDance();
+                    }
+                    break;
+                case UIMode.Dance:
+                    if (Input.Pause.WasPressedThisFrame() || Input.Cancel.WasPressedThisFrame()) EndDance();
+                    else
+                    {
+                        // Keep tapping to keep dancing; each tap also swaps his face (quietly).
+                        if (FacePressed()) { Dance.RegisterTap(); SetPatchFace(pressedFace, false); }
+                        if (Dance.TimedOut) EndDance();
+                    }
                     break;
                 case UIMode.FormWheel:
                     Selector.Update(udt);
@@ -243,7 +270,7 @@ namespace Patchwork
                     break;
             }
 
-            if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel)
+            if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel || Mode == UIMode.Dance)
             {
                 PlayerInputFrame frame;
                 if (Mode == UIMode.Gameplay && !modeChangedThisFrame)
@@ -259,10 +286,13 @@ namespace Patchwork
                 }
                 MovingPlatform.TickAll(dt);
                 Player.Tick(frame, dt);
+                if (Meter != null) Meter.Tick(Player.Motor);
 
                 if (Player.transform.position.y < Level.KillY || (Player.Motor.Center.y < Level.FailY && !Swinging())) Respawn(true);
             }
 
+            if (Dance.Update(udt) && Mode == UIMode.Dance) Haptics.Pulse(0.15f, 0.05f, 0.08f);
+            Player.Visuals.DanceBeat = Dance.Beat;
             Sfx.TickLoops(udt);
             MusicPlayer.SetForm(Player.Forms.Current);
             Haptics.Tick(udt);
@@ -318,7 +348,7 @@ namespace Patchwork
 
         void UpdateCursor()
         {
-            bool lockIt = Mode == UIMode.Gameplay && Input.UsingKeyboard && Application.isFocused;
+            bool lockIt = (Mode == UIMode.Gameplay || Mode == UIMode.Dance) && Input.UsingKeyboard && Application.isFocused;
             Cursor.lockState = lockIt ? CursorLockMode.Locked : CursorLockMode.None;
             Cursor.visible = !lockIt;
         }
@@ -344,6 +374,12 @@ namespace Patchwork
                     MusicPlayer.SetMuffle(900f, 0.5f);
                     Sfx.SetLoopCutoff(900f);
                     Haptics.SetSilenced(true);
+                    break;
+                case UIMode.Dance:
+                    // The dance song takes over from the background music.
+                    MusicPlayer.SetMuffle(22000f, 0f);
+                    Sfx.SetLoopCutoff(22000f);
+                    Haptics.SetSilenced(false);
                     break;
                 case UIMode.FormWheel:
                     MusicPlayer.SetMuffle(1500f, 1f);
@@ -499,12 +535,52 @@ namespace Patchwork
             if (fell) ShowToast("Oops! Back to the last checkpoint.");
         }
 
+        PatchModel.Face pressedFace;
+
+        bool FacePressed()
+        {
+            if (Input.FaceHappy.WasPressedThisFrame()) { pressedFace = PatchModel.Face.Happy; return true; }
+            if (Input.FaceSad.WasPressedThisFrame()) { pressedFace = PatchModel.Face.Sad; return true; }
+            if (Input.FaceAngry.WasPressedThisFrame()) { pressedFace = PatchModel.Face.Angry; return true; }
+            return false;
+        }
+
         // Swap Patch's face (every form has happy / sad / angry). A little pop and sound so it's obvious.
-        void SetPatchFace(PatchModel.Face face)
+        void SetPatchFace(PatchModel.Face face, bool withSound)
         {
             Player.Visuals.SetFace(face);
             Player.Visuals.PunchScale(new Vector3(1.08f, 0.94f, 1.08f));
-            Sfx.Play(SfxId.HintYarn, 0.3f);
+            if (withSound) Sfx.Play(SfxId.HintYarn, 0.3f);
+        }
+
+        // ------------------------------------------------------------------ Dance easter egg
+
+        bool CanDance()
+        {
+            var yarn = Player.Forms.Ability as YarnAbility;
+            return Mode == UIMode.Gameplay && Player.Motor.Grounded && !Player.Forms.HasPending
+                   && (yarn == null || !yarn.Attached);
+        }
+
+        void StartDance()
+        {
+            Player.Forms.CancelAll();
+            Player.Motor.Velocity = Vector3.zero;
+            SetMode(UIMode.Dance, 1f);
+            Dance.Start(Player.Forms.Current);
+            Player.Visuals.SetDancing(true);
+            CameraRig.Cutscene = true;
+            ToastTimer = 0f;
+            if (ActiveHint != null) HintAge = HintDuration;
+            FxBurst.Spawn(FxBurst.Kind.Sparkle, Player.Motor.Center + Vector3.up * 0.5f, new Color(1f, 0.85f, 0.4f));
+        }
+
+        void EndDance()
+        {
+            Dance.Stop();
+            Player.Visuals.SetDancing(false);
+            CameraRig.Cutscene = false;
+            SetMode(UIMode.Gameplay, 1f);
         }
 
         public void CompleteLevel()

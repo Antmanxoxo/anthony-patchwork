@@ -62,7 +62,8 @@ namespace Patchwork
             UIKit.Begin();
             bool kb = Game.Input.UsingKeyboard;
 
-            if (Game.Mode != UIMode.Loading && Game.Mode != UIMode.Warping)
+            DrawLetterbox(kb);
+            if (Game.Mode != UIMode.Loading && Game.Mode != UIMode.Warping && Game.Mode != UIMode.Dance)
             {
                 DrawAnchorPrompt(kb);
                 DrawFormBadge(kb);
@@ -71,6 +72,7 @@ namespace Patchwork
                 DrawHintCard();
                 DrawToast();
                 DrawTitle();
+                DrawMeter();
             }
 
             switch (Game.Mode)
@@ -86,6 +88,34 @@ namespace Patchwork
                 Color fc = Game.FadeColor;
                 UIKit.Fill(new Rect(0f, 0f, UIKit.Width, UIKit.Height), new Color(fc.r, fc.g, fc.b, Game.Fade));
             }
+        }
+
+        // Dance easter egg: cinema bars slide in, with a little "keep tapping" note at the bottom.
+        void DrawLetterbox(bool kb)
+        {
+            float k = Game.CameraRig != null ? Game.CameraRig.CutsceneBlend : 0f;
+            if (k <= 0.001f) return;
+            float e = Mathf.SmoothStep(0f, 1f, k);
+            float bar = 110f * e;
+            var black = new Color(0.06f, 0.04f, 0.08f, 1f);
+            UIKit.Fill(new Rect(0f, 0f, UIKit.Width, bar), black);
+            UIKit.Fill(new Rect(0f, UIKit.Height - bar, UIKit.Width, bar), black);
+            if (Game.Mode != UIMode.Dance) return;
+
+            float t = Time.unscaledTime;
+            string title;
+            switch (Game.Dance.Form)
+            {
+                case FormType.Water: title = "Bubble Calypso"; break;
+                case FormType.Wind: title = "Breezy Waltz"; break;
+                default: title = "Yarnball Hoedown"; break;
+            }
+            float bob = Mathf.Sin(Game.Dance.Beat * Mathf.PI * 2f) * 3f;
+            UIKit.Label(new Rect(0f, bar - 86f + bob, UIKit.Width, 60f), title,
+                UIKit.Style(40, true, TextAnchor.MiddleCenter, new Color(1f, 0.9f, 0.6f, e)));
+            UIKit.Label(new Rect(0f, UIKit.Height - bar + 30f, UIKit.Width, 50f),
+                kb ? "Keep tapping 1 / 2 / 3 to keep dancing!" : "Keep tapping the D-pad to keep dancing!",
+                UIKit.Style(24, false, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, 0.85f * e * (0.75f + 0.25f * Mathf.Sin(t * 4f)))));
         }
 
         void DrawFormBadge(bool kb)
@@ -120,13 +150,14 @@ namespace Patchwork
                     var yarn = forms.Get<YarnAbility>();
                     if (yarn.Attached)
                     {
-                        UIKit.PromptLabel(x, y, h, PromptAction.Ability, "Release to launch", kb, ink);
+                        UIKit.PromptLabel(x, y, h, PromptAction.Ability, GameSettings.SwingToggle ? "Tap to launch" : "Release to launch", kb, ink);
                         UIKit.PromptLabel(x, y + 48f, h, PromptAction.Jump, "Jump off", kb, ink);
                     }
                     else
                     {
                         bool ready = yarn.Target != null;
-                        UIKit.PromptLabel(x, y, h, PromptAction.Ability, ready ? "Hold to swing!" : "Hold near a pink anchor to swing", kb, ink, ready ? 1f : 0.55f);
+                        UIKit.PromptLabel(x, y, h, PromptAction.Ability, ready ? (GameSettings.SwingToggle ? "Tap to swing!" : "Hold to swing!")
+                            : (GameSettings.SwingToggle ? "Tap near a pink anchor to swing" : "Hold near a pink anchor to swing"), kb, ink, ready ? 1f : 0.55f);
                     }
                     break;
                 }
@@ -330,6 +361,22 @@ namespace Patchwork
             var r = new Rect((UIKit.Width - w) * 0.5f, UIKit.Height * 0.68f, w, 54f);
             UIKit.Fill(r, new Color(0.13f, 0.11f, 0.19f, 0.82f * a), 27f);
             UIKit.Label(r, Game.ToastText, style);
+        }
+
+        // Test Gym readout: last jump's distance and height, and the best distance so far.
+        void DrawMeter()
+        {
+            var m = Game.Meter;
+            if (m == null) return;
+            var r = new Rect(UIKit.Width - 420f, 28f, 390f, 132f);
+            UIKit.Panel(r, UIKit.Paper, UIKit.Thread);
+            var ink = UIKit.Ink;
+            string form = Game.Player.Forms.Definition.DisplayName;
+            UIKit.Label(new Rect(r.x + 26f, r.y + 16f, r.width - 52f, 30f), form, UIKit.Style(24, true, TextAnchor.MiddleLeft, ink));
+            string last = m.HasJump ? m.LastDistance.ToString("0.0") + " m far,  " + m.LastHeight.ToString("0.0") + " m high" : "Jump to measure";
+            UIKit.Label(new Rect(r.x + 26f, r.y + 52f, r.width - 52f, 30f), last, UIKit.Style(22, false, TextAnchor.MiddleLeft, ink));
+            UIKit.Label(new Rect(r.x + 26f, r.y + 86f, r.width - 52f, 30f), "Best: " + m.BestDistance.ToString("0.0") + " m",
+                UIKit.Style(22, false, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.75f)));
         }
 
         void DrawTitle()

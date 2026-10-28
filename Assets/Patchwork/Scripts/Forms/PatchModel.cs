@@ -27,6 +27,8 @@ namespace Patchwork
 
         // Remembered between scenes so the face you picked sticks.
         public static Face CurrentFace = Face.Happy;
+        // Dance easter egg: plays the Celebrate animation on loop.
+        [System.NonSerialized] public bool Dancing;
 
         public readonly List<Renderer> Renderers = new List<Renderer>();
         public Transform HandR { get; private set; }
@@ -250,7 +252,7 @@ namespace Patchwork
             if (oneShotLeft > 0f) oneShotLeft -= dt;
 
             Anim want;
-            if (levelDone) want = Anim.Celebrate;
+            if (levelDone || Dancing) want = Anim.Celebrate;
             else if (tethered) want = Anim.Swing;
             else if (!grounded)
             {

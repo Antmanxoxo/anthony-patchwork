@@ -172,10 +172,9 @@ namespace Patchwork.EditorTools
         static void ResetSave()
         {
             if (EditorUtility.DisplayDialog("Reset Patchwork save?",
-                "This clears golden buttons, level completion, current form and hat.", "Reset", "Cancel"))
+                "This clears golden buttons, level completion, tutorial cards seen, current form and hat. Settings are kept.", "Reset", "Cancel"))
             {
-                PlayerPrefs.DeleteAll();
-                PlayerPrefs.Save();
+                GameState.DeleteSave();
                 Debug.Log("Patchwork: save data cleared.");
             }
         }

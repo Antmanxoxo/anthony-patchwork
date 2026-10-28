@@ -43,6 +43,10 @@ Stuff I need to remember about how Patchwork is put together.
 - Patch's animations: Idle, Walk, Run, Jump, Fall, Land, Swing, Wave (if you stand still a while),
   Celebrate (level complete). Played with the Playables API, no Animator Controller asset needed.
 - Only one menu open at a time.
+- Dance easter egg (`DanceParty`, `UIMode.Dance`): 6 face taps within 2.2 s while standing starts it,
+  it stops 1.6 s after the last tap (or on Pause/Back). Songs are made in `MusicPlayer.DanceSong`,
+  dances are in `FormVisuals.ApplyDance`, the camera orbit is `PlayerCamera.Cutscene`.
+- Settings are in `GameSettings` (PlayerPrefs). Progress is in `GameState` (save.json).
 - `CameraZone` boxes (made with `kit.AddCameraZone`) add camera distance/tilt for a section.
 - Music is four stems (base + Water/Yarn/Wind tune) started together with `PlayScheduled`;
   `MusicPlayer.SetForm` crossfades the tune layer.
@@ -55,8 +59,9 @@ Stuff I need to remember about how Patchwork is put together.
   water things, white only for Wind/updrafts. Decoration uses the softer `Rose` / `Sky`.
 - Fonts: `UIKit.Style` uses `Resources/Fonts/Fredoka-Medium`, `Fredoka-SemiBold` (bold) and
   `Sniglet-ExtraBold` (bold, 30px and up). Missing files fall back to Unity's default font.
-- Level 1's tutorial cards show once (saved as `pw_hint_<level>_<title>` in PlayerPrefs). Hub cards always show.
-  To see them again while testing, clear PlayerPrefs (Edit > Clear All PlayerPrefs).
+- Progress is saved in `save.json` (with a `save.json.bak` backup) in Unity's persistent data folder;
+  settings stay in PlayerPrefs. Patchwork > Reset Save Data clears progress but keeps settings.
+- Level 1's tutorial cards show once (stored in the save). Hub cards always show.
 - `BlobShadow` puts the shadow disc under Patch; its material copies the see-through + glow setup
   so the build already keeps that shader version.
 

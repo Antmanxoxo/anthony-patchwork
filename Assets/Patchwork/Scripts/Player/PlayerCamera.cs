@@ -37,6 +37,12 @@ namespace Patchwork
         [System.NonSerialized] public bool Swinging;
         [System.NonSerialized] public Vector3 SwingAnchor;
         [System.NonSerialized] public bool Gliding;
+        // Dance easter egg: a slow, low orbit around Patch like a little cutscene.
+        [System.NonSerialized] public bool Cutscene;
+        public float CutsceneBlend { get; private set; }
+        const float CutsceneDistance = 4.2f;
+        const float CutscenePitch = 6f;
+        const float CutsceneOrbitSpeed = 22f;   // degrees per second
 
         float yaw;
         float pitch = 18f;
@@ -82,9 +88,19 @@ namespace Patchwork
         {
             if (Target == null) return;
 
+            // Player settings: speed and inverting.
+            float speedMul = GameSettings.CameraSpeedMultiplier;
+            stick *= speedMul;
+            mouse *= speedMul;
+            if (GameSettings.InvertX) { stick.x = -stick.x; mouse.x = -mouse.x; }
+            if (GameSettings.InvertY) { stick.y = -stick.y; mouse.y = -mouse.y; }
+
             yaw += stick.x * StickSpeed * dt + mouse.x * MouseSpeed;
             pitch -= stick.y * StickSpeed * 0.7f * dt + mouse.y * MouseSpeed;
             pitch = Mathf.Clamp(pitch, MinPitch, MaxPitch);
+
+            CutsceneBlend = Mathf.MoveTowards(CutsceneBlend, Cutscene ? 1f : 0f, dt * 1.6f);
+            if (Cutscene) yaw += CutsceneOrbitSpeed * CutsceneBlend * dt;
 
             bool touched = stick.sqrMagnitude > 0.01f || mouse.sqrMagnitude > 0.01f;
             idleLookTime = touched ? 0f : idleLookTime + dt;
@@ -94,7 +110,7 @@ namespace Patchwork
 
             // Slowly come round behind the player after a while without touching the camera.
             // Not while running toward the camera (that would spin it all the way round).
-            if (idleLookTime > RecenterDelay && speed > 2f && TargetGrounded && !Swinging)
+            if (idleLookTime > RecenterDelay && speed > 2f && TargetGrounded && !Swinging && CutsceneBlend <= 0f)
             {
                 float moveYaw = Mathf.Atan2(flatVel.x, flatVel.z) * Mathf.Rad2Deg;
                 float diff = Mathf.DeltaAngle(yaw, moveYaw);
@@ -116,6 +132,7 @@ namespace Patchwork
 
             Vector3 desiredFocus = new Vector3(Target.position.x, heldGroundY, Target.position.z) + Vector3.up * TargetHeight + lookAhead;
             if (Swinging) desiredFocus = Vector3.Lerp(Target.position + Vector3.up * TargetHeight, SwingAnchor, 0.3f);
+            desiredFocus.y -= TargetHeight * 0.25f * CutsceneBlend; // frame the whole body while dancing
 
             // Follow horizontally tightly, vertically a little softer.
             float fh = 1f - Mathf.Exp(-12f * dt);
@@ -135,11 +152,12 @@ namespace Patchwork
 
         void Apply(float dt)
         {
-            float p = Mathf.Clamp(pitch + extraPitch, MinPitch, MaxPitch);
+            float cut = Mathf.SmoothStep(0f, 1f, CutsceneBlend);
+            float p = Mathf.Lerp(Mathf.Clamp(pitch + extraPitch, MinPitch, MaxPitch), CutscenePitch, cut);
             Quaternion rot = Quaternion.Euler(p, yaw, 0f);
             Vector3 back = rot * Vector3.back;
 
-            float dist = Distance + extraDistance;
+            float dist = Mathf.Lerp(Distance + extraDistance, CutsceneDistance, cut);
             float wanted = dist;
             RaycastHit hit;
             if (Physics.SphereCast(focus, 0.3f, back, out hit, dist, obstacleMask, QueryTriggerInteraction.Ignore))
