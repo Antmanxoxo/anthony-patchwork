@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using UnityEngine.SceneManagement;
 
 namespace Patchwork
 {
@@ -14,7 +13,9 @@ namespace Patchwork
         Complete,
         Warping,
         Loading,
-        Dance       // the D-pad easter egg: Patch dances, the camera turns it into a little cutscene
+        Dance,      // the D-pad easter egg: Patch dances, the camera turns it into a little cutscene
+        Intro,      // studio logo and title screen (first time the Skiff loads)
+        LevelSelect // at the Skiff's helm, turning the globe
     }
 
     // Main game object, one per scene. Builds the level, camera, light and player,
@@ -37,6 +38,10 @@ namespace Patchwork
         public FormSelector Selector { get; private set; }
         public SatchelMenu Satchel { get; private set; }
         public PauseMenu Pause { get; private set; }
+        public TitleSequence Title { get; private set; }
+        public LevelSelectMenu LevelSelect { get; private set; }
+        // The helm you're standing at on the Skiff (null when you're not at it).
+        public HelmStation Helm { get; private set; }
 
         // Messages
         public string ToastText { get; private set; }
@@ -64,7 +69,6 @@ namespace Patchwork
         Checkpoint activeCheckpoint;
         Vector3 respawnPoint;
         float respawnYaw;
-        string pendingScene;
         bool modeChangedThisFrame;
 
         public Vector3 CameraForwardFlat
@@ -141,14 +145,27 @@ namespace Patchwork
             Satchel = new SatchelMenu(this);
             Pause = new PauseMenu(this);
 
+            Title = new TitleSequence(this);
+            LevelSelect = new LevelSelectMenu(this);
+
             Mode = UIMode.Gameplay;
-            Fade = 1f;
+            // Coming from the loading screen, it's still covering everything, so skip our own fade.
+            Fade = LoadingScreen.Busy ? 0f : 1f;
             FadeColor = carriedFadeColor;
             carriedFadeColor = DefaultFadeColor;
-            TitleTimer = 4.5f;
+            TitleTimer = LoadingScreen.Busy ? 5.2f : 4.5f;
 
             Hud = gameObject.AddComponent<PatchworkHUD>();
             Hud.Game = this;
+
+            // First time on the Skiff since the game started: studio logo, then the title screen.
+            if (Level.IsHub && TitleSequence.ShouldPlay() && !LoadingScreen.Busy)
+            {
+                Mode = UIMode.Intro;
+                Fade = 0f;
+                TitleTimer = 0f;
+                Title.Start();
+            }
             ApplyAudioMode();
         }
 
@@ -241,6 +258,7 @@ namespace Patchwork
                     if (Input.Pause.WasPressedThisFrame()) OpenPause();
                     else if (Input.FormWheel.WasPressedThisFrame()) OpenWheel();
                     else if (Input.Satchel.WasPressedThisFrame()) OpenSatchel();
+                    else if (Helm != null && Input.Ability.WasPressedThisFrame() && Player.Motor.Grounded) OpenLevelSelect();
                     else if (FacePressed())
                     {
                         SetPatchFace(pressedFace, true);
@@ -271,9 +289,19 @@ namespace Patchwork
                 case UIMode.Warping:
                     UpdateWarp(udt);
                     break;
+                case UIMode.Intro:
+                    if (Title.Update(udt))
+                    {
+                        SetMode(UIMode.Gameplay, 1f);
+                        TitleTimer = 4.5f;
+                    }
+                    break;
+                case UIMode.LevelSelect:
+                    LevelSelect.Update(udt);
+                    break;
             }
 
-            if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel || Mode == UIMode.Dance)
+            if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel || Mode == UIMode.Dance || Mode == UIMode.Intro || Mode == UIMode.LevelSelect)
             {
                 PlayerInputFrame frame;
                 if (Mode == UIMode.Gameplay && !modeChangedThisFrame)
@@ -297,7 +325,7 @@ namespace Patchwork
             if (Dance.Update(udt) && Mode == UIMode.Dance) Haptics.Pulse(0.15f, 0.05f, 0.08f);
             Player.Visuals.DanceBeat = Dance.Beat;
             // Background ambience for the level (muffled with everything else while paused).
-            if (currentLevel == LevelId.Hub) Sfx.RequestLoop(LoopId.Room);
+            if (currentLevel == LevelId.Hub) Sfx.RequestLoop(LoopId.Skiff);
             else Sfx.RequestLoop(LoopId.Meadow);
             Sfx.TickLoops(udt);
             MusicPlayer.SetForm(Player.Forms.Current);
@@ -392,6 +420,16 @@ namespace Patchwork
                     Sfx.SetLoopCutoff(1500f);
                     Haptics.SetSilenced(true);
                     break;
+                case UIMode.Intro:
+                    // The title sequence sets the music itself (quiet under the studio logo).
+                    Sfx.SetLoopCutoff(22000f);
+                    Haptics.SetSilenced(true);
+                    break;
+                case UIMode.LevelSelect:
+                    MusicPlayer.SetMuffle(5000f, 0.85f);
+                    Sfx.SetLoopCutoff(3000f);
+                    Haptics.SetSilenced(true);
+                    break;
                 default:
                     MusicPlayer.SetMuffle(22000f, 1f);
                     Sfx.SetLoopCutoff(22000f);
@@ -449,6 +487,37 @@ namespace Patchwork
         {
             SetMode(UIMode.Gameplay, 1f);
             Sfx.Play(SfxId.MenuCancel, 0.4f);
+        }
+
+        // ------------------------------------------------------------------ The Skiff's helm
+
+        public void SetHelm(HelmStation station) { Helm = station; }
+
+        public void ClearHelm(HelmStation station) { if (Helm == station) Helm = null; }
+
+        void OpenLevelSelect()
+        {
+            Player.Forms.CancelAll();
+            Player.Motor.Velocity = Vector3.zero;
+            LevelSelect.Open();
+            SetMode(UIMode.LevelSelect, 1f);
+            ToastTimer = 0f;
+            if (ActiveHint != null) HintAge = HintDuration;
+            Sfx.Play(SfxId.MenuOpen, 0.5f);
+        }
+
+        public void CloseLevelSelect()
+        {
+            LevelSelect.Close();
+            SetMode(UIMode.Gameplay, 1f);
+            Sfx.Play(SfxId.MenuCancel, 0.4f);
+        }
+
+        // Chosen a level on the globe: off we go.
+        public void SetSail(string scene)
+        {
+            if (string.IsNullOrEmpty(scene)) return;
+            LoadScene(scene);
         }
 
         // ------------------------------------------------------------------ Gameplay events
@@ -642,16 +711,17 @@ namespace Patchwork
             }
         }
 
+        // Every scene change goes through the loading screen (quilt patches, the level card, the
+        // yarn-ball loading bar).
         public void LoadScene(string sceneName)
         {
-            if (Mode == UIMode.Loading) return;
-            if (carriedFadeColor == DefaultFadeColor) FadeColor = DefaultFadeColor;
+            if (Mode == UIMode.Loading || LoadingScreen.Busy) return;
             GameState.Save();
-            pendingScene = sceneName;
             SetMode(UIMode.Loading, 1f);
             Player.Forms.CancelAll();
             Sfx.StopLoops();
             Haptics.StopAll();
+            LoadingScreen.Begin(sceneName);
         }
 
         public void QuitGame()
@@ -667,21 +737,7 @@ namespace Patchwork
 
         void UpdateFade(float udt)
         {
-            if (Mode == UIMode.Loading)
-            {
-                Fade = Mathf.MoveTowards(Fade, 1f, udt * 3f);
-                if (Fade >= 1f && !string.IsNullOrEmpty(pendingScene))
-                {
-                    string s = pendingScene;
-                    pendingScene = null;
-                    Time.timeScale = 1f;
-                    SceneManager.LoadScene(s);
-                }
-            }
-            else
-            {
-                Fade = Mathf.MoveTowards(Fade, 0f, udt * 2f);
-            }
+            Fade = Mathf.MoveTowards(Fade, 0f, udt * 2f);
         }
     }
 }

@@ -39,6 +39,9 @@ namespace Patchwork
         StepWood,
         StepGrass,
         StepSquelch,   // Water Form on anything
+        StepCardboard,
+        StudioSting,   // the Little Colossus logo at start-up
+        PageTurn,      // level select: turning the globe
         // Patch's little voice (pitched per form with Sfx.Voice)
         VoiceHup,
         VoiceYay,
@@ -50,8 +53,8 @@ namespace Patchwork
     {
         Bubbles,   // Water Form rising in a fountain
         Glide,     // Wind Form gliding
-        Meadow,    // Level 1 background: soft breeze and birds
-        Room       // Hub background: quiet room tone and a ticking clock
+        Meadow,    // Level 1 background: light breeze over a lake of paint (slow gloops and drips)
+        Skiff      // Hub background: wind in the balloon, creaking cardboard, a flapping flag
     }
 
     // Tiny synthesised sound kit (no audio files needed). Everything is soft and rounded:
@@ -71,7 +74,7 @@ namespace Patchwork
         static AudioLowPassFilter[] loopFilters;
         static float[] loopTargets;
         static readonly float[] LoopVolumes = { 0.45f, 0.3f, 0.5f, 0.35f };
-        static AudioClip bubbleClip, airClip, meadowClip, roomClip;
+        static AudioClip bubbleClip, airClip, meadowClip, skiffClip, chirpClip;
         static float loopCutoff = 22000f, loopCutoffTarget = 22000f;
 
         // Pickups in quick succession climb a pentatonic scale, so a row of spools plays a little tune.
@@ -103,7 +106,7 @@ namespace Patchwork
             if (bubbleClip == null) bubbleClip = BubbleLoop();
             if (airClip == null) airClip = AirLoop();
             if (meadowClip == null) meadowClip = MeadowLoop();
-            if (roomClip == null) roomClip = RoomLoop();
+            if (skiffClip == null) skiffClip = SkiffLoop();
 
             int n = System.Enum.GetValues(typeof(LoopId)).Length;
             loopSources = new AudioSource[n];
@@ -124,7 +127,7 @@ namespace Patchwork
                     case LoopId.Bubbles: s.clip = bubbleClip; break;
                     case LoopId.Glide: s.clip = airClip; break;
                     case LoopId.Meadow: s.clip = meadowClip; break;
-                    default: s.clip = roomClip; break;
+                    default: s.clip = skiffClip; break;
                 }
                 loopSources[i] = s;
                 loopFilters[i] = go.AddComponent<AudioLowPassFilter>();
@@ -185,6 +188,16 @@ namespace Patchwork
             v.volume = vol;
             v.pitch = pitch;
             v.Play();
+        }
+
+        // A yarn bird's chirp. Birds play it from their own 3D sound source so you can hear where they are.
+        public static AudioClip BirdChirp
+        {
+            get
+            {
+                if (chirpClip == null) chirpClip = MakeChirp();
+                return chirpClip;
+            }
         }
 
         // Patch's voice: the same little sounds, higher for Water, highest for Wind.
@@ -331,6 +344,15 @@ namespace Patchwork
                 (Sine(t, 240f) * 0.6f + Sine(t, 410f) * 0.25f + Noise(t) * 0.2f) * Mathf.Exp(-t * 45f) * 0.55f, 2200f);
             clips[SfxId.StepSquelch] = Make("squelch", 0.16f, (t, d) =>
                 Bloop(t, 150f, 0.1f) * 0.45f + Bloop(t - 0.035f, 230f, 0.09f) * 0.3f + Noise(t) * Env(t, d, 0.01f) * 0.12f, 1800f);
+            clips[SfxId.StepCardboard] = Make("stepcardboard", 0.1f, (t, d) =>
+                (Noise(t) * 0.5f + Sine(t, 150f) * 0.6f + Sine(t, 310f) * 0.2f) * Mathf.Exp(-t * 38f) * 0.55f, 1400f);
+            // Start-up sting: a warm, slow chord on felt-hammered bells with a low hum under it.
+            clips[SfxId.StudioSting] = Make("sting", 3.2f, (t, d) =>
+                Bell(t, 196f, d) * 0.22f + Bell(t - 0.12f, 294f, d) * 0.2f + Bell(t - 0.24f, 392f, d) * 0.2f +
+                Bell(t - 0.36f, 494f, d) * 0.18f + Bell(t - 0.5f, 587f, d) * 0.14f +
+                Sine(t, 98f) * Mathf.Clamp01(t / 0.4f) * Mathf.Clamp01((d - t) / 1.5f) * 0.18f, 3000f);
+            clips[SfxId.PageTurn] = Make("pageturn", 0.22f, (t, d) =>
+                Noise(t) * Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / d)) * 0.35f + Bell(t, 880f, d) * 0.08f, 2600f);
             // Voice: a tiny synthesised "vowel" (harmonics shaped by two formants).
             clips[SfxId.VoiceHup] = Make("hup", 0.15f, (t, d) =>
                 Vowel(t, Mathf.Lerp(330f, 430f, t / d), 620f, 1200f) * Env(t, d, 0.012f) * 0.5f, 4500f);
@@ -520,65 +542,130 @@ namespace Patchwork
             return ToClip("air", data);
         }
 
-        // Level 1 background: a soft breeze that rises and falls, with birds chirping now and then.
+        // Level 1 background: a light, airy breeze (no big swells) over a lake of thick paint:
+        // slow gloopy bubbles rising and popping, and the odd drip.
         static AudioClip MeadowLoop()
         {
             float duration = 12f;
             int n = Mathf.CeilToInt(duration * Rate);
             var data = new float[n];
             var rng = new System.Random(11);
-            float y = 0f, y2 = 0f;
+            float y = 0f, y2 = 0f, hp = 0f;
             for (int i = 0; i < n; i++)
             {
                 float t = i / (float)Rate;
-                float swell = 0.55f + 0.45f * Mathf.Sin(2f * Mathf.PI * t / duration * 2f);
-                float a = Alpha(300f + 200f * swell);
+                float sway = 0.8f + 0.2f * Mathf.Sin(2f * Mathf.PI * t / duration * 3f);
+                float a = Alpha(1400f);
                 y += a * ((float)(rng.NextDouble() * 2.0 - 1.0) - y);
                 y2 += a * (y - y2);
-                data[i] = y2 * 0.9f * swell;
+                // Take the low rumble out so it reads as breeze, not waves.
+                hp += Alpha(350f) * (y2 - hp);
+                data[i] = (y2 - hp) * 0.55f * sway;
             }
-            // Birds: little two- and three-note chirps at fixed times so the loop always sounds the same.
-            float[] when = { 0.8f, 1.05f, 3.6f, 5.2f, 5.4f, 5.6f, 8.1f, 10.3f, 10.5f };
-            float[] pitch = { 2900f, 3300f, 2500f, 3100f, 3500f, 3200f, 2700f, 3400f, 3000f };
-            for (int b = 0; b < when.Length; b++)
+            // Paint gloops: a slow low bubble that swells, then a soft pop.
+            var r2 = new System.Random(23);
+            for (float when = 0.4f; when < duration - 0.8f; when += 0.7f + (float)r2.NextDouble() * 1.4f)
             {
-                int start = Mathf.FloorToInt(when[b] * Rate);
-                float len = 0.09f;
+                float f0 = 70f + (float)r2.NextDouble() * 60f;
+                float len = 0.35f + (float)r2.NextDouble() * 0.3f;
+                float vol = 0.22f + (float)r2.NextDouble() * 0.18f;
+                int start = Mathf.FloorToInt(when * Rate);
                 int m = Mathf.CeilToInt(len * Rate);
                 float phase = 0f;
                 for (int j = 0; j < m && start + j < n; j++)
                 {
                     float k = j / (float)m;
-                    float f = pitch[b] * (1f + 0.25f * Mathf.Sin(k * Mathf.PI)) ;
+                    float f = f0 * (1f + 0.9f * k * k);
                     phase += 2f * Mathf.PI * f / Rate;
-                    data[start + j] += Mathf.Sin(phase) * Mathf.Sin(k * Mathf.PI) * 0.12f;
+                    float env = Mathf.Sin(Mathf.PI * Mathf.Pow(k, 0.6f));
+                    data[start + j] += Mathf.Sin(phase) * env * vol;
+                }
+                // The pop at the end.
+                int pop = start + m;
+                for (int j = 0; j < Rate / 25 && pop + j < n; j++)
+                {
+                    float tt = j / (float)Rate;
+                    data[pop + j] += Mathf.Sin(2f * Mathf.PI * (f0 * 3.2f) * tt) * Mathf.Exp(-tt * 90f) * vol * 0.6f;
                 }
             }
+            // A few drips of paint falling into the lake.
+            float[] drips = { 1.7f, 4.9f, 7.3f, 10.1f };
+            foreach (float when in drips)
+            {
+                int start = Mathf.FloorToInt(when * Rate);
+                for (int j = 0; j < Rate / 8 && start + j < n; j++)
+                {
+                    float tt = j / (float)Rate;
+                    data[start + j] += Bloop(tt, 520f, 0.09f) * 0.16f;
+                }
+            }
+            LowPass(data, 4000f);
             LoopBlend(data);
             return ToClip("meadow", data);
         }
 
-        // Hub background: very quiet low room tone with a slow clock tick.
-        static AudioClip RoomLoop()
+        // Hub background on the Skiff: wind across the deck, the balloon's fabric luffing,
+        // and a creak of cardboard now and then.
+        static AudioClip SkiffLoop()
         {
-            float duration = 4f;
+            float duration = 10f;
             int n = Mathf.CeilToInt(duration * Rate);
             var data = new float[n];
             var rng = new System.Random(3);
-            float y = 0f, y2 = 0f;
-            float a = Alpha(180f);
+            float y = 0f, y2 = 0f, hp = 0f;
             for (int i = 0; i < n; i++)
             {
                 float t = i / (float)Rate;
+                float gust = 0.6f + 0.4f * Mathf.Sin(2f * Mathf.PI * t / duration * 2f) * Mathf.Sin(2f * Mathf.PI * t / duration * 5f + 1f);
+                float a = Alpha(700f + 500f * gust);
                 y += a * ((float)(rng.NextDouble() * 2.0 - 1.0) - y);
                 y2 += a * (y - y2);
-                float tickT = t % 1f;
-                bool tock = Mathf.FloorToInt(t) % 2 == 1;
-                float tick = tickT < 0.03f ? Mathf.Sin(2f * Mathf.PI * (tock ? 1600f : 2000f) * tickT) * Mathf.Exp(-tickT * 160f) * 0.14f : 0f;
-                data[i] = y2 * 1.2f + tick;
+                hp += Alpha(200f) * (y2 - hp);
+                // Flag flutter: fast amplitude wobble in the gusts.
+                float flutter = 1f + 0.35f * gust * Mathf.Sin(2f * Mathf.PI * 11f * t);
+                data[i] = (y2 - hp) * 0.8f * gust * flutter;
             }
+            // Creaks: a slow, rough low tone sliding down.
+            float[] creaks = { 2.2f, 6.6f };
+            foreach (float when in creaks)
+            {
+                int start = Mathf.FloorToInt(when * Rate);
+                int m = Mathf.CeilToInt(0.5f * Rate);
+                float phase = 0f;
+                for (int j = 0; j < m && start + j < n; j++)
+                {
+                    float k = j / (float)m;
+                    phase += 2f * Mathf.PI * Mathf.Lerp(180f, 120f, k) / Rate;
+                    float rough = 0.6f + 0.4f * Mathf.Sin(2f * Mathf.PI * 34f * j / Rate);
+                    data[start + j] += (Mathf.Sin(phase) + 0.4f * Mathf.Sin(phase * 2.01f)) * rough * Mathf.Sin(Mathf.PI * k) * 0.07f;
+                }
+            }
+            LowPass(data, 3000f);
             LoopBlend(data);
-            return ToClip("room", data);
+            return ToClip("skiff", data);
+        }
+
+        // A short two-note "tweedle" chirp.
+        static AudioClip MakeChirp()
+        {
+            float duration = 0.32f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var data = new float[n];
+            float phase = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                bool second = t > 0.15f;
+                float lt = second ? t - 0.17f : t;
+                float len = second ? 0.15f : 0.12f;
+                if (lt < 0f || lt > len) { data[i] = 0f; continue; }
+                float k = lt / len;
+                float f = second ? Mathf.Lerp(3600f, 2900f, k) : Mathf.Lerp(2700f, 3500f, k);
+                f *= 1f + 0.04f * Mathf.Sin(2f * Mathf.PI * 45f * t);
+                phase += 2f * Mathf.PI * f / Rate;
+                data[i] = Mathf.Sin(phase) * Mathf.Sin(Mathf.PI * k) * 0.5f;
+            }
+            return ToClip("chirp", data);
         }
 
         // Blends the end into the start so a loop doesn't click.

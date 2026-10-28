@@ -27,6 +27,8 @@ namespace Patchwork
         public Color Sky = new Color(0.78f, 0.86f, 0.95f);
         public readonly List<string> CollectibleIds = new List<string>();
         public int ThreadTotal;
+        // The Skiff's level-select globe (hub only).
+        public LevelGlobe Globe;
 
         public int CollectedCount()
         {
@@ -258,7 +260,7 @@ namespace Patchwork
             spin.Speed = 220f;
         }
 
-        public void Cloud(Vector3 pos, float size)
+        public Transform Cloud(Vector3 pos, float size)
         {
             var g = Group("Cloud", pos);
             // Warm cream, not white, so scenery clouds never look like Wind Form or an updraft.
@@ -270,6 +272,59 @@ namespace Patchwork
             s.Speed = 0f;
             s.BobHeight = 0.4f * size;
             s.BobSpeed = 0.4f;
+            return g;
+        }
+
+        // ------------------------------------------------------------------ Cardboard, rope, paint, birds
+
+        // A solid box of brown corrugated cardboard.
+        public Transform Cardboard(Vector3 center, Vector3 size, Color color, string name = "Cardboard")
+        {
+            return Block(center, size, color, name, PatchworkAssets.Cardboard(color));
+        }
+
+        // A strip of shiny brown packing tape (decoration).
+        public Transform Tape(Vector3 center, Vector3 size, Vector3 euler = default(Vector3))
+        {
+            return NoShadow(Deco(PrimitiveType.Cube, center, size, PatchworkAssets.Plain(new Color(0.9f, 0.76f, 0.5f), 0.6f), euler));
+        }
+
+        // A straight rope (or stick) from a to b.
+        public Transform Rope(Vector3 a, Vector3 b, Material mat, float thickness = 0.08f)
+        {
+            Vector3 d = b - a;
+            var t = Deco(PrimitiveType.Cylinder, (a + b) * 0.5f, new Vector3(thickness, d.magnitude * 0.5f, thickness), mat);
+            t.rotation = Quaternion.FromToRotation(Vector3.up, d.normalized);
+            return NoShadow(t);
+        }
+
+        // A flat lake of swirling marbled paint and ink (no collision). size is x by z in metres.
+        public PaintLake PaintLake(Vector3 center, Vector2 size, float cell = 14f)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            Object.DestroyImmediate(go.GetComponent<Collider>());
+            go.name = "PaintLake";
+            go.transform.SetParent(Root, false);
+            go.transform.position = center;
+            go.transform.localScale = new Vector3(size.x / 10f, 1f, size.y / 10f);
+            var mat = PatchworkAssets.PaintLake();
+            mat.SetTextureScale("_BaseMap", new Vector2(Mathf.Max(1f, Mathf.Round(size.x / cell)), Mathf.Max(1f, Mathf.Round(size.y / cell))));
+            var r = go.GetComponent<MeshRenderer>();
+            r.sharedMaterial = mat;
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var lake = go.AddComponent<PaintLake>();
+            lake.Setup(mat);
+            return lake;
+        }
+
+        // A yarn bird: circling overhead (radius > 0 and circling), or sitting at pos.
+        public YarnBird YarnBird(Vector3 pos, Color color, bool circling, float radius = 4f)
+        {
+            var go = new GameObject("YarnBird");
+            go.transform.SetParent(Root, false);
+            var b = go.AddComponent<YarnBird>();
+            b.Setup(circling ? Patchwork.YarnBird.Mode.Circle : Patchwork.YarnBird.Mode.Perch, pos, radius, color);
+            return b;
         }
 
         // Huge quilt far below the level so gaps feel deep (no collision).

@@ -14,7 +14,10 @@ namespace Patchwork
 
         delegate float HeightFn(float u, float v, int x, int y);
 
-        public static Pair Knit, Felt, Weave, Wicker, Grass, Wood, Wrap;
+        public static Pair Knit, Felt, Weave, Wicker, Grass, Wood, Wrap, Cardboard;
+        // Full-colour textures (not tinted by the material colour).
+        public static Texture2D PaintMarble;   // swirled paint and ink for the lake under Level 1
+        public static Texture2D GlobeMap;      // the quilted world map on the Skiff's globe
 
         static bool built;
 
@@ -30,6 +33,9 @@ namespace Patchwork
             Grass = Build(128, GrassHeight, 0.72f, 0.28f, 2.5f);
             Wood = Build(64, WoodHeight, 0.78f, 0.22f, 1.5f);
             Wrap = Build(128, WrapHeight, 0.68f, 0.32f, 3f);
+            Cardboard = Build(128, CardboardHeight, 0.82f, 0.18f, 1.8f);
+            PaintMarble = BuildMarble(256);
+            GlobeMap = BuildGlobe(256, 128);
         }
 
         // ------------------------------------------------------------------ Builder
@@ -184,6 +190,99 @@ namespace Patchwork
         {
             float grain = Mathf.Sin((u * 18f + ValueNoise(u, v, 4, 9) * 3f) * Mathf.PI * 2f) * 0.5f + 0.5f;
             return grain * 0.6f + ValueNoise(u, v, 16, 4) * 0.4f;
+        }
+
+        // Corrugated cardboard: faint ridges, paper fibres and the odd crease.
+        static float CardboardHeight(float u, float v, int x, int y)
+        {
+            float ridges = Mathf.Sin(u * 16f * Mathf.PI * 2f) * 0.5f + 0.5f;
+            float fibres = ValueNoise(u, v, 32, 17) * 0.5f + Hash(x, y) * 0.25f;
+            float crease = Mathf.Abs(Mathf.Sin((v * 2f + u * 0.5f + ValueNoise(u, v, 4, 5) * 0.3f) * Mathf.PI * 2f));
+            float c = crease > 0.985f ? -0.3f : 0f;
+            return 0.35f + ridges * 0.18f + fibres * 0.4f + c;
+        }
+
+        // ------------------------------------------------------------------ Colour textures
+
+        static Texture2D NewColourTex(int w, int h)
+        {
+            var t = new Texture2D(w, h, TextureFormat.RGBA32, true, false);
+            t.wrapMode = TextureWrapMode.Repeat;
+            t.filterMode = FilterMode.Trilinear;
+            t.anisoLevel = 4;
+            return t;
+        }
+
+        static Color Ramp(Color[] stops, float t)
+        {
+            t = Mathf.Repeat(t, 1f) * stops.Length;
+            int i = Mathf.FloorToInt(t);
+            float f = t - i;
+            f = f * f * (3f - 2f * f);
+            return Color.Lerp(stops[i % stops.Length], stops[(i + 1) % stops.Length], f);
+        }
+
+        // Marbled paint floating on ink: bands of colour pulled into swirls (tiles seamlessly).
+        static Texture2D BuildMarble(int size)
+        {
+            Color ink = new Color(0.1f, 0.12f, 0.3f);
+            Color indigo = new Color(0.22f, 0.2f, 0.48f);
+            Color teal = new Color(0.16f, 0.52f, 0.6f);
+            Color pink = new Color(0.95f, 0.47f, 0.62f);
+            Color butter = new Color(0.98f, 0.83f, 0.4f);
+            Color cream = new Color(0.96f, 0.92f, 0.85f);
+            Color[] stops = { ink, indigo, ink, teal, cream, pink, ink, indigo, butter, ink };
+            var t = NewColourTex(size, size);
+            var px = new Color[size * size];
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float u = x / (float)size, v = y / (float)size;
+                    float wu = ValueNoise(u, v, 4, 11) * 0.6f + ValueNoise(u, v, 8, 12) * 0.25f;
+                    float wv = ValueNoise(u, v, 4, 21) * 0.6f + ValueNoise(u, v, 8, 22) * 0.25f;
+                    float band = (u * 2f + v * 1f) + wu * 1.6f + wv * 1.1f + ValueNoise(u, v, 16, 31) * 0.08f;
+                    Color c = Ramp(stops, band);
+                    // Little bright specks of paint.
+                    if (Hash(x * 3, y * 5) > 0.997f) c = Color.Lerp(c, cream, 0.7f);
+                    px[y * size + x] = c;
+                }
+            t.SetPixels(px);
+            t.Apply(true);
+            return t;
+        }
+
+        // A quilted world map: sea patches and land patches, each square edged with stitches.
+        static Texture2D BuildGlobe(int w, int h)
+        {
+            Color[] sea = { new Color(0.45f, 0.62f, 0.85f), new Color(0.5f, 0.68f, 0.88f), new Color(0.4f, 0.56f, 0.8f) };
+            Color[] land = { new Color(0.62f, 0.78f, 0.5f), new Color(0.75f, 0.84f, 0.52f), new Color(0.98f, 0.86f, 0.55f),
+                             new Color(0.95f, 0.7f, 0.6f), new Color(0.78f, 0.7f, 0.9f), new Color(0.55f, 0.72f, 0.48f) };
+            var t = NewColourTex(w, h);
+            t.wrapMode = TextureWrapMode.Clamp;
+            var px = new Color[w * h];
+            const int cellsX = 24, cellsY = 12;
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    float u = x / (float)w, v = y / (float)h;
+                    int cx = Mathf.FloorToInt(u * cellsX), cy = Mathf.FloorToInt(v * cellsY);
+                    float landness = ValueNoise((cx + 0.5f) / cellsX, (cy + 0.5f) / cellsY, 6, 41);
+                    bool isLand = landness > 0.52f && cy > 0 && cy < cellsY - 1;
+                    Color c = isLand ? land[(cx * 7 + cy * 3) % land.Length] : sea[(cx + cy) % sea.Length];
+                    if (cy == 0 || cy == cellsY - 1) c = new Color(0.96f, 0.93f, 0.88f); // felt ice caps
+                    c *= 0.94f + Hash(x, y) * 0.08f;
+                    // Stitches around each patch: dashes just inside the edge.
+                    float fu = u * cellsX - cx, fv = v * cellsY - cy;
+                    bool nearV = fu < 0.08f || fu > 0.92f, nearH = fv < 0.08f || fv > 0.92f;
+                    bool dashV = Mathf.Repeat(fv * 6f, 1f) < 0.55f, dashH = Mathf.Repeat(fu * 6f, 1f) < 0.55f;
+                    if ((nearV && dashV && !nearH) || (nearH && dashH && !nearV)) c = Color.Lerp(c, new Color(1f, 0.97f, 0.9f), 0.75f);
+                    if (fu < 0.02f || fv < 0.02f) c *= 0.75f; // seam shadow
+                    c.a = 1f;
+                    px[y * w + x] = c;
+                }
+            t.SetPixels(px);
+            t.Apply(true);
+            return t;
         }
 
         // Strands wound around a ball of yarn.

@@ -53,7 +53,8 @@ namespace Patchwork
             info.KillY = -14f;
             info.Sky = new Color(0.78f, 0.88f, 0.95f);
 
-            kit.Backdrop(-40f);
+            // Below the course: a lake of swirling paint and ink (the gloopy sounds you hear).
+            PaintLake(kit);
             // A giant wicker basket around the whole course, with a soft blue felt "sky" lid.
             kit.Enclosure(new Vector3(-26f, -45f, -24f), new Vector3(26f, 34f, 214f),
                 new[] { new Color(0.62f, 0.45f, 0.28f), new Color(0.75f, 0.56f, 0.34f), new Color(0.82f, 0.64f, 0.4f), new Color(0.88f, 0.72f, 0.48f) },
@@ -70,7 +71,114 @@ namespace Patchwork
             Section6_BreezyMeadow(kit);
             Section7_OverTheWall(kit);
             Section8_BasketRim(kit);
+            YarnBirds(kit);
             return info;
+        }
+
+        // ---------------------------------------------------------------- The paint lake
+
+        static void PaintLake(LevelKit kit)
+        {
+            kit.PaintLake(new Vector3(0f, -8f, 95f), new Vector2(52f, 238f), 13f);
+
+            // Art supplies bobbing in the paint.
+            PaintTube(kit, new Vector3(3.5f, -8f, 40f), new Color(0.95f, 0.45f, 0.55f), 30f);
+            InkBottle(kit, new Vector3(-5f, -8f, 38f), -12f);
+            Brush(kit, new Vector3(-4f, -8f, 60f), new Color(0.35f, 0.6f, 0.95f), 40f);
+            PaintTube(kit, new Vector3(5f, -8f, 76f), new Color(0.98f, 0.82f, 0.35f), -50f);
+            InkBottle(kit, new Vector3(-3f, -8f, 84f), 8f);
+            PaintTube(kit, new Vector3(2f, -8f, 107f), new Color(0.4f, 0.75f, 0.6f), 75f);
+            InkBottle(kit, new Vector3(4.5f, -8f, 126f), -20f);
+            Brush(kit, new Vector3(-3f, -8f, 167f), new Color(0.95f, 0.5f, 0.6f), -30f);
+            InkBottle(kit, new Vector3(-5f, -8f, 179f), 15f);
+            PaintTube(kit, new Vector3(4f, -8f, 185f), new Color(0.6f, 0.5f, 0.9f), 10f);
+            // Along the sides of the basket.
+            PaintTube(kit, new Vector3(-17f, -8f, 8f), new Color(0.35f, 0.6f, 0.95f), 100f);
+            Brush(kit, new Vector3(16f, -8f, 24f), new Color(0.98f, 0.82f, 0.35f), 150f);
+            InkBottle(kit, new Vector3(18f, -8f, 55f), 0f);
+            PaintTube(kit, new Vector3(-16f, -8f, 70f), new Color(0.95f, 0.45f, 0.55f), -140f);
+            Brush(kit, new Vector3(-18f, -8f, 100f), new Color(0.4f, 0.75f, 0.6f), 60f);
+            PaintTube(kit, new Vector3(17f, -8f, 115f), new Color(0.98f, 0.6f, 0.3f), 20f);
+            InkBottle(kit, new Vector3(-17f, -8f, 150f), -30f);
+            Brush(kit, new Vector3(16f, -8f, 160f), new Color(0.6f, 0.5f, 0.9f), -100f);
+            PaintTube(kit, new Vector3(-15f, -8f, 196f), new Color(0.4f, 0.75f, 0.6f), 160f);
+        }
+
+        // A squeezed tube of paint floating on its side, with a blob coming out of it.
+        static void PaintTube(LevelKit kit, Vector3 pos, Color paint, float yaw)
+        {
+            var g = kit.Group("PaintTube", pos + Vector3.up * 0.5f);
+            g.rotation = Quaternion.Euler(0f, yaw, 0f);
+            var metal = PatchworkAssets.Plain(new Color(0.88f, 0.88f, 0.92f), 0.85f);
+            kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1.3f, 2f, 1.1f), metal, new Vector3(0f, 0f, 90f), g);
+            kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1.36f, 1.1f, 1.16f), PatchworkAssets.Plain(paint, 0.4f), new Vector3(0f, 0f, 90f), g);
+            kit.Deco(PrimitiveType.Cube, new Vector3(-2.1f, 0f, 0f), new Vector3(0.3f, 0.3f, 1.4f), metal, default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(2.15f, 0f, 0f), new Vector3(0.55f, 0.25f, 0.55f), PatchworkAssets.Plain(new Color(0.15f, 0.12f, 0.15f), 0.4f), new Vector3(0f, 0f, 90f), g);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(2.9f, -0.2f, 0f), new Vector3(1.4f, 0.5f, 1.1f), PatchworkAssets.Plain(paint, 0.9f), default(Vector3), g);
+            var bob = g.gameObject.AddComponent<Spinner>();
+            bob.Speed = 2f;
+            bob.BobHeight = 0.18f;
+            bob.BobSpeed = 0.7f;
+        }
+
+        // A bottle of ink, tilted and half sunk.
+        static void InkBottle(LevelKit kit, Vector3 pos, float tilt)
+        {
+            var g = kit.Group("InkBottle", pos);
+            g.rotation = Quaternion.Euler(tilt, tilt * 2f, tilt * 0.5f);
+            var glass = PatchworkAssets.Plain(new Color(0.12f, 0.13f, 0.3f), 0.95f);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.6f, 0f), new Vector3(2.4f, 1.6f, 2.4f), glass, default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 2.5f, 0f), new Vector3(1.1f, 0.4f, 1.1f), glass, default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 3.05f, 0f), new Vector3(0.95f, 0.25f, 0.95f), PatchworkAssets.Felt(new Color(0.65f, 0.48f, 0.32f)), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1f, 0f), new Vector3(2.46f, 0.5f, 2.46f), PatchworkAssets.Felt(LevelKit.Palette.Cream), default(Vector3), g);
+            var bob = g.gameObject.AddComponent<Spinner>();
+            bob.Speed = 0f;
+            bob.BobHeight = 0.12f;
+            bob.BobSpeed = 0.5f;
+        }
+
+        // A big paintbrush sticking up out of the paint at an angle.
+        static void Brush(LevelKit kit, Vector3 pos, Color paint, float yaw)
+        {
+            var g = kit.Group("Paintbrush", pos);
+            g.rotation = Quaternion.Euler(0f, yaw, 0f) * Quaternion.Euler(0f, 0f, 30f);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 4f, 0f), new Vector3(0.45f, 3.5f, 0.45f), PatchworkAssets.Plain(new Color(0.85f, 0.3f, 0.3f), 0.6f), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.3f, 0f), new Vector3(0.6f, 0.6f, 0.6f), PatchworkAssets.Plain(new Color(0.85f, 0.86f, 0.9f), 0.9f), default(Vector3), g);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -0.4f, 0f), new Vector3(0.7f, 1.2f, 0.7f), PatchworkAssets.Plain(paint, 0.85f), default(Vector3), g);
+        }
+
+        // ---------------------------------------------------------------- Yarn birds
+
+        static void YarnBirds(LevelKit kit)
+        {
+            Color[] c = { LevelKit.Palette.Rose, LevelKit.Palette.Sky, LevelKit.Palette.Butter, LevelKit.Palette.Lavender, LevelKit.Palette.Peach };
+            // Garden
+            kit.YarnBird(new Vector3(2.5f, 0f, -2f), c[0], false);
+            kit.YarnBird(new Vector3(3.5f, 0f, 5f), c[1], false);
+            kit.YarnBird(new Vector3(-4f, 3.5f, 9.2f), c[2], false);
+            kit.YarnBird(new Vector3(0f, 7f, 2f), c[3], true, 5f);
+            // On the wicker wall's rim
+            kit.YarnBird(new Vector3(-3.5f, 8.8f, 14f), c[4], false);
+            kit.YarnBird(new Vector3(4.5f, 8.8f, 14.6f), c[0], false);
+            // Dye pond: one on the hut roof (a hint to look up there), one circling
+            kit.YarnBird(new Vector3(4.2f, 10.9f, 34.5f), c[1], false);
+            kit.YarnBird(new Vector3(-3f, 6f, 26f), c[2], true, 4f);
+            // Canyon
+            kit.YarnBird(new Vector3(0f, 12f, 62f), c[3], true, 6f);
+            kit.YarnBird(new Vector3(2.5f, 0f, 70.5f), c[4], false);
+            kit.YarnBird(new Vector3(-3f, 11f, 80f), c[0], true, 5f);
+            // Meadow, and one on top of the spool tower beside the secret button
+            kit.YarnBird(new Vector3(4f, 0f, 96f), c[1], false);
+            kit.YarnBird(new Vector3(-2f, 9f, 108f), c[2], true, 6f);
+            kit.YarnBird(new Vector3(-10.2f, 12f, 118.2f), c[3], false);
+            // Over the wall
+            kit.YarnBird(new Vector3(-6f, 9.3f, 143f), c[4], false);
+            kit.YarnBird(new Vector3(7.5f, 9.3f, 143.3f), c[0], false);
+            // The rim
+            kit.YarnBird(new Vector3(3f, 6f, 198f), c[1], false);
+            kit.YarnBird(new Vector3(-3f, 6f, 192f), c[2], false);
+            kit.YarnBird(new Vector3(0f, 14f, 196f), c[3], true, 5f);
+            kit.YarnBird(new Vector3(-6f, 18f, 175f), c[4], true, 7f);
         }
 
         // ---------------------------------------------------------------- 1. Garden start  (z -10 .. 12)

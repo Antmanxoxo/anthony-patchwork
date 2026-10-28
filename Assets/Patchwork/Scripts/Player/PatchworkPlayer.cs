@@ -111,6 +111,7 @@ namespace Patchwork
             var r = ground.GetComponent<Renderer>();
             string name = r != null && r.sharedMaterial != null ? r.sharedMaterial.name : "";
             if (name.Contains("wicker")) lastGroundStep = SfxId.StepWicker;
+            else if (name.Contains("cardboard")) lastGroundStep = SfxId.StepCardboard;
             else if (name.Contains("wood")) lastGroundStep = SfxId.StepWood;
             else if (name.Contains("grass")) lastGroundStep = SfxId.StepGrass;
             else lastGroundStep = SfxId.StepFelt;

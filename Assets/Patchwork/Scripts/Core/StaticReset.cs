@@ -13,6 +13,9 @@ namespace Patchwork
             Sfx.ResetStatics();
             Haptics.ResetStatics();
             GameState.ResetStatics();
+            LoadingScreen.ResetStatics();
+            TitleSequence.ResetStatics();
+            LevelSelectMenu.ResetStatics();
             PatchModel.CurrentFace = PatchModel.Face.Happy;
         }
     }

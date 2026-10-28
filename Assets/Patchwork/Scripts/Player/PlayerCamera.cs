@@ -44,6 +44,14 @@ namespace Patchwork
         const float CutscenePitch = 6f;
         const float CutsceneOrbitSpeed = 22f;   // degrees per second
 
+        // Showcase shots (title screen, level select): the game places the camera directly and it
+        // glides between that shot and the normal follow camera.
+        [System.NonSerialized] public bool Showcase;
+        [System.NonSerialized] public Vector3 ShowcasePosition;
+        [System.NonSerialized] public Vector3 ShowcaseLookAt;
+        [System.NonSerialized] public float ShowcaseBlendSpeed = 0.8f;
+        public float ShowcaseBlend { get; private set; }
+
         float yaw;
         float pitch = 18f;
         Vector3 focus;
@@ -167,8 +175,23 @@ namespace Patchwork
             if (wanted < currentDistance) currentDistance = wanted;
             else currentDistance = Mathf.Lerp(currentDistance, wanted, 1f - Mathf.Exp(-4f * dt));
 
-            transform.position = focus + back * currentDistance;
+            Vector3 pos = focus + back * currentDistance;
+            ShowcaseBlend = Mathf.MoveTowards(ShowcaseBlend, Showcase ? 1f : 0f, dt * ShowcaseBlendSpeed);
+            if (ShowcaseBlend > 0f)
+            {
+                float s = Mathf.SmoothStep(0f, 1f, ShowcaseBlend);
+                Quaternion showRot = Quaternion.LookRotation((ShowcaseLookAt - ShowcasePosition).normalized, Vector3.up);
+                pos = Vector3.Lerp(pos, ShowcasePosition, s);
+                rot = Quaternion.Slerp(rot, showRot, s);
+            }
+            transform.position = pos;
             transform.rotation = rot;
+        }
+
+        // Jump straight to the showcase shot (no glide), e.g. when the game starts on the title screen.
+        public void SnapShowcase()
+        {
+            ShowcaseBlend = Showcase ? 1f : 0f;
         }
 
         // Converts stick input into a world direction relative to the camera.

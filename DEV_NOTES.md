@@ -68,6 +68,15 @@ Stuff I need to remember about how Patchwork is put together.
   Button Box (`HatPedestal`). Best thread counts are saved as "Level1=23/40".
 - Footstep sound comes from the ground's material name (wicker / wood / grass, otherwise felt).
 - Ambience loops (`LoopId.Meadow`, `LoopId.Room`) are requested every frame by `PatchworkGame`.
+- Start-up: `TitleSequence` plays the studio logo + title the first time the hub loads after
+  starting the game. The logo is `Resources/Branding/StudioLogo.png` if it exists, otherwise a
+  drawn placeholder badge.
+- All scene changes go through `PatchworkGame.LoadScene` -> `LoadingScreen` (async load, min 3.2 s,
+  1.2 s for a restart). Level names, blurbs, colours and globe pins live in `LevelCatalog`.
+- The hub's level select: `HelmStation` (stand there, press Ability) -> `LevelSelectMenu`, which
+  turns the `LevelGlobe` and uses the camera's Showcase mode (`PlayerCamera.Showcase`).
+- Yarn birds (`YarnBird`, `kit.YarnBird`) play their chirps from their own 3D AudioSource.
+- `PaintLake` scrolls a marbled texture (`PatchworkTextures.PaintMarble`).
 - `BlobShadow` puts the shadow disc under Patch; its material copies the see-through + glow setup
   so the build already keeps that shader version.
 

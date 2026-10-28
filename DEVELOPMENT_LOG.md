@@ -1,5 +1,24 @@
 # Development Log
 
+## The Cardboard Skiff
+- Starting the game now shows the Little Colossus studio logo (with its own chime), then the
+  Patchwork title screen over a slow fly-around of the hub. Any button starts.
+- The hub is now the Cardboard Skiff: a little cardboard ship under a patched felt balloon,
+  sailing over a sea of paint with clouds drifting past and the Level 1 basket island in the distance.
+- Levels are picked at the ship's helm: press Ability and the camera moves in on a quilted globe
+  that turns to each level's pin, with a card showing buttons found and best threads. Levels 2 and 3
+  are on the globe as "Coming soon".
+- New loading screen: quilt patches pop in, the level's name gets stitched across by a needle,
+  a ball of yarn rolls along as the loading bar, and there's a tip. Used for every level change.
+- Practice spots moved onto the ship: a fountain up to the crow's nest, a swing to the lifeboat,
+  an air vent up to the cabin roof, and a drain crate. The Button Box is now the captain's cabin.
+- Level 1 has yarn birds: some circle overhead, others hop and peck and flutter off when you run
+  up to them. Their chirps come from where they are.
+- A lake of swirling paint and ink now sits under Level 1, with paint tubes, ink bottles and
+  brushes floating in it. The background sound is now a light breeze with paint gloops and drips
+  (instead of the old sound that was like waves).
+- Footsteps on cardboard.
+
 ## Level 1 rebuild
 - Level 1 is now eight sections that climb out of the sewing basket: the garden, a drain in the
   wicker wall, the dye pond fountain, Button Bridge, Pincushion Canyon (two swings in a row with

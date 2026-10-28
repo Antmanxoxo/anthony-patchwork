@@ -117,6 +117,28 @@ namespace Patchwork
             return Get("wood", color, t.Albedo, 0.25f, Color.black, t.Normal, 0.7f);
         }
 
+        public static Material Cardboard(Color color)
+        {
+            EnsureInit();
+            var t = PatchworkTextures.Cardboard;
+            return Get("cardboard", color, t.Albedo, 0.06f, Color.black, t.Normal, 0.9f);
+        }
+
+        // Marbled paint and ink. Each call makes its own copy so it can be scrolled.
+        public static Material PaintLake()
+        {
+            EnsureInit();
+            var m = Unique(Get("paintlake", Color.white, PatchworkTextures.PaintMarble, 0.82f, new Color(0.06f, 0.06f, 0.09f)));
+            m.name = "PW_paintlake_live";
+            return m;
+        }
+
+        public static Material GlobeMap()
+        {
+            EnsureInit();
+            return Get("globemap", Color.white, PatchworkTextures.GlobeMap, 0.35f, Color.black);
+        }
+
         public static Material Water(Color color)
         {
             return Get("water", color, WaterTex, 0.92f, color * 0.25f);
