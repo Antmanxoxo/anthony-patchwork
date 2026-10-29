@@ -93,6 +93,7 @@ namespace Patchwork
                 case UIMode.LevelSelect: Game.LevelSelect.Draw(kb); break;
                 case UIMode.Talk: Game.Dialogue.Draw(kb); break;
                 case UIMode.Ask: Game.Asker.Draw(kb); break;
+                case UIMode.Map: Game.Map.Draw(kb); break;
             }
 
             if (Game.Fade > 0.001f)
@@ -277,8 +278,10 @@ namespace Patchwork
             float y = UIKit.Height - 64f;
             var c = new Color(1f, 1f, 1f, 0.95f);
             // Measure right-to-left so the strip hugs the right edge.
-            string[] labels = { "Form Wheel", "Satchel", "Pause" };
-            PromptAction[] actions = { PromptAction.FormWheel, PromptAction.Satchel, PromptAction.Pause };
+            bool map = MapScreen.Available(Game.Level);
+            string[] labels = map ? new[] { "Form Wheel", "Map", "Satchel", "Pause" } : new[] { "Form Wheel", "Satchel", "Pause" };
+            PromptAction[] actions = map ? new[] { PromptAction.FormWheel, PromptAction.Map, PromptAction.Satchel, PromptAction.Pause }
+                                         : new[] { PromptAction.FormWheel, PromptAction.Satchel, PromptAction.Pause };
             float total = 0f;
             var style = UIKit.Style(Mathf.RoundToInt(h * 0.55f), true, TextAnchor.MiddleLeft, c);
             for (int i = 0; i < labels.Length; i++)
@@ -293,8 +296,8 @@ namespace Patchwork
         static float EstimatePromptWidth(PromptAction a, bool kb, float h)
         {
             string text;
-            if (kb) text = a == PromptAction.FormWheel ? "Q" : a == PromptAction.Satchel ? "Tab" : "Esc";
-            else text = a == PromptAction.FormWheel ? PatchworkInput.FormWheelPadLabel : a == PromptAction.Satchel ? "TOUCHPAD" : "OPTIONS";
+            if (kb) text = a == PromptAction.FormWheel ? "Q" : a == PromptAction.Satchel ? "Tab" : a == PromptAction.Map ? "M" : "Esc";
+            else text = a == PromptAction.FormWheel ? PatchworkInput.FormWheelPadLabel : a == PromptAction.Satchel ? "TOUCHPAD" : a == PromptAction.Map ? "D-PAD LEFT" : "OPTIONS";
             var s = UIKit.Style(Mathf.RoundToInt(h * 0.42f), true, TextAnchor.MiddleCenter, Color.white);
             return Mathf.Max(h, UIKit.TextWidth(text, s) + h * 0.55f);
         }

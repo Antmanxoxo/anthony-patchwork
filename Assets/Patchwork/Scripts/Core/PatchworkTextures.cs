@@ -31,20 +31,26 @@ namespace Patchwork
             if (built && Wrap != null && Wrap.Albedo != null) return;
             built = true;
             // Deeper relief than before: stronger normals and a bit more shading in the dips.
-            Knit = Build(256, KnitHeight, 0.56f, 0.44f, 5f);
-            Felt = Build(128, FeltHeight, 0.8f, 0.2f, 2.4f);
-            Weave = Build(128, WeaveHeight, 0.74f, 0.26f, 3.2f);
-            Wicker = Build(128, WickerHeight, 0.5f, 0.5f, 5.5f);
-            Grass = Build(256, GrassHeight, 0.66f, 0.34f, 3.6f);
-            Wood = Build(128, WoodHeight, 0.72f, 0.28f, 2.4f);
-            Wrap = Build(256, WrapHeight, 0.6f, 0.4f, 4.2f);
-            Cardboard = Build(128, CardboardHeight, 0.78f, 0.22f, 2.4f);
-            Cobble = Build(256, CobbleHeight, 0.45f, 0.55f, 5f);
-            Brick = Build(256, BrickHeight, 0.5f, 0.5f, 4.5f);
-            Plaster = Build(128, PlasterHeight, 0.82f, 0.18f, 1.6f);
-            Shingle = Build(256, ShingleHeight, 0.5f, 0.5f, 4.5f);
-            Planks = Build(256, PlankHeight, 0.6f, 0.4f, 3.5f);
-            Damask = Build(256, DamaskHeight, 0.72f, 0.28f, 2.2f);
+            // Each surface: height pattern, shading, relief, then the painterly extras:
+            // what colour the crevices go, how much the raised edges catch the light, and how
+            // much big soft colour variation there is so repeats don't show.
+            var none = new Color(1f, 1f, 1f);
+            Knit = Build(256, KnitHeight, 0.56f, 0.44f, 5f, new Color(0.82f, 0.8f, 0.86f), 0.5f, 0.08f, 4);
+            Felt = Build(256, FeltHeight, 0.8f, 0.2f, 2.4f, none, 0.25f, 0.1f, 3);
+            Weave = Build(256, WeaveHeight2, 0.74f, 0.26f, 3.2f, new Color(0.85f, 0.83f, 0.88f), 0.35f, 0.07f, 4);
+            Wicker = Build(256, WickerHeight, 0.5f, 0.5f, 5.5f, new Color(0.78f, 0.7f, 0.62f), 0.6f, 0.08f, 3);
+            // Grass: blue-green shade in the dips, sunny yellow-green tips, clumpy patches.
+            Grass = Build(512, GrassHeight, 0.64f, 0.36f, 3.8f, new Color(0.72f, 0.85f, 0.82f), 0.55f, 0.16f, 2, new Color(1.0f, 1.0f, 0.8f));
+            Wood = Build(256, WoodHeight, 0.72f, 0.28f, 2.4f, new Color(0.78f, 0.68f, 0.6f), 0.4f, 0.1f, 3);
+            Wrap = Build(256, WrapHeight, 0.6f, 0.4f, 4.2f, new Color(0.84f, 0.82f, 0.88f), 0.45f, 0.06f, 4);
+            Cardboard = Build(256, CardboardHeight, 0.78f, 0.22f, 2.4f, new Color(0.85f, 0.78f, 0.7f), 0.3f, 0.12f, 3);
+            // Stone and brick: mossy green in the joints and worn, sunlit edges.
+            Cobble = Build(256, CobbleHeight, 0.45f, 0.55f, 5f, new Color(0.62f, 0.74f, 0.5f), 0.9f, 0.14f, 3);
+            Brick = Build(256, BrickHeight, 0.5f, 0.5f, 4.5f, new Color(0.7f, 0.76f, 0.6f), 0.8f, 0.12f, 3);
+            Plaster = Build(256, PlasterHeight, 0.82f, 0.18f, 1.6f, new Color(0.92f, 0.88f, 0.82f), 0.2f, 0.12f, 2);
+            Shingle = Build(256, ShingleHeight, 0.5f, 0.5f, 4.5f, new Color(0.7f, 0.72f, 0.66f), 0.8f, 0.12f, 3);
+            Planks = Build(256, PlankHeight, 0.6f, 0.4f, 3.5f, new Color(0.62f, 0.5f, 0.42f), 0.6f, 0.12f, 3);
+            Damask = Build(256, DamaskHeight, 0.72f, 0.28f, 2.2f, new Color(0.86f, 0.82f, 0.9f), 0.3f, 0.06f, 4);
             PaintMarble = BuildMarble(256);
             GlobeMap = BuildGlobe(256, 128);
             BalloonQuilt = BuildBalloon(256, 128);
@@ -52,18 +58,25 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ Builder
 
-        static Pair Build(int size, HeightFn height, float baseShade, float shadeRange, float strength)
+        // cavity: colour multiplied into the low points; edge: how much convex ridges brighten;
+        // macro: strength of big, soft colour and value patches; macroCells: how big they are
+        // (cells across the texture); tip: colour the highest points lean towards.
+        static Pair Build(int size, HeightFn height, float baseShade, float shadeRange, float strength,
+            Color cavity, float edge, float macro, int macroCells, Color tip = default(Color))
         {
+            if (tip.a <= 0f) tip = Color.white;
             var h = new float[size * size];
             for (int y = 0; y < size; y++)
                 for (int x = 0; x < size; x++)
                     h[y * size + x] = Mathf.Clamp01(height(x / (float)size, y / (float)size, x, y));
+            // Height functions were written for their own pixel grid; normals scale with resolution.
+            float relief = strength * Mathf.Sqrt(size / 128f);
 
             var albedo = new Texture2D(size, size, TextureFormat.RGBA32, true, false);
             var normal = new Texture2D(size, size, TextureFormat.RGBA32, true, true);
             albedo.wrapMode = normal.wrapMode = TextureWrapMode.Repeat;
             albedo.filterMode = normal.filterMode = FilterMode.Trilinear;
-            albedo.anisoLevel = normal.anisoLevel = 4;
+            albedo.anisoLevel = normal.anisoLevel = 8;
 
             var ca = new Color[size * size];
             var cn = new Color[size * size];
@@ -71,15 +84,33 @@ namespace Patchwork
                 for (int x = 0; x < size; x++)
                 {
                     float hv = h[y * size + x];
-                    // Ambient-occlusion-ish: low points are darker.
-                    float shade = baseShade + shadeRange * hv + (Hash(x * 7, y * 13) - 0.5f) * 0.05f;
-                    ca[y * size + x] = new Color(shade, shade, shade, 1f);
-
                     float hl = h[y * size + (x - 1 + size) % size];
                     float hr = h[y * size + (x + 1) % size];
                     float hd = h[((y - 1 + size) % size) * size + x];
                     float hu = h[((y + 1) % size) * size + x];
-                    Vector3 n = new Vector3((hl - hr) * strength, (hd - hu) * strength, 1f).normalized;
+                    float u = x / (float)size, v = y / (float)size;
+
+                    // Ambient-occlusion-ish: low points are darker (and take the cavity colour).
+                    float shade = baseShade + shadeRange * hv + (Hash(x * 7, y * 13) - 0.5f) * 0.05f;
+                    // Curvature: ridges catch the light, creases go darker, like painted highlights.
+                    float lap = (hl + hr + hd + hu) * 0.25f - hv;
+                    shade += Mathf.Clamp(-lap * 6f, -0.5f, 0.5f) * edge * 0.5f;
+                    // Big soft patches of lighter/darker, warmer/cooler colour (tile seamlessly).
+                    float m1 = ValueNoise(u, v, macroCells, 101) - 0.5f;
+                    float m2 = ValueNoise(u, v, macroCells * 2, 202) - 0.5f;
+                    shade *= 1f + (m1 * 0.8f + m2 * 0.4f) * macro * 2f;
+                    float low = Mathf.Clamp01(1f - hv * 1.6f);
+                    Color c = new Color(shade, shade, shade, 1f);
+                    c = Color.Lerp(c, new Color(shade * cavity.r, shade * cavity.g, shade * cavity.b, 1f), low);
+                    c = Color.Lerp(c, new Color(c.r * tip.r, c.g * tip.g, c.b * tip.b, 1f), Mathf.Clamp01((hv - 0.6f) * 2.5f));
+                    float warm = m2 * macro * 0.6f;
+                    c.r = Mathf.Clamp01(c.r * (1f + warm));
+                    c.b = Mathf.Clamp01(c.b * (1f - warm));
+                    c.g = Mathf.Clamp01(c.g);
+                    c.a = 1f;
+                    ca[y * size + x] = c;
+
+                    Vector3 n = new Vector3((hl - hr) * relief, (hd - hu) * relief, 1f).normalized;
                     cn[y * size + x] = new Color(n.x * 0.5f + 0.5f, n.y * 0.5f + 0.5f, n.z * 0.5f + 0.5f, 1f);
                 }
             albedo.SetPixels(ca);
@@ -160,6 +191,13 @@ namespace Patchwork
             bool spanY = y >= inset && y <= size - 1 - inset;
             if ((onH && spanX && (x % 12) < 7) || (onV && spanY && (y % 12) < 7)) h = 1f;
             return h;
+        }
+
+        // Plain-weave cloth at any resolution (maps onto the 128-pixel pattern).
+        static float WeaveHeight2(float u, float v, int x, int y)
+        {
+            int px = Mathf.FloorToInt(u * 128f), py = Mathf.FloorToInt(v * 128f);
+            return WeaveHeight(u, v, px, py) + (Hash(x, y) - 0.5f) * 0.04f;
         }
 
         // Basket weave: horizontal reeds passing over and under vertical stakes.

@@ -103,6 +103,17 @@ Stuff I need to remember about how Patchwork is put together.
   (`PatchworkGame.StartCutscene`). Bonus Heartstring ids are `L1_hs_*`.
 - Toys are `ToyNpc.Create(kit, feet, yaw, kind, name, colours, instrument)`; their lines are a
   `Func<string[]>` so they change with progress. Their `TalkZone` is parented to them.
+- The look: `LevelLook.Apply` makes a global post-processing Volume from LevelInfo's
+  Saturation / Contrast / Warmth / Glow / Vignette. Fog and draw distance are LevelInfo's
+  FogColor / FogStart / FogEnd / FarClip.
+- Textures: `PatchworkTextures.Build(size, height, shade, range, relief, cavityColour, edge,
+  macro, macroCells, tipColour)`. Cavity colour tints the low points, edge brightens ridges.
+- The Fray's look per world: set `FrayTheme.Style` (PatchworkGame.Init does it per level);
+  knots, tears, tendrils and Snarlings ask FrayTheme how to build themselves.
+- The map: fill `LevelInfo.MapPins` (and MapTitle / MapNote / MapArea / MapCameraHeight).
+  `MapScreen` paints the level once from above (camera below any clouds) and stylises it.
+- Music: tunes are written as text in `MusicKit` ("C5:0.5 F5:1 r:1"), chords by name ("Gm7").
+  Hub shanty: `MusicPlayer.Compose`. Toybox: `MusicToybox.ComposeToybox` (`ToyBpm` 112).
 - Toybox Town's dressing is in `Level1Details.cs` (same `Level1Builder` partial class). The
   first-visit cutscene is `ToyboxIntro` (saved as hint id "L1_intro_seen"); it uses
   `PatchworkGame.StartScriptedCutscene` + `SetCutsceneCamera` to move the camera itself.
@@ -112,6 +123,7 @@ Stuff I need to remember about how Patchwork is put together.
 - `PatchworkGame.Ask(title, body, onYes)` shows a Yes/No card (`AskBox`, `UIMode.Ask`). Home
   hoops use it.
 - Moving decorations: `PathMover` (loops of points), `Rocker` (rock on one axis), `Butterfly`.
+- `kit.AddDrumPad` is a bounce pad dressed as a toy drum. `XyloKey` plays a note when stepped on.
 - Town pieces are in `TownKit` (houses, lamps, clotheslines, lantern gates, bridges, stairs...).
   `MakeHouse` returns where its chimney top is, for a chimney-smoke updraft.
 - Fountain rule: height = shelf top + 2, shelf edge 1.2-2.2 m from the jet. Updraft height = rise.

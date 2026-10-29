@@ -59,9 +59,38 @@ namespace Patchwork
             info.SpawnYaw = 0f;
             info.KillY = -20f;
             info.FailY = -9f;   // the ravine and the canal are real places you can walk out of
-            info.Sky = new Color(0.86f, 0.88f, 0.94f);
+            info.Sky = new Color(0.86f, 0.84f, 0.88f);
+            // A big sunny nursery: soft haze far away, so the room beyond the box reads as huge.
+            info.FogColor = new Color(0.9f, 0.84f, 0.82f);
+            info.FogStart = 90f;
+            info.FogEnd = 720f;
+            info.FarClip = 900f;
+            info.Saturation = 18f;
+            info.Warmth = 9f;
+            info.Glow = 0.55f;
             info.HeartstringsNeeded = HeartstringsNeeded;
             info.Area.SetMinMax(new Vector3(-Half, -6f, -Half), new Vector3(Half, 40f, Half));
+            info.MapArea = new Bounds(Vector3.zero, new Vector3(Half * 2f, 10f, Half * 2f));
+            info.MapTitle = "Toybox Town";
+            info.MapNote = "Welcome to Toybox Town! The band needs a lute string, a drop of valve dew and their piper back before the Mayor's wedding can start.";
+            var P = info.MapPins;
+            P.Add(new MapPin("Town Square", new Vector3(-3f, 0f, -6f)));
+            P.Add(new MapPin("Bandstand", Bandstand));
+            P.Add(new MapPin("Clock Tower", Tower + new Vector3(4f, 0f, 0f)));
+            P.Add(new MapPin("Toy Barracks", new Vector3(0f, 0f, 48f)));
+            P.Add(new MapPin("Picnic Park", new Vector3(-12f, 0f, 74f)));
+            P.Add(new MapPin("Duck Pond", new Vector3(14f, 0f, 74f)));
+            P.Add(new MapPin("Thread Ravine", new Vector3((RavineEast + RavineWest) * 0.5f, 0f, -30f)));
+            P.Add(new MapPin("Spindle Hill", new Vector3(-67f, 0f, 8f)));
+            P.Add(new MapPin("Inkwell Canal", new Vector3((CanalWest + CanalEast) * 0.5f, 0f, 30f)));
+            P.Add(new MapPin("Dye Works", Mill + new Vector3(0f, 0f, -6f)));
+            P.Add(new MapPin("Tea House", new Vector3(53f, 0f, -30f), MapPin.Kind.Shop));
+            P.Add(new MapPin("Toybox Express", new Vector3(70f, 0f, -51f)));
+            P.Add(new MapPin("Chimney Lane", new Vector3(0f, 0f, -46f)));
+            P.Add(new MapPin("Weathervane", new Vector3(0f, 0f, -72f)));
+            P.Add(new MapPin("Lute String", new Vector3(-67f, 0f, 31f), MapPin.Kind.Band, Level1Director.LuteId));
+            P.Add(new MapPin("Valve Dew", Mill + new Vector3(2.6f, 0f, 0.6f), MapPin.Kind.Band, Level1Director.TrumpetId));
+            P.Add(new MapPin("Wisp the Piper", new Vector3(1.4f, 0f, -71.2f), MapPin.Kind.Band, Level1Director.PiperId));
 
             YarnGrass.ClearZones.Clear();
             var dirGo = new GameObject("Level1Director");
@@ -188,7 +217,7 @@ namespace Patchwork
             kit.Block(new Vector3(25.5f, -0.1f, 0f), new Vector3(13f, 0.3f, 10f), CobbleCol, "EastStreet", cobble);
             kit.AddCheckpoint(SpawnPoint, 0f);
             kit.Hint(SpawnPoint + new Vector3(0f, 1.5f, 0f), new Vector3(10f, 4f, 6f), "Toybox Town",
-                "It's the Mayor's wedding day, but the Fray has spoiled the town band's instruments! Walk up to the toys and press {Ability} to talk.");
+                "It's the Mayor's wedding day, but the Fray has spoiled the town band's instruments! Press {Ability} to talk to the toys, and {Map} to open the town map.");
 
             // ----- The bandstand -----
             Vector3 b = Bandstand;
@@ -963,64 +992,19 @@ namespace Patchwork
 
         static void KnotShape(LevelKit kit, Transform parent, float size, int strands)
         {
-            var dark = PatchworkAssets.Yarn(SnarlKnot.FrayDark);
-            var grey = PatchworkAssets.Yarn(SnarlKnot.FrayGrey);
-            var glow = PatchworkAssets.Glow(SnarlKnot.FrayGlow, 1.2f);
-            kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 1.1f * size, dark, default(Vector3), parent);
-            for (int i = 0; i < strands; i++)
-            {
-                Vector3 e = new Vector3((i * 47) % 360, (i * 83) % 360, (i * 29) % 360);
-                var strand = kit.Deco(PrimitiveType.Capsule, Vector3.zero, new Vector3(0.16f, 0.7f, 0.16f) * size, i % 3 == 0 ? dark : grey, e, parent);
-                strand.localPosition = Quaternion.Euler(e) * new Vector3(0f, 0f, 0.3f * size);
-            }
-            for (int i = 0; i < 3; i++)
-                kit.Deco(PrimitiveType.Sphere, Quaternion.Euler(i * 120f, i * 70f, 0f) * new Vector3(0f, 0f, 0.5f * size), Vector3.one * 0.18f * size, glow, default(Vector3), parent);
+            FrayTheme.Knot(kit, parent, size, strands);
         }
 
         // A tear in the quilt where the Fray has got in, with loose threads around the edge.
         static void FrayTear(LevelKit kit, FrayRegion region, Vector3 pos, float size)
         {
-            var g = kit.Group("FrayTear", pos);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.04f, 0f), new Vector3(size, 0.03f, size * 0.7f), PatchworkAssets.Felt(SnarlKnot.FrayDark), new Vector3(0f, (pos.x * 13f) % 360f, 0f), g);
-            var grey = PatchworkAssets.Yarn(SnarlKnot.FrayGrey);
-            for (int i = 0; i < 9; i++)
-            {
-                float a = i / 9f * Mathf.PI * 2f;
-                var t = kit.Deco(PrimitiveType.Capsule, new Vector3(Mathf.Cos(a) * size * 0.45f, 0.12f, Mathf.Sin(a) * size * 0.32f), new Vector3(0.06f, 0.22f + (i % 3) * 0.08f, 0.06f), grey, default(Vector3), g);
-                t.localRotation = Quaternion.LookRotation(new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a))) * Quaternion.Euler(60f + (i % 2) * 15f, 0f, 0f);
-            }
-            region.AddFray(g);
+            region.AddFray(FrayTheme.Tear(kit, pos, size));
         }
 
         // A wavering tendril of Fray thread with a violet glow at the tip, and grey static around it.
         static void FrayTendril(LevelKit kit, FrayRegion region, Vector3 pos, float height)
         {
-            var g = kit.Group("FrayTendril", pos);
-            var dark = PatchworkAssets.Yarn(SnarlKnot.FrayDark);
-            var grey = PatchworkAssets.Yarn(SnarlKnot.FrayGrey);
-            Vector3 p = Vector3.zero;
-            int segs = Mathf.Max(3, Mathf.RoundToInt(height / 0.7f));
-            for (int i = 0; i < segs; i++)
-            {
-                Vector3 next = p + new Vector3(Mathf.Sin(i * 1.7f) * 0.3f, height / segs, Mathf.Cos(i * 1.3f) * 0.3f);
-                var seg = kit.Deco(PrimitiveType.Cylinder, (p + next) * 0.5f, new Vector3(0.12f, (next - p).magnitude * 0.5f, 0.12f), i % 2 == 0 ? dark : grey, default(Vector3), g);
-                seg.localRotation = Quaternion.FromToRotation(Vector3.up, (next - p).normalized);
-                p = next;
-            }
-            kit.Deco(PrimitiveType.Sphere, p, Vector3.one * 0.3f, PatchworkAssets.Glow(SnarlKnot.FrayGlow, 1.5f), default(Vector3), g);
-            for (int i = 0; i < 4; i++)
-            {
-                var mote = kit.Deco(PrimitiveType.Cube, new Vector3(Mathf.Cos(i * 1.6f) * 0.8f, height * (0.3f + i * 0.15f), Mathf.Sin(i * 1.6f) * 0.8f), Vector3.one * 0.12f, dark, new Vector3(i * 30f, i * 45f, 0f), g);
-                var sp = mote.gameObject.AddComponent<Spinner>();
-                sp.Axis = new Vector3(1f, 1f, 0f);
-                sp.Speed = 120f;
-                sp.BobHeight = 0.2f;
-                sp.BobSpeed = 2f + i * 0.4f;
-            }
-            var sway = g.gameObject.AddComponent<FlagWave>();
-            sway.Amount = 25f;
-            sway.Speed = 0.8f;
-            region.AddFray(g);
+            region.AddFray(FrayTheme.Tendril(kit, pos, height));
         }
 
         // Flowers that grow back once a corner is mended.

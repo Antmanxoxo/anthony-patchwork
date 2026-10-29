@@ -45,7 +45,10 @@ namespace Patchwork
         // Patch's little voice (pitched per form with Sfx.Voice)
         VoiceHup,
         VoiceYay,
-        VoiceAww
+        VoiceAww,
+        // Toybox Town's toys
+        Xylo,          // one xylophone key (C5; pitch it for the others)
+        Drum           // a toy drum's thump (the drum bounce pads)
     }
 
     // Continuous sounds that fade in while something requests them each frame.
@@ -399,6 +402,10 @@ namespace Patchwork
                 Vowel(t, Mathf.Lerp(420f, 260f, t / d), 680f, 1000f) * Env(t, d, 0.03f) * 0.5f, 3500f);
             clips[SfxId.Unravel] = Make("unravel", 0.4f, (t, d) =>
                 Sine(t, 440f + Mathf.Sin(t * 60f) * 60f) * Env(t, d, 0.02f) * 0.3f, 2500f);
+            clips[SfxId.Xylo] = Make("xylo", 0.8f, (t, d) =>
+                (Sine(t, 523.25f) + Sine(t, 523.25f * 3.93f) * 0.35f * Mathf.Exp(-t * 20f)) * Mathf.Clamp01(t / 0.002f) * Mathf.Exp(-t * 6f) * 0.5f, 9000f);
+            clips[SfxId.Drum] = Make("drum", 0.45f, (t, d) =>
+                (Sine(t, Mathf.Lerp(160f, 90f, Mathf.Clamp01(t / 0.12f))) * Mathf.Exp(-t * 9f) * 0.7f + Noise(t) * Mathf.Exp(-t * 40f) * 0.25f) * Mathf.Clamp01(t / 0.003f), 3000f);
         }
 
         static AudioClip Make(string name, float duration, Wave wave, float lowpassHz)

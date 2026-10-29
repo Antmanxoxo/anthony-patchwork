@@ -25,6 +25,11 @@ namespace Patchwork
         // The room's walls (set by Enclosure). Used to size the reflection probe.
         public Bounds Area = new Bounds(Vector3.zero, Vector3.zero);
         public Color Sky = new Color(0.78f, 0.86f, 0.95f);
+        // Haze and draw distance. FogColor's alpha 0 means "same as Sky".
+        public Color FogColor = new Color(0f, 0f, 0f, 0f);
+        public float FogStart = 55f, FogEnd = 190f, FarClip = 600f;
+        // The stylised look (see LevelLook).
+        public float Saturation = 14f, Contrast = 10f, Warmth = 6f, Glow = 0.45f, Vignette = 0.22f;
         public readonly List<string> CollectibleIds = new List<string>();
         public int ThreadTotal;
         // Heartstrings: the main things to find in a level (some open the way to the finale).
@@ -36,6 +41,13 @@ namespace Patchwork
             foreach (var id in HeartstringIds) if (GameState.IsCollected(id)) n++;
             return n;
         }
+        // The pull-up map: pins, a title, a little note, the area to paint and how high the
+        // painting camera floats (it must sit below clouds and anything that would cover the view).
+        public readonly List<MapPin> MapPins = new List<MapPin>();
+        public string MapTitle = "Map";
+        public string MapNote = "";
+        public Bounds MapArea = new Bounds(Vector3.zero, Vector3.zero);
+        public float MapCameraHeight = 34f;
         // The Skiff's level-select globe (hub only).
         public LevelGlobe Globe;
 
@@ -865,6 +877,33 @@ namespace Patchwork
         // ------------------------------------------------------------------ Interactive pieces
 
         // A squishy pin-cushion bounce pad, low enough to walk onto.
+        // A big toy drum to bounce on: painted shell, gold zig-zag cords, a white skin that wobbles.
+        public BouncePad AddDrumPad(Vector3 feet, float launchSpeed, Color shell)
+        {
+            const float h = 1.1f;
+            var pad = Volume<BouncePad>(feet + Vector3.up * (h + 0.4f), new Vector3(2.4f, 1.4f, 2.4f), "DrumPad");
+            pad.LaunchSpeed = launchSpeed;
+            pad.Drum = true;
+            var g = Group("ToyDrum", feet);
+            var paint = PatchworkAssets.Plain(shell, 0.6f);
+            var gold = PatchworkAssets.Plain(Palette.Gold, 0.75f);
+            Deco(PrimitiveType.Cylinder, new Vector3(0f, h * 0.5f, 0f), new Vector3(2.4f, h * 0.5f, 2.4f), paint, default(Vector3), g);
+            Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.08f, 0f), new Vector3(2.55f, 0.08f, 2.55f), PatchworkAssets.Plain(new Color(0.95f, 0.92f, 0.85f), 0.5f), default(Vector3), g);
+            Deco(PrimitiveType.Cylinder, new Vector3(0f, h - 0.04f, 0f), new Vector3(2.55f, 0.08f, 2.55f), PatchworkAssets.Plain(new Color(0.95f, 0.92f, 0.85f), 0.5f), default(Vector3), g);
+            for (int i = 0; i < 10; i++)
+            {
+                float a = i / 10f * 360f;
+                var cord = Deco(PrimitiveType.Cube, Quaternion.Euler(0f, a, 0f) * new Vector3(0f, h * 0.5f, 1.23f), new Vector3(0.06f, h * 0.95f, 0.04f), gold, new Vector3(0f, a, i % 2 == 0 ? 28f : -28f), g);
+                cord.name = "Cord";
+            }
+            var skin = Deco(PrimitiveType.Cylinder, new Vector3(0f, h + 0.02f, 0f), new Vector3(2.3f, 0.04f, 2.3f), PatchworkAssets.Felt(new Color(0.98f, 0.96f, 0.9f)), default(Vector3), g);
+            var col = g.gameObject.AddComponent<BoxCollider>();
+            col.center = new Vector3(0f, h * 0.5f, 0f);
+            col.size = new Vector3(2.1f, h, 2.1f);
+            pad.Setup(skin);
+            return pad;
+        }
+
         public BouncePad AddBouncePad(Vector3 feet, float launchSpeed = 14f)
         {
             var pad = Volume<BouncePad>(feet + Vector3.up * 0.7f, new Vector3(2.2f, 1.4f, 2.2f), "BouncePad");

@@ -12,7 +12,8 @@ namespace Patchwork
         Cancel,
         Satchel,
         Pause,
-        Navigate
+        Navigate,
+        Map
     }
 
     // Immediate-mode UI helpers. Everything is drawn in a virtual 1080p-tall space, so it scales to any
@@ -228,6 +229,7 @@ namespace Patchwork
                 case PromptAction.Cancel: return "Esc";
                 case PromptAction.Satchel: return "Tab";
                 case PromptAction.Pause: return "Esc";
+                case PromptAction.Map: return "M";
                 default: return "Arrows";
             }
         }
@@ -252,6 +254,7 @@ namespace Patchwork
                 case PromptAction.Satchel: return "TOUCHPAD";
                 case PromptAction.Pause: return "OPTIONS";
                 case PromptAction.Navigate: return "D-PAD";
+                case PromptAction.Map: return "D-PAD LEFT";
                 default: return "";
             }
         }
@@ -302,6 +305,7 @@ namespace Patchwork
                 case "Wheel": action = PromptAction.FormWheel; return true;
                 case "Satchel": action = PromptAction.Satchel; return true;
                 case "Pause": action = PromptAction.Pause; return true;
+                case "Map": action = PromptAction.Map; return true;
                 default: action = PromptAction.Jump; return false;
             }
         }

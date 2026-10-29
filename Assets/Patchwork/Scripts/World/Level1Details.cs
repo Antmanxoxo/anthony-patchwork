@@ -34,6 +34,7 @@ namespace Patchwork
             MillDressing(kit);
             SkyDressing(kit);
             Butterflies(kit);
+            ToyFun(kit);
 
             var g = kit.Group("Batched", Vector3.zero);
             ironBatch.Build(g, "Iron", PatchworkAssets.Plain(TownKit.Iron, 0.5f), true);
@@ -250,12 +251,48 @@ namespace Patchwork
         static void Nursery(LevelKit kit)
         {
             // A big soft rug round the toybox, and the box's painted wooden outside.
-            var rug = Tiled(PatchworkAssets.Knit(new Color(0.62f, 0.4f, 0.45f)), 60f, 60f);
+            const float R = 420f;   // the nursery's walls
+            var rug = Tiled(PatchworkAssets.Knit(new Color(0.62f, 0.4f, 0.45f)), 50f, 20f);
             float o = Half + 2f;
-            kit.Deco(PrimitiveType.Cube, new Vector3(0f, -2.3f, o + 200f), new Vector3(1000f, 0.2f, 400f), rug);
-            kit.Deco(PrimitiveType.Cube, new Vector3(0f, -2.3f, -o - 200f), new Vector3(1000f, 0.2f, 400f), rug);
-            kit.Deco(PrimitiveType.Cube, new Vector3(o + 200f, -2.3f, 0f), new Vector3(400f, 0.2f, o * 2f), rug);
-            kit.Deco(PrimitiveType.Cube, new Vector3(-o - 200f, -2.3f, 0f), new Vector3(400f, 0.2f, o * 2f), rug);
+            float span = R - o;
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, -2.3f, o + span * 0.5f), new Vector3(R * 2f, 0.2f, span), rug);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, -2.3f, -o - span * 0.5f), new Vector3(R * 2f, 0.2f, span), rug);
+            kit.Deco(PrimitiveType.Cube, new Vector3(o + span * 0.5f, -2.3f, 0f), new Vector3(span, 0.2f, o * 2f), rug);
+            kit.Deco(PrimitiveType.Cube, new Vector3(-o - span * 0.5f, -2.3f, 0f), new Vector3(span, 0.2f, o * 2f), rug);
+            // The rug's fringed, stitched border, a few metres in from the walls.
+            var border = PatchworkAssets.Felt(new Color(0.95f, 0.85f, 0.6f));
+            for (int s = -1; s <= 1; s += 2)
+            {
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, -2.19f, s * (R - 30f)), new Vector3(R * 2f - 60f, 0.02f, 6f), border);
+                kit.Deco(PrimitiveType.Cube, new Vector3(s * (R - 30f), -2.185f, 0f), new Vector3(6f, 0.02f, R * 2f - 60f), border);
+            }
+            // The other walls, wainscot, skirting and the ceiling with its round lamp.
+            var paper2 = Tiled(PatchworkAssets.Damask(new Color(0.75f, 0.82f, 0.9f)), 24f, 12f);
+            var wains = Tiled(PatchworkAssets.Planks(new Color(0.96f, 0.93f, 0.86f)), 40f, 3f);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 160f, -R), new Vector3(R * 2f, 330f, 2f), paper2);
+            kit.Deco(PrimitiveType.Cube, new Vector3(R, 160f, 0f), new Vector3(2f, 330f, R * 2f), paper2);
+            kit.Deco(PrimitiveType.Cube, new Vector3(-R, 160f, 0f), new Vector3(2f, 330f, R * 2f), paper2);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 25f, -R + 2f), new Vector3(R * 2f, 54f, 2f), wains);
+            kit.Deco(PrimitiveType.Cube, new Vector3(R - 2f, 25f, 0f), new Vector3(2f, 54f, R * 2f), wains);
+            kit.Deco(PrimitiveType.Cube, new Vector3(-R + 2f, 25f, 0f), new Vector3(2f, 54f, R * 2f), wains);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 25f, R - 2f), new Vector3(R * 2f, 54f, 2f), wains);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 325f, 0f), new Vector3(R * 2f, 2f, R * 2f), Tiled(PatchworkAssets.Plaster(new Color(0.97f, 0.94f, 0.9f)), 20f, 20f));
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 322f, 0f), new Vector3(60f, 1.5f, 60f), PatchworkAssets.Plaster(new Color(0.98f, 0.95f, 0.88f)));
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 300f, 0f), new Vector3(50f, 30f, 50f), PatchworkAssets.Glow(new Color(1f, 0.92f, 0.75f), 1.1f));
+            // Pictures on the walls: a sailing ship, a hot air balloon and a moon.
+            Color[] frames = { new Color(0.85f, 0.7f, 0.35f), new Color(0.6f, 0.4f, 0.3f), new Color(0.95f, 0.9f, 0.8f) };
+            Vector3[] pics = { new Vector3(R - 3f, 140f, -140f), new Vector3(R - 3f, 150f, 120f), new Vector3(-R + 3f, 160f, -150f), new Vector3(0f, 150f, -R + 3f) };
+            for (int i = 0; i < pics.Length; i++)
+            {
+                Vector3 n = pics[i].x > 100f ? Vector3.left : pics[i].x < -100f ? Vector3.right : Vector3.forward;
+                var rot = Quaternion.LookRotation(n);
+                var f = kit.Deco(PrimitiveType.Cube, pics[i], new Vector3(70f, 56f, 3f), PatchworkAssets.Plain(frames[i % 3], 0.6f));
+                f.rotation = rot;
+                var canvas = kit.Deco(PrimitiveType.Cube, pics[i] + n * 1.8f, new Vector3(60f, 46f, 1f), PatchworkAssets.Fabric(new Color(0.7f, 0.82f, 0.95f)));
+                canvas.rotation = rot;
+                var subject = kit.Deco(PrimitiveType.Sphere, pics[i] + n * 2.6f + Vector3.up * 4f, new Vector3(22f, i % 2 == 0 ? 14f : 24f, 1f), PatchworkAssets.Felt(i % 2 == 0 ? new Color(0.95f, 0.6f, 0.55f) : new Color(0.98f, 0.88f, 0.55f)));
+                subject.rotation = rot;
+            }
             var paint = Tiled(PatchworkAssets.Planks(new Color(0.85f, 0.35f, 0.32f)), 12f, 4f);
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 20f, o + 0.06f), new Vector3(o * 2f, 44f, 0.1f), paint);
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 20f, -o - 0.06f), new Vector3(o * 2f, 44f, 0.1f), paint);
@@ -270,7 +307,7 @@ namespace Patchwork
 
             // The nursery wall far behind, with a window full of sky, and the giant furniture.
             var paper = Tiled(PatchworkAssets.Damask(new Color(0.75f, 0.82f, 0.9f)), 24f, 12f);
-            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 150f, 420f), new Vector3(1000f, 310f, 2f), paper);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 160f, 421f), new Vector3(R * 2f, 330f, 2f), paper);
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 170f, 418.5f), new Vector3(260f, 200f, 1f), PatchworkAssets.Glow(new Color(0.75f, 0.88f, 1f), 0.6f));
             var sash = PatchworkAssets.Wood(new Color(0.97f, 0.95f, 0.9f));
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 170f, 417.5f), new Vector3(276f, 12f, 3f), sash);
@@ -695,9 +732,9 @@ namespace Patchwork
             Hedge(kit, new Vector3(-17f, 0f, 33f), new Vector3(-17f, 0f, 57f));
             Hedge(kit, new Vector3(17f, 0f, 33f), new Vector3(17f, 0f, 57f));
             // Iron railings along the canal (gaps for the bridges and the steps).
-            float[][] west = { new[] { 3f, 12.5f }, new[] { 18f, 37f }, new[] { 43f, 88f }, new[] { -3f, -37f }, new[] { -43f, -88f } };
+            float[][] west = { new[] { 3f, 12.5f }, new[] { 18f, 37f }, new[] { 43f, 58.2f }, new[] { 61.8f, 88f }, new[] { -3f, -37f }, new[] { -43f, -88f } };
             foreach (var s in west) Railing(kit, new Vector3(CanalWest - 0.25f, 0f, s[0]), new Vector3(CanalWest - 0.25f, 0f, s[1]));
-            float[][] east = { new[] { 3f, 37f }, new[] { 43f, 88f }, new[] { -3f, -12.5f }, new[] { -18f, -37f }, new[] { -43f, -88f } };
+            float[][] east = { new[] { 3f, 37f }, new[] { 43f, 58.2f }, new[] { 61.8f, 88f }, new[] { -3f, -12.5f }, new[] { -18f, -37f }, new[] { -43f, -88f } };
             foreach (var s in east) Railing(kit, new Vector3(CanalEast + 0.25f, 0.05f, s[0]), new Vector3(CanalEast + 0.25f, 0.05f, s[1]));
             // Lollipop trees along the promenade and round the square's corners.
             Color[] leaves = { new Color(0.45f, 0.7f, 0.42f), new Color(0.95f, 0.65f, 0.7f), new Color(0.55f, 0.75f, 0.5f), new Color(0.98f, 0.82f, 0.5f) };
@@ -1154,6 +1191,198 @@ namespace Patchwork
             }
             var spin = mobile.gameObject.AddComponent<Spinner>();
             spin.Speed = 5f;
+        }
+
+        // ---------------------------------------------------------------- Toys to play with
+
+        static void ToyFun(LevelKit kit)
+        {
+            XylophoneBridge(kit, 60f);
+            // Toy drums to bounce on: up the alphabet blocks, onto the bandstand roof, up to the rooftops.
+            kit.AddDrumPad(new Vector3(-7.5f, 0.06f, 9.5f), 16f, new Color(0.85f, 0.25f, 0.3f));
+            kit.ThreadLine(new Vector3(-3.6f, 5.1f, 7f), new Vector3(3.6f, 5.1f, 7f), 3);
+            kit.AddDrumPad(new Vector3(77f, 0f, 72f), 16f, new Color(0.3f, 0.5f, 0.85f));
+            kit.AddDrumPad(new Vector3(83.6f, 5f, 78f), 16f, new Color(0.95f, 0.75f, 0.3f));
+            kit.AddDrumPad(new Vector3(-77f, 0f, -68.5f), 21f, new Color(0.45f, 0.7f, 0.45f));
+            kit.AddDrumPad(new Vector3(-8.5f, 0f, -38f), 21f, new Color(0.75f, 0.5f, 0.85f));
+            kit.Hint(new Vector3(-7.5f, 1.5f, 9.5f), new Vector3(3f, 3f, 3f), "Toy Drums",
+                "Jump on a toy drum to bounce up high. There are drums all over town. Where do they lead?");
+            ClearGrass(new Vector3(77f, 0f, 72f), 1.4f);
+            ClearGrass(new Vector3(-77f, 0f, -68.5f), 1.4f);
+
+            // Wind-up mice scurrying round the bandstand, the pond and the cottage.
+            var round = PathMover.Oval(new Vector3(0f, 0.06f, 7f), 7f, 7.6f, 32);
+            WindupMouse(kit, round, 0f, new Color(0.95f, 0.75f, 0.8f));
+            WindupMouse(kit, round, 25f, new Color(0.75f, 0.8f, 0.95f));
+            WindupMouse(kit, PathMover.Oval(new Vector3(14f, 0f, 74f), 6.6f, 5.6f, 28), 0f, new Color(0.98f, 0.9f, 0.6f));
+            WindupMouse(kit, new[] { new Vector3(-69.6f, 0f, -16.8f), new Vector3(-58.4f, 0f, -16.8f), new Vector3(-58.4f, 0f, -5.5f), new Vector3(-69.6f, 0f, -5.5f) }, 0f, new Color(0.8f, 0.95f, 0.8f));
+            // Tin soldiers drilling round the barracks yard.
+            var drill = new[] { new Vector3(-9f, 0.05f, 37f), new Vector3(-9f, 0.05f, 54f), new Vector3(9f, 0.05f, 54f), new Vector3(9f, 0.05f, 37f) };
+            for (int i = 0; i < 4; i++) MarchingSoldier(kit, drill, -i * 2.2f, i % 2 == 0 ? new Color(0.8f, 0.22f, 0.25f) : new Color(0.25f, 0.35f, 0.7f));
+            Carousel(kit, new Vector3(-22f, 0f, 63f));
+
+            var pins = kit.Info.MapPins;
+            pins.Add(new MapPin("Xylophone Bridge", new Vector3((CanalWest + CanalEast) * 0.5f, 0f, 60f)));
+            pins.Add(new MapPin("Carousel", new Vector3(-22f, 0f, 63f)));
+        }
+
+        // A walk-on xylophone across the canal: run over it to play a scale. Play the whole scale
+        // up in one go and some threads appear above it.
+        static void XylophoneBridge(LevelKit kit, float z)
+        {
+            int[] scale = { 0, 2, 4, 5, 7, 9, 11, 12 };
+            Color[] cols = { new Color(0.92f, 0.3f, 0.35f), new Color(0.98f, 0.55f, 0.25f), new Color(0.98f, 0.82f, 0.3f), new Color(0.5f, 0.78f, 0.4f),
+                             new Color(0.3f, 0.72f, 0.75f), new Color(0.35f, 0.5f, 0.88f), new Color(0.58f, 0.42f, 0.85f), new Color(0.9f, 0.45f, 0.75f) };
+            float x0 = CanalWest - 0.4f;
+            var frame = PatchworkAssets.Wood(new Color(0.5f, 0.34f, 0.24f));
+            for (int s = -1; s <= 1; s += 2)
+                kit.Block(new Vector3(x0 + 4.4f, -0.025f, z + s * 1.3f), new Vector3(9.2f, 0.25f, 0.3f), new Color(0.5f, 0.34f, 0.24f), "XyloRail", frame);
+            var reward = new List<ThreadSpool>();
+            for (int i = 0; i < 6; i++)
+            {
+                var t = kit.Thread(new Vector3(x0 + 1.2f + i * 1.3f, 2.4f + Mathf.Sin(i / 5f * Mathf.PI) * 1.2f, z), LevelKit.Palette.Rose);
+                t.gameObject.SetActive(false);
+                reward.Add(t);
+            }
+            int chain = 0;
+            float lastTime = -10f;
+            bool paid = false;
+            for (int i = 0; i < 8; i++)
+            {
+                float x = x0 + 0.55f + i * 1.1f;
+                float len = 2.9f - i * 0.1f;
+                var key = kit.Block(new Vector3(x, 0.17f, z), new Vector3(1f, 0.18f, len), cols[i], "XyloKey", PatchworkAssets.Plain(cols[i], 0.55f));
+                for (int s = -1; s <= 1; s += 2)
+                    kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.12f, 0.02f, 0.12f), PatchworkAssets.Plain(new Color(0.85f, 0.85f, 0.9f), 0.9f), default(Vector3), key).localPosition = new Vector3(0f, 0.55f, s * 0.43f);
+                var vol = kit.Volume<XyloKey>(new Vector3(x, 0.95f, z), new Vector3(1f, 1.4f, len), "XyloNote");
+                vol.Setup(key, i, scale[i]);
+                vol.Struck = k =>
+                {
+                    float now = Time.time;
+                    chain = (k.Index == 0 || (k.Index == chain && now - lastTime < 1.2f)) ? k.Index + 1 : 0;
+                    lastTime = now;
+                    if (chain >= 8 && !paid)
+                    {
+                        paid = true;
+                        foreach (var r in reward) if (r != null) r.gameObject.SetActive(true);
+                        Sfx.Play(SfxId.Complete, 0.5f);
+                        FxBurst.Spawn(FxBurst.Kind.Sparkle, k.transform.position + Vector3.up * 2f, new Color(1f, 0.85f, 0.5f));
+                        var game = PatchworkGame.Instance;
+                        if (game != null) game.ShowToast("What a tune! Some threads popped out of the xylophone.");
+                    }
+                };
+            }
+            // A pair of giant mallets leaning at the end.
+            for (int s = -1; s <= 1; s += 2)
+            {
+                var stick = kit.Deco(PrimitiveType.Cylinder, new Vector3(CanalEast + 1.2f, 1.1f, z + s * 1.9f), new Vector3(0.12f, 1.2f, 0.12f), PatchworkAssets.Wood(new Color(0.85f, 0.7f, 0.5f)), new Vector3(0f, 0f, -20f));
+                stick.name = "Mallet";
+                kit.Deco(PrimitiveType.Sphere, new Vector3(CanalEast + 1.6f, 2.2f, z + s * 1.9f), Vector3.one * 0.45f, PatchworkAssets.Felt(s < 0 ? new Color(0.92f, 0.3f, 0.35f) : new Color(0.35f, 0.5f, 0.88f)));
+            }
+            kit.Hint(new Vector3(x0 - 1.5f, 1.5f, z), new Vector3(3f, 3f, 4f), "Xylophone Bridge", "Run across to play a tune. Can you play the whole scale without stopping?");
+        }
+
+        static void WindupMouse(LevelKit kit, Vector3[] loop, float start, Color col)
+        {
+            var m = kit.Group("WindupMouse", loop[0]);
+            var fur = PatchworkAssets.Felt(col);
+            var pink = PatchworkAssets.Felt(new Color(1f, 0.7f, 0.75f));
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.22f, 0f), new Vector3(0.5f, 0.4f, 0.75f), fur, default(Vector3), m);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.28f, 0.36f), new Vector3(0.32f, 0.3f, 0.36f), fur, default(Vector3), m);
+            for (int s = -1; s <= 1; s += 2)
+            {
+                kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.13f, 0.45f, 0.33f), new Vector3(0.18f, 0.18f, 0.05f), pink, default(Vector3), m);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.07f, 0.33f, 0.52f), Vector3.one * 0.05f, PatchworkAssets.Plain(UIKit.Ink, 0.7f), default(Vector3), m);
+            }
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.27f, 0.56f), Vector3.one * 0.07f, pink, default(Vector3), m);
+            kit.Deco(PrimitiveType.Capsule, new Vector3(0f, 0.18f, -0.5f), new Vector3(0.04f, 0.2f, 0.04f), pink, new Vector3(-70f, 0f, 0f), m);
+            var key = new GameObject("Key").transform;
+            key.SetParent(m, false);
+            key.localPosition = new Vector3(0f, 0.42f, -0.12f);
+            var gold = PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.06f, 0f), new Vector3(0.04f, 0.06f, 0.04f), gold, default(Vector3), key);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(-0.08f, 0.16f, 0f), new Vector3(0.13f, 0.1f, 0.03f), gold, default(Vector3), key);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0.08f, 0.16f, 0f), new Vector3(0.13f, 0.1f, 0.03f), gold, default(Vector3), key);
+            var spin = key.gameObject.AddComponent<Spinner>();
+            spin.Speed = 220f;
+            var mover = m.gameObject.AddComponent<PathMover>();
+            mover.BobHeight = 0.03f;
+            mover.BobSpeed = 14f;
+            mover.Setup(loop, 1.3f, start);
+        }
+
+        static void MarchingSoldier(LevelKit kit, Vector3[] loop, float start, Color coat)
+        {
+            var g = kit.Group("TinSoldier", loop[0]);
+            var white = PatchworkAssets.Plain(new Color(0.96f, 0.95f, 0.92f), 0.6f);
+            var black = PatchworkAssets.Plain(new Color(0.12f, 0.1f, 0.12f), 0.5f);
+            var gold = PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f);
+            for (int s = -1; s <= 1; s += 2)
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(s * 0.12f, 0.35f, 0f), new Vector3(0.18f, 0.35f, 0.18f), white, default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1f, 0f), new Vector3(0.52f, 0.32f, 0.42f), PatchworkAssets.Plain(coat, 0.6f), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1f, 0.2f), new Vector3(0.08f, 0.6f, 0.04f), white, new Vector3(0f, 0f, 35f), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.72f, 0f), new Vector3(0.54f, 0.04f, 0.44f), black, default(Vector3), g);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 1.52f, 0f), Vector3.one * 0.34f, PatchworkAssets.Felt(new Color(0.98f, 0.82f, 0.7f)), default(Vector3), g);
+            for (int s = -1; s <= 1; s += 2)
+                kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.06f, 1.55f, 0.15f), Vector3.one * 0.05f, black, default(Vector3), g);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 1.47f, 0.16f), new Vector3(0.12f, 0.08f, 0.04f), PatchworkAssets.Felt(new Color(0.95f, 0.5f, 0.55f)), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.95f, 0f), new Vector3(0.36f, 0.3f, 0.36f), black, default(Vector3), g);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 2.24f, 0f), new Vector3(0.36f, 0.16f, 0.36f), black, default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.66f, 0f), new Vector3(0.38f, 0.02f, 0.38f), gold, default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0.3f, 1.35f, -0.05f), new Vector3(0.05f, 0.55f, 0.05f), PatchworkAssets.Wood(new Color(0.5f, 0.32f, 0.2f)), new Vector3(-10f, 0f, 0f), g);
+            var mover = g.gameObject.AddComponent<PathMover>();
+            mover.BobHeight = 0.06f;
+            mover.BobSpeed = 9f;
+            mover.Sway = 4f;
+            mover.Setup(loop, 1.4f, start);
+        }
+
+        // A merry-go-round turning slowly, its horses rising and falling.
+        static void Carousel(LevelKit kit, Vector3 c)
+        {
+            var cream = PatchworkAssets.Plain(new Color(0.97f, 0.93f, 0.85f), 0.6f);
+            var gold = PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f);
+            kit.Prism(Octagon(c, 4.4f), -0.05f, 0.3f, PatchworkAssets.Planks(new Color(0.85f, 0.4f, 0.45f)), "CarouselBase", 1.5f);
+            var spin = kit.Group("CarouselTurn", c);
+            var turn = spin.gameObject.AddComponent<Spinner>();
+            turn.Speed = 22f;
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 2.6f, 0f), new Vector3(0.5f, 2.3f, 0.5f), gold, default(Vector3), spin);
+            var red = PatchworkAssets.Felt(new Color(0.88f, 0.3f, 0.35f));
+            var white = PatchworkAssets.Felt(new Color(0.98f, 0.95f, 0.9f));
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 4.9f, 0f), new Vector3(9.4f, 0.12f, 9.4f), red, default(Vector3), spin);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 5.3f, 0f), new Vector3(7.2f, 0.3f, 7.2f), white, default(Vector3), spin);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 5.8f, 0f), new Vector3(4.6f, 0.25f, 4.6f), red, default(Vector3), spin);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 6.2f, 0f), new Vector3(2f, 0.2f, 2f), white, default(Vector3), spin);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 6.6f, 0f), Vector3.one * 0.6f, gold, default(Vector3), spin);
+            for (int i = 0; i < 16; i++)
+            {
+                float a = i / 16f * Mathf.PI * 2f;
+                kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 4.7f, 4.75f, Mathf.Sin(a) * 4.7f), new Vector3(0.6f, 0.4f, 0.6f), i % 2 == 0 ? red : white, default(Vector3), spin);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 4.75f, 5f, Mathf.Sin(a) * 4.75f), Vector3.one * 0.16f, PatchworkAssets.Glow(new Color(1f, 0.85f, 0.55f), 1.2f), default(Vector3), spin);
+            }
+            Color[] horses = { new Color(0.98f, 0.95f, 0.9f), new Color(0.75f, 0.55f, 0.4f), new Color(0.6f, 0.62f, 0.68f), new Color(0.98f, 0.85f, 0.6f), new Color(0.8f, 0.75f, 0.9f), new Color(0.98f, 0.8f, 0.85f) };
+            for (int i = 0; i < 6; i++)
+            {
+                float a = i / 6f * Mathf.PI * 2f;
+                Vector3 p = new Vector3(Mathf.Cos(a) * 3.1f, 0f, Mathf.Sin(a) * 3.1f);
+                kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * 2.6f, new Vector3(0.08f, 2.3f, 0.08f), gold, default(Vector3), spin);
+                var horse = new GameObject("Horse").transform;
+                horse.SetParent(spin, false);
+                horse.localPosition = p + Vector3.up * 1.5f;
+                horse.localRotation = Quaternion.Euler(0f, -a * Mathf.Rad2Deg, 0f);
+                var coat = PatchworkAssets.Felt(horses[i]);
+                kit.Deco(PrimitiveType.Capsule, Vector3.zero, new Vector3(0.45f, 0.6f, 0.45f), coat, new Vector3(90f, 0f, 0f), horse);
+                kit.Deco(PrimitiveType.Capsule, new Vector3(0f, 0.45f, 0.55f), new Vector3(0.28f, 0.35f, 0.28f), coat, new Vector3(25f, 0f, 0f), horse);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.25f, -0.05f), new Vector3(0.47f, 0.08f, 0.45f), PatchworkAssets.Felt(FlowerColors[i % FlowerColors.Length]), default(Vector3), horse);
+                for (int l = 0; l < 4; l++)
+                    kit.Deco(PrimitiveType.Cylinder, new Vector3((l % 2 == 0 ? -0.12f : 0.12f), -0.4f, (l < 2 ? -0.35f : 0.35f)), new Vector3(0.08f, 0.25f, 0.08f), coat, new Vector3((l < 2 ? -20f : 30f), 0f, 0f), horse);
+                var bob = horse.gameObject.AddComponent<Spinner>();
+                bob.Speed = 0f;
+                bob.BobHeight = 0.35f;
+                bob.BobSpeed = 1.4f + (i % 2) * 0.3f;
+            }
+            Solid(kit, c + Vector3.up * 2.5f, new Vector3(0.6f, 5f, 0.6f));
+            ClearGrass(c, 4.6f);
         }
 
         // ---------------------------------------------------------------- Butterflies

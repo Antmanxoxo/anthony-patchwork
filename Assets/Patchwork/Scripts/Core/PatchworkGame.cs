@@ -18,7 +18,8 @@ namespace Patchwork
         LevelSelect, // at the Skiff's helm, turning the globe
         Talk,        // chatting with an NPC
         Cutscene,    // a scripted moment (the wedding)
-        Ask          // a little Yes / No question (like "go back to the square?")
+        Ask,         // a little Yes / No question (like "go back to the square?")
+        Map          // the pull-up map
     }
 
     // Main game object, one per scene. Builds the level, camera, light and player,
@@ -49,6 +50,7 @@ namespace Patchwork
         public TalkZone Talker { get; private set; }
         public DialogueBox Dialogue { get; private set; }
         public AskBox Asker { get; private set; }
+        public MapScreen Map { get; private set; }
         // The ears: sit between the camera and Patch, so sounds get louder as Patch walks up to them.
         Transform listener;
 
@@ -138,6 +140,8 @@ namespace Patchwork
 
             // Level
             var kit = new LevelKit(levelId.ToString());
+            // What the Fray looks like here.
+            FrayTheme.Style = levelId == LevelId.Level1 ? FrayStyle.Toy : FrayStyle.Thread;
             switch (levelId)
             {
                 case LevelId.Level1: Level = Level1Builder.Build(kit); break;
@@ -145,6 +149,8 @@ namespace Patchwork
                 default: Level = HubBuilder.Build(kit); break;
             }
             SetupEnvironment(cam);
+            cam.farClipPlane = Level.FarClip;
+            LevelLook.Apply(Level);
 
             // Player
             Player = PatchworkPlayer.Create(this, Level.Spawn, Level.SpawnYaw);
@@ -161,6 +167,7 @@ namespace Patchwork
             LevelSelect = new LevelSelectMenu(this);
             Dialogue = new DialogueBox(this);
             Asker = new AskBox(this);
+            Map = new MapScreen(this);
 
             Mode = UIMode.Gameplay;
             // Coming from the loading screen, it's still covering everything, so skip our own fade.
@@ -205,9 +212,9 @@ namespace Patchwork
 
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
-            RenderSettings.fogColor = Level.Sky;
-            RenderSettings.fogStartDistance = 55f;
-            RenderSettings.fogEndDistance = 190f;
+            RenderSettings.fogColor = Level.FogColor.a > 0f ? Level.FogColor : Level.Sky;
+            RenderSettings.fogStartDistance = Level.FogStart;
+            RenderSettings.fogEndDistance = Level.FogEnd;
             // The scenes still point at Unity's default blue sky; it doesn't match the pastel rooms.
             RenderSettings.skybox = null;
             DynamicGI.UpdateEnvironment();
@@ -252,6 +259,7 @@ namespace Patchwork
         void OnDestroy()
         {
             if (Input != null) Input.Dispose();
+            if (Map != null) Map.Release();
             Haptics.StopAll();
             Time.timeScale = 1f;
             if (Instance == this) Instance = null;
@@ -272,6 +280,7 @@ namespace Patchwork
                     if (Input.Pause.WasPressedThisFrame()) OpenPause();
                     else if (Input.FormWheel.WasPressedThisFrame()) OpenWheel();
                     else if (Input.Satchel.WasPressedThisFrame()) OpenSatchel();
+                    else if (Input.Map.WasPressedThisFrame() && MapScreen.Available(Level)) OpenMap();
                     else if (Helm != null && Input.Ability.WasPressedThisFrame() && Player.Motor.Grounded) OpenLevelSelect();
                     else if (Talker != null && Talker.Npc != null && Input.Ability.WasPressedThisFrame() && Player.Motor.Grounded) StartTalk();
                     else if (FacePressed())
@@ -319,6 +328,9 @@ namespace Patchwork
                     break;
                 case UIMode.Ask:
                     Asker.Update(udt);
+                    break;
+                case UIMode.Map:
+                    Map.Update(udt);
                     break;
                 case UIMode.Cutscene:
                     if (!cutsceneManual)
@@ -439,6 +451,7 @@ namespace Patchwork
             {
                 case UIMode.Paused:
                 case UIMode.Satchel:
+                case UIMode.Map:
                     MusicPlayer.SetMuffle(900f, 0.5f);
                     Sfx.SetLoopCutoff(900f);
                     Haptics.SetSilenced(true);
@@ -499,6 +512,19 @@ namespace Patchwork
             {
                 Sfx.Play(SfxId.MenuCancel, 0.4f);
             }
+        }
+
+        void OpenMap()
+        {
+            Map.Open();
+            SetMode(UIMode.Map, 0f);
+            Sfx.Play(SfxId.PageTurn, 0.6f);
+        }
+
+        public void CloseMap()
+        {
+            SetMode(UIMode.Gameplay, 1f);
+            Sfx.Play(SfxId.PageTurn, 0.4f);
         }
 
         void OpenSatchel()

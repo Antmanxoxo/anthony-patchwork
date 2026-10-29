@@ -6,6 +6,7 @@ namespace Patchwork
     public class BouncePad : PlayerVolume
     {
         public float LaunchSpeed = 14f;
+        public bool Drum;          // a toy drum: thumps instead of boings
         Transform cushion;
         Vector3 cushionScale;
         float squash;
@@ -37,7 +38,8 @@ namespace Patchwork
             cooldown = 0.3f;
             squash = 1f;
             player.Visuals.PunchScale(new Vector3(1.35f, 0.65f, 1.35f));
-            Sfx.Play(SfxId.Boing, 0.6f);
+            if (Drum) Sfx.Play(SfxId.Drum, 0.8f);
+            else Sfx.Play(SfxId.Boing, 0.6f);
             Haptics.Pulse(0.45f, 0.25f, 0.14f);
             FxBurst.Spawn(FxBurst.Kind.Sparkle, transform.position, new Color(1f, 0.6f, 0.7f));
         }

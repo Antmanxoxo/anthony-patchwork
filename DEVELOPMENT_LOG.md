@@ -1,5 +1,41 @@
 # Development Log
 
+## Stylised Toybox Town, a map and new music
+- New look over everything: soft glow on bright and glowing things, richer colour, warm
+  highlights with cool shadows, and a gentle vignette. Each level can tune it.
+- Textures have much more detail:
+  - Crevices take on their own colour (moss in the cobble and brick joints, shade in the
+    grass) and raised edges catch the light.
+  - Big soft colour patches break up the tiling, and the grass texture is twice the
+    resolution, with sunny tips.
+- The Fray now looks like the world it's in. In Toybox Town it's made of grey, broken toys:
+  - Its knots are stuffed with gears, springs, wind-up keys and button eyes.
+  - Snarlings are grey wind-up tin beetles with keys turning in their backs.
+  - Tendrils are sprung jack-in-the-boxes with drooping jester heads.
+  - Tears are holes ripped in grey wrapping paper.
+- The nursery outside the box is a whole room now: walls with wainscoting and pictures, a
+  ceiling with a big glowing lamp, and a rug with a border. A long soft haze makes it feel huge.
+- A map you can pull up with D-pad left (M on keyboard). It's a hand-painted tourist map of
+  the town on squared paper, with red pins and place names, stars for the band's missing
+  things, an arrow showing where you are, a little sun and some trees, and a legend of what's
+  left to find.
+- The Skiff has a new sea shanty: 6/8 in D minor, with accordion, plucked bass, bodhran and
+  the ship's bell. The lead changes with your form: fiddle for Yarn, a rolling marimba with
+  bubbles for Water, and a tin whistle over a breeze for Wind.
+- Toybox Town has a new soundtrack: a bouncy, swung toy-town march in four sections.
+  - It goes verse, verse with a wistful turn, a minor middle with a soft chiptune lead, and
+    a soaring finish with strings.
+  - On its own it's walking bass, brushed drums, toy piano and the tune on music box,
+    chiptune and glockenspiel.
+  - Each band member you bring back adds a layer: harp and glissandos, brass, or the flute.
+- New toys to play with:
+  - A xylophone bridge over the canal that plays a scale as you run across it. Play the
+    whole scale in one go and threads pop out.
+  - Toy drums to bounce on: onto the bandstand roof, up the alphabet blocks and up to the
+    rooftops.
+  - Wind-up mice scurrying about, tin soldiers drilling in the barracks, and a carousel in
+    the park.
+
 ## A lived-in Toybox Town
 - The first time you visit Toybox Town, a cutscene shows the Fray arriving. The band is
   playing when a crack opens in the toybox lid and the Fray swoops out onto the bandstand. It

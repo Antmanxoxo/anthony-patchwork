@@ -3,16 +3,14 @@ using UnityEngine;
 namespace Patchwork
 {
     // Background music. Built once when the game starts and loops between scenes.
-    // Lo-fi style: e-piano chords, bass and soft brushes underneath, with the tune played by a
-    // different instrument for each form, crossfading when Patch changes:
-    //   Water = music box with little bubble blips, Yarn = plucked strings, Wind = breathy flute and air.
-    // 72 BPM, 8 bars: Fmaj7 Em7 Dm9 Cmaj7 Fmaj7 Em7 Dm7 G6sus
+    // On the Skiff it's a sea shanty, with the tune played by a different instrument for each
+    // form, crossfading when Patch changes: Yarn = fiddle, Water = marimba, Wind = tin whistle.
+    // Levels can have their own soundtrack (see MusicToybox).
     public partial class MusicPlayer : MonoBehaviour
     {
         const string OldOnKey = "pw_music_on";
         const string VolumeKey = "pw_music_volume";
         const int Rate = 32000;
-        const float Bpm = 72f;
         const float MaxVolume = 0.32f;
         const float LayerFade = 1.5f;   // seconds to crossfade between form layers
 
@@ -135,97 +133,109 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ Composition
 
-        // MIDI note numbers. Chords voiced low-mid for warmth.
-        static readonly int[][] Chords =
-        {
-            new[] { 53, 57, 60, 64 },   // Fmaj7
-            new[] { 52, 55, 59, 62 },   // Em7
-            new[] { 50, 53, 57, 60, 64 }, // Dm9
-            new[] { 48, 52, 55, 59 },   // Cmaj7
-            new[] { 53, 57, 60, 64 },   // Fmaj7
-            new[] { 52, 55, 59, 62 },   // Em7
-            new[] { 50, 53, 57, 60 },   // Dm7
-            new[] { 55, 60, 62, 64 },   // G6sus
-        };
-        static readonly int[] Bass = { 41, 40, 38, 36, 41, 40, 38, 43 };
+        // ------------------------------------------------------------------ The Skiff's shanty
+        //
+        // A sea shanty in D minor, 6/8 (two big swaying beats a bar). 24 bars: a verse, the verse
+        // again with a new ending, then a brighter "sailing" chorus in F major.
+        //   Base: accordion "oom-cha-cha", plucked double bass, bodhran and the ship's bell.
+        //   Yarn: a fiddle plays the tune, with a mandolin chop on the off-beats.
+        //   Water: a marimba plays it, rolling on long notes, with bubbles at each phrase end.
+        //   Wind: a tin whistle plays it, with little grace-note flicks, over a breezy wash.
 
-        // Melody: (bar, beat, midi, beats). C major pentatonic, sparse and lazy.
-        static readonly float[,] Melody =
+        const float ShantyBpm = 70f;   // dotted quarters per minute
+
+        static readonly string[] ShantyChords =
         {
-            { 0, 0.0f, 76, 1.5f }, { 0, 2.0f, 72, 1.0f }, { 0, 3.0f, 74, 1.0f },
-            { 1, 0.5f, 71, 1.5f }, { 1, 2.5f, 67, 1.5f },
-            { 2, 0.0f, 69, 1.0f }, { 2, 1.0f, 72, 1.0f }, { 2, 2.0f, 76, 2.0f },
-            { 3, 1.0f, 74, 1.0f }, { 3, 2.0f, 72, 2.0f },
-            { 4, 0.0f, 81, 1.0f }, { 4, 1.0f, 79, 1.0f }, { 4, 2.0f, 76, 2.0f },
-            { 5, 0.5f, 74, 1.0f }, { 5, 1.5f, 76, 1.0f }, { 5, 2.5f, 71, 1.5f },
-            { 6, 0.0f, 72, 1.5f }, { 6, 2.0f, 69, 1.0f }, { 6, 3.0f, 72, 1.0f },
-            { 7, 0.0f, 74, 2.5f }, { 7, 3.0f, 67, 1.0f },
+            "Dm", "Dm", "C", "C", "Bb", "Bb A7", "Dm", "A7",
+            "Dm", "F", "C", "Am", "Bb", "C", "A7", "Dm",
+            "F", "C", "Dm", "Bb", "F", "C", "Gm A7", "Dm",
         };
 
-        static float Freq(float midi)
+        // One bar per line, lengths in eighth notes (6 a bar).
+        static readonly string[] ShantyTune =
         {
-            return 440f * Mathf.Pow(2f, (midi - 69f) / 12f);
-        }
+            "A4:2 D5:1 D5:2 E5:1", "F5:2 E5:1 D5:3", "G5:2 E5:1 C5:2 E5:1", "G5:3 E5:3",
+            "F5:2 G5:1 A5:2 F5:1", "D6:3 C#6:3", "D6:2 A5:1 F5:2 D5:1", "E5:3 A4:3",
+            "A4:2 D5:1 F5:2 A5:1", "C6:3 A5:2 F5:1", "G5:2 E5:1 G5:2 C6:1", "A5:3 E5:3",
+            "F5:2 D5:1 F5:2 Bb5:1", "A5:2 G5:1 E5:3", "C#5:2 E5:1 A5:2 G5:1", "D5:6",
+            "C5:1 F5:1 A5:1 C6:3", "E5:1 G5:1 C6:1 E6:3", "D6:2 C6:1 A5:2 F5:1", "D6:3 Bb5:3",
+            "A5:2 C6:1 F6:2 C6:1", "E6:2 D6:1 C6:2 G5:1", "Bb5:3 C#6:3", "D6:3 A5:2 r:1",
+        };
 
         static AudioClip[] Compose()
         {
-            float beat = 60f / Bpm;
-            float bar = beat * 4f;
-            int bars = Chords.Length;
-            float total = bar * bars;
-            int n = Mathf.CeilToInt(total * Rate);
+            float e = 60f / (ShantyBpm * 3f);   // one eighth note
+            float bar = e * 6f;
+            int bars = ShantyChords.Length;
+            int n = Mathf.CeilToInt(bar * bars * Rate);
             var data = new float[StemCount][];
             for (int i = 0; i < StemCount; i++) data[i] = new float[n];
             var bed = data[(int)Stem.Base];
+            var yarn = data[(int)Stem.Yarn];
+            var water = data[(int)Stem.Water];
+            var wind = data[(int)Stem.Wind];
 
             for (int b = 0; b < bars; b++)
             {
-                float barStart = b * bar;
-
-                // Electric-piano chord: hit on beat 1, softer re-hit on the "and" of 3.
-                var chord = Chords[b];
-                for (int c = 0; c < chord.Length; c++)
+                float t0 = b * bar;
+                var names = ShantyChords[b].Split(' ');
+                string first = names[0], second = names.Length > 1 ? names[1] : names[0];
+                bool chorus = b >= 16;
+                for (int half = 0; half < 2; half++)
                 {
-                    AddEPiano(bed, barStart, bar * 0.95f, Freq(chord[c]), 0.075f);
-                    AddEPiano(bed, barStart + beat * 2.5f, beat * 1.4f, Freq(chord[c]), 0.04f);
+                    string name = half == 0 ? first : second;
+                    float h0 = t0 + half * e * 3f;
+                    var ch = Ch(name, 55);
+                    // Bass: the root on the big beat (the fifth on the second one if the chord stays).
+                    int root = Root(name, 38);
+                    int bassNote = half == 1 && first == second ? root + 7 : root;
+                    AddPizz(bed, h0, Freq(bassNote), 0.17f, 100 + b * 4 + half);
+                    // Accordion: "cha-cha" in the verses, long swells in the chorus.
+                    if (chorus)
+                        foreach (int c in ch) AddAccordion(bed, h0, e * 2.9f, Freq(c), 0.022f);
+                    else
+                        for (int k = 1; k <= 2; k++)
+                            foreach (int c in ch) AddAccordion(bed, h0 + e * k, e * 0.75f, Freq(c), k == 1 ? 0.026f : 0.02f);
+                    // Yarn's mandolin chop on the off-beats.
+                    for (int c = 0; c < ch.Length; c++)
+                        AddPluck(yarn, h0 + e * 2f + c * 0.01f, e * 0.8f, Freq(ch[c] + 12), 0.022f, 300 + b * 16 + half * 4 + c);
                 }
-
-                // Round bass on 1 and 3.
-                AddBass(bed, barStart, beat * 1.8f, Freq(Bass[b]), 0.22f);
-                AddBass(bed, barStart + beat * 2f, beat * 1.6f, Freq(Bass[b] + (b % 2 == 0 ? 7 : 0)), 0.16f);
-
-                // Brushed beat: soft "tss" on 2 and 4, very quiet shaker on off-beats.
-                for (int q = 0; q < 4; q++)
+                // Bodhran: big on 1, medium on 4, a light tap on 6; a little fill at phrase ends.
+                AddBodhran(bed, t0, 0.13f, 400 + b);
+                AddBodhran(bed, t0 + e * 3f, 0.08f, 500 + b);
+                AddBrush(bed, t0 + e * 5f, 0.06f, 0.025f, 600 + b);
+                if (b % 8 == 7)
+                    for (int k = 3; k < 6; k++) AddBodhran(bed, t0 + e * k, 0.05f + k * 0.008f, 700 + b * 8 + k);
+                // The ship's bell, "ding-ding", at the top of each section.
+                if (b == 0 || b == 16)
                 {
-                    float t0 = barStart + q * beat;
-                    if (q == 1 || q == 3) AddBrush(bed, t0, 0.18f, 0.05f, 1000 + b * 10 + q);
-                    AddBrush(bed, t0 + beat * 0.5f, 0.06f, 0.018f, 2000 + b * 10 + q);
+                    AddGlock(bed, t0, Freq(81), 0.05f);
+                    AddGlock(bed, t0 + e * 2f, Freq(81), 0.045f);
                 }
-                // A soft felt "kick" on 1.
-                AddKick(bed, barStart, 0.12f);
-
-                // Wind: a breathy air pad that swells on each chord.
-                AddAirPad(data[(int)Stem.Wind], barStart, bar, 0.035f, 3000 + b);
+                // Wind: a breezy wash that swells over each bar.
+                AddAirPad(wind, t0, bar, 0.03f, 800 + b);
             }
 
-            // The tune, played three ways.
-            for (int i = 0; i < Melody.GetLength(0); i++)
+            // The tune, three ways.
+            for (int b = 0; b < bars; b++)
             {
-                float t0 = Melody[i, 0] * bar + Melody[i, 1] * beat;
-                float f = Freq(Melody[i, 2]);
-                float len = Melody[i, 3] * beat;
-                // Water: music box, plus a tiny rising "bloop" an octave up.
-                AddMusicBox(data[(int)Stem.Water], t0, len + 0.6f, f, 0.07f);
-                AddBloop(data[(int)Stem.Water], t0 + beat * 0.5f, f * 2f, 0.02f);
-                // Yarn: plucked string, like a little ukulele.
-                AddPluck(data[(int)Stem.Yarn], t0, len + 0.8f, f, 0.12f, 4000 + i);
-                // Wind: soft flute with a gentle vibrato.
-                AddFlute(data[(int)Stem.Wind], t0, len + 0.15f, f, 0.06f);
+                foreach (var note in Line(ShantyTune[b], b * 6f))
+                {
+                    float t = note.Beat * e;
+                    float len = note.Len * e;
+                    float f = Freq(note.Midi);
+                    AddFiddle(yarn, t, len * 0.96f, f, 0.075f);
+                    AddMarimba(water, t, f, 0.11f);
+                    // The marimba rolls on long notes.
+                    for (float r = e; r < len - e * 0.5f; r += e) AddMarimba(water, t + r, f, 0.06f);
+                    AddWhistle(wind, t, len * 0.95f, f, 0.065f);
+                    if (note.Len >= 2f) AddWhistle(wind, t - 0.05f, 0.05f, Freq(note.Midi + 2), 0.04f);
+                }
+                if (b % 4 == 3) AddBloop(water, b * bar + e * 4.5f, Freq(86), 0.03f);
             }
 
-            // Warm everything with the same filter and one shared gain, so the layers sit
-            // at the same level as each other and as the old single track.
-            for (int i = 0; i < StemCount; i++) LowPass(data[i], 4200f);
+            // Shared filter, then one gain so (base + any one tune) never clips.
+            for (int i = 0; i < StemCount; i++) LowPass(data[i], 6000f);
             float peak = 0.0001f;
             for (int s = 0; s < n; s++)
             {
@@ -233,7 +243,7 @@ namespace Patchwork
                 for (int i = 1; i < StemCount; i++) loudest = Mathf.Max(loudest, Mathf.Abs(data[i][s]));
                 peak = Mathf.Max(peak, Mathf.Abs(bed[s]) + loudest);
             }
-            float gain = 0.85f / peak;
+            float gain = 0.88f / peak;
             var result = new AudioClip[StemCount];
             for (int i = 0; i < StemCount; i++)
             {
@@ -241,7 +251,7 @@ namespace Patchwork
                 for (int s = 0; s < n; s++)
                 {
                     float x = d[s] * gain;
-                    d[s] = i == (int)Stem.Base ? x / (1f + Mathf.Abs(x) * 0.3f) : x;
+                    d[s] = x / (1f + Mathf.Abs(x) * 0.25f);
                 }
                 result[i] = AudioClip.Create("pw_music_" + ((Stem)i).ToString().ToLower(), n, 1, Rate, false);
                 result[i].SetData(d, 0);

@@ -159,7 +159,7 @@ namespace Patchwork
             else if (t < 22f)
             {
                 if (t < 20f) Caption(game, "Then it tied itself in a knot round the clock tower...");
-                else Caption(game, "...and spread its grey, scratchy threads all over town.");
+                else Caption(game, "...and every toy it touched turned grey and broken.");
                 Vector3 knotPos = Director.TowerKnot != null ? Director.TowerKnot.position : new Vector3(0f, 19f, 22.1f);
                 float k = Ease(Mathf.Clamp01((t - 17.5f) / 2f));
                 if (Blob != null && Blob.gameObject.activeSelf)

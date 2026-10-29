@@ -358,7 +358,7 @@ namespace Patchwork
             yaw = Mathf.MoveTowardsAngle(yaw, want, dt * 140f);
             transform.rotation = Quaternion.Euler(0f, yaw, 0f);
 
-            float beat = t * 108f / 60f;
+            float beat = t * MusicPlayer.ToyBpm / 60f;
             float bob, sway;
             if (Playing)
             {

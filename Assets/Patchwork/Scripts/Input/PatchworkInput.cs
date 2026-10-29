@@ -25,6 +25,7 @@ namespace Patchwork
         public readonly InputAction Cancel;
         public readonly InputAction Satchel;
         public readonly InputAction Pause;
+        public readonly InputAction Map;
         public readonly InputAction NavUp;
         public readonly InputAction NavDown;
         public readonly InputAction NavLeft;
@@ -82,6 +83,7 @@ namespace Patchwork
             Cancel = Button("Cancel", "<Gamepad>/buttonEast", "<Keyboard>/backspace", "<Keyboard>/escape");
             Satchel = Button("Satchel", "<DualShockGamepad>/touchpadButton", "<Gamepad>/select", "<Keyboard>/tab");
             Pause = Button("Pause", "<Gamepad>/start", "<Keyboard>/escape");
+            Map = Button("Map", "<Gamepad>/dpad/left", "<Keyboard>/m");
             NavUp = Button("NavUp", "<Gamepad>/dpad/up", "<Keyboard>/upArrow");
             NavDown = Button("NavDown", "<Gamepad>/dpad/down", "<Keyboard>/downArrow");
             NavLeft = Button("NavLeft", "<Gamepad>/dpad/left", "<Keyboard>/leftArrow");

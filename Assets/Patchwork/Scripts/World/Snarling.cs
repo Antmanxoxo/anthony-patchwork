@@ -2,7 +2,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    // A little creature of the Fray: a scuttling grey tangle with two glowing eyes. It patrols back
+    // A little creature of the Fray: a scuttling grey tangle with two glowing eyes (or, in a
+    // toy world, a grey wind-up tin beetle - see FrayTheme). It patrols back
     // and forth, turns to chase Patch when he's close, and pushes him away if he walks into it.
     // Land on its head (or crash into it fast) to unravel it.
     public class Snarling : MonoBehaviour
@@ -15,7 +16,7 @@ namespace Patchwork
         float t;
         float phase;
         float bumpCooldown;
-        Transform body, eyeL, eyeR;
+        Transform body, eyeL, eyeR, key;
         Vector3 pos;
         Vector3 facing = Vector3.forward;
         const float ChaseRange = 7f;
@@ -42,6 +43,11 @@ namespace Patchwork
             body = new GameObject("Body").transform;
             body.SetParent(transform, false);
             body.localPosition = new Vector3(0f, 0.7f, 0f);
+            if (FrayTheme.Style == FrayStyle.Toy)
+            {
+                FrayTheme.ToySnarling(transform, body, out eyeL, out eyeR, out key);
+                return;
+            }
             var grey = PatchworkAssets.Yarn(SnarlKnot.FrayGrey);
             var dark = PatchworkAssets.Yarn(SnarlKnot.FrayDark);
             Part(PrimitiveType.Sphere, body, Vector3.zero, new Vector3(1.2f, 1f, 1.1f), dark, Vector3.zero);
@@ -103,6 +109,7 @@ namespace Patchwork
             transform.position = pos + Vector3.up * Mathf.Abs(Mathf.Sin(t * 9f)) * 0.08f;
             transform.rotation = Quaternion.LookRotation(new Vector3(facing.x, 0f, facing.z).normalized, Vector3.up);
             body.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * 9f) * 6f);
+            if (key != null) key.Rotate(0f, 300f * dt, 0f, Space.Self);
             float blink = Mathf.Repeat(t, 3.3f) < 0.12f ? 0.2f : 1f;
             eyeL.localScale = new Vector3(0.18f, 0.24f * blink, 0.1f);
             eyeR.localScale = new Vector3(0.18f, 0.24f * blink, 0.1f);
