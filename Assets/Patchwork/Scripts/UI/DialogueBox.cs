@@ -8,7 +8,7 @@ namespace Patchwork
     public class DialogueBox
     {
         readonly PatchworkGame game;
-        NpcYarny npc;
+        Npc npc;
         string[] lines;
         int line;
         float shown;          // characters shown so far
@@ -21,7 +21,7 @@ namespace Patchwork
             this.game = game;
         }
 
-        public void Open(NpcYarny speaker)
+        public void Open(Npc speaker)
         {
             npc = speaker;
             lines = speaker.NextLines();
@@ -49,11 +49,13 @@ namespace Patchwork
             game.Player.Motor.Teleport(game.Player.transform.position, Mathf.Atan2(-away.x, -away.z) * Mathf.Rad2Deg);
         }
 
-        public void Close()
+        // Returns who we were talking to.
+        public Npc Close()
         {
             if (npc != null) npc.Talking = false;
             game.CameraRig.ShowcaseBlendSpeed = 1.6f;
             game.CameraRig.Showcase = false;
+            return npc;
         }
 
         string Current { get { return lines != null && line < lines.Length ? lines[line] : ""; } }
@@ -109,11 +111,12 @@ namespace Patchwork
 
             // Name tag.
             var nameStyle = UIKit.Style(28, true, TextAnchor.MiddleCenter, new Color(1f, 0.95f, 0.85f, a));
-            float nw = UIKit.TextWidth(NpcYarny.DisplayName, nameStyle) + 56f;
+            float nw = UIKit.TextWidth(npc.DisplayNameText, nameStyle) + 56f;
             var tag = new Rect(box.x + 46f, box.y - 28f, nw, 54f);
             UIKit.Fill(new Rect(tag.x + 3f, tag.y + 5f, tag.width, tag.height), new Color(0f, 0f, 0f, 0.2f * a), 27f);
-            UIKit.Fill(tag, new Color(0.62f, 0.27f, 0.3f, a), 27f);
-            UIKit.Label(tag, NpcYarny.DisplayName, nameStyle);
+            Color nc = npc.NameColor;
+            UIKit.Fill(tag, new Color(nc.r, nc.g, nc.b, a), 27f);
+            UIKit.Label(tag, npc.DisplayNameText, nameStyle);
 
             string text = Current;
             int count = Mathf.Clamp(Mathf.FloorToInt(shown), 0, text.Length);

@@ -3,54 +3,47 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    // Level 1 - The Sewing Basket Garden.
+    // Level 1 - Toybox Town.
     //
-    // Story: the Fray, a grey static of fraying thread that unravels whatever it touches, has
-    // seeped into the garden through a torn seam in the sky. Its knots have choked the Heart Spool
-    // in the middle of the basket and its threads are spreading out into every corner. Patch finds
-    // the garden's golden Heartstrings and threads them back onto the spool. Each one peels the
-    // Fray off a little more; four of them wake the spool, which shoots a golden thread up to the
-    // knot the Fray has tied in the sky. Break that knot and the garden's heart is free.
+    // A little Victorian town built inside a giant open toybox: cobbled streets, timber-framed
+    // shops with fish-scale roofs, gas lamps, a bandstand in the square and a clock tower. Its
+    // people are toys: tin soldiers, rag dolls, a nutcracker, a jack-in-the-box, a bunny or two,
+    // and the town's mayor, a teddy bear in a top hat.
     //
-    // Layout: an open garden you can tackle in any order (like a Mario Odyssey kingdom).
-    //   Middle - The Mending Square: the Heart Spool, six Fray knots to pop (a Heartstring).
-    //   North  - Pincushion Peaks (Yarn): swing, bounce, swing up floating pincushions.
-    //   East   - Dye Falls (Water): ride three fountains up the dye cascades; a Thread Race below.
-    //   West   - Breezy Bluffs (Wind): glide, updraft, gust across the bluffs to the windmill;
-    //            a secret updraft to a floating cloud patch, and the humming spool tower.
-    //   South  - Spoolwork Ruins: ride the sliding buttons to the Snarling arena, then slip
-    //            through a drain into the old loom's courtyard.
-    //   Sky    - The Fray's Knot, reached by the golden lift once four Heartstrings are found.
-    // Heartstrings: 8 in all, 4 needed for the finale. Golden buttons: 3 secrets (hats, Button Box).
-    // Movement rules from DEV_NOTES / the review: jump ~5 m and 2 m up, glide alone ~8 m,
-    // glide + gust ~13.4 m, swing 15 m, bounce pad 16 lifts Yarn ~5 m. Every gap is clearly
-    // possible (<= ~80% of the max) or clearly not.
+    // Story: today is Mayor Bramblebutton's wedding to Lady Lacewing, but the Fray (the grey
+    // static that unravels the world) has crept in and spoiled the town band's instruments.
+    //   Pip's lute has lost its string     -> it's tangled on the old spinning wheel up Spindle Hill (Yarn)
+    //   Brassby's trumpet valves are stuck -> a drop of valve dew in the Dye Works reservoir (Water)
+    //   Wisp, the best piper in town, was blown away -> stranded on the weathervane over the rooftops (Wind)
+    // Each one brings a new part of the town's music back. With the whole band home, the wedding
+    // goes ahead and the music unravels the Fray's knot on the clock tower.
+    //
+    // Layout (ground level is y = 0 everywhere; nothing here is a floating platform over a void):
+    //   Middle - Town Square: bandstand, wedding arch, fountain, shops, the clock tower (north)
+    //   North  - the Toy Soldier barracks courtyard, through the clock tower's arch
+    //   West   - across the ravine (clothesline swing) to Spindle Hill
+    //   East   - over the bridge to the canal promenade and the Dye Works mill
+    //   South  - the rooftop lane: steam and chimney smoke up to the weathervane spire
+    // Extras: 5 Heartstrings (knots to pop, a thread race, Snarlings, the belfry, a cloud patch)
+    // and 3 golden buttons (one per region, off the main path).
     public static class Level1Builder
     {
         public const string SceneName = "Level1";
         // Same ids as before so old saves keep their buttons.
         public static readonly string[] CollectibleIds = { "L1_fountain", "L1_swing", "L1_updraft" };
-        public static readonly string[] HeartstringIds =
-        {
-            "L1_hs_peaks", "L1_hs_dye", "L1_hs_windmill", "L1_hs_loom",
-            "L1_hs_knots", "L1_hs_race", "L1_hs_tangle", "L1_hs_cloud"
-        };
-        public const int HeartstringsNeeded = 4;
+        public static readonly string[] HeartstringIds = { "L1_hs_knots", "L1_hs_race", "L1_hs_tangle", "L1_hs_belfry", "L1_hs_cloud" };
+        public const int HeartstringsNeeded = 0;   // all optional in Toybox Town; the band is the goal
 
-        // Region origins (the middle of each landing).
-        static readonly Vector3 North = new Vector3(0f, 0f, 32f);
-        static readonly Vector3 East = new Vector3(32f, 0f, 0f);
-        static readonly Vector3 West = new Vector3(-32f, 0f, 0f);
-        static readonly Vector3 South = new Vector3(0f, 0f, -31f);
-        static readonly Vector3 SpawnPoint = new Vector3(0f, 0f, -11f);
-        static readonly Vector3 SkyIsland = new Vector3(0f, 30f, 11f);
-        const float PlazaRadius = 17f;
+        static readonly Vector3 SpawnPoint = new Vector3(0f, 0f, -14f);
+        static readonly Vector3 Bandstand = new Vector3(0f, 0f, 7f);
+        static readonly Vector3 Tower = new Vector3(0f, 0f, 27f);
+        static readonly Vector3 Mill = new Vector3(64f, 0f, 8f);
+        const float RavineEast = -37f, RavineWest = -51f, CanalWest = 32f, CanalEast = 40f, Half = 90f;
 
-        static readonly Color[] Lawn = { new Color(0.55f, 0.75f, 0.45f), new Color(0.48f, 0.68f, 0.42f), new Color(0.62f, 0.8f, 0.5f), new Color(0.5f, 0.72f, 0.5f) };
-        static readonly Color[] Peaks = { new Color(0.92f, 0.62f, 0.6f), new Color(0.95f, 0.75f, 0.62f), new Color(0.86f, 0.6f, 0.68f), new Color(0.97f, 0.84f, 0.7f) };
-        static readonly Color[] Dye = { new Color(0.55f, 0.75f, 0.82f), new Color(0.62f, 0.8f, 0.74f), new Color(0.7f, 0.82f, 0.9f), new Color(0.82f, 0.86f, 0.7f) };
-        static readonly Color[] Breezy = { new Color(0.78f, 0.88f, 0.78f), new Color(0.86f, 0.9f, 0.74f), new Color(0.74f, 0.85f, 0.82f), new Color(0.94f, 0.92f, 0.78f) };
-        static readonly Color[] Ruins = { new Color(0.75f, 0.68f, 0.85f), new Color(0.82f, 0.74f, 0.88f), new Color(0.7f, 0.66f, 0.8f), new Color(0.88f, 0.82f, 0.9f) };
+        static readonly Color GrassCol = new Color(0.52f, 0.72f, 0.42f);
+        static readonly Color CobbleCol = new Color(0.72f, 0.68f, 0.64f);
+        static readonly Color[] Walls = { new Color(0.97f, 0.92f, 0.82f), new Color(0.95f, 0.85f, 0.78f), new Color(0.9f, 0.9f, 0.84f), new Color(0.98f, 0.88f, 0.7f), new Color(0.88f, 0.86f, 0.95f) };
+        static readonly Color[] Roofs = { new Color(0.62f, 0.3f, 0.32f), new Color(0.3f, 0.42f, 0.6f), new Color(0.4f, 0.55f, 0.42f), new Color(0.55f, 0.4f, 0.6f), new Color(0.7f, 0.45f, 0.3f) };
         static readonly Color[] SpoolThreads = { LevelKit.Palette.Rose, LevelKit.Palette.Sky, LevelKit.Palette.Butter, LevelKit.Palette.Sage, LevelKit.Palette.Lavender };
         static readonly Color[] FlowerColors = { LevelKit.Palette.Rose, LevelKit.Palette.Butter, LevelKit.Palette.Lavender, LevelKit.Palette.Peach, LevelKit.Palette.Sky, new Color(1f, 0.6f, 0.7f) };
 
@@ -60,50 +53,841 @@ namespace Patchwork
         {
             var info = kit.Info;
             info.Id = SceneName;
-            info.Title = "Level 1 · The Sewing Basket Garden";
-            info.Subtitle = "The Fray has tangled the garden's heart. Find the Heartstrings and mend it.";
+            info.Title = "Level 1 · Toybox Town";
+            info.Subtitle = "The Fray spoiled the band on the Mayor's wedding day. Help them play again!";
             info.Spawn = SpawnPoint + Vector3.up * 0.1f;
             info.SpawnYaw = 0f;
-            info.KillY = -14f;
-            info.Sky = new Color(0.78f, 0.88f, 0.95f);
+            info.KillY = -20f;
+            info.FailY = -9f;   // the ravine and the canal are real places you can walk out of
+            info.Sky = new Color(0.86f, 0.88f, 0.94f);
             info.HeartstringsNeeded = HeartstringsNeeded;
+            info.Area.SetMinMax(new Vector3(-Half, -6f, -Half), new Vector3(Half, 40f, Half));
 
             var dirGo = new GameObject("Level1Director");
             dirGo.transform.SetParent(kit.Root, false);
             director = dirGo.AddComponent<Level1Director>();
             director.Ids = HeartstringIds;
-            director.Needed = HeartstringsNeeded;
 
-            // A giant wicker basket around the whole garden, with a felt sky lid and a lake of paint
-            // and ink below (that's the gloopy sound you can hear).
-            kit.Enclosure(new Vector3(-84f, -45f, -84f), new Vector3(84f, 48f, 84f),
-                new[] { new Color(0.62f, 0.45f, 0.28f), new Color(0.75f, 0.56f, 0.34f), new Color(0.82f, 0.64f, 0.4f), new Color(0.88f, 0.72f, 0.48f) },
-                new Color(0.62f, 0.78f, 0.95f), true);
-            kit.FeltSun(new Vector3(-20f, 34f, 83.6f), 7f, Vector3.back);
-            BuildPaintLake(kit);
-            for (int i = 0; i < 14; i++)
-            {
-                float a = i / 14f * Mathf.PI * 2f;
-                kit.Cloud(new Vector3(Mathf.Cos(a) * (45f + (i % 3) * 10f), 38f - (i % 2) * 4f, Mathf.Sin(a) * (45f + (i % 3) * 10f)), 1.8f + (i % 3) * 0.5f);
-            }
-
-            MendingSquare(kit);
-            PincushionPeaks(kit);
-            DyeFalls(kit);
-            BreezyBluffs(kit);
-            SpoolworkRuins(kit);
-            FraysKnot(kit);
+            Ground(kit);
+            Toybox(kit);
+            TownSquare(kit);
+            ClockTower(kit);
+            Barracks(kit);
+            SpindleHill(kit);
+            Canal(kit);
+            DyeWorks(kit);
+            Rooftops(kit);
+            Townsfolk(kit);
+            Knots(kit);
             YarnBirds(kit);
 
-            // Sounds that come from where they happen.
             var sounds = kit.Group("LevelSounds", Vector3.zero);
-            AmbientEmitter.Create(sounds, new Vector3(44f, 5f, 4f), Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.35f, 2f, 16f);
-            AmbientEmitter.Create(sounds, new Vector3(0f, 6f, -74f), Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.3f, 2f, 12f);
-            AmbientEmitter.Create(sounds, new Vector3(-77.5f, 13f, 5f), Sfx.Ambient(Sfx.AmbientClip.Flag), 0.35f, 2f, 14f);
-            AmbientEmitter.Create(sounds, new Vector3(-55f, 6f, 0f), Sfx.Ambient(Sfx.AmbientClip.Vent), 0.3f, 3f, 18f);
+            for (float z = -60f; z <= 60f; z += 30f)
+                AmbientEmitter.Create(sounds, new Vector3(36f, -1.2f, z), Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.22f, 3f, 16f);
+            AmbientEmitter.Create(sounds, new Vector3(-44f, -4.5f, 0f), Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.2f, 3f, 14f);
+            AmbientEmitter.Create(sounds, Mill + new Vector3(-8.5f, 4f, 0f), Sfx.Ambient(Sfx.AmbientClip.Creak), 0.5f, 3f, 18f);
+            AmbientEmitter.Create(sounds, new Vector3(0f, 26f, 27f), Sfx.Ambient(Sfx.AmbientClip.Clock), 0.4f, 4f, 30f);
+            AmbientEmitter.Create(sounds, new Vector3(0f, 21f, -72f), Sfx.Ambient(Sfx.AmbientClip.Flag), 0.35f, 2f, 14f);
 
             director.ApplySavedState();
             return info;
+        }
+
+        // ================================================================ Ground, the toybox
+
+        static void Ground(LevelKit kit)
+        {
+            var grass = PatchworkAssets.Grass(GrassCol);
+            kit.Block(new Vector3((RavineEast + CanalWest) * 0.5f, -1f, 0f), new Vector3(CanalWest - RavineEast, 2f, Half * 2f), GrassCol, "TownGround", grass);
+            kit.Block(new Vector3((CanalEast + Half) * 0.5f, -1f, 0f), new Vector3(Half - CanalEast, 2f, Half * 2f), GrassCol, "EastGround", grass);
+            kit.Block(new Vector3((-Half + RavineWest) * 0.5f, -1f, 0f), new Vector3(RavineWest + Half, 2f, Half * 2f), GrassCol, "HillGround", grass);
+            // The ravine (5 m deep) and the canal (2 m deep), with brick walls and running water.
+            var brick = PatchworkAssets.Brick(new Color(0.7f, 0.45f, 0.38f));
+            kit.Block(new Vector3((RavineEast + RavineWest) * 0.5f, -6f, 0f), new Vector3(RavineEast - RavineWest, 2f, Half * 2f), GrassCol, "RavineBed", PatchworkAssets.Cobble(new Color(0.6f, 0.58f, 0.55f)));
+            kit.Block(new Vector3(RavineEast - 0.1f, -2.5f, 0f), new Vector3(0.2f, 5f, Half * 2f), new Color(0.7f, 0.45f, 0.38f), "RavineWall", brick);
+            kit.Block(new Vector3(RavineWest + 0.1f, -2.5f, 0f), new Vector3(0.2f, 5f, Half * 2f), new Color(0.7f, 0.45f, 0.38f), "RavineWall", brick);
+            FlowingWater(kit, new Vector3((RavineEast + RavineWest) * 0.5f, -4.96f, 0f), new Vector2(4f, Half * 2f), new Color(0.45f, 0.68f, 0.9f));
+            kit.Block(new Vector3((CanalWest + CanalEast) * 0.5f, -3f, 0f), new Vector3(CanalEast - CanalWest, 2f, Half * 2f), GrassCol, "CanalBed", PatchworkAssets.Cobble(new Color(0.55f, 0.55f, 0.52f)));
+            var stone = PatchworkAssets.Cobble(TownKit.Stone);
+            kit.Block(new Vector3(CanalWest + 0.1f, -1f, 0f), new Vector3(0.2f, 2f, Half * 2f), TownKit.Stone, "CanalWall", stone);
+            kit.Block(new Vector3(CanalEast - 0.1f, -1f, 0f), new Vector3(0.2f, 2f, Half * 2f), TownKit.Stone, "CanalWall", stone);
+            FlowingWater(kit, new Vector3((CanalWest + CanalEast) * 0.5f, -1.3f, 0f), new Vector2(CanalEast - CanalWest - 0.4f, Half * 2f), new Color(0.35f, 0.6f, 0.85f));
+            // Steps back up out of the ravine (east side) and the canal (both sides).
+            TownKit.Stairs(kit, new Vector3(RavineEast - 1.5f, -5f, 6f), 0f, 5, 1f, 1.4f, 2.6f, stone);
+            TownKit.Stairs(kit, new Vector3(RavineEast - 1.5f, -5f, -14f), 180f, 5, 1f, 1.4f, 2.6f, stone);
+            TownKit.Stairs(kit, new Vector3(CanalWest + 1.4f, -2f, 14f), 0f, 2, 1f, 1.2f, 2.4f, stone);
+            TownKit.Stairs(kit, new Vector3(CanalEast - 1.4f, -2f, -14f), 180f, 2, 1f, 1.2f, 2.4f, stone);
+        }
+
+        // Water that slowly flows (its texture scrolls). No collision: it's shallow.
+        static void FlowingWater(LevelKit kit, Vector3 center, Vector2 size, Color col)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            Object.DestroyImmediate(go.GetComponent<Collider>());
+            go.name = "FlowingWater";
+            go.transform.SetParent(kit.Root, false);
+            go.transform.position = center;
+            go.transform.localScale = new Vector3(size.x, 0.06f, size.y);
+            var mat = PatchworkAssets.Unique(PatchworkAssets.Water(col));
+            mat.SetTextureScale("_BaseMap", new Vector2(Mathf.Max(1f, size.x / 4f), size.y / 4f));
+            go.GetComponent<Renderer>().sharedMaterial = mat;
+            go.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var flow = go.AddComponent<PaintLake>();
+            flow.Drift = new Vector2(0f, 0.25f);
+            flow.Setup(mat);
+        }
+
+        // The walls of the giant toybox, papered inside with damask, brass corners, and the lid
+        // propped open behind the town.
+        static void Toybox(LevelKit kit)
+        {
+            var paper = PatchworkAssets.Damask(new Color(0.32f, 0.36f, 0.58f));
+            var wood = PatchworkAssets.Planks(new Color(0.55f, 0.36f, 0.26f));
+            float h = 44f, t = 2f;
+            kit.Block(new Vector3(Half + t * 0.5f, h * 0.5f - 2f, 0f), new Vector3(t, h, Half * 2f + t * 2f), new Color(0.32f, 0.36f, 0.58f), "BoxWall", paper);
+            kit.Block(new Vector3(-Half - t * 0.5f, h * 0.5f - 2f, 0f), new Vector3(t, h, Half * 2f + t * 2f), new Color(0.32f, 0.36f, 0.58f), "BoxWall", paper);
+            kit.Block(new Vector3(0f, h * 0.5f - 2f, Half + t * 0.5f), new Vector3(Half * 2f, h, t), new Color(0.32f, 0.36f, 0.58f), "BoxWall", paper);
+            kit.Block(new Vector3(0f, h * 0.5f - 2f, -Half - t * 0.5f), new Vector3(Half * 2f, h, t), new Color(0.32f, 0.36f, 0.58f), "BoxWall", paper);
+            // Wooden skirting and a brass rim along the top.
+            var brass = PatchworkAssets.Plain(new Color(0.9f, 0.72f, 0.38f), 0.8f);
+            foreach (var side in new[] { new Vector3(1f, 0f, 0f), new Vector3(-1f, 0f, 0f), new Vector3(0f, 0f, 1f), new Vector3(0f, 0f, -1f) })
+            {
+                bool alongZ = side.x != 0f;
+                Vector3 c = side * (Half - 0.15f);
+                Vector3 len = alongZ ? new Vector3(0.3f, 0f, Half * 2f) : new Vector3(Half * 2f, 0f, 0.3f);
+                kit.Deco(PrimitiveType.Cube, c + Vector3.up * 0.8f, len + Vector3.up * 1.6f, wood);
+                kit.Deco(PrimitiveType.Cube, side * (Half + 1f) + Vector3.up * (h - 1.6f), (alongZ ? new Vector3(2.6f, 0f, Half * 2f + 5f) : new Vector3(Half * 2f + 5f, 0f, 2.6f)) + Vector3.up * 0.8f, brass);
+            }
+            for (int sx = -1; sx <= 1; sx += 2)
+                for (int sz = -1; sz <= 1; sz += 2)
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(sx * (Half + 1f), h - 1.2f, sz * (Half + 1f)), Vector3.one * 4f, brass);
+            // The lid, propped open behind the north wall.
+            var lid = kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(Half * 2f + 4f, 2f, 110f), PatchworkAssets.Damask(new Color(0.4f, 0.28f, 0.42f)));
+            lid.rotation = Quaternion.Euler(-72f, 0f, 0f);
+            lid.position = new Vector3(0f, h - 2f, Half + 2f) + lid.rotation * new Vector3(0f, 0f, 55f);
+            for (int i = 0; i < 6; i++)
+            {
+                float a = i / 6f * Mathf.PI * 2f;
+                kit.Cloud(new Vector3(Mathf.Cos(a) * 60f, 36f + (i % 2) * 3f, Mathf.Sin(a) * 60f), 2.6f);
+            }
+        }
+
+        // ================================================================ The town square
+
+        static void TownSquare(LevelKit kit)
+        {
+            var cobble = PatchworkAssets.Cobble(CobbleCol);
+            kit.Prism(Octagon(Vector3.zero, 21f), -0.3f, 0.06f, cobble, "TownSquare", 2.5f);
+            // Streets out of the square (1 cm lower than the square so the two never flicker).
+            kit.Block(new Vector3(0f, -0.1f, -30f), new Vector3(10f, 0.3f, 22f), CobbleCol, "SouthStreet", cobble);
+            kit.Block(new Vector3(-28f, -0.1f, 0f), new Vector3(18f, 0.3f, 10f), CobbleCol, "WestStreet", cobble);
+            kit.Block(new Vector3(25.5f, -0.1f, 0f), new Vector3(13f, 0.3f, 10f), CobbleCol, "EastStreet", cobble);
+            kit.AddCheckpoint(SpawnPoint, 0f);
+            kit.Hint(SpawnPoint + new Vector3(0f, 1.5f, 0f), new Vector3(10f, 4f, 6f), "Toybox Town",
+                "It's the Mayor's wedding day, but the Fray has spoiled the town band's instruments! Walk up to the toys and press {Ability} to talk.");
+
+            // ----- The bandstand -----
+            Vector3 b = Bandstand;
+            var planks = PatchworkAssets.Planks(new Color(0.75f, 0.55f, 0.38f));
+            kit.Prism(Octagon(b, 5.6f), 0f, 0.9f, planks, "Bandstand", 2f);
+            kit.Block(b + new Vector3(0f, 0.3f, -6f), new Vector3(3f, 0.6f, 1.2f), new Color(0.75f, 0.55f, 0.38f), "BandstandStep", planks);
+            var white = PatchworkAssets.Wood(new Color(0.97f, 0.95f, 0.9f));
+            var tops = new Vector3[8];
+            for (int i = 0; i < 8; i++)
+            {
+                float a = (i + 0.5f) / 8f * Mathf.PI * 2f;
+                Vector3 p = b + new Vector3(Mathf.Cos(a) * 5.1f, 0.9f, Mathf.Sin(a) * 5.1f);
+                kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * 1.6f, new Vector3(0.24f, 1.6f, 0.24f), white);
+                tops[i] = p + Vector3.up * 3.2f;
+            }
+            for (int i = 0; i < 8; i++)
+            {
+                var a = tops[i]; var c = tops[(i + 1) % 8];
+                // Railings, except at the front where the steps are.
+                if (!(a.z < b.z - 3f && c.z < b.z - 3f))
+                    kit.Rope(a + Vector3.down * 2.3f, c + Vector3.down * 2.3f, white, 0.1f);
+            }
+            var stripeA = PatchworkAssets.Felt(new Color(0.8f, 0.28f, 0.32f));
+            var stripeB = PatchworkAssets.Felt(new Color(0.97f, 0.93f, 0.85f));
+            kit.Prism(Octagon(b + Vector3.up * 4.1f, 6.3f), 4.1f, 4.5f, stripeA, "BandstandRoof", 2f);
+            kit.Prism(Octagon(b, 4.5f), 4.5f, 5.3f, stripeB, "BandstandRoof2", 2f);
+            kit.Prism(Octagon(b, 2.6f), 5.3f, 6.2f, stripeA, "BandstandRoof3", 2f);
+            kit.Deco(PrimitiveType.Sphere, b + Vector3.up * 6.6f, Vector3.one * 0.8f, PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f));
+            for (int i = 0; i < 8; i++) kit.Bunting(tops[i] + Vector3.down * 0.3f, tops[(i + 1) % 8] + Vector3.down * 0.3f, LevelKit.Palette.Quilt);
+
+            // ----- The wedding arch -----
+            director.ArchCenter = new Vector3(0f, 0f, -2f);
+            TownKit.FlowerArch(kit, director.ArchCenter, 0f, 4.4f);
+            director.MayorSpot = new Vector3(-2.2f, 0.06f, -2.4f);
+            director.BrideSpot = new Vector3(2.2f, 0.06f, -2.4f);
+            // A rose-petal aisle.
+            for (int i = 0; i < 8; i++)
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(((i * 37) % 10) / 10f - 0.5f, 0.07f, -4f - i * 1.1f), new Vector3(0.25f, 0.01f, 0.18f), PatchworkAssets.Felt(LevelKit.Palette.Rose), new Vector3(0f, i * 40f, 0f));
+
+            // ----- The fountain (rides Water up to the pigeon loft) -----
+            kit.Fountain(new Vector3(-11f, 0.06f, -8f), 7f, LevelKit.FountainStyle.Stone);
+            kit.Block(new Vector3(-11f, 4.75f, -10.8f), new Vector3(3f, 0.5f, 3f), new Color(0.75f, 0.55f, 0.38f), "PigeonLoft", planks);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(-11f, 2.25f, -10.8f), new Vector3(0.4f, 2.25f, 0.4f), PatchworkAssets.Wood(TownKit.DarkWood));
+            kit.Thread(new Vector3(-10.2f, 5.6f, -11.4f), LevelKit.Palette.Sky);
+            kit.Thread(new Vector3(-11.8f, 5.6f, -10.4f), LevelKit.Palette.Sky);
+            kit.Hint(new Vector3(-11f, 1.5f, -6f), new Vector3(4f, 3f, 3.4f), "Fountains",
+                "Water Form rides fountains up and slips through drains. Teapots and pipes spout too!", HintTheme.Water);
+
+            // ----- Shops round the square -----
+            var bakery = TownKit.MakeHouse(kit, new Vector3(-12f, 0f, 27f), new Vector3(9f, 7f, 8f), 180f, Walls[3], Roofs[0], 1, -1, -3f, TownKit.Sign.Bread);
+            kit.Updraft(bakery.ChimneyTop, 8f, LevelKit.UpdraftStyle.Chimney);
+            TownKit.MakeHouse(kit, new Vector3(12f, 0f, 27f), new Vector3(9f, 7f, 8f), 180f, Walls[0], Roofs[1], 2, 1, 2f, TownKit.Sign.Toy);
+            TownKit.MakeHouse(kit, new Vector3(-24f, 0f, 13f), new Vector3(10f, 7f, 9f), 90f, Walls[4], Roofs[3], 3, 1, 2f, TownKit.Sign.Spool);
+            TownKit.MakeHouse(kit, new Vector3(-24f, 0f, -14f), new Vector3(10f, 6f, 9f), 90f, Walls[1], Roofs[2], 4, 0, 0f, TownKit.Sign.Teacup);
+            TownKit.MakeHouse(kit, new Vector3(24f, 0f, 13f), new Vector3(10f, 7f, 9f), -90f, Walls[2], Roofs[4], 5, -1, 1f, TownKit.Sign.Hat);
+            TownKit.MakeHouse(kit, new Vector3(24f, 0f, -13f), new Vector3(10f, 6f, 9f), -90f, Walls[0], Roofs[0], 6, 0, 0f, TownKit.Sign.Clock);
+            TownKit.MakeHouse(kit, new Vector3(-13f, 0f, -26f), new Vector3(9f, 6f, 8f), 0f, Walls[3], Roofs[1], 7, 1, -2f, TownKit.Sign.None);
+            TownKit.MakeHouse(kit, new Vector3(13f, 0f, -26f), new Vector3(9f, 6f, 8f), 0f, Walls[2], Roofs[3], 8, 0, 0f, TownKit.Sign.Dye);
+            // Gas lamps, benches and flowers.
+            for (int i = 0; i < 8; i++)
+            {
+                float a = (i + 0.5f) / 8f * Mathf.PI * 2f;
+                TownKit.StreetLamp(kit, new Vector3(Mathf.Cos(a) * 17.5f, 0.06f, Mathf.Sin(a) * 17.5f));
+            }
+            TownKit.Bench(kit, new Vector3(-8f, 0.06f, -15.5f), 0f);
+            TownKit.Bench(kit, new Vector3(8f, 0.06f, -15.5f), 0f);
+            TownKit.Bench(kit, new Vector3(-15f, 0.06f, 6f), 90f);
+            TownKit.Bench(kit, new Vector3(15f, 0.06f, 6f), -90f);
+            TownKit.FlowerBed(kit, new Vector3(-12f, 0.06f, 12f), new Vector2(3f, 2f), 1);
+            TownKit.FlowerBed(kit, new Vector3(12f, 0.06f, 12f), new Vector2(3f, 2f), 2);
+            TownKit.FlowerBed(kit, new Vector3(13f, 0.06f, -9f), new Vector2(2.5f, 2.5f), 3);
+            TownKit.ToyCart(kit, new Vector3(8f, 0.06f, 15f), 30f);
+            TownKit.Crate(kit, new Vector3(-16.5f, 0.06f, -10.5f), 1.2f, 15f);
+            TownKit.Crate(kit, new Vector3(-17.4f, 0.06f, -9.2f), 0.9f, -10f);
+            kit.ThreadLine(new Vector3(-3f, 1f, -10f), new Vector3(3f, 1f, -10f), 3);
+            // Bunting across the square from lamp to lamp.
+            kit.Bunting(new Vector3(-12.4f, 5.5f, -12.4f), new Vector3(12.4f, 5.5f, -12.4f), LevelKit.Palette.Quilt);
+            kit.Bunting(new Vector3(-12f, 5.5f, 16f), new Vector3(12f, 5.5f, 16f), LevelKit.Palette.Quilt);
+
+            // The Fray has got into the square too: tears and tendrils that go at the wedding.
+            var square = new GameObject("Region_Square").AddComponent<FrayRegion>();
+            square.transform.SetParent(kit.Root, false);
+            director.SquareRegion = square;
+            FrayTear(kit, square, new Vector3(6f, 0.06f, -12f), 2f);
+            FrayTear(kit, square, new Vector3(-14f, 0.06f, 2f), 1.8f);
+            FrayTendril(kit, square, b + new Vector3(4.4f, 0.9f, 2.6f), 2.6f);
+            FrayTendril(kit, square, new Vector3(16f, 0.06f, -4f), 3f);
+            Blooms(kit, square, new Vector3(0f, 0.06f, -8f), new Vector2(14f, 4f), 14);
+        }
+
+        // ================================================================ Clock tower (north)
+
+        static void ClockTower(LevelKit kit)
+        {
+            Vector3 t = Tower;
+            var brick = PatchworkAssets.Brick(new Color(0.72f, 0.45f, 0.36f));
+            var stone = PatchworkAssets.Cobble(TownKit.Stone);
+            Color bc = new Color(0.72f, 0.45f, 0.36f);
+            // Two piers with an archway between them (the way to the barracks), then the tall tower.
+            kit.Block(t + new Vector3(-3f, 3f, 0f), new Vector3(2f, 6f, 8f), bc, "TowerPier", brick);
+            kit.Block(t + new Vector3(3f, 3f, 0f), new Vector3(2f, 6f, 8f), bc, "TowerPier", brick);
+            kit.Block(t + new Vector3(0f, 5f, 0f), new Vector3(2f, 2f, 8f), bc, "TowerArch", brick);
+            kit.Block(t + new Vector3(0f, 14.5f, 0f), new Vector3(8f, 17f, 8f), bc, "Tower", brick);
+            kit.Deco(PrimitiveType.Cube, t + new Vector3(0f, 6.1f, 0f), new Vector3(8.4f, 0.4f, 8.4f), stone);
+            kit.Deco(PrimitiveType.Cube, t + new Vector3(0f, 23.2f, 0f), new Vector3(8.6f, 0.5f, 8.6f), stone);
+            // The belfry: four columns, a bell and a pointed roof.
+            for (int sx = -1; sx <= 1; sx += 2)
+                for (int sz = -1; sz <= 1; sz += 2)
+                    kit.Block(t + new Vector3(sx * 3.4f, 25.7f, sz * 3.4f), new Vector3(1.2f, 4.6f, 1.2f), bc, "BelfryColumn", brick);
+            kit.Deco(PrimitiveType.Sphere, t + new Vector3(0f, 25.6f, 0f), new Vector3(2.4f, 2.8f, 2.4f), PatchworkAssets.Plain(new Color(0.9f, 0.7f, 0.35f), 0.85f));
+            kit.Block(t + new Vector3(0f, 28.3f, 0f), new Vector3(8.8f, 0.6f, 8.8f), bc, "BelfryRoof", stone);
+            var slate = PatchworkAssets.Shingle(new Color(0.32f, 0.4f, 0.55f));
+            for (int i = 0; i < 4; i++)
+            {
+                float s = 7f - i * 1.7f;
+                var tier = kit.Deco(PrimitiveType.Cube, t + new Vector3(0f, 29.1f + i * 1.2f, 0f), new Vector3(s, 1.2f, s), slate);
+                tier.rotation = Quaternion.Euler(0f, i * 12f, 0f);
+            }
+            kit.Deco(PrimitiveType.Cylinder, t + new Vector3(0f, 35f, 0f), new Vector3(0.12f, 1.4f, 0.12f), PatchworkAssets.Plain(TownKit.Iron, 0.6f));
+            kit.Deco(PrimitiveType.Sphere, t + new Vector3(0f, 36.4f, 0f), Vector3.one * 0.5f, PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f));
+            // Clock faces on all four sides.
+            for (int i = 0; i < 4; i++)
+            {
+                var r = Quaternion.Euler(0f, i * 90f, 0f);
+                Vector3 face = t + Vector3.up * 19f + r * new Vector3(0f, 0f, -4.08f);
+                kit.Deco(PrimitiveType.Cylinder, face, new Vector3(4.6f, 0.08f, 4.6f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.7f), new Vector3(90f, i * 90f, 0f));
+                kit.Deco(PrimitiveType.Cylinder, face + r * new Vector3(0f, 0f, -0.06f), new Vector3(4f, 0.06f, 4f), PatchworkAssets.Felt(new Color(0.98f, 0.95f, 0.85f)), new Vector3(90f, i * 90f, 0f));
+                var hand1 = kit.Deco(PrimitiveType.Cube, face + r * new Vector3(0f, 0.6f, -0.15f), new Vector3(0.18f, 1.3f, 0.05f), PatchworkAssets.Plain(TownKit.Iron, 0.5f), new Vector3(0f, i * 90f, 0f));
+                var hand2 = kit.Deco(PrimitiveType.Cube, face + r * new Vector3(0.45f, 0f, -0.16f), new Vector3(0.9f, 0.15f, 0.05f), PatchworkAssets.Plain(TownKit.Iron, 0.5f), new Vector3(0f, i * 90f, 0f));
+                hand1.name = "ClockHand"; hand2.name = "ClockHand";
+                for (int n = 0; n < 12; n++)
+                {
+                    float a = n / 12f * Mathf.PI * 2f;
+                    kit.Deco(PrimitiveType.Sphere, face + r * new Vector3(Mathf.Sin(a) * 1.65f, Mathf.Cos(a) * 1.65f, -0.1f), Vector3.one * 0.16f, PatchworkAssets.Plain(TownKit.Iron, 0.5f));
+                }
+            }
+            // A balcony round the tower (the belfry Heartstring is up here).
+            var planks = PatchworkAssets.Planks(new Color(0.6f, 0.42f, 0.3f));
+            kit.Block(t + new Vector3(0f, 15.75f, -4.7f), new Vector3(8f, 0.5f, 1.4f), bc, "Balcony", planks);
+            kit.Block(t + new Vector3(0f, 15.75f, 4.7f), new Vector3(8f, 0.5f, 1.4f), bc, "Balcony", planks);
+            kit.Block(t + new Vector3(-4.7f, 15.75f, 0f), new Vector3(1.4f, 0.5f, 10.8f), bc, "Balcony", planks);
+            kit.Block(t + new Vector3(4.7f, 15.75f, 0f), new Vector3(1.4f, 0.5f, 10.8f), bc, "Balcony", planks);
+            MakeHeartstring(kit, "L1_hs_belfry", "Belfry Thread", t + new Vector3(-4.7f, 17.5f, 3.5f), false);
+            kit.Thread(t + new Vector3(-4.7f, 16.8f, -1f), LevelKit.Palette.Gold);
+            kit.Thread(t + new Vector3(-4.7f, 16.8f, -3f), LevelKit.Palette.Gold);
+            kit.Hint(new Vector3(-9f, 1.5f, 20f), new Vector3(5f, 4f, 4f), "Chimney Smoke",
+                "Wind Form can ride the smoke from chimneys and the steam from vents, right up over the rooftops.", HintTheme.Wind);
+
+            // The Fray's knot, wrapped round the south clock face.
+            var knot = kit.Group("TowerKnot", t + new Vector3(0f, 19f, -4.9f));
+            KnotShape(kit, knot, 2.6f, 24);
+            var lightGo = new GameObject("KnotGlow");
+            lightGo.transform.SetParent(knot, false);
+            var l = lightGo.AddComponent<Light>();
+            l.type = LightType.Point;
+            l.color = SnarlKnot.FrayGlow;
+            l.range = 12f;
+            l.intensity = 1.6f;
+            l.shadows = LightShadows.None;
+            // Grey threads dangling from it down the tower.
+            var grey = PatchworkAssets.Yarn(SnarlKnot.FrayGrey);
+            for (int i = 0; i < 5; i++)
+            {
+                var strand = kit.Deco(PrimitiveType.Cylinder, new Vector3(-1.6f + i * 0.8f, -2.5f - (i % 2), 0.2f), new Vector3(0.12f, 2.2f + (i % 3) * 0.5f, 0.12f), grey, new Vector3(0f, 0f, (i - 2) * 6f), knot);
+                strand.name = "FrayStrand";
+            }
+            director.TowerKnot = knot;
+        }
+
+        // ================================================================ Barracks (north)
+
+        static void Barracks(LevelKit kit)
+        {
+            var stone = PatchworkAssets.Cobble(TownKit.Stone);
+            kit.Block(new Vector3(0f, -0.1f, 45f), new Vector3(30f, 0.3f, 26f), CobbleCol, "BarracksYard", stone);
+            kit.Block(new Vector3(-15.5f, 1.5f, 45f), new Vector3(1f, 3f, 26f), TownKit.Stone, "BarracksWall", stone);
+            kit.Block(new Vector3(15.5f, 1.5f, 45f), new Vector3(1f, 3f, 26f), TownKit.Stone, "BarracksWall", stone);
+            kit.Block(new Vector3(0f, 1.5f, 58.5f), new Vector3(32f, 3f, 1f), TownKit.Stone, "BarracksWall", stone);
+            // Striped sentry boxes, a flagpole and toy cannons.
+            for (int s = -1; s <= 1; s += 2)
+            {
+                Vector3 p = new Vector3(s * 5.5f, 0f, 33f);
+                kit.Block(p + Vector3.up * 1.4f, new Vector3(1.6f, 2.8f, 1.6f), new Color(0.85f, 0.25f, 0.28f), "SentryBox", PatchworkAssets.Planks(new Color(0.85f, 0.25f, 0.28f)));
+                for (int i = 0; i < 3; i++) kit.Deco(PrimitiveType.Cube, p + Vector3.up * (0.6f + i * 0.9f), new Vector3(1.64f, 0.25f, 1.64f), PatchworkAssets.Felt(new Color(0.97f, 0.95f, 0.9f)));
+                kit.Deco(PrimitiveType.Cube, p + Vector3.up * 3f, new Vector3(2f, 0.3f, 2f), PatchworkAssets.Planks(new Color(0.25f, 0.3f, 0.5f)));
+            }
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(-11f, 5f, 54f), new Vector3(0.2f, 5f, 0.2f), PatchworkAssets.Plain(TownKit.Iron, 0.5f));
+            var flag = kit.Group("BarracksFlag", new Vector3(-11f, 8.8f, 54f));
+            kit.Deco(PrimitiveType.Cube, new Vector3(1.2f, 0f, 0f), new Vector3(2.4f, 1.4f, 0.05f), PatchworkAssets.Felt(new Color(0.85f, 0.25f, 0.28f)), default(Vector3), flag);
+            kit.Deco(PrimitiveType.Cube, new Vector3(1.2f, 0f, -0.01f), new Vector3(2.4f, 0.3f, 0.06f), PatchworkAssets.Felt(new Color(0.97f, 0.95f, 0.9f)), default(Vector3), flag);
+            flag.gameObject.AddComponent<FlagWave>();
+            for (int i = 0; i < 2; i++)
+            {
+                Vector3 c = new Vector3(8f + i * 3f, 0f, 55f);
+                kit.Deco(PrimitiveType.Cylinder, c + new Vector3(0f, 0.9f, -0.4f), new Vector3(0.6f, 1f, 0.6f), PatchworkAssets.Plain(new Color(0.3f, 0.3f, 0.34f), 0.7f), new Vector3(70f, 0f, 0f));
+                kit.Deco(PrimitiveType.Cylinder, c + new Vector3(-0.45f, 0.45f, 0f), new Vector3(0.9f, 0.08f, 0.9f), PatchworkAssets.Wood(new Color(0.85f, 0.25f, 0.28f)), new Vector3(0f, 0f, 90f));
+                kit.Deco(PrimitiveType.Cylinder, c + new Vector3(0.45f, 0.45f, 0f), new Vector3(0.9f, 0.08f, 0.9f), PatchworkAssets.Wood(new Color(0.85f, 0.25f, 0.28f)), new Vector3(0f, 0f, 90f));
+            }
+            TownKit.Crate(kit, new Vector3(-12f, 0.06f, 40f), 1.4f, 5f);
+            TownKit.Crate(kit, new Vector3(-12.6f, 1.46f, 40.2f), 1f, -20f);
+            var foes = new List<Snarling>
+            {
+                Snarling.Create(kit.Root, new Vector3(-7f, 0.06f, 40f), new Vector3(7f, 0.06f, 40f)),
+                Snarling.Create(kit.Root, new Vector3(6f, 0.06f, 46f), new Vector3(-6f, 0.06f, 46f)),
+                Snarling.Create(kit.Root, new Vector3(-5f, 0.06f, 52f), new Vector3(5f, 0.06f, 52f))
+            };
+            Challenge(foes, MakeHeartstring(kit, "L1_hs_tangle", "Tin Tangle", new Vector3(0f, 1.7f, 46f), true));
+            kit.Hint(new Vector3(0f, 1.5f, 34.5f), new Vector3(8f, 4f, 3f), "Snarlings!",
+                "The Fray's little creatures have taken over the barracks. Jump on their heads to unravel them!");
+            kit.AddCheckpoint(new Vector3(0f, 0.06f, 35.5f), 0f);
+        }
+
+        // ================================================================ West: Spindle Hill (Yarn)
+
+        static void SpindleHill(LevelKit kit)
+        {
+            var region = MakeRegion(kit, "SpindleHill", Level1Director.LuteId);
+            var stone = PatchworkAssets.Cobble(TownKit.Stone);
+            // Houses along the west street.
+            TownKit.MakeHouse(kit, new Vector3(-33.3f, 0f, 12f), new Vector3(6f, 6f, 7f), 180f, Walls[2], Roofs[2], 11, 1, 1f);
+            TownKit.MakeHouse(kit, new Vector3(-33.3f, 0f, -12f), new Vector3(6f, 7f, 7f), 0f, Walls[0], Roofs[4], 12, -1, -1f);
+            TownKit.StreetLamp(kit, new Vector3(-34f, 0f, 5.5f));
+            TownKit.StreetLamp(kit, new Vector3(-34f, 0f, -5.5f));
+            kit.AddCheckpoint(new Vector3(-34.5f, 0f, 0f), -90f);
+            kit.Hint(new Vector3(-34.5f, 1.5f, 0f), new Vector3(4f, 4f, 9f), "Swing on Anything Pink",
+                "As Yarn, hold {Ability} near anything wrapped in pink yarn to swing: pegs on a clothesline, lanterns, big knots. Let go to fly!", HintTheme.Yarn);
+
+            // The clothesline over the ravine. The golden button hangs under the middle of the swing.
+            TownKit.Clothesline(kit, new Vector3(RavineEast + 0.6f, 0f, 1.5f), new Vector3(RavineWest - 0.6f, 0f, 1.5f), 9.4f, 1.4f, new[] { 0.5f });
+            kit.AddCameraZone(new Vector3((RavineEast + RavineWest) * 0.5f, 2f, 0f), new Vector3(20f, 22f, 16f), 2.5f, 6f);
+            kit.GoldenButton(CollectibleIds[1], new Vector3((RavineEast + RavineWest) * 0.5f, -0.4f, 1.5f));
+            SwingThreadsX(kit, (RavineEast + RavineWest) * 0.5f, 8f, 1.5f);
+
+            // The hill village (ground level): a cottage, yarn trees and a pincushion bounce.
+            kit.AddCheckpoint(new Vector3(RavineWest - 3f, 0f, 1.5f), -90f);
+            TownKit.MakeHouse(kit, new Vector3(-64f, 0f, -12f), new Vector3(9f, 6f, 8f), 0f, Walls[4], Roofs[0], 13, 1, 2f, TownKit.Sign.Spool);
+            kit.YarnTree(new Vector3(-56f, 0f, -6f), 4f, LevelKit.Palette.Sage);
+            kit.YarnTree(new Vector3(-80f, 0f, -4f), 5f, LevelKit.Palette.Rose);
+            kit.YarnTree(new Vector3(-82f, 0f, 14f), 4.5f, LevelKit.Palette.Butter);
+            kit.YarnTree(new Vector3(-56f, 0f, 22f), 3.6f, LevelKit.Palette.Lavender);
+            TownKit.FlowerBed(kit, new Vector3(-58f, 0f, -18f), new Vector2(3f, 2f), 4);
+            kit.SpoolTower(new Vector3(-84f, 0f, -20f), 6f, SpoolThreads);
+            kit.Spool(new Vector3(-78f, 0f, -16f), 1.6f, LevelKit.Palette.Sky);
+            kit.AddBouncePad(new Vector3(-67f, 0f, 1.5f), 16f);
+            kit.Thread(new Vector3(-67f, 3f, 1.5f), LevelKit.Palette.Gold);
+            // Terrace 1 (top 4) and the summit (top 4) across a 14 m gap, with a lantern gate to swing on.
+            var hillMat = PatchworkAssets.Knit(new Color(0.55f, 0.72f, 0.45f));
+            kit.Block(new Vector3(-67f, 2f, 8f), new Vector3(14f, 4f, 8f), GrassCol, "HillTerrace", hillMat);
+            kit.Hint(new Vector3(-67f, 5.5f, 8f), new Vector3(14f, 3f, 8f), "The Lantern Gate",
+                "Swing from the lantern to the old spinning wheel. Fall short and you'll just land in the meadow.", HintTheme.Yarn);
+            TownKit.LanternGate(kit, new Vector3(-71.5f, 0f, 19f), new Vector3(-62.5f, 0f, 19f), 14.4f, 12f);
+            kit.AddCameraZone(new Vector3(-67f, 6f, 19f), new Vector3(16f, 20f, 18f), 2.5f, 6f);
+            SwingThreadsZ(kit, -67f, 12f, 19f);
+            kit.Block(new Vector3(-67f, 2f, 32f), new Vector3(14f, 4f, 12f), GrassCol, "HillSummit", hillMat);
+            SpinningWheel(kit, new Vector3(-67f, 4f, 35.5f));
+            BandPieceAt(kit, Level1Director.LuteId, BandPiece.Part.Lute, "The Lute String", new Vector3(-67f, 5.6f, 31f), null);
+            MakeHomeHoop(kit, new Vector3(-62.5f, 4f, 29f));
+            // The Fray up here.
+            FrayTendril(kit, region, new Vector3(-71f, 4f, 30f), 3.2f);
+            FrayTendril(kit, region, new Vector3(-63f, 4f, 36f), 2.8f);
+            FrayTear(kit, region, new Vector3(-69f, 4f, 28.5f), 2f);
+            FrayTear(kit, region, new Vector3(-60f, 0f, -2f), 2.2f);
+            FrayTendril(kit, region, new Vector3(-74f, 0f, 6f), 3f);
+            Blooms(kit, region, new Vector3(-67f, 4f, 31f), new Vector2(5f, 3f), 8);
+            Blooms(kit, region, new Vector3(-66f, 0f, -2f), new Vector2(8f, 6f), 12);
+            Snarling.Create(kit.Root, new Vector3(-62f, 0f, -4f), new Vector3(-72f, 0f, -4f));
+        }
+
+        static void SwingThreadsX(LevelKit kit, float anchorX, float anchorY, float z)
+        {
+            const float rope = 8.4f;
+            foreach (float a in new[] { -50f, -28f, 28f, 50f })
+            {
+                float r = a * Mathf.Deg2Rad;
+                kit.Thread(new Vector3(anchorX - rope * Mathf.Sin(r), anchorY - rope * Mathf.Cos(r), z), LevelKit.Palette.Rose);
+            }
+        }
+
+        static void SwingThreadsZ(LevelKit kit, float x, float anchorY, float anchorZ)
+        {
+            const float rope = 8.4f;
+            foreach (float a in new[] { -50f, -28f, 28f, 50f })
+            {
+                float r = a * Mathf.Deg2Rad;
+                kit.Thread(new Vector3(x, anchorY - rope * Mathf.Cos(r), anchorZ + rope * Mathf.Sin(r)), LevelKit.Palette.Rose);
+            }
+        }
+
+        // The old spinning wheel the lute string got caught in.
+        static void SpinningWheel(LevelKit kit, Vector3 feet)
+        {
+            var wood = PatchworkAssets.Wood(new Color(0.65f, 0.45f, 0.3f));
+            kit.Block(feet + new Vector3(0f, 0.6f, 0f), new Vector3(5f, 1.2f, 1.6f), new Color(0.65f, 0.45f, 0.3f), "WheelBench", wood);
+            for (int s = -1; s <= 1; s += 2)
+                kit.Deco(PrimitiveType.Cube, feet + new Vector3(s * 0.5f, 2.6f, 0f), new Vector3(0.25f, 3f, 0.25f), wood);
+            var wheel = kit.Group("SpinningWheel", feet + new Vector3(0f, 3.8f, 0f));
+            for (int i = 0; i < 20; i++)
+            {
+                float a = i / 20f * Mathf.PI * 2f;
+                kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 2.4f, Mathf.Sin(a) * 2.4f, 0f), new Vector3(0.45f, 0.45f, 0.3f), wood, default(Vector3), wheel);
+            }
+            for (int i = 0; i < 6; i++)
+                kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(0.12f, 4.8f, 0.12f), wood, new Vector3(0f, 0f, i * 30f), wheel);
+            kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.6f, 0.3f, 0.6f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f), new Vector3(90f, 0f, 0f), wheel);
+            var spin = wheel.gameObject.AddComponent<Spinner>();
+            spin.Axis = Vector3.forward;
+            spin.Speed = 25f;
+            // Its spindle, wound with yarn.
+            kit.Deco(PrimitiveType.Cylinder, feet + new Vector3(2.2f, 1.9f, 0f), new Vector3(0.5f, 0.7f, 0.5f), PatchworkAssets.Yarn(LevelKit.Palette.Rose));
+        }
+
+        // ================================================================ East: the canal
+
+        static void Canal(LevelKit kit)
+        {
+            var cobble = PatchworkAssets.Cobble(CobbleCol);
+            TownKit.Bridge(kit, new Vector3(CanalWest - 0.5f, 0.05f, 0f), new Vector3(CanalEast + 0.5f, 0.05f, 0f), 5f, 1.2f);
+            TownKit.Bridge(kit, new Vector3(CanalWest - 0.5f, 0.05f, -40f), new Vector3(CanalEast + 0.5f, 0.05f, -40f), 3.5f, 0.8f);
+            TownKit.Bridge(kit, new Vector3(CanalWest - 0.5f, 0.05f, 40f), new Vector3(CanalEast + 0.5f, 0.05f, 40f), 3.5f, 0.8f);
+            kit.Block(new Vector3(43.5f, -0.1f, 0f), new Vector3(7f, 0.3f, 120f), CobbleCol, "Promenade", cobble);
+            for (float z = -50f; z <= 50f; z += 16f) TownKit.StreetLamp(kit, new Vector3(41f, 0.05f, z));
+            TownKit.Bench(kit, new Vector3(46.2f, 0.05f, 18f), -90f);
+            TownKit.Bench(kit, new Vector3(46.2f, 0.05f, -22f), -90f);
+            kit.AddCheckpoint(new Vector3(43.5f, 0.05f, 0f), 90f);
+            // Toy sailboats bobbing on the canal.
+            Color[] sails = { new Color(0.97f, 0.95f, 0.9f), LevelKit.Palette.Rose, LevelKit.Palette.Butter };
+            for (int i = 0; i < 3; i++)
+            {
+                var boat = kit.Group("ToyBoat", new Vector3(36f + (i - 1) * 1.6f, -1.25f, -20f + i * 22f));
+                kit.Deco(PrimitiveType.Sphere, Vector3.zero, new Vector3(1.2f, 0.5f, 2.6f), PatchworkAssets.Planks(new Color(0.65f, 0.35f, 0.3f)), default(Vector3), boat);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.2f, 0f), new Vector3(0.08f, 1.2f, 0.08f), PatchworkAssets.Wood(TownKit.DarkWood), default(Vector3), boat);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.3f, 0.45f), new Vector3(0.04f, 1.6f, 0.9f), PatchworkAssets.Fabric(sails[i]), default(Vector3), boat);
+                var bob = boat.gameObject.AddComponent<Spinner>();
+                bob.Speed = 4f;
+                bob.BobHeight = 0.12f;
+                bob.BobSpeed = 1.1f;
+            }
+
+            // The Tea House on the canal, and a toppled teapot that spouts Water up onto its roof.
+            var tea = TownKit.MakeHouse(kit, new Vector3(53f, 0f, -30f), new Vector3(9f, 6f, 8f), -90f, Walls[1], Roofs[4], 21, 0, 0f, TownKit.Sign.Teacup);
+            kit.Fountain(new Vector3(47.6f, 0f, -30f), 8.5f, LevelKit.FountainStyle.Teapot);
+            kit.ThreadLine(new Vector3(53f, tea.RoofTop + 0.8f, -33f), new Vector3(53f, tea.RoofTop + 0.8f, -27f), 3);
+
+            // The Thread Race along the promenade.
+            var race = kit.Volume<ThreadRace>(new Vector3(43.5f, 1.25f, -50f), new Vector3(2f, 2.4f, 2f), "ThreadRace");
+            var watch = new GameObject("Stopwatch").transform;
+            watch.SetParent(race.transform, false);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.3f, 0f), new Vector3(1.3f, 0.1f, 1.3f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.7f), new Vector3(90f, 0f, 0f), watch);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.3f, -0.07f), new Vector3(1.1f, 0.02f, 1.1f), PatchworkAssets.Felt(LevelKit.Palette.Cream), new Vector3(90f, 0f, 0f), watch);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.5f, -0.1f), new Vector3(0.08f, 0.4f, 0.02f), PatchworkAssets.Felt(UIKit.Ink), default(Vector3), watch);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 1f, 0f), Vector3.one * 0.25f, PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.7f), default(Vector3), watch);
+            race.Setup(watch);
+            race.TimeLimit = 16f;
+            var cyan = PatchworkAssets.Glow(new Color(0.55f, 0.9f, 1f), 0.9f);
+            for (int i = 0; i < 10; i++)
+            {
+                Vector3 p = new Vector3(i % 2 == 0 ? 42f : 45.5f, 1.25f, -42f + i * 8.9f);
+                var ringV = kit.Volume<RaceRing>(p, new Vector3(1.8f, 1.8f, 1.8f), "RaceRing");
+                var v = new GameObject("Ring").transform;
+                v.SetParent(ringV.transform, false);
+                for (int j = 0; j < 12; j++)
+                {
+                    float a = j / 12f * Mathf.PI * 2f;
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 0.7f, 0f, Mathf.Sin(a) * 0.7f), Vector3.one * 0.16f, cyan, default(Vector3), v);
+                }
+                ringV.Setup(v);
+                race.AddRing(ringV);
+            }
+            var raceHs = MakeHeartstring(kit, "L1_hs_race", "Race the Canal", new Vector3(45.5f, 1.8f, -53f), true);
+            if (GameState.IsCollected(raceHs.Id)) race.MarkDone();
+            else race.Won += raceHs.Reveal;
+        }
+
+        // ================================================================ East: the Dye Works (Water)
+
+        static void DyeWorks(LevelKit kit)
+        {
+            var region = MakeRegion(kit, "DyeWorks", Level1Director.TrumpetId);
+            Vector3 o = Mill;
+            System.Func<float, float, float, Vector3> L = (x, y, z) => o + new Vector3(x, y, z);
+            Color bc = new Color(0.68f, 0.42f, 0.34f);
+            var brick = PatchworkAssets.Brick(bc);
+            const float hw = 7f, hd = 6f, h = 12f, t = 0.6f;
+            // Hollow walls, with a drain grate in the south wall as the only way in.
+            kit.Block(L(-hw + t * 0.5f, h * 0.5f, 0f), new Vector3(t, h, hd * 2f - t * 2f), bc, "MillWall", brick);
+            kit.Block(L(hw - t * 0.5f, h * 0.5f, 0f), new Vector3(t, h, hd * 2f - t * 2f), bc, "MillWall", brick);
+            kit.Block(L(0f, h * 0.5f, hd - t * 0.5f), new Vector3(hw * 2f, h, t), bc, "MillWall", brick);
+            kit.Block(L(-3.9f, h * 0.5f, -hd + t * 0.5f), new Vector3(6.2f, h, t), bc, "MillWall", brick);
+            kit.Block(L(3.9f, h * 0.5f, -hd + t * 0.5f), new Vector3(6.2f, h, t), bc, "MillWall", brick);
+            kit.Block(L(0f, (h + 1f) * 0.5f, -hd + t * 0.5f), new Vector3(1.6f, h - 1f, t), bc, "MillWall", brick);
+            kit.Grate(L(0f, 0.5f, -hd + t * 0.5f), new Vector3(1.6f, 1f, t));
+            TownKit.GableRoof(kit, L(0f, h, 0f), hw * 2f + 0.8f, hd * 2f + 1f, 5f, 0f, PatchworkAssets.Shingle(new Color(0.35f, 0.38f, 0.45f)), brick);
+            kit.Block(L(4f, h + 4f, 2f), new Vector3(1.4f, 4f, 1.4f), bc, "MillChimney", brick);
+            var footing = PatchworkAssets.Cobble(TownKit.Stone);
+            kit.Deco(PrimitiveType.Cube, L(0f, 0.3f, -hd - 0.08f), new Vector3(hw * 2f + 0.32f, 0.6f, 0.16f), footing);
+            kit.Deco(PrimitiveType.Cube, L(0f, 0.3f, hd + 0.08f), new Vector3(hw * 2f + 0.32f, 0.6f, 0.16f), footing);
+            kit.Deco(PrimitiveType.Cube, L(-hw - 0.08f, 0.3f, 0f), new Vector3(0.16f, 0.6f, hd * 2f), footing);
+            kit.Deco(PrimitiveType.Cube, L(hw + 0.08f, 0.3f, 0f), new Vector3(0.16f, 0.6f, hd * 2f), footing);
+            // Windows glowing on the outside, a sign, and a waterwheel turning in its pond.
+            var pane = PatchworkAssets.Glow(new Color(1f, 0.86f, 0.6f), 0.55f);
+            for (int i = -1; i <= 1; i++)
+                for (int f = 0; f < 2; f++)
+                {
+                    kit.Deco(PrimitiveType.Cube, L(i * 4f, 4f + f * 4f, -hd - 0.04f), new Vector3(1.2f, 1.6f, 0.06f), pane);
+                    kit.Deco(PrimitiveType.Cube, L(-hw - 0.04f, 4f + f * 4f, i * 3.5f), new Vector3(0.06f, 1.6f, 1.2f), pane);
+                }
+            kit.Hint(L(0f, 1.5f, -hd - 2.5f), new Vector3(6f, 3f, 3f), "The Dye Works",
+                "The trumpet's valve dew is kept in the reservoir up top. The only way in is the drain. Squeeze through as Water!", HintTheme.Water);
+            var wheel = kit.Group("Waterwheel", L(-hw - 1.4f, 4.2f, 0f));
+            var wood = PatchworkAssets.Wood(new Color(0.55f, 0.38f, 0.26f));
+            for (int i = 0; i < 12; i++)
+            {
+                float a = i / 12f * Mathf.PI * 2f;
+                var paddle = kit.Deco(PrimitiveType.Cube, new Vector3(0f, Mathf.Sin(a) * 3.6f, Mathf.Cos(a) * 3.6f), new Vector3(1.6f, 0.15f, 1f), wood, new Vector3(-a * Mathf.Rad2Deg, 0f, 0f), wheel);
+                paddle.name = "Paddle";
+            }
+            kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(7.6f, 0.1f, 7.6f), wood, new Vector3(0f, 0f, 90f), wheel);
+            kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1f, 1f, 1f), PatchworkAssets.Plain(TownKit.Iron, 0.6f), new Vector3(0f, 0f, 90f), wheel);
+            var spin = wheel.gameObject.AddComponent<Spinner>();
+            spin.Axis = Vector3.right;
+            spin.Speed = 30f;
+            kit.Deco(PrimitiveType.Cylinder, L(-hw - 1.4f, 0.05f, 0f), new Vector3(5.5f, 0.05f, 9.5f), PatchworkAssets.Cobble(TownKit.Stone));
+            kit.Deco(PrimitiveType.Cylinder, L(-hw - 1.4f, 0.12f, 0f), new Vector3(4.8f, 0.02f, 8.8f), PatchworkAssets.Water(new Color(0.4f, 0.65f, 0.88f)));
+
+            // ----- Inside -----
+            var planks = PatchworkAssets.Planks(new Color(0.62f, 0.45f, 0.32f));
+            kit.Deco(PrimitiveType.Cube, L(0f, 0.04f, 0f), new Vector3(hw * 2f - t * 2f, 0.04f, hd * 2f - t * 2f), planks);
+            kit.Fountain(L(-4.5f, 0f, -3f), 7f, LevelKit.FountainStyle.Pipe);
+            kit.Block(L(-1.15f, 2.5f, -3.2f), new Vector3(4.3f, 5f, 4.4f), new Color(0.62f, 0.45f, 0.32f), "MillFloor1", planks);
+            kit.Fountain(L(-0.2f, 5f, -3f), 6f, LevelKit.FountainStyle.Pipe);
+            kit.Block(L(3.8f, 4.5f, -1.7f), new Vector3(5.2f, 9f, 7.4f), new Color(0.62f, 0.45f, 0.32f), "MillFloor2", planks);
+            // The reservoir: a big copper vat with pipes.
+            var copper = PatchworkAssets.Plain(new Color(0.78f, 0.48f, 0.3f), 0.75f);
+            kit.Deco(PrimitiveType.Cylinder, L(4.6f, 10.2f, 0.4f), new Vector3(2.6f, 1.2f, 2.6f), copper);
+            kit.Deco(PrimitiveType.Cylinder, L(4.6f, 11.42f, 0.4f), new Vector3(2.3f, 0.02f, 2.3f), PatchworkAssets.Water(new Color(0.45f, 0.75f, 0.95f)));
+            kit.Rope(L(4.6f, 11.4f, 0.4f), L(4.6f, 11.4f, 5f), copper, 0.3f);
+            kit.Rope(L(4.6f, 11.4f, 5f), L(-6f, 11.4f, 5f), copper, 0.3f);
+            BandPieceAt(kit, Level1Director.TrumpetId, BandPiece.Part.Trumpet, "Valve Dew", L(2.8f, 10.5f, -3.8f), null);
+            MakeHomeHoop(kit, L(5f, 9f, -4.4f));
+            // A secret: a third pipe in the corner to a high shelf with a golden button.
+            kit.Fountain(L(-5.2f, 0f, 0.8f), 11f, LevelKit.FountainStyle.Pipe);
+            kit.Block(L(-5.1f, 4.5f, 3.9f), new Vector3(2.6f, 9f, 3f), new Color(0.62f, 0.45f, 0.32f), "MillShelf", planks);
+            kit.GoldenButton(CollectibleIds[0], L(-5.1f, 10.1f, 4.2f));
+            TownKit.Crate(kit, L(-2f, 0.04f, 3.6f), 1.2f, 20f);
+            TownKit.Crate(kit, L(0.2f, 0.04f, 4.4f), 1f, -10f);
+            kit.Lamp(L(-2f, 9.8f, 2.5f), h);
+            kit.Lamp(L(1f, 7.5f, -4f), h);
+            kit.AddCameraZone(L(0f, 6f, 0f), new Vector3(hw * 2f - 1f, h, hd * 2f - 1f), -3.5f, 12f);
+            kit.AddCheckpoint(L(0f, 0f, -4.5f), 0f);
+            kit.Thread(L(-4.5f, 3.5f, -3f), LevelKit.Palette.Sky);
+            kit.Thread(L(-0.2f, 8f, -3f), LevelKit.Palette.Sky);
+            // Spilled dye and the Fray around the works.
+            for (int i = 0; i < 4; i++)
+                kit.Deco(PrimitiveType.Cylinder, L(-9f + i * 2.5f, 0.06f, -9f - (i % 2) * 2f), new Vector3(1.8f, 0.02f, 1.4f), PatchworkAssets.Water(FlowerColors[i]));
+            FrayTendril(kit, region, L(-9f, 0f, -6f), 3f);
+            FrayTendril(kit, region, L(8.5f, 0f, -4f), 2.6f);
+            FrayTear(kit, region, L(-3f, 0f, -9f), 2.2f);
+            FrayTendril(kit, region, L(3.5f, 9f, 2.5f), 2f);
+            Blooms(kit, region, L(0f, 0f, -10f), new Vector2(8f, 2.5f), 10);
+            Snarling.Create(kit.Root, L(-6f, 0f, -11f), L(6f, 0f, -11f));
+        }
+
+        // ================================================================ South: the rooftops (Wind)
+
+        static void Rooftops(LevelKit kit)
+        {
+            var region = MakeRegion(kit, "Rooftops", Level1Director.PiperId);
+            kit.AddCheckpoint(new Vector3(0f, 0.05f, -36f), 180f);
+            // A row of tall terraced houses on each side of the lane.
+            var h1 = TownKit.MakeHouse(kit, new Vector3(0f, 0f, -46f), new Vector3(12f, 7f, 8f), 0f, Walls[1], Roofs[1], 31, -1, 4f, TownKit.Sign.None);
+            var h2 = TownKit.MakeHouse(kit, new Vector3(0f, 0f, -58f), new Vector3(12f, 6f, 8f), 0f, Walls[3], Roofs[0], 32, -1, -2f, TownKit.Sign.None, false);
+            TownKit.MakeHouse(kit, new Vector3(-14f, 0f, -46f), new Vector3(12f, 8f, 8f), 0f, Walls[2], Roofs[3], 33, 1, -2f);
+            TownKit.MakeHouse(kit, new Vector3(-14f, 0f, -58f), new Vector3(12f, 7f, 8f), 0f, Walls[0], Roofs[2], 34, -1, 3f, TownKit.Sign.None, false);
+            TownKit.MakeHouse(kit, new Vector3(-28f, 0f, -46f), new Vector3(12f, 6f, 8f), 0f, Walls[4], Roofs[4], 35, 1, 0f);
+            TownKit.MakeHouse(kit, new Vector3(28f, 0f, -46f), new Vector3(12f, 7f, 8f), 0f, Walls[0], Roofs[3], 36, 1, 2f);
+            TownKit.MakeHouse(kit, new Vector3(16f, 0f, -60f), new Vector3(10f, 6f, 8f), 0f, Walls[2], Roofs[1], 37, 0, 0f, TownKit.Sign.None, false);
+            // Laundry strung across the back alley.
+            TownKit.Clothesline(kit, new Vector3(-20f, 0f, -52f), new Vector3(-8f, 0f, -52f), 5.5f, 0.8f, new float[0]);
+            TownKit.Clothesline(kit, new Vector3(8f, 0f, -52f), new Vector3(22f, 0f, -52f), 5.5f, 0.8f, new float[0]);
+
+            // Up: a steam vent in the lane lifts Wind onto the first roof.
+            kit.Updraft(new Vector3(0f, 0.05f, -38.5f), 12f, LevelKit.UpdraftStyle.Steam);
+            kit.Hint(new Vector3(0f, 1.5f, -38.5f), new Vector3(6f, 4f, 4f), "Over the Rooftops",
+                "Steam and chimney smoke lift Wind Form. Float up, then glide from roof to roof. Tap {Ability} mid-glide for a gust.", HintTheme.Wind);
+            kit.Thread(new Vector3(0f, 6f, -38.5f), LevelKit.Palette.Cream);
+            kit.Thread(new Vector3(0f, 10f, -38.5f), LevelKit.Palette.Cream);
+            kit.AddCameraZone(new Vector3(0f, 10f, -57f), new Vector3(20f, 22f, 38f), 3f, 6f);
+            // Across the alley to the second roof, then its chimney smoke and a gust to the spire.
+            kit.Updraft(h2.ChimneyTop, 8f, LevelKit.UpdraftStyle.Chimney);
+            kit.ThreadLine(new Vector3(-2f, 17f, -62f), new Vector3(-0.5f, 16.8f, -67.5f), 3);
+            Vector3 spire = new Vector3(0f, 0f, -72f);
+            var bc = new Color(0.62f, 0.4f, 0.36f);
+            kit.Block(spire + Vector3.up * 8f, new Vector3(6f, 16f, 6f), bc, "Spire", PatchworkAssets.Brick(bc));
+            kit.Deco(PrimitiveType.Cube, spire + Vector3.up * 15.8f, new Vector3(6.6f, 0.4f, 6.6f), PatchworkAssets.Cobble(TownKit.Stone));
+            Weathervane(kit, spire + new Vector3(-1.6f, 16f, -1.6f));
+            // Wisp, the best piper in town, stranded and tangled in the Fray.
+            var stranded = ToyNpc.Create(kit, spire + new Vector3(1.4f, 16f, 0.8f), 0f, ToyNpc.Kind.Bird, "Wisp", new Color(0.45f, 0.65f, 0.95f), new Color(0.95f, 0.5f, 0.55f));
+            stranded.LookAtPatch = true;
+            BandPieceAt(kit, Level1Director.PiperId, BandPiece.Part.Piper, "Wisp the Piper", spire + new Vector3(1.4f, 17f, 0.8f), stranded);
+            FrayTendril(kit, region, spire + new Vector3(-2.6f, 16f, 0.2f), 2.4f);
+            FrayTendril(kit, region, spire + new Vector3(2.6f, 16f, 2.6f), 2f);
+            MakeHomeHoop(kit, spire + new Vector3(-1.6f, 16f, 1.8f));
+            Blooms(kit, region, new Vector3(0f, 0.05f, -38f), new Vector2(4f, 2f), 8);
+            FrayTear(kit, region, new Vector3(3f, 0.05f, -36f), 1.8f);
+            FrayTendril(kit, region, new Vector3(-4f, 0f, -52f), 2.6f);
+
+            // Secret 1: the humming spool tower (golden button), from the first roof's chimney.
+            kit.Updraft(h1.ChimneyTop, 8f, LevelKit.UpdraftStyle.Chimney);
+            kit.SpoolTower(new Vector3(14f, 0f, -48f), 16f, SpoolThreads);
+            var secret = kit.GoldenButton(CollectibleIds[2], new Vector3(14f, 17.3f, -48f));
+            secret.Hums = true;
+            // Secret 2: steam on the spire lifts you to a cloud patch with a Heartstring.
+            kit.Updraft(spire + new Vector3(1.5f, 16f, -1.5f), 10f, LevelKit.UpdraftStyle.Steam);
+            Vector3 cloud = new Vector3(-6f, 22f, -78f);
+            kit.Prism(Octagon(cloud, 4f), cloud.y - 1f, cloud.y, PatchworkAssets.Felt(new Color(0.97f, 0.95f, 0.9f)), "CloudPatch");
+            kit.Cloud(cloud + new Vector3(0f, -1.2f, 0f), 2.6f);
+            MakeHeartstring(kit, "L1_hs_cloud", "Cloud Patch", cloud + new Vector3(0f, 1.6f, 0f), false);
+            MakeHomeHoop(kit, cloud + new Vector3(2f, 0f, 2f));
+        }
+
+        static void Weathervane(LevelKit kit, Vector3 feet)
+        {
+            var iron = PatchworkAssets.Plain(TownKit.Iron, 0.6f);
+            kit.Deco(PrimitiveType.Cylinder, feet + Vector3.up * 2.5f, new Vector3(0.14f, 2.5f, 0.14f), iron);
+            var vane = kit.Group("Vane", feet + Vector3.up * 4.6f);
+            kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(0.1f, 0.1f, 2.6f), iron, default(Vector3), vane);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0f, 1.3f), new Vector3(0.05f, 0.5f, 0.5f), iron, new Vector3(45f, 0f, 0f), vane);
+            var rooster = new GameObject("Rooster").transform;
+            rooster.SetParent(vane, false);
+            rooster.localPosition = new Vector3(0f, 0.6f, -0.5f);
+            kit.Deco(PrimitiveType.Sphere, Vector3.zero, new Vector3(0.2f, 0.8f, 1f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f), default(Vector3), rooster);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.45f, 0.4f), new Vector3(0.18f, 0.4f, 0.35f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f), default(Vector3), rooster);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.3f, -0.55f), new Vector3(0.06f, 0.7f, 0.5f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f), new Vector3(-30f, 0f, 0f), rooster);
+            var spin = vane.gameObject.AddComponent<FlagWave>();
+            spin.Amount = 50f;
+            spin.Speed = 0.4f;
+            kit.Deco(PrimitiveType.Cube, feet + Vector3.up * 3.6f, new Vector3(1.6f, 0.06f, 0.06f), iron);
+            kit.Deco(PrimitiveType.Cube, feet + Vector3.up * 3.6f, new Vector3(0.06f, 0.06f, 1.6f), iron);
+        }
+
+        // A band piece (the lute string, valve dew, or the stranded piper).
+        static void BandPieceAt(LevelKit kit, string id, BandPiece.Part part, string title, Vector3 pos, ToyNpc stranded)
+        {
+            var piece = kit.Volume<BandPiece>(pos, part == BandPiece.Part.Piper ? new Vector3(2.6f, 3f, 2.6f) : new Vector3(2f, 2.6f, 2f), "BandPiece_" + id);
+            Transform vis = null;
+            if (part != BandPiece.Part.Piper)
+            {
+                vis = new GameObject("Visual").transform;
+                vis.SetParent(piece.transform, false);
+                var glow = PatchworkAssets.Glow(new Color(1f, 0.82f, 0.4f), 0.6f);
+                if (part == BandPiece.Part.Lute)
+                {
+                    // A golden coil of lute string.
+                    for (int i = 0; i < 24; i++)
+                    {
+                        float a = i / 24f * Mathf.PI * 4f;
+                        kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 0.55f, -0.25f + i * 0.022f, Mathf.Sin(a) * 0.55f), Vector3.one * 0.14f, glow, default(Vector3), vis);
+                    }
+                    kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, 0f), new Vector3(0.3f, 0.35f, 0.3f), PatchworkAssets.Wood(new Color(0.75f, 0.5f, 0.3f)), default(Vector3), vis);
+                }
+                else
+                {
+                    // A glass phial with a glowing drop of valve dew inside.
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -0.1f, 0f), new Vector3(0.7f, 0.8f, 0.7f), PatchworkAssets.Bubble(new Color(0.8f, 0.95f, 1f, 0.5f)), default(Vector3), vis);
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -0.15f, 0f), new Vector3(0.38f, 0.45f, 0.38f), PatchworkAssets.Glow(new Color(0.45f, 0.8f, 1f), 1.4f), default(Vector3), vis);
+                    kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.42f, 0f), new Vector3(0.22f, 0.15f, 0.22f), PatchworkAssets.Bubble(new Color(0.8f, 0.95f, 1f, 0.5f)), default(Vector3), vis);
+                    kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.6f, 0f), new Vector3(0.2f, 0.08f, 0.2f), PatchworkAssets.Felt(new Color(0.65f, 0.48f, 0.32f)), default(Vector3), vis);
+                }
+                var lightGo = new GameObject("Glow");
+                lightGo.transform.SetParent(vis, false);
+                var l = lightGo.AddComponent<Light>();
+                l.type = LightType.Point;
+                l.color = part == BandPiece.Part.Lute ? new Color(1f, 0.8f, 0.5f) : new Color(0.5f, 0.8f, 1f);
+                l.range = 7f;
+                l.intensity = 1.6f;
+                l.shadows = LightShadows.None;
+            }
+            piece.Setup(id, part, title, vis, stranded);
+        }
+
+        // ================================================================ The toys of Toybox Town
+
+        static ToyNpc Toy(LevelKit kit, Vector3 feet, float yaw, ToyNpc.Kind kind, string name, Color main, Color accent, ToyNpc.Instrument inst, float pitch, Color tag, bool talk = true)
+        {
+            var npc = ToyNpc.Create(kit, feet, yaw, kind, name, main, accent, inst);
+            npc.VoicePitch = pitch;
+            npc.Tag = tag;
+            if (talk)
+            {
+                var zone = kit.Volume<TalkZone>(feet + Vector3.up * 1.2f, new Vector3(2.8f, 3f, 2.8f), "Talk_" + name);
+                zone.Npc = npc;
+                zone.transform.SetParent(npc.transform, true);
+            }
+            return npc;
+        }
+
+        static void Townsfolk(LevelKit kit)
+        {
+            Vector3 b = Bandstand + Vector3.up * 0.9f;
+
+            // ----- The band -----
+            var pip = Toy(kit, b + new Vector3(-2.6f, 0f, -0.8f), 180f, ToyNpc.Kind.RagDoll, "Pip Plunkett", new Color(0.85f, 0.3f, 0.35f), new Color(0.95f, 0.8f, 0.3f), ToyNpc.Instrument.Lute, 1.15f, new Color(0.75f, 0.3f, 0.35f));
+            pip.Lines = () => Level1Director.Has(Level1Director.LuteId)
+                ? new[] { "Listen to her sing! A lute's nothing without its string, and now she's got hers back.", "Thank you, little one. Now, has anyone seen Brassby's valve dew? Or Wisp?" }
+                : new[] { "Pip Plunkett, lutenist to the Mayor! Or I was, until the Fray snapped my string clean off.", "I saw it blow away west, over the ravine and up Spindle Hill. It'll be caught in the old spinning wheel up there, I'd bet my hat.",
+                          "You'll want to swing across. Anything wrapped in pink yarn will hold you!" };
+            var brassby = Toy(kit, b + new Vector3(2.6f, 0f, -0.8f), 180f, ToyNpc.Kind.TinSoldier, "Corporal Brassby", new Color(0.8f, 0.22f, 0.25f), LevelKit.Palette.Gold, ToyNpc.Instrument.Trumpet, 0.8f, new Color(0.65f, 0.2f, 0.22f));
+            brassby.Lines = () => Level1Director.Has(Level1Director.TrumpetId)
+                ? new[] { "Ten-HUT! Ta-ra-ta-raaa! The valves are slick as a sardine. Splendid work!", "I shall play the wedding march with full military gusto!" }
+                : new[] { "Corporal Brassby, first trumpet! Ahem. My valves are stuck solid. The Fray dried them right out.", "What they need is a drop of valve dew. The Dye Works by the canal keeps some in its reservoir.",
+                          "The mill's all locked up, mind. Only a drain to get in. A wee bubble of Water might manage it." };
+            var wisp = Toy(kit, b + new Vector3(0f, 0f, 0.4f), 180f, ToyNpc.Kind.Bird, "Wisp", new Color(0.45f, 0.65f, 0.95f), new Color(0.95f, 0.5f, 0.55f), ToyNpc.Instrument.Pipe, 1.45f, new Color(0.3f, 0.5f, 0.85f));
+            wisp.Lines = () => new[] { "Tweedle-dee! You came all the way up the weathervane for me!", "The Fray's gust blew me clean off my perch. I'll pipe the sweetest tune this town's ever heard. Promise!" };
+            var bumble = Toy(kit, b + new Vector3(0f, 0f, 2.8f), 180f, ToyNpc.Kind.Bunny, "Bumble", new Color(0.95f, 0.75f, 0.8f), new Color(0.97f, 0.93f, 0.85f), ToyNpc.Instrument.Drum, 1.25f, new Color(0.8f, 0.5f, 0.6f));
+            bumble.Lines = () => Level1Director.BandCount() >= 3
+                ? new[] { "Ba-dum! We're all here! Go on, tell the Mayor we're ready!" }
+                : new[] { "Ba-dum... ba-dum... My drum's the only thing that still works. It's not much of a wedding band on its own.",
+                          "We need Pip's lute string, Brassby's valve dew and our piper Wisp. " + (3 - Level1Director.BandCount()) + " to go!" };
+            director.Lute = pip;
+            director.Trumpet = brassby;
+            director.Piper = wisp;
+            director.Drummer = bumble;
+
+            // ----- The happy couple -----
+            var mayor = Toy(kit, director.MayorSpot, 180f, ToyNpc.Kind.Teddy, "Mayor Bramblebutton", new Color(0.62f, 0.42f, 0.28f), new Color(0.18f, 0.2f, 0.35f), ToyNpc.Instrument.None, 0.72f, new Color(0.25f, 0.28f, 0.45f));
+            mayor.Lines = () =>
+            {
+                if (GameState.IsLevelComplete(SceneName))
+                    return new[] { "What a wedding! The finest Toybox Town has ever seen, and the Fray gone from our clock tower.", "You'll always be welcome here, young Patch. Do visit the bandstand. They haven't stopped playing since!" };
+                if (Level1Director.BandCount() >= 3)
+                    return new[] { "The whole band is back? Then, ahem... places, everyone! Places!", "Lady Lacewing, my dear... shall we?" };
+                return new[] { "Mayor Bramblebutton, at your service! Today I marry the loveliest doll in all the toybox.", "But the Fray has ruined the band, and I simply cannot be married without music. It's tradition!",
+                               "Pip, Brassby and Bumble will tell you what they need. Oh, and our piper Wisp has gone missing altogether!" };
+            };
+            mayor.TalkEnded = () => { if (director.CanStartWedding) director.StartWedding(); };
+            var bride = Toy(kit, director.BrideSpot, 180f, ToyNpc.Kind.RagDoll, "Lady Lacewing", new Color(0.98f, 0.97f, 0.95f), new Color(0.95f, 0.75f, 0.4f), ToyNpc.Instrument.None, 1.3f, new Color(0.8f, 0.55f, 0.65f));
+            bride.Lines = () => GameState.IsLevelComplete(SceneName)
+                ? new[] { "I'm Lady Bramblebutton now! Oh, it does have a ring to it." }
+                : new[] { "Isn't it a beautiful morning for a wedding? Or it would be, if it weren't so... grey.", "That nasty Fray has wrapped itself round the clock tower. I do hope the music will chase it away." };
+            director.Mayor = mayor;
+            director.Bride = bride;
+
+            // ----- Townsfolk with tips -----
+            var tock = Toy(kit, new Vector3(-6f, 0.06f, 21f), 180f, ToyNpc.Kind.TinSoldier, "Sergeant Tock", new Color(0.25f, 0.35f, 0.65f), LevelKit.Palette.Gold, ToyNpc.Instrument.None, 0.75f, new Color(0.25f, 0.32f, 0.55f));
+            tock.Lines = () => new[] { "HALT! Oh. It's you. Carry on.", "Snarlings have taken the barracks, through the arch there. Little grey tangles of Fray.", "Jump on their heads, that's the drill! Stomp, stomp!" };
+            var nob = Toy(kit, new Vector3(46f, 0.05f, 4f), -90f, ToyNpc.Kind.Nutcracker, "Nob the Nutcracker", new Color(0.3f, 0.5f, 0.35f), LevelKit.Palette.Gold, ToyNpc.Instrument.None, 0.65f, new Color(0.25f, 0.42f, 0.3f));
+            nob.Lines = () => new[] { "Crack! Welcome to the canal. Mind the water, it's only knee deep but awfully wet.", "The Dye Works is locked tighter than a walnut. But there's a drain in its south wall...", "And that toppled teapot by the Tea House? Still spouting. Water Form could ride it." };
+            var jack = Toy(kit, new Vector3(-31f, 0.05f, 4f), 90f, ToyNpc.Kind.JackInBox, "Jack", new Color(0.35f, 0.55f, 0.85f), new Color(0.95f, 0.4f, 0.45f), ToyNpc.Instrument.None, 1.2f, new Color(0.35f, 0.5f, 0.8f));
+            jack.Lines = () => new[] { "BOING! Ha! Got you.", "Want to cross the ravine? Swing from the clothesline peg wrapped in pink yarn. Yarn Form only, mind!", "Drop in? No bother. There are steps back up on this side." };
+            var thimbleby = Toy(kit, new Vector3(-4f, 0.05f, -34f), 180f, ToyNpc.Kind.RagDoll, "Mrs. Thimbleby", new Color(0.55f, 0.45f, 0.75f), new Color(0.6f, 0.4f, 0.3f), ToyNpc.Instrument.None, 1.05f, new Color(0.5f, 0.4f, 0.7f));
+            thimbleby.Lines = () => new[] { "Oh, poor Wisp! A great grey gust took him right up onto the weathervane at the end of the lane.", "My laundry's been up on those roofs twice this week. The steam from the vent carries things right up.", "A little cloud like you would float up there like a feather, dear." };
+            var bun = Toy(kit, new Vector3(45.5f, 0.05f, -46.5f), 0f, ToyNpc.Kind.Bunny, "Bun", new Color(0.97f, 0.97f, 0.95f), new Color(0.85f, 0.6f, 0.7f), ToyNpc.Instrument.None, 1.5f, new Color(0.75f, 0.55f, 0.65f));
+            bun.Lines = () => new[] { "Ready, steady... RACE! Touch the stopwatch and grab every ring along the promenade!", "My record's twelve seconds. Hop to it!" };
+            var ted = Toy(kit, new Vector3(-6f, 0.06f, -11f), 45f, ToyNpc.Kind.Teddy, "Little Ted", new Color(0.85f, 0.65f, 0.4f), new Color(0.4f, 0.6f, 0.85f), ToyNpc.Instrument.None, 1.4f, new Color(0.55f, 0.45f, 0.3f));
+            ted.transform.localScale = Vector3.one * 0.7f;
+            ted.Lines = () => new[] { "Those grey knots are everywhere! There's one on the bridge, one up on the pigeon loft, one on the Tea House roof...", "Jump on top of them and they go POP! Find all six!" };
+
+            // ----- Wedding guests (just here to watch) -----
+            director.Crowd.Add(Toy(kit, new Vector3(-6.5f, 0.06f, -8f), 0f, ToyNpc.Kind.RagDoll, "Guest", new Color(0.6f, 0.8f, 0.6f), new Color(0.45f, 0.3f, 0.2f), ToyNpc.Instrument.None, 1f, Color.grey, false));
+            director.Crowd.Add(Toy(kit, new Vector3(6.5f, 0.06f, -8f), 0f, ToyNpc.Kind.Nutcracker, "Guest", new Color(0.7f, 0.25f, 0.5f), LevelKit.Palette.Gold, ToyNpc.Instrument.None, 1f, Color.grey, false));
+            director.Crowd.Add(Toy(kit, new Vector3(-4f, 0.06f, -9.5f), 0f, ToyNpc.Kind.Bunny, "Guest", new Color(0.75f, 0.7f, 0.6f), new Color(0.95f, 0.9f, 0.85f), ToyNpc.Instrument.None, 1f, Color.grey, false));
+            director.Crowd.Add(Toy(kit, new Vector3(4f, 0.06f, -9.5f), 0f, ToyNpc.Kind.JackInBox, "Guest", new Color(0.95f, 0.7f, 0.3f), new Color(0.4f, 0.7f, 0.5f), ToyNpc.Instrument.None, 1f, Color.grey, false));
+            director.Crowd.Add(tock);
+            director.Crowd.Add(ted);
+        }
+
+        // ================================================================ Knot a Problem (6 knots around town)
+
+        static void Knots(LevelKit kit)
+        {
+            var hs = MakeHeartstring(kit, "L1_hs_knots", "Knot a Problem", new Vector3(-9f, 1.7f, -14.5f), true);
+            var knots = new List<SnarlKnot>
+            {
+                MakeKnot(kit, new Vector3(8f, 1f, -8f)),
+                MakeKnot(kit, new Vector3(-8.5f, 1f, 13f)),
+                MakeKnot(kit, new Vector3(-11f, 5.9f, -10.8f)),
+                MakeKnot(kit, new Vector3(36f, 2.2f, 0f)),
+                MakeKnot(kit, new Vector3(53f, 10.6f, -30f)),
+                MakeKnot(kit, new Vector3(0f, 1f, -52f))
+            };
+            Challenge(knots, hs);
+        }
+
+        // ================================================================ Yarn birds
+
+        static void YarnBirds(LevelKit kit)
+        {
+            Color[] c = { LevelKit.Palette.Rose, LevelKit.Palette.Sky, LevelKit.Palette.Butter, LevelKit.Palette.Lavender, LevelKit.Palette.Peach };
+            kit.YarnBird(Bandstand + Vector3.up * 7f, c[0], false);
+            kit.YarnBird(new Vector3(0f, 14f, 6f), c[1], true, 12f);
+            kit.YarnBird(new Vector3(-8f, 0.06f, -4f), c[2], false);
+            kit.YarnBird(new Vector3(9f, 0.06f, 4f), c[3], false);
+            kit.YarnBird(Tower + new Vector3(0f, 36.6f, 0f), c[4], false);
+            kit.YarnBird(new Vector3(0f, 30f, 27f), c[0], true, 9f);
+            kit.YarnBird(new Vector3(-44f, 6f, 10f), c[1], true, 7f);
+            kit.YarnBird(new Vector3(-56f, 4.1f, -6f), c[2], false);
+            kit.YarnBird(new Vector3(-67f, 7.9f, 35.5f), c[3], false);
+            kit.YarnBird(new Vector3(41f, 5.2f, 18f), c[4], false);
+            kit.YarnBird(new Vector3(52f, 14f, 0f), c[0], true, 10f);
+            kit.YarnBird(new Vector3(0f, 10.6f, -46f), c[1], false);
+            kit.YarnBird(new Vector3(-14f, 11.6f, -46f), c[2], false);
+            kit.YarnBird(new Vector3(0f, 20f, -62f), c[3], true, 9f);
+            kit.YarnBird(new Vector3(-11f, 3f, 54f), c[4], false);
         }
 
         // ================================================================ Shared pieces
@@ -250,47 +1034,6 @@ namespace Patchwork
             return r;
         }
 
-        // A stitched archway at the start of each region's path, in its colour, with a sign on top.
-        static void RegionArch(LevelKit kit, Vector3 pos, float yaw, Color color, int icon)
-        {
-            var g = kit.Group("RegionArch", pos);
-            g.rotation = Quaternion.Euler(0f, yaw, 0f);
-            var felt = PatchworkAssets.Felt(color);
-            var trim = PatchworkAssets.Felt(Color.Lerp(color, Color.white, 0.5f));
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(-3.6f, 2.4f, 0f), new Vector3(0.6f, 2.4f, 0.6f), felt, default(Vector3), g);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(3.6f, 2.4f, 0f), new Vector3(0.6f, 2.4f, 0.6f), felt, default(Vector3), g);
-            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 5f, 0f), new Vector3(8.4f, 0.7f, 0.7f), trim, default(Vector3), g);
-            kit.Deco(PrimitiveType.Sphere, new Vector3(-3.6f, 4.9f, 0f), Vector3.one * 0.9f, felt, default(Vector3), g);
-            kit.Deco(PrimitiveType.Sphere, new Vector3(3.6f, 4.9f, 0f), Vector3.one * 0.9f, felt, default(Vector3), g);
-            var sign = new GameObject("Sign").transform;
-            sign.SetParent(g, false);
-            sign.localPosition = new Vector3(0f, 6.3f, 0f);
-            var signMat = PatchworkAssets.Felt(color);
-            switch (icon)
-            {
-                case 0: // yarn ball
-                    kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 1.3f, PatchworkAssets.Yarn(color), default(Vector3), sign);
-                    break;
-                case 1: // water drop
-                    kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -0.15f, 0f), Vector3.one * 1.1f, PatchworkAssets.Felt(new Color(0.45f, 0.65f, 0.85f)), default(Vector3), sign);
-                    kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.35f, 0f), Vector3.one * 0.72f, PatchworkAssets.Felt(new Color(0.45f, 0.65f, 0.85f)), new Vector3(0f, 0f, 45f), sign);
-                    break;
-                case 2: // cloud
-                    kit.Deco(PrimitiveType.Sphere, Vector3.zero, new Vector3(1.6f, 0.9f, 0.9f), PatchworkAssets.Felt(new Color(0.98f, 0.97f, 0.94f)), default(Vector3), sign);
-                    kit.Deco(PrimitiveType.Sphere, new Vector3(0.4f, 0.3f, 0f), new Vector3(0.9f, 0.9f, 0.8f), PatchworkAssets.Felt(new Color(0.98f, 0.97f, 0.94f)), default(Vector3), sign);
-                    break;
-                default: // spool
-                    kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.9f, 0.5f, 0.9f), PatchworkAssets.Yarn(color), new Vector3(90f, 0f, 0f), sign);
-                    kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, 0.5f), new Vector3(1.3f, 0.08f, 1.3f), signMat, new Vector3(90f, 0f, 0f), sign);
-                    kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, -0.5f), new Vector3(1.3f, 0.08f, 1.3f), signMat, new Vector3(90f, 0f, 0f), sign);
-                    break;
-            }
-            var spin = sign.gameObject.AddComponent<Spinner>();
-            spin.Speed = 35f;
-            spin.BobHeight = 0.15f;
-            spin.BobSpeed = 1.5f;
-        }
-
         // A little hoop that takes you back to the Mending Square.
         static void MakeHomeHoop(LevelKit kit, Vector3 feet)
         {
@@ -308,120 +1051,6 @@ namespace Patchwork
             }
             kit.Deco(PrimitiveType.Cylinder, feet + Vector3.up * 0.06f, new Vector3(1.6f, 0.06f, 1.6f), PatchworkAssets.Felt(LevelKit.Palette.Lavender));
             hoop.Setup(ring);
-        }
-
-        // ================================================================ The Mending Square (middle)
-
-        static void MendingSquare(LevelKit kit)
-        {
-            kit.Prism(Octagon(Vector3.zero, PlazaRadius), -1.2f, 0f, PatchworkAssets.Grass(new Color(0.56f, 0.76f, 0.46f)), "MendingSquare", 3f);
-            // Quilted paths out to the four bridges (stopping short of the spool in the middle).
-            kit.Quilt(new Vector3(0f, -0.5f, 10.5f), new Vector3(5f, 1f, 11f), LevelKit.Palette.Quilt, 2.5f, "PathN");
-            kit.Quilt(new Vector3(0f, -0.5f, -10.5f), new Vector3(5f, 1f, 11f), LevelKit.Palette.Quilt, 2.5f, "PathS");
-            kit.Quilt(new Vector3(10.5f, -0.5f, 0f), new Vector3(11f, 1f, 5f), LevelKit.Palette.Quilt, 2.5f, "PathE");
-            kit.Quilt(new Vector3(-10.5f, -0.5f, 0f), new Vector3(11f, 1f, 5f), LevelKit.Palette.Quilt, 2.5f, "PathW");
-
-            kit.AddCheckpoint(SpawnPoint, 0f);
-            kit.Hint(SpawnPoint + new Vector3(0f, 1.5f, 0f), new Vector3(10f, 4f, 6f), "The Fray",
-                "A grey static called the Fray has crept into the garden, unravelling everything it touches. Find the golden Heartstrings and thread them back onto the Heart Spool to mend it!");
-
-            // ----- The Heart Spool -----
-            kit.Prism(Octagon(Vector3.zero, 3.6f), 0f, 1.8f, PatchworkAssets.Yarn(new Color(0.88f, 0.5f, 0.55f)), "HeartSpool", 1.5f);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.84f, 0f), new Vector3(7.4f, 0.04f, 7.4f), PatchworkAssets.Wood(new Color(0.82f, 0.64f, 0.42f)));
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.12f, 0f), new Vector3(8f, 0.12f, 8f), PatchworkAssets.Wood(new Color(0.75f, 0.58f, 0.38f)));
-            var spindle = kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 4.8f, 0f), new Vector3(0.9f, 3f, 0.9f), PatchworkAssets.Wood(new Color(0.85f, 0.7f, 0.5f)));
-            spindle.gameObject.AddComponent<CapsuleCollider>();
-            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 8f, 0f), Vector3.one * 1.3f, PatchworkAssets.Felt(LevelKit.Palette.Rose));
-
-            // A peg for every Heartstring around the rim; each one lights gold when it's found.
-            for (int i = 0; i < HeartstringIds.Length; i++)
-            {
-                float a = i / (float)HeartstringIds.Length * Mathf.PI * 2f;
-                var peg = kit.Group("Peg", new Vector3(Mathf.Cos(a) * 2.9f, 1.86f, Mathf.Sin(a) * 2.9f));
-                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.3f, 0f), new Vector3(0.22f, 0.3f, 0.22f), PatchworkAssets.Felt(new Color(0.55f, 0.5f, 0.6f)), default(Vector3), peg);
-                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.68f, 0f), Vector3.one * 0.36f, PatchworkAssets.Felt(new Color(0.55f, 0.5f, 0.6f)), default(Vector3), peg);
-                director.SpoolPegs.Add(peg);
-            }
-            // The Fray's snarls wound round the spindle: one comes off for each Heartstring (up to four).
-            for (int i = 0; i < HeartstringsNeeded; i++)
-            {
-                var ring = kit.Group("Snarl", new Vector3(0f, 2.7f + i * 1.2f, 0f));
-                ring.rotation = Quaternion.Euler(12f * (i % 2 == 0 ? 1f : -1f), i * 40f, 8f * (i - 1.5f));
-                var dark = PatchworkAssets.Yarn(SnarlKnot.FrayDark);
-                var grey = PatchworkAssets.Yarn(SnarlKnot.FrayGrey);
-                for (int j = 0; j < 16; j++)
-                {
-                    float a = j / 16f * Mathf.PI * 2f;
-                    var s = kit.Deco(PrimitiveType.Capsule, new Vector3(Mathf.Cos(a) * 1.2f, Mathf.Sin(j * 2.1f) * 0.15f, Mathf.Sin(a) * 1.2f),
-                        new Vector3(0.28f, 0.4f, 0.28f), j % 3 == 0 ? dark : grey, default(Vector3), ring);
-                    s.localRotation = Quaternion.LookRotation(new Vector3(-Mathf.Sin(a), 0f, Mathf.Cos(a))) * Quaternion.Euler(90f + (j % 4) * 10f, 0f, 0f);
-                }
-                kit.Deco(PrimitiveType.Sphere, new Vector3(1.2f, 0f, 0f), Vector3.one * 0.26f, PatchworkAssets.Glow(SnarlKnot.FrayGlow, 1.4f), default(Vector3), ring);
-                director.HeartRings.Add(ring);
-            }
-            kit.Hint(new Vector3(0f, 1.5f, -5.5f), new Vector3(9f, 4f, 2.5f), "The Heart Spool",
-                "Every Heartstring you find lights a peg and pulls a snarl off the spool. Thread " + HeartstringsNeeded + " and it'll wake up!");
-
-            // ----- The golden lift (opens at four Heartstrings) -----
-            var liftRoot = kit.Group("HeartLift", new Vector3(0f, 1.8f, 0f));
-            const float liftHeight = 35f;
-            var lift = kit.Volume<HeartLift>(new Vector3(0f, 1.8f + liftHeight * 0.5f, 0f), new Vector3(4.2f, liftHeight, 4.2f), "Lift");
-            lift.transform.SetParent(liftRoot, true);
-            var goldGlow = PatchworkAssets.Glow(new Color(1f, 0.8f, 0.4f), 0.9f);
-            var strands = new Transform[12];
-            for (int i = 0; i < strands.Length; i++)
-                strands[i] = kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(0.08f, 1.8f, 0.08f), goldGlow, default(Vector3), lift.transform);
-            lift.Setup(strands, liftHeight);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, liftHeight * 0.5f, 0f), new Vector3(0.35f, liftHeight * 0.5f, 0.35f), goldGlow, default(Vector3), liftRoot);
-            kit.AddCameraZone(new Vector3(0f, 21f, 2f), new Vector3(8f, 28f, 10f), 4f, -8f);
-            director.LiftRoot = liftRoot.gameObject;
-
-            // ----- Knot a Problem: six knots of Fray around the square -----
-            var hs = MakeHeartstring(kit, "L1_hs_knots", "Knot a Problem", new Vector3(0f, 2.2f, -15f), true);
-            var knots = new List<SnarlKnot>
-            {
-                MakeKnot(kit, new Vector3(8f, 0.9f, -7f)),
-                MakeKnot(kit, new Vector3(-8f, 0.9f, -7f)),
-                MakeKnot(kit, new Vector3(11.5f, 0.9f, 6.5f)),
-                MakeKnot(kit, new Vector3(-11.5f, 0.9f, 6.5f)),
-                MakeKnot(kit, new Vector3(12f, 2.9f, -10f)),
-                MakeKnot(kit, new Vector3(-12f, 2.9f, -10f))
-            };
-            kit.Quilt(new Vector3(12f, 1f, -10f), new Vector3(3f, 2f, 3f), LevelKit.Palette.Quilt, 1.5f, "KnotStep");
-            kit.Quilt(new Vector3(-12f, 1f, -10f), new Vector3(3f, 2f, 3f), LevelKit.Palette.Quilt, 1.5f, "KnotStep");
-            Challenge(knots, hs);
-            kit.Hint(new Vector3(8f, 1.5f, -9f), new Vector3(5f, 4f, 5f), "Knots of the Fray",
-                "Grey knots like this are the Fray tying the garden up. Jump on top of one to pop it! Bumping into it won't work.");
-
-            // Dressing.
-            kit.YarnBall(new Vector3(9f, 0f, 11f), 1.2f, new Color(0.95f, 0.55f, 0.6f));
-            kit.YarnBall(new Vector3(-9.5f, 0f, -11.5f), 1f, new Color(0.55f, 0.7f, 0.95f));
-            kit.Mushroom(new Vector3(-12.5f, 0f, -4.5f), 1.6f, new Color(0.95f, 0.4f, 0.4f));
-            kit.Mushroom(new Vector3(12.5f, 0f, 4f), 1.2f, new Color(1f, 0.7f, 0.3f));
-            kit.Thimble(new Vector3(-6f, 0f, 12f), 1.2f);
-            kit.SewingPin(new Vector3(7f, 0f, -13f), 3.8f, LevelKit.Palette.Gold, new Vector3(-15f, 0f, 20f));
-            for (int i = 0; i < 12; i++)
-            {
-                float a = (i + 0.5f) / 12f * Mathf.PI * 2f;
-                float r = 6.5f + (i % 3) * 2.5f;
-                Vector3 p = new Vector3(Mathf.Cos(a) * r, 0f, Mathf.Sin(a) * r);
-                if (Mathf.Abs(p.x) < 3f || Mathf.Abs(p.z) < 3f) continue;
-                kit.Flower(p, FlowerColors[i % FlowerColors.Length]);
-            }
-            kit.ThreadLine(new Vector3(-2f, 1f, -6f), new Vector3(2f, 1f, -6f), 3);
-            // Bridges.
-            kit.Quilt(new Vector3(0f, -0.5f, 21.5f), new Vector3(6f, 1f, 11f), Peaks, 2.5f, "BridgeN");
-            kit.Quilt(new Vector3(21.5f, -0.5f, 0f), new Vector3(11f, 1f, 6f), Dye, 2.5f, "BridgeE");
-            kit.Quilt(new Vector3(-21.5f, -0.5f, 0f), new Vector3(11f, 1f, 6f), Breezy, 2.5f, "BridgeW");
-            kit.Quilt(new Vector3(0f, -0.5f, -21.5f), new Vector3(6f, 1f, 11f), Ruins, 2.5f, "BridgeS");
-            RegionArch(kit, new Vector3(0f, 0f, 17f), 0f, new Color(0.92f, 0.6f, 0.6f), 0);
-            RegionArch(kit, new Vector3(17f, 0f, 0f), 90f, new Color(0.5f, 0.72f, 0.8f), 1);
-            RegionArch(kit, new Vector3(-17f, 0f, 0f), 90f, new Color(0.8f, 0.9f, 0.8f), 2);
-            RegionArch(kit, new Vector3(0f, 0f, -17f), 0f, new Color(0.72f, 0.64f, 0.88f), 3);
-            kit.ThreadLine(new Vector3(0f, 1f, 18.5f), new Vector3(0f, 1f, 25f), 3);
-            kit.ThreadLine(new Vector3(18.5f, 1f, 0f), new Vector3(25f, 1f, 0f), 3);
-            kit.ThreadLine(new Vector3(-18.5f, 1f, 0f), new Vector3(-25f, 1f, 0f), 3);
-            kit.ThreadLine(new Vector3(0f, 1f, -18.5f), new Vector3(0f, 1f, -25f), 3);
         }
 
         // When every one of these is popped, the Heartstring appears.
@@ -453,508 +1082,5 @@ namespace Patchwork
                 };
         }
 
-        // ================================================================ North: Pincushion Peaks (Yarn)
-
-        static void PincushionPeaks(LevelKit kit)
-        {
-            var region = MakeRegion(kit, "Peaks", "L1_hs_peaks");
-            Vector3 o = North;
-            // Landing (z 27..37).
-            kit.Quilt(o + new Vector3(0f, -0.5f, 0f), new Vector3(14f, 1f, 10f), Peaks, 3.5f, "PeaksLanding");
-            kit.AddCheckpoint(o + new Vector3(0f, 0f, -3f), 0f);
-            kit.Hint(o + new Vector3(0f, 1.5f, 0f), new Vector3(14f, 4f, 6f), "Pincushion Peaks",
-                "The peaks float on pincushions. As Yarn, run at a pink button and hold {Ability} to swing. Let go to fly!", HintTheme.Yarn);
-            FrayTear(kit, region, o + new Vector3(-4f, 0f, 2f), 2.4f);
-            FrayTendril(kit, region, o + new Vector3(5.5f, 0f, 3.5f), 3f);
-            Blooms(kit, region, o, new Vector2(6f, 4f), 8);
-
-            // Swing 1: z 37 -> 52 (15 m). The golden button hangs at the bottom of the arc.
-            float a1 = o.z + 12.5f;
-            kit.Anchor(new Vector3(0f, 8f, a1), 13.5f);
-            kit.AddCameraZone(new Vector3(0f, 2f, a1), new Vector3(16f, 24f, 22f), 2.5f, 6f);
-            kit.GoldenButton(CollectibleIds[1], new Vector3(0f, -0.4f, a1));
-            SwingArcThreads(kit, 8f, a1);
-
-            // Pincushion island (z 52..68) with a bounce up to a ledge 4 m high.
-            Vector3 isl = new Vector3(0f, 0f, o.z + 28f);
-            kit.Quilt(isl + new Vector3(0f, -0.5f, 0f), new Vector3(10f, 1f, 16f), Peaks, 2.5f, "PincushionIsland");
-            NoCollider(kit.Pincushion(isl + new Vector3(0f, -8f, 0f), 6f, new Color(0.9f, 0.35f, 0.35f)));
-            kit.AddCheckpoint(isl + new Vector3(-2.5f, 0f, -6f), 0f);
-            kit.AddBouncePad(isl + new Vector3(0f, 0f, -1f), 16f);
-            kit.Thread(isl + new Vector3(0f, 3f, -1f), LevelKit.Palette.Gold);
-            kit.Thread(isl + new Vector3(0f, 4.6f, 0.5f), LevelKit.Palette.Gold);
-            kit.Block(isl + new Vector3(0f, 2f, 5f), new Vector3(8f, 4f, 6f), new Color(0.95f, 0.75f, 0.62f), "PeakLedge");
-            kit.Hint(isl + new Vector3(0f, 1.5f, -4f), new Vector3(10f, 4f, 4f), "Bounce, then swing again",
-                "Bounce up to the ledge, then grab the next pink button with {Ability}.", HintTheme.Yarn);
-            FrayTear(kit, region, isl + new Vector3(3f, 0f, -5f), 1.8f);
-            FrayTendril(kit, region, isl + new Vector3(-3.5f, 4f, 6.5f), 2.5f);
-            Snarling.Create(kit.Root, isl + new Vector3(-3f, 0f, -3f), isl + new Vector3(3f, 0f, -3f));
-            Blooms(kit, region, isl + new Vector3(0f, 0f, -4f), new Vector2(3.5f, 2.5f), 6);
-
-            // Swing 2: from the ledge (top 4, z 68) to the summit (top 4, z 83).
-            float a2 = o.z + 43.5f;
-            kit.Anchor(new Vector3(0f, 12f, a2), 13.5f);
-            kit.AddCameraZone(new Vector3(0f, 6f, a2), new Vector3(16f, 24f, 22f), 2.5f, 6f);
-            SwingArcThreads(kit, 12f, a2);
-
-            // The summit, on a giant pincushion.
-            Vector3 top = new Vector3(0f, 4f, o.z + 56f);
-            kit.Quilt(top + new Vector3(0f, -0.5f, 0f), new Vector3(12f, 1f, 10f), Peaks, 3f, "PeakSummit");
-            NoCollider(kit.Pincushion(top + new Vector3(0f, -9f, 0f), 7f, new Color(0.85f, 0.4f, 0.5f)));
-            MakeHeartstring(kit, "L1_hs_peaks", "Peak Stitch", top + new Vector3(0f, 1.6f, 2f), false);
-            MakeHomeHoop(kit, top + new Vector3(4f, 0f, 3f));
-            FrayTendril(kit, region, top + new Vector3(-4f, 0f, 3f), 3.5f);
-            FrayTear(kit, region, top + new Vector3(2f, 0f, -2.5f), 2f);
-            Blooms(kit, region, top, new Vector2(5f, 4f), 8);
-            kit.SewingPin(top + new Vector3(-5f, 0f, -3f), 5f, LevelKit.Palette.Gold, new Vector3(-10f, 0f, 15f));
-            kit.SewingPin(top + new Vector3(5.2f, 0f, -3.5f), 4.5f, LevelKit.Palette.Sky, new Vector3(10f, 0f, -12f));
-        }
-
-        static void NoCollider(Transform t)
-        {
-            var c = t.GetComponent<Collider>();
-            if (c != null) Object.Destroy(c);
-        }
-
-        static void SwingArcThreads(LevelKit kit, float anchorY, float anchorZ)
-        {
-            const float rope = 8.4f;
-            float[] angles = { -50f, -28f, 28f, 50f };
-            foreach (float a in angles)
-            {
-                float r = a * Mathf.Deg2Rad;
-                kit.Thread(new Vector3(0f, anchorY - rope * Mathf.Cos(r), anchorZ + rope * Mathf.Sin(r)), LevelKit.Palette.Rose);
-            }
-        }
-
-        // ================================================================ East: Dye Falls (Water)
-
-        static void DyeFalls(LevelKit kit)
-        {
-            var region = MakeRegion(kit, "DyeFalls", "L1_hs_dye");
-            Vector3 o = East;
-            // One wide floor (x 27..61) with the tiers stepping up along the north half.
-            kit.Quilt(new Vector3(44f, -0.5f, 0f), new Vector3(34f, 1f, 24f), Dye, 3.5f, "DyeFloor", true);
-            kit.AddCheckpoint(o + new Vector3(-3f, 0f, 0f), 90f);
-            kit.Hint(o + new Vector3(-2f, 1.5f, 0f), new Vector3(6f, 4f, 10f), "Dye Falls",
-                "Blue fountains carry Water Form up the falls. Stay as Water at the very top!", HintTheme.Water);
-
-            // Tier 1 (top 4), tier 2 (top 8), tier 3 / summit (top 12), each reached by a fountain.
-            kit.Fountain(new Vector3(36f, 0f, 4f), 6f);
-            kit.Block(new Vector3(41.1f, 2f, 4f), new Vector3(7.8f, 4f, 8f), new Color(0.55f, 0.75f, 0.85f), "DyeTier1");
-            kit.Fountain(new Vector3(43.8f, 4f, 4f), 6f);
-            kit.Block(new Vector3(49f, 4f, 4f), new Vector3(8f, 8f, 8f), new Color(0.62f, 0.8f, 0.72f), "DyeTier2");
-            kit.Fountain(new Vector3(51.8f, 8f, 4f), 6f);
-            kit.Block(new Vector3(57f, 6f, 4f), new Vector3(8f, 12f, 12f), new Color(0.85f, 0.78f, 0.6f), "DyeSummit");
-            kit.AddCameraZone(new Vector3(47f, 8f, 4f), new Vector3(28f, 20f, 12f), 3f, 8f);
-            kit.Thread(new Vector3(36f, 3f, 4f), LevelKit.Palette.Sky);
-            kit.Thread(new Vector3(43.8f, 7f, 4f), LevelKit.Palette.Sky);
-            kit.Thread(new Vector3(51.8f, 11f, 4f), LevelKit.Palette.Sky);
-            // Dye cascading down the fronts of the tiers.
-            Cascade(kit, new Vector3(37.18f, 0f, 1.2f), 4f, new Color(0.95f, 0.5f, 0.65f));
-            Cascade(kit, new Vector3(37.18f, 0f, 6.8f), 4f, new Color(0.98f, 0.8f, 0.35f));
-            Cascade(kit, new Vector3(44.98f, 4f, 1.2f), 4f, new Color(0.45f, 0.75f, 0.6f));
-            Cascade(kit, new Vector3(44.98f, 4f, 6.8f), 4f, new Color(0.7f, 0.55f, 0.9f));
-            Cascade(kit, new Vector3(52.98f, 8f, 1.2f), 4f, new Color(0.98f, 0.6f, 0.35f));
-
-            // On the summit: the Heartstring, and a drain hut (only Water gets in) with a golden button.
-            Vector3 top = new Vector3(57f, 12f, 4f);
-            MakeHeartstring(kit, "L1_hs_dye", "Dye Heart", top + new Vector3(0f, 1.6f, -4f), false);
-            DrainHut(kit, top + new Vector3(0f, 0f, 1.2f));
-            kit.GoldenButton(CollectibleIds[0], top + new Vector3(0f, 1.1f, 3.2f));
-            MakeHomeHoop(kit, top + new Vector3(2.8f, 0f, -4.5f));
-            FrayTendril(kit, region, top + new Vector3(-3f, 0f, -4.5f), 3f);
-            Blooms(kit, region, top + new Vector3(0f, 0f, -3.5f), new Vector2(3f, 1.5f), 5);
-
-            // Down on the floor: a Thread Race along the south half.
-            var race = kit.Volume<ThreadRace>(new Vector3(30f, 1.2f, -8f), new Vector3(2f, 2.4f, 2f), "ThreadRace");
-            var watch = new GameObject("Stopwatch").transform;
-            watch.SetParent(race.transform, false);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.3f, 0f), new Vector3(1.3f, 0.1f, 1.3f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.7f), new Vector3(90f, 0f, 0f), watch);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.3f, -0.07f), new Vector3(1.1f, 0.02f, 1.1f), PatchworkAssets.Felt(LevelKit.Palette.Cream), new Vector3(90f, 0f, 0f), watch);
-            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.5f, -0.1f), new Vector3(0.08f, 0.4f, 0.02f), PatchworkAssets.Felt(UIKit.Ink), default(Vector3), watch);
-            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 1f, 0f), Vector3.one * 0.25f, PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.7f), default(Vector3), watch);
-            race.Setup(watch);
-            race.TimeLimit = 17f;
-            Vector3[] path =
-            {
-                new Vector3(34f, 1.2f, -9f), new Vector3(38f, 1.2f, -5f), new Vector3(42f, 1.2f, -9.5f), new Vector3(46f, 1.2f, -5f),
-                new Vector3(50f, 1.2f, -9.5f), new Vector3(54f, 1.2f, -5f), new Vector3(58f, 4.6f, -8f),
-                new Vector3(52f, 1.2f, -11f), new Vector3(44f, 1.2f, -11f), new Vector3(36f, 1.2f, -11f)
-            };
-            var cyan = PatchworkAssets.Glow(new Color(0.55f, 0.9f, 1f), 0.9f);
-            foreach (var p in path)
-            {
-                var r = kit.Volume<RaceRing>(p, new Vector3(1.8f, 1.8f, 1.8f), "RaceRing");
-                var v = new GameObject("Ring").transform;
-                v.SetParent(r.transform, false);
-                for (int i = 0; i < 12; i++)
-                {
-                    float a = i / 12f * Mathf.PI * 2f;
-                    kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 0.7f, 0f, Mathf.Sin(a) * 0.7f), Vector3.one * 0.16f, cyan, default(Vector3), v);
-                }
-                r.Setup(v);
-                race.AddRing(r);
-            }
-            kit.AddBouncePad(new Vector3(58f, 0f, -8f), 14f);
-            var raceHs = MakeHeartstring(kit, "L1_hs_race", "Race the Dye", new Vector3(31f, 2.2f, -11f), true);
-            if (GameState.IsCollected(raceHs.Id)) race.MarkDone();
-            else race.Won += raceHs.Reveal;
-            kit.Hint(new Vector3(31f, 1.5f, -8f), new Vector3(4f, 3f, 4f), "Thread Race",
-                "Touch the stopwatch and grab every glowing ring before time runs out. Any form will do!");
-
-            // Dressing and the Fray.
-            FrayTear(kit, region, new Vector3(33f, 0f, 9f), 2.2f);
-            FrayTear(kit, region, new Vector3(48f, 0f, -2f), 1.8f);
-            FrayTendril(kit, region, new Vector3(39f, 0f, 10.5f), 3f);
-            FrayTendril(kit, region, new Vector3(56f, 0f, -11f), 2.6f);
-            Blooms(kit, region, new Vector3(44f, 0f, -3f), new Vector2(14f, 2f), 12);
-            Snarling.Create(kit.Root, new Vector3(30f, 0f, 9f), new Vector3(35f, 0f, 9f));
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(36f, 0.04f, 4f), new Vector3(4.5f, 0.03f, 4.5f), PatchworkAssets.Water(new Color(0.95f, 0.5f, 0.65f)));
-            kit.Mushroom(new Vector3(29f, 0f, 10.5f), 1.4f, new Color(0.4f, 0.6f, 0.95f));
-            kit.YarnBall(new Vector3(59f, 0f, -11f), 1f, new Color(0.95f, 0.85f, 0.4f));
-        }
-
-        // A strip of dye flowing down a wall (scrolling, so it looks like it's running).
-        static void Cascade(LevelKit kit, Vector3 baseFront, float height, Color dye)
-        {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            Object.DestroyImmediate(go.GetComponent<Collider>());
-            go.name = "DyeCascade";
-            go.transform.SetParent(kit.Root, false);
-            go.transform.position = baseFront + new Vector3(-0.06f, height * 0.5f, 0f);
-            go.transform.localScale = new Vector3(0.08f, height, 1.6f);
-            var mat = PatchworkAssets.Unique(PatchworkAssets.Water(dye));
-            mat.SetTextureScale("_BaseMap", new Vector2(1f, height / 2f));
-            go.GetComponent<Renderer>().sharedMaterial = mat;
-            var flow = go.AddComponent<PaintLake>();
-            flow.Drift = new Vector2(0f, 0.6f);
-            flow.Setup(mat);
-            kit.Deco(PrimitiveType.Sphere, baseFront + new Vector3(-0.6f, 0.05f, 0f), new Vector3(1.8f, 0.15f, 2f), PatchworkAssets.Water(dye));
-        }
-
-        // ================================================================ West: Breezy Bluffs (Wind)
-
-        static void BreezyBluffs(LevelKit kit)
-        {
-            var region = MakeRegion(kit, "Bluffs", "L1_hs_windmill");
-            Vector3 o = West;
-            // Landing (x -27..-37).
-            kit.Quilt(o + new Vector3(0f, -0.5f, 0f), new Vector3(10f, 1f, 14f), Breezy, 3.5f, "BluffsLanding", true);
-            kit.AddCheckpoint(o + new Vector3(3f, 0f, 0f), -90f);
-            kit.Hint(o + new Vector3(0f, 1.5f, 0f), new Vector3(10f, 4f, 14f), "Breezy Bluffs",
-                "Pinwheels mean wind! As Wind, hold {Jump} while falling to glide. Tap {Ability} mid-glide for a gust.", HintTheme.Wind);
-            kit.Pinwheel(o + new Vector3(-3f, 0f, 6f), LevelKit.Palette.Sky, LevelKit.Palette.Cream);
-            kit.Pinwheel(o + new Vector3(-3f, 0f, -6f), LevelKit.Palette.Rose, LevelKit.Palette.Cream);
-            FrayTear(kit, region, o + new Vector3(1f, 0f, -4f), 2f);
-            Blooms(kit, region, o, new Vector2(4f, 6f), 8);
-
-            // 7 m glide gap to the second bluff (x -44..-54).
-            kit.ThreadLine(new Vector3(-38.5f, 1.6f, 0f), new Vector3(-42.5f, 1f, 0f), 3);
-            Vector3 b2 = new Vector3(-49f, 0f, 0f);
-            kit.Quilt(b2 + new Vector3(0f, -0.5f, 0f), new Vector3(10f, 1f, 14f), Breezy, 3.5f, "Bluff2", true);
-            kit.AddCheckpoint(b2 + new Vector3(4f, 0f, 3f), -90f);
-            FrayTendril(kit, region, b2 + new Vector3(3.5f, 0f, -5.5f), 3f);
-            Snarling.Create(kit.Root, b2 + new Vector3(-3f, 0f, -2f), b2 + new Vector3(-3f, 0f, -6f));
-
-            // Updraft up to the high bluff (top 9, x -55..-63).
-            kit.Updraft(b2 + new Vector3(-2f, 0f, 3f), 12f);
-            kit.Block(new Vector3(-59f, 4.5f, 2f), new Vector3(8f, 9f, 12f), new Color(0.8f, 0.86f, 0.74f), "HighBluff");
-            kit.Thread(b2 + new Vector3(-2f, 5f, 3f), LevelKit.Palette.Cream);
-            kit.Thread(b2 + new Vector3(-2f, 9f, 3f), LevelKit.Palette.Cream);
-            kit.AddCameraZone(new Vector3(-58f, 8f, 2f), new Vector3(30f, 22f, 16f), 3f, 6f);
-            kit.Hint(b2 + new Vector3(0f, 1.5f, 3f), new Vector3(5f, 4f, 5f), "Updraft",
-                "White updrafts lift Wind Form. Float up, then glide over to the high bluff.", HintTheme.Wind);
-
-            // 11 m gust gap to the windmill bluff (x -74..-81).
-            kit.ThreadLine(new Vector3(-64f, 10.5f, 2f), new Vector3(-72f, 10f, 2f), 4);
-            kit.Block(new Vector3(-77.5f, 4.5f, 2f), new Vector3(7f, 9f, 12f), new Color(0.86f, 0.9f, 0.76f), "WindmillBluff");
-            Vector3 mill = new Vector3(-77.5f, 9f, 5f);
-            Windmill(kit, mill);
-            MakeHeartstring(kit, "L1_hs_windmill", "Windmill Whirl", new Vector3(-76f, 10.6f, 0f), false);
-            MakeHomeHoop(kit, new Vector3(-75f, 9f, 6.5f));
-            FrayTendril(kit, region, new Vector3(-79.5f, 9f, -2.5f), 3f);
-            Blooms(kit, region, new Vector3(-77.5f, 9f, 0f), new Vector2(2.5f, 3f), 6);
-            kit.Hint(new Vector3(-59f, 10.5f, 2f), new Vector3(8f, 4f, 12f), "Gust!",
-                "Too far to glide! Jump, glide, then tap {Ability} for a burst of speed.", HintTheme.Wind);
-
-            // Secret 1: a side updraft to the humming spool tower (golden button).
-            kit.Updraft(b2 + new Vector3(3f, 0f, -5f), 15f);
-            kit.SpoolTower(new Vector3(-46f, -6f, -13f), 19f, SpoolThreads);
-            var secret = kit.GoldenButton(CollectibleIds[2], new Vector3(-46f, 14.3f, -13f));
-            secret.Hums = true;
-            kit.Thread(b2 + new Vector3(3f, 7f, -5f), LevelKit.Palette.Cream);
-
-            // Secret 2: an updraft on the windmill bluff to a floating cloud patch (Heartstring).
-            kit.Updraft(new Vector3(-76.5f, 9f, -2.5f), 12f);
-            Vector3 cloud = new Vector3(-73f, 16.5f, -13f);
-            kit.Prism(Octagon(cloud, 4f), cloud.y - 1f, cloud.y, PatchworkAssets.Felt(new Color(0.97f, 0.95f, 0.9f)), "CloudPatch");
-            kit.Cloud(cloud + new Vector3(0f, -1.2f, 0f), 2.6f);
-            kit.Cloud(cloud + new Vector3(2.5f, -0.8f, 2f), 1.6f);
-            MakeHeartstring(kit, "L1_hs_cloud", "Cloud Patch", cloud + new Vector3(0f, 1.6f, 0f), false);
-            MakeHomeHoop(kit, cloud + new Vector3(2f, 0f, -2f));
-        }
-
-        // A tall cardboard-and-felt windmill with spinning patchwork sails.
-        static void Windmill(LevelKit kit, Vector3 feet)
-        {
-            kit.Deco(PrimitiveType.Cylinder, feet + Vector3.up * 3f, new Vector3(2.4f, 3f, 2.4f), PatchworkAssets.Felt(new Color(0.95f, 0.9f, 0.8f)));
-            kit.Deco(PrimitiveType.Sphere, feet + Vector3.up * 6.2f, new Vector3(2.6f, 1.6f, 2.6f), PatchworkAssets.Felt(LevelKit.Palette.Rose));
-            var col = kit.Group("WindmillCollider", feet + Vector3.up * 3f).gameObject.AddComponent<CapsuleCollider>();
-            col.radius = 1.2f;
-            col.height = 6f;
-            var hub = kit.Group("Sails", feet + new Vector3(1.35f, 5f, 0f));
-            hub.rotation = Quaternion.Euler(0f, 90f, 0f);
-            kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 0.6f, PatchworkAssets.Felt(LevelKit.Palette.Gold), default(Vector3), hub);
-            Color[] sail = { LevelKit.Palette.Sky, LevelKit.Palette.Butter, LevelKit.Palette.Lavender, LevelKit.Palette.Sage };
-            for (int i = 0; i < 4; i++)
-            {
-                var s = kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(1f, 3.4f, 0.06f), PatchworkAssets.Fabric(sail[i]), new Vector3(0f, 0f, i * 90f), hub);
-                s.localPosition = Quaternion.Euler(0f, 0f, i * 90f) * new Vector3(0.25f, 1.9f, 0f);
-            }
-            var spin = hub.gameObject.AddComponent<Spinner>();
-            spin.Axis = Vector3.forward;
-            spin.Speed = 70f;
-        }
-
-        // ================================================================ South: Spoolwork Ruins
-
-        static void SpoolworkRuins(LevelKit kit)
-        {
-            var region = MakeRegion(kit, "Ruins", "L1_hs_loom");
-            Vector3 o = South;
-            // Landing (z -27..-35).
-            kit.Quilt(o + new Vector3(0f, -0.5f, 0f), new Vector3(14f, 1f, 8f), Ruins, 3.5f, "RuinsLanding");
-            kit.AddCheckpoint(o + new Vector3(0f, 0f, 2f), 180f);
-            kit.Hint(o + new Vector3(0f, 1.5f, 1f), new Vector3(14f, 4f, 5f), "Spoolwork Ruins",
-                "The old loom works. Ride the sliding buttons across, and watch out for Snarlings!");
-            FrayTear(kit, region, o + new Vector3(4.5f, 0f, -1.5f), 2f);
-            Blooms(kit, region, o, new Vector2(6f, 2.5f), 7);
-
-            // Sliding buttons over the pit (z -35..-47).
-            kit.MovingButton(new Vector3(-2.5f, 0f, -37.4f), new Vector3(-2.5f, 0f, -44.6f), 0f, new Color(0.95f, 0.5f, 0.55f));
-            kit.MovingButton(new Vector3(2.5f, 0f, -37.4f), new Vector3(2.5f, 0f, -44.6f), 0.5f, new Color(0.5f, 0.65f, 0.95f));
-            kit.ThreadLine(new Vector3(-2.5f, 1.2f, -38.5f), new Vector3(-2.5f, 1.2f, -43.5f), 3);
-            kit.ThreadLine(new Vector3(2.5f, 1.2f, -38.5f), new Vector3(2.5f, 1.2f, -43.5f), 3);
-            kit.SewingPin(new Vector3(-8f, -6f, -41f), 9f, LevelKit.Palette.Rose, new Vector3(10f, 0f, -18f));
-            kit.SewingPin(new Vector3(8f, -6f, -42f), 9f, LevelKit.Palette.Gold, new Vector3(-10f, 0f, 18f));
-
-            // The arena (z -47..-65): three Snarlings to unravel.
-            kit.Quilt(new Vector3(0f, -0.5f, -56f), new Vector3(18f, 1f, 18f), Ruins, 3f, "SnarlingArena");
-            kit.AddCheckpoint(new Vector3(0f, 0f, -48.5f), 180f);
-            for (int i = 0; i < 8; i++)
-            {
-                float x = -8.5f + (i % 2) * 17f;
-                float z = -49f - (i / 2) * 5f;
-                kit.Spool(new Vector3(x, 0f, z), 1.2f, SpoolThreads[i % SpoolThreads.Length]);
-            }
-            var foes = new List<Snarling>
-            {
-                Snarling.Create(kit.Root, new Vector3(-5f, 0f, -52f), new Vector3(5f, 0f, -52f)),
-                Snarling.Create(kit.Root, new Vector3(5f, 0f, -57f), new Vector3(-5f, 0f, -57f)),
-                Snarling.Create(kit.Root, new Vector3(-4f, 0f, -61.5f), new Vector3(4f, 0f, -61.5f))
-            };
-            var tangle = MakeHeartstring(kit, "L1_hs_tangle", "Tangle Trouble", new Vector3(0f, 1.6f, -56f), true);
-            Challenge(foes, tangle);
-            kit.Hint(new Vector3(0f, 1.5f, -50f), new Vector3(16f, 4f, 3f), "Snarlings!",
-                "Little creatures of the Fray. Jump on their heads to unravel them. If they bump you, they'll push you away.");
-
-            // The back wall, with a drain at the bottom: only Water gets into the loom courtyard.
-            var wicker = PatchworkAssets.Wicker(new Color(0.78f, 0.58f, 0.36f));
-            kit.Block(new Vector3(-10.8f, 5f, -66f), new Vector3(20f, 10f, 2f), LevelKit.Palette.Walnut, "LoomWall", wicker);
-            kit.Block(new Vector3(10.8f, 5f, -66f), new Vector3(20f, 10f, 2f), LevelKit.Palette.Walnut, "LoomWall", wicker);
-            kit.Block(new Vector3(0f, 5.5f, -66f), new Vector3(1.6f, 9f, 2f), LevelKit.Palette.Walnut, "LoomWallTop", wicker);
-            kit.Grate(new Vector3(0f, 0.5f, -64.9f), new Vector3(1.6f, 1f, 0.2f));
-            kit.Hint(new Vector3(0f, 1.5f, -62.5f), new Vector3(6f, 4f, 3f), "A Drain in the Wall",
-                "Something's humming on the other side. Only a little bubble of Water could squeeze through here.", HintTheme.Water);
-
-            // The courtyard (z -67..-81): a fountain up the old loom to its Heartstring.
-            kit.Quilt(new Vector3(0f, -0.5f, -74f), new Vector3(20f, 1f, 14f), Ruins, 3f, "LoomCourtyard");
-            kit.Block(new Vector3(-10.5f, 5f, -74f), new Vector3(1f, 10f, 14f), LevelKit.Palette.Walnut, "CourtyardWall", wicker);
-            kit.Block(new Vector3(10.5f, 5f, -74f), new Vector3(1f, 10f, 14f), LevelKit.Palette.Walnut, "CourtyardWall", wicker);
-            kit.AddCheckpoint(new Vector3(0f, 0f, -68.5f), 180f);
-            kit.Fountain(new Vector3(0f, 0f, -73f), 12f);
-            kit.Block(new Vector3(0f, 5f, -77.2f), new Vector3(5f, 10f, 4f), new Color(0.6f, 0.45f, 0.32f), "LoomTower", PatchworkAssets.Wood(new Color(0.65f, 0.5f, 0.35f)));
-            Loom(kit, new Vector3(0f, 10f, -79.2f));
-            MakeHeartstring(kit, "L1_hs_loom", "Loom Heart", new Vector3(0f, 11.6f, -76.6f), false);
-            MakeHomeHoop(kit, new Vector3(1.6f, 10f, -76.2f));
-            kit.AddCameraZone(new Vector3(0f, 6f, -74f), new Vector3(20f, 16f, 14f), 2f, 8f);
-            FrayTendril(kit, region, new Vector3(-6f, 0f, -77f), 3.5f);
-            FrayTendril(kit, region, new Vector3(6.5f, 0f, -71f), 3f);
-            FrayTear(kit, region, new Vector3(-4f, 0f, -70f), 2.2f);
-            Blooms(kit, region, new Vector3(0f, 0f, -71f), new Vector2(8f, 2.5f), 10);
-            kit.ThreadLine(new Vector3(-6f, 1f, -70f), new Vector3(6f, 1f, -70f), 4);
-        }
-
-        // An old wooden loom frame with yarn warp threads, on top of the tower.
-        static void Loom(LevelKit kit, Vector3 baseCenter)
-        {
-            var wood = PatchworkAssets.Wood(new Color(0.7f, 0.52f, 0.36f));
-            kit.Deco(PrimitiveType.Cube, baseCenter + new Vector3(-2.3f, 2.5f, 0f), new Vector3(0.35f, 5f, 0.35f), wood);
-            kit.Deco(PrimitiveType.Cube, baseCenter + new Vector3(2.3f, 2.5f, 0f), new Vector3(0.35f, 5f, 0.35f), wood);
-            kit.Deco(PrimitiveType.Cube, baseCenter + new Vector3(0f, 4.9f, 0f), new Vector3(5f, 0.35f, 0.35f), wood);
-            kit.Deco(PrimitiveType.Cube, baseCenter + new Vector3(0f, 0.6f, 0f), new Vector3(5f, 0.3f, 0.3f), wood);
-            for (int i = 0; i < 9; i++)
-            {
-                float x = -1.8f + i * 0.45f;
-                kit.Deco(PrimitiveType.Cylinder, baseCenter + new Vector3(x, 2.75f, 0f), new Vector3(0.06f, 2.1f, 0.06f), PatchworkAssets.Yarn(SpoolThreads[i % SpoolThreads.Length]));
-            }
-        }
-
-        // ================================================================ Sky: the Fray's Knot (finale)
-
-        static void FraysKnot(LevelKit kit)
-        {
-            Vector3 c = SkyIsland;
-            kit.Prism(Octagon(c, 8f), c.y - 1.5f, c.y, PatchworkAssets.Fabric(new Color(0.96f, 0.93f, 0.88f)), "SkyIsland");
-            kit.Cloud(c + new Vector3(0f, -2.4f, 0f), 3.5f);
-            kit.Cloud(c + new Vector3(-5f, -2f, 3f), 2.2f);
-            kit.Cloud(c + new Vector3(5f, -2.2f, -2f), 2.4f);
-            kit.AddCheckpoint(c + new Vector3(0f, 0f, -5.5f), 0f);
-            kit.AddCameraZone(c + new Vector3(0f, 3f, 0f), new Vector3(18f, 12f, 18f), 3f, 8f);
-            kit.Hint(c + new Vector3(0f, 1.5f, -5f), new Vector3(12f, 4f, 4f), "The Fray's Knot",
-                "This is where the Fray tied the garden up. Pop the four knots holding it together!");
-
-            // The knot itself, floating over the middle of the island.
-            Vector3 corePos = c + new Vector3(0f, 6f, 2f);
-            var core = kit.Group("FrayCore", corePos);
-            KnotShape(kit, core, 3.2f, 26);
-            var lightGo = new GameObject("CoreLight");
-            lightGo.transform.SetParent(core, false);
-            var light = lightGo.AddComponent<Light>();
-            light.type = LightType.Point;
-            light.color = SnarlKnot.FrayGlow;
-            light.range = 14f;
-            light.intensity = 2f;
-            light.shadows = LightShadows.None;
-            director.Core = core;
-
-            // Four knots holding it, each tied to it by a dark thread.
-            Vector3[] spots = { new Vector3(4.5f, 0.9f, 2f), new Vector3(-4.5f, 0.9f, 2f), new Vector3(0f, 0.9f, 6.5f), new Vector3(0f, 0.9f, -2.5f) };
-            var tether = PatchworkAssets.Yarn(SnarlKnot.FrayDark);
-            foreach (var s in spots)
-            {
-                var k = MakeKnot(kit, c + s, 1.1f);
-                director.CoreShell.Add(k);
-                director.CoreTethers.Add(kit.Rope(c + s, corePos, tether, 0.12f));
-            }
-
-            // The garden's heart, freed when the knot breaks. Touch it to finish the level.
-            var heart = kit.Group("GardenHeart", c + new Vector3(0f, 2.4f, 2f));
-            HeartShape(kit, heart, 2f, PatchworkAssets.Glow(new Color(1f, 0.5f, 0.6f), 0.5f));
-            director.GardenHeart = heart;
-            var goal = kit.Volume<GoalZone>(c + new Vector3(0f, 1.5f, 2f), new Vector3(3.5f, 3f, 3.5f), "HeartGoal");
-            director.CoreGoal = goal.gameObject;
-        }
-
-        // ================================================================ The paint lake
-
-        static void BuildPaintLake(LevelKit kit)
-        {
-            kit.PaintLake(new Vector3(0f, -8f, 0f), new Vector2(168f, 168f), 13f);
-            // Art supplies bobbing in the paint, scattered around the garden.
-            Color[] paints = { new Color(0.95f, 0.45f, 0.55f), new Color(0.98f, 0.82f, 0.35f), new Color(0.4f, 0.75f, 0.6f), new Color(0.6f, 0.5f, 0.9f), new Color(0.35f, 0.6f, 0.95f), new Color(0.98f, 0.6f, 0.3f) };
-            for (int i = 0; i < 18; i++)
-            {
-                float a = (i + 0.3f) / 18f * Mathf.PI * 2f;
-                float r = 24f + (i * 13) % 50;
-                Vector3 p = new Vector3(Mathf.Cos(a) * r, -8f, Mathf.Sin(a) * r);
-                switch (i % 3)
-                {
-                    case 0: PaintTube(kit, p, paints[i % paints.Length], i * 37f); break;
-                    case 1: InkBottle(kit, p, (i % 5) * 8f - 16f); break;
-                    default: Brush(kit, p, paints[(i + 2) % paints.Length], i * 53f); break;
-                }
-            }
-        }
-
-        // A squeezed tube of paint floating on its side, with a blob coming out of it.
-        static void PaintTube(LevelKit kit, Vector3 pos, Color paint, float yaw)
-        {
-            var g = kit.Group("PaintTube", pos + Vector3.up * 0.5f);
-            g.rotation = Quaternion.Euler(0f, yaw, 0f);
-            var metal = PatchworkAssets.Plain(new Color(0.88f, 0.88f, 0.92f), 0.85f);
-            kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1.3f, 2f, 1.1f), metal, new Vector3(0f, 0f, 90f), g);
-            kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1.36f, 1.1f, 1.16f), PatchworkAssets.Plain(paint, 0.4f), new Vector3(0f, 0f, 90f), g);
-            kit.Deco(PrimitiveType.Cube, new Vector3(-2.1f, 0f, 0f), new Vector3(0.3f, 0.3f, 1.4f), metal, default(Vector3), g);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(2.15f, 0f, 0f), new Vector3(0.55f, 0.25f, 0.55f), PatchworkAssets.Plain(new Color(0.15f, 0.12f, 0.15f), 0.4f), new Vector3(0f, 0f, 90f), g);
-            kit.Deco(PrimitiveType.Sphere, new Vector3(2.9f, -0.2f, 0f), new Vector3(1.4f, 0.5f, 1.1f), PatchworkAssets.Plain(paint, 0.9f), default(Vector3), g);
-            var bob = g.gameObject.AddComponent<Spinner>();
-            bob.Speed = 2f;
-            bob.BobHeight = 0.18f;
-            bob.BobSpeed = 0.7f;
-        }
-
-        // A bottle of ink, tilted and half sunk.
-        static void InkBottle(LevelKit kit, Vector3 pos, float tilt)
-        {
-            var g = kit.Group("InkBottle", pos);
-            g.rotation = Quaternion.Euler(tilt, tilt * 2f, tilt * 0.5f);
-            var glass = PatchworkAssets.Plain(new Color(0.12f, 0.13f, 0.3f), 0.95f);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.6f, 0f), new Vector3(2.4f, 1.6f, 2.4f), glass, default(Vector3), g);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 2.5f, 0f), new Vector3(1.1f, 0.4f, 1.1f), glass, default(Vector3), g);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 3.05f, 0f), new Vector3(0.95f, 0.25f, 0.95f), PatchworkAssets.Felt(new Color(0.65f, 0.48f, 0.32f)), default(Vector3), g);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1f, 0f), new Vector3(2.46f, 0.5f, 2.46f), PatchworkAssets.Felt(LevelKit.Palette.Cream), default(Vector3), g);
-            var bob = g.gameObject.AddComponent<Spinner>();
-            bob.Speed = 0f;
-            bob.BobHeight = 0.12f;
-            bob.BobSpeed = 0.5f;
-        }
-
-        // A big paintbrush sticking up out of the paint at an angle.
-        static void Brush(LevelKit kit, Vector3 pos, Color paint, float yaw)
-        {
-            var g = kit.Group("Paintbrush", pos);
-            g.rotation = Quaternion.Euler(0f, yaw, 0f) * Quaternion.Euler(0f, 0f, 30f);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 4f, 0f), new Vector3(0.45f, 3.5f, 0.45f), PatchworkAssets.Plain(new Color(0.85f, 0.3f, 0.3f), 0.6f), default(Vector3), g);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.3f, 0f), new Vector3(0.6f, 0.6f, 0.6f), PatchworkAssets.Plain(new Color(0.85f, 0.86f, 0.9f), 0.9f), default(Vector3), g);
-            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -0.4f, 0f), new Vector3(0.7f, 1.2f, 0.7f), PatchworkAssets.Plain(paint, 0.85f), default(Vector3), g);
-        }
-
-        // A tiny stitched hut on the fountain shelf. Its only door is a drain grate, so you have to
-        // still be Water when you reach the top. The front wall faces -z at frontBase.z.
-        static void DrainHut(LevelKit kit, Vector3 frontBase)
-        {
-            float x = frontBase.x, y = frontBase.y, z = frontBase.z;
-            var felt = LevelKit.Palette.Peach;
-            kit.Block(new Vector3(x - 1.35f, y + 1.25f, z), new Vector3(1.3f, 2.5f, 0.4f), felt, "HutFrontL");
-            kit.Block(new Vector3(x + 1.35f, y + 1.25f, z), new Vector3(1.3f, 2.5f, 0.4f), felt, "HutFrontR");
-            kit.Block(new Vector3(x, y + 1.75f, z), new Vector3(1.4f, 1.5f, 0.4f), felt, "HutFrontTop");
-            kit.Grate(new Vector3(x, y + 0.5f, z), new Vector3(1.4f, 1f, 0.2f));
-            kit.Block(new Vector3(x - 1.8f, y + 1.25f, z + 1.9f), new Vector3(0.4f, 2.5f, 3.8f), felt, "HutSide");
-            kit.Block(new Vector3(x + 1.8f, y + 1.25f, z + 1.9f), new Vector3(0.4f, 2.5f, 3.8f), felt, "HutSide");
-            kit.Block(new Vector3(x, y + 1.25f, z + 3.6f), new Vector3(3.6f, 2.5f, 0.4f), felt, "HutBack");
-            kit.Block(new Vector3(x, y + 2.7f, z + 1.8f), new Vector3(4.4f, 0.4f, 4.4f), LevelKit.Palette.Rose, "HutRoof");
-        }
-
-
-        // ================================================================ Yarn birds
-
-        static void YarnBirds(LevelKit kit)
-        {
-            Color[] c = { LevelKit.Palette.Rose, LevelKit.Palette.Sky, LevelKit.Palette.Butter, LevelKit.Palette.Lavender, LevelKit.Palette.Peach };
-            // The square
-            kit.YarnBird(new Vector3(5f, 0f, -12f), c[0], false);
-            kit.YarnBird(new Vector3(-6f, 0f, 9f), c[1], false);
-            kit.YarnBird(new Vector3(0f, 8.6f, 0f), c[2], false);
-            kit.YarnBird(new Vector3(0f, 12f, 0f), c[3], true, 9f);
-            kit.YarnBird(new Vector3(1.5f, 5.35f, 17f), c[4], false);
-            // Peaks
-            kit.YarnBird(new Vector3(3f, 4f, 66f), c[0], false);
-            kit.YarnBird(new Vector3(0f, 14f, 58f), c[1], true, 7f);
-            // Dye Falls
-            kit.YarnBird(new Vector3(48f, 8f, 1f), c[2], false);
-            kit.YarnBird(new Vector3(44f, 9f, -5f), c[3], true, 8f);
-            kit.YarnBird(new Vector3(40f, 0f, -2f), c[4], false);
-            // Bluffs, and one on the spool tower beside the secret button
-            kit.YarnBird(new Vector3(-58f, 9f, -2f), c[0], false);
-            kit.YarnBird(new Vector3(-46.8f, 13f, -12.2f), c[1], false);
-            kit.YarnBird(new Vector3(-62f, 15f, 2f), c[2], true, 9f);
-            // Ruins
-            kit.YarnBird(new Vector3(-8.5f, 1.2f, -49f), c[3], false);
-            kit.YarnBird(new Vector3(0f, 10f, -56f), c[4], true, 7f);
-            // Way up high, near the knot
-            kit.YarnBird(new Vector3(0f, 34f, 11f), c[0], true, 12f);
-        }
     }
 }

@@ -9,10 +9,18 @@ namespace Patchwork
         Transform[] ribbons;
         float height;
 
+        Transform[] puffs;
+
         public void SetupRibbons(Transform[] r, float h)
         {
             ribbons = r;
             height = h;
+        }
+
+        // Smoke or steam puffs that rise and spread out (chimneys and steam vents).
+        public void SetupPuffs(Transform[] p)
+        {
+            puffs = p;
         }
 
         void Update()
@@ -25,6 +33,15 @@ namespace Patchwork
                 float a = t * 2f + i * 2.1f;
                 ribbons[i].localPosition = new Vector3(Mathf.Cos(a) * 0.9f, k * height - height * 0.5f, Mathf.Sin(a) * 0.9f);
                 ribbons[i].localRotation = Quaternion.Euler(0f, -a * Mathf.Rad2Deg, 20f);
+            }
+            if (puffs == null) return;
+            for (int i = 0; i < puffs.Length; i++)
+            {
+                float k = Mathf.Repeat(t * 0.22f + i / (float)puffs.Length, 1f);
+                float drift = Mathf.Sin(t * 0.5f + i) * 0.6f * k;
+                puffs[i].localPosition = new Vector3(drift, k * height - height * 0.5f + 0.4f, Mathf.Cos(t * 0.4f + i) * 0.4f * k);
+                float s = Mathf.Lerp(0.5f, 2.2f, k) * (1f - Mathf.SmoothStep(0.75f, 1f, k));
+                puffs[i].localScale = new Vector3(s, s * 0.8f, s);
             }
         }
 

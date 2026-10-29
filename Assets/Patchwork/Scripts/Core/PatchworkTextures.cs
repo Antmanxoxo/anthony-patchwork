@@ -15,6 +15,9 @@ namespace Patchwork
         delegate float HeightFn(float u, float v, int x, int y);
 
         public static Pair Knit, Felt, Weave, Wicker, Grass, Wood, Wrap, Cardboard;
+        // Town textures: cobblestones, brick, plaster, fish-scale roof shingles, wooden planks and
+        // damask (the swirly Victorian wallpaper / upholstery pattern).
+        public static Pair Cobble, Brick, Plaster, Shingle, Planks, Damask;
         // Full-colour textures (not tinted by the material colour).
         public static Texture2D PaintMarble;   // swirled paint and ink for the lake under Level 1
         public static Texture2D GlobeMap;      // the quilted world map on the Skiff's globe
@@ -27,14 +30,21 @@ namespace Patchwork
             // Also rebuild if Unity has thrown the textures away (Play pressed again).
             if (built && Wrap != null && Wrap.Albedo != null) return;
             built = true;
-            Knit = Build(128, KnitHeight, 0.62f, 0.38f, 3.5f);
-            Felt = Build(64, FeltHeight, 0.84f, 0.16f, 1.6f);
-            Weave = Build(128, WeaveHeight, 0.8f, 0.2f, 2.2f);
-            Wicker = Build(128, WickerHeight, 0.55f, 0.45f, 4f);
-            Grass = Build(128, GrassHeight, 0.72f, 0.28f, 2.5f);
-            Wood = Build(64, WoodHeight, 0.78f, 0.22f, 1.5f);
-            Wrap = Build(128, WrapHeight, 0.68f, 0.32f, 3f);
-            Cardboard = Build(128, CardboardHeight, 0.82f, 0.18f, 1.8f);
+            // Deeper relief than before: stronger normals and a bit more shading in the dips.
+            Knit = Build(256, KnitHeight, 0.56f, 0.44f, 5f);
+            Felt = Build(128, FeltHeight, 0.8f, 0.2f, 2.4f);
+            Weave = Build(128, WeaveHeight, 0.74f, 0.26f, 3.2f);
+            Wicker = Build(128, WickerHeight, 0.5f, 0.5f, 5.5f);
+            Grass = Build(256, GrassHeight, 0.66f, 0.34f, 3.6f);
+            Wood = Build(128, WoodHeight, 0.72f, 0.28f, 2.4f);
+            Wrap = Build(256, WrapHeight, 0.6f, 0.4f, 4.2f);
+            Cardboard = Build(128, CardboardHeight, 0.78f, 0.22f, 2.4f);
+            Cobble = Build(256, CobbleHeight, 0.45f, 0.55f, 5f);
+            Brick = Build(256, BrickHeight, 0.5f, 0.5f, 4.5f);
+            Plaster = Build(128, PlasterHeight, 0.82f, 0.18f, 1.6f);
+            Shingle = Build(256, ShingleHeight, 0.5f, 0.5f, 4.5f);
+            Planks = Build(256, PlankHeight, 0.6f, 0.4f, 3.5f);
+            Damask = Build(256, DamaskHeight, 0.72f, 0.28f, 2.2f);
             PaintMarble = BuildMarble(256);
             GlobeMap = BuildGlobe(256, 128);
             BalloonQuilt = BuildBalloon(256, 128);
@@ -192,6 +202,94 @@ namespace Patchwork
         {
             float grain = Mathf.Sin((u * 18f + ValueNoise(u, v, 4, 9) * 3f) * Mathf.PI * 2f) * 0.5f + 0.5f;
             return grain * 0.6f + ValueNoise(u, v, 16, 4) * 0.4f;
+        }
+
+        // ----- Town patterns -----
+
+        // Rounded cobblestones with sunken mortar between them (jittered cells).
+        static float CobbleHeight(float u, float v, int x, int y)
+        {
+            const int cells = 6;
+            float cu = u * cells, cv = v * cells;
+            int ix = Mathf.FloorToInt(cu), iy = Mathf.FloorToInt(cv);
+            float best = 9f, second = 9f;
+            for (int oy = -1; oy <= 1; oy++)
+                for (int ox = -1; ox <= 1; ox++)
+                {
+                    int gx = ((ix + ox) % cells + cells) % cells, gy = ((iy + oy) % cells + cells) % cells;
+                    Vector2 c = new Vector2(ix + ox + 0.2f + Hash(gx * 3, gy * 7) * 0.6f, iy + oy + 0.2f + Hash(gx * 11, gy * 5) * 0.6f);
+                    float d = Vector2.Distance(new Vector2(cu, cv), c);
+                    if (d < best) { second = best; best = d; } else if (d < second) second = d;
+                }
+            float edge = Mathf.Clamp01((second - best) * 3.2f);
+            float dome = Mathf.Sqrt(edge);
+            return dome * 0.85f + ValueNoise(u, v, 32, 13) * 0.1f + Hash(x, y) * 0.05f;
+        }
+
+        // Brick courses with offset joints.
+        static float BrickHeight(float u, float v, int x, int y)
+        {
+            const int rows = 8, cols = 4;
+            float rv = v * rows;
+            int row = Mathf.FloorToInt(rv);
+            float ru = u * cols + (row % 2 == 0 ? 0f : 0.5f);
+            float fu = ru - Mathf.Floor(ru), fv = rv - row;
+            float mortar = Mathf.Min(Mathf.Min(fu, 1f - fu) * 3.5f, Mathf.Min(fv, 1f - fv) * 1.8f);
+            float face = Mathf.Clamp01(mortar / 0.12f);
+            face = Mathf.SmoothStep(0f, 1f, face);
+            int bx = Mathf.FloorToInt(ru);
+            return face * (0.75f + Hash(bx * 7, row * 13) * 0.2f) + ValueNoise(u, v, 32, 9) * 0.08f * face + Hash(x, y) * 0.04f;
+        }
+
+        // Smooth plaster with a soft trowelled texture.
+        static float PlasterHeight(float u, float v, int x, int y)
+        {
+            return ValueNoise(u, v, 4, 21) * 0.4f + ValueNoise(u, v, 16, 22) * 0.35f + Hash(x, y) * 0.15f;
+        }
+
+        // Fish-scale roof shingles: rows of rounded tiles, each row overlapping the one below.
+        static float ShingleHeight(float u, float v, int x, int y)
+        {
+            const int rows = 8, cols = 6;
+            float rv = v * rows;
+            int row = Mathf.FloorToInt(rv);
+            float fv = rv - row;
+            float ru = u * cols + (row % 2 == 0 ? 0f : 0.5f);
+            float fu = ru - Mathf.Floor(ru);
+            // Each tile's bottom edge is a semicircle.
+            float cx = fu - 0.5f;
+            float bottom = 0.5f - Mathf.Sqrt(Mathf.Max(0f, 0.25f - cx * cx));
+            float inTile = fv - bottom * 0.9f;
+            float h = inTile > 0f ? 0.35f + 0.6f * (1f - fv) : 0.1f;
+            return Mathf.Clamp01(h) + ValueNoise(u, v, 32, 17) * 0.08f;
+        }
+
+        // Wooden planks with grain, gaps and nail heads.
+        static float PlankHeight(float u, float v, int x, int y)
+        {
+            const int planks = 5;
+            float pu = u * planks;
+            int p = Mathf.FloorToInt(pu);
+            float fu = pu - p;
+            float gap = Mathf.Clamp01(Mathf.Min(fu, 1f - fu) / 0.04f);
+            float grain = Mathf.Sin((v * 9f + Hash(p, 3) * 5f + ValueNoise(u, v, 8, 31 + p) * 1.5f) * Mathf.PI * 2f) * 0.5f + 0.5f;
+            float nail = 0f;
+            float nv = Mathf.Repeat(v * 2f + Hash(p, 9) * 0.3f, 1f);
+            if (Mathf.Abs(fu - 0.5f) < 0.06f && Mathf.Abs(nv - 0.5f) < 0.03f) nail = 0.3f;
+            return gap * (0.55f + grain * 0.35f + Hash(p * 5, 1) * 0.1f) + nail;
+        }
+
+        // Damask: mirrored swirls in a diamond repeat, slightly raised like woven brocade.
+        static float DamaskHeight(float u, float v, int x, int y)
+        {
+            float a = u * 2f, b = v * 2f;
+            float fu = a - Mathf.Floor(a), fv = b - Mathf.Floor(b);
+            float mu = Mathf.Abs(fu - 0.5f) * 2f, mv = Mathf.Abs(fv - 0.5f) * 2f;   // mirror both ways
+            float motif = Mathf.Sin(mu * 6f + Mathf.Sin(mv * 5f) * 1.5f) * Mathf.Cos(mv * 4f - mu * 2f);
+            float diamond = 1f - Mathf.Clamp01(Mathf.Abs(mu + mv - 0.9f) * 6f);
+            float pattern = Mathf.Max(Mathf.Clamp01(motif * 2.2f - 0.6f), diamond * 0.8f);
+            float weave = ((x + y) % 2 == 0 ? 0.04f : 0f);
+            return pattern * 0.75f + 0.15f + weave;
         }
 
         // Corrugated cardboard: faint ridges, paper fibres and the odd crease.

@@ -1,5 +1,34 @@
 # Development Log
 
+## Toybox Town
+- Level 1 is now Toybox Town: a little Victorian town built inside a giant open toybox, with
+  cobbled streets, timber-framed shops with fish-scale roofs, gas lamps, a bandstand, a wedding
+  arch and a clock tower. Everything stands on real ground: a ravine with a stream to the west, a
+  canal with bridges and toy sailboats to the east, and the toybox's papered walls all round.
+- The town's people are toys: Mayor Bramblebutton (a teddy in a top hat) is marrying Lady
+  Lacewing (a rag doll) today, but the Fray has spoiled the town band. Talk to them all.
+  - Pip Plunkett's lute lost its string: swing over the ravine on the clothesline and up Spindle
+    Hill to the old spinning wheel (Yarn).
+  - Corporal Brassby's trumpet valves are stuck: slip into the Dye Works through its drain and
+    ride the pipes up to the reservoir for some valve dew (Water).
+  - Wisp the piper was blown onto the weathervane: ride steam and chimney smoke over the rooftops
+    (Wind).
+  - With the whole band home, talk to the Mayor: the wedding plays out, the music unravels the
+    Fray's knot on the clock tower, and the town is mended.
+- Level 1 has its own music: a 3/4 waltz on harpsichord with tabor and tambourine. The lute,
+  trumpet and pipe join in as you bring each one back, and the musicians play along on stage.
+- 5 bonus Heartstrings (pop six knots round town, race along the canal, clear the barracks of
+  Snarlings, the clock tower balcony, a cloud patch above the spire) and the 3 golden buttons.
+- Fountains look much better: glassy water column, rising bubbles, a foamy crown and droplets.
+  They come in stone, pipe and teapot styles. Updrafts can be vents, chimneys or steam grates.
+- Yarn can swing from anything wrapped in pink yarn: buttons, clothesline pegs, lanterns, spools.
+- New textures (cobbles, brick, plaster, roof shingles, planks, damask wallpaper) and stronger
+  relief on the existing ones.
+- Fixed the thread that ran up into the sky from the Skiff's lifeboat swing (it now hangs from a
+  pencil crossbar). Bunting strings sag with their flags.
+- Fountains and updrafts bring their own sounds. Level 1's background is now breeze, distant
+  birds and a far-off bell. Cobbles, brick and planks sound like wood underfoot.
+
 ## The Fray and an open Level 1
 - Story: a grey static called the Fray has seeped into the world through a tear in the sky and
   unravels whatever it touches. Every place is held together by golden Heartstrings; finding

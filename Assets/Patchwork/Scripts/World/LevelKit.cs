@@ -450,25 +450,98 @@ namespace Patchwork
             return c;
         }
 
-        public YarnAnchor Anchor(Vector3 pos, float range = 13f)
+        // Things Yarn Form can tie onto. Whatever it looks like, the part you hook is wrapped in
+        // bright pink yarn and glows when it's in reach, so it always reads the same way.
+        public enum AnchorStyle
+        {
+            Button,     // a big felt button hanging on a thread
+            Peg,        // a wooden clothes peg clipped to a line
+            Lantern,    // a paper lantern hanging from a rope
+            Spool,      // a pulley-like spool of pink thread on a hook
+            Knot        // a big pink yarn knot tied round a branch, beam or pole
+        }
+
+        // hangLength: how far up the thread it hangs from goes (0 = no thread, e.g. a peg on a
+        // line or a knot on a beam that the caller builds). Build what it hangs from yourself, so
+        // the thread always ends on something real.
+        public YarnAnchor Anchor(Vector3 pos, float range = 13f, AnchorStyle style = AnchorStyle.Button, float hangLength = 0f)
         {
             var g = Group("YarnAnchor", pos);
             var anchor = g.gameObject.AddComponent<YarnAnchor>();
             anchor.Range = range;
             var vis = new GameObject("Visual").transform;
             vis.SetParent(g, false);
-            var disc = Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1.5f, 0.14f, 1.5f), PatchworkAssets.Felt(Palette.AnchorPink), new Vector3(90f, 0f, 0f), vis);
-            var rim = Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, 0f), new Vector3(1.75f, 0.1f, 1.75f), PatchworkAssets.Felt(Palette.AnchorPink), new Vector3(90f, 0f, 0f), vis);
-            var hole = PatchworkAssets.Plain(new Color(0.45f, 0.12f, 0.25f), 0.3f);
-            for (int i = 0; i < 4; i++)
+            var pink = PatchworkAssets.Felt(Palette.AnchorPink);
+            var pinkYarn = PatchworkAssets.Yarn(Palette.AnchorPink);
+            var glow = new List<Renderer>();
+            switch (style)
             {
-                float x = (i % 2 == 0 ? -1f : 1f) * 0.22f;
-                float y = (i < 2 ? -1f : 1f) * 0.22f;
-                Deco(PrimitiveType.Cylinder, new Vector3(x, y, 0f), new Vector3(0.18f, 0.16f, 0.18f), hole, new Vector3(90f, 0f, 0f), vis);
+                case AnchorStyle.Peg:
+                {
+                    var wood = PatchworkAssets.Wood(new Color(0.88f, 0.72f, 0.5f));
+                    Deco(PrimitiveType.Cube, new Vector3(-0.12f, -0.45f, 0f), new Vector3(0.18f, 1.1f, 0.32f), wood, new Vector3(0f, 0f, 4f), vis);
+                    Deco(PrimitiveType.Cube, new Vector3(0.12f, -0.45f, 0f), new Vector3(0.18f, 1.1f, 0.32f), wood, new Vector3(0f, 0f, -4f), vis);
+                    var band = Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.35f, 0f), new Vector3(0.62f, 0.14f, 0.5f), pinkYarn, default(Vector3), vis);
+                    glow.Add(band.GetComponent<Renderer>());
+                    Deco(PrimitiveType.Sphere, new Vector3(0f, 0.05f, 0f), new Vector3(0.36f, 0.2f, 0.36f), PatchworkAssets.Plain(new Color(0.7f, 0.72f, 0.78f), 0.8f), default(Vector3), vis);
+                    break;
+                }
+                case AnchorStyle.Lantern:
+                {
+                    var body = Deco(PrimitiveType.Sphere, new Vector3(0f, -0.9f, 0f), new Vector3(1.1f, 1.3f, 1.1f), PatchworkAssets.Glow(new Color(1f, 0.82f, 0.6f), 1.2f), default(Vector3), vis);
+                    var topCap = Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.25f, 0f), new Vector3(0.7f, 0.08f, 0.7f), pink, default(Vector3), vis);
+                    var botCap = Deco(PrimitiveType.Cylinder, new Vector3(0f, -1.55f, 0f), new Vector3(0.7f, 0.08f, 0.7f), pink, default(Vector3), vis);
+                    var wrap = Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.9f, 0f), new Vector3(1.16f, 0.08f, 1.16f), pinkYarn, default(Vector3), vis);
+                    Deco(PrimitiveType.Cylinder, new Vector3(0f, -1.75f, 0f), new Vector3(0.08f, 0.15f, 0.08f), pinkYarn, default(Vector3), vis);
+                    glow.Add(topCap.GetComponent<Renderer>());
+                    glow.Add(botCap.GetComponent<Renderer>());
+                    glow.Add(wrap.GetComponent<Renderer>());
+                    body.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    break;
+                }
+                case AnchorStyle.Spool:
+                {
+                    var wood = PatchworkAssets.Wood(new Color(0.8f, 0.62f, 0.42f));
+                    Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.5f, -0.4f), new Vector3(1.4f, 0.06f, 1.4f), wood, new Vector3(90f, 0f, 0f), vis);
+                    Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.5f, 0.4f), new Vector3(1.4f, 0.06f, 1.4f), wood, new Vector3(90f, 0f, 0f), vis);
+                    var thread = Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.5f, 0f), new Vector3(1.05f, 0.38f, 1.05f), pinkYarn, new Vector3(90f, 0f, 0f), vis);
+                    glow.Add(thread.GetComponent<Renderer>());
+                    Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.05f, 0f), new Vector3(0.08f, 0.1f, 0.08f), PatchworkAssets.Plain(new Color(0.55f, 0.55f, 0.6f), 0.8f), default(Vector3), vis);
+                    break;
+                }
+                case AnchorStyle.Knot:
+                {
+                    var k1 = Deco(PrimitiveType.Sphere, Vector3.zero, new Vector3(0.9f, 0.7f, 0.9f), pinkYarn, new Vector3(20f, 30f, 0f), vis);
+                    var k2 = Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1.0f, 0.16f, 1.0f), pinkYarn, new Vector3(90f, 0f, 0f), vis);
+                    var tailA = Deco(PrimitiveType.Capsule, new Vector3(0.2f, -0.6f, 0.1f), new Vector3(0.14f, 0.45f, 0.14f), pinkYarn, new Vector3(0f, 0f, 12f), vis);
+                    var tailB = Deco(PrimitiveType.Capsule, new Vector3(-0.15f, -0.65f, -0.1f), new Vector3(0.14f, 0.5f, 0.14f), pinkYarn, new Vector3(0f, 0f, -10f), vis);
+                    glow.Add(k1.GetComponent<Renderer>());
+                    glow.Add(k2.GetComponent<Renderer>());
+                    glow.Add(tailA.GetComponent<Renderer>());
+                    glow.Add(tailB.GetComponent<Renderer>());
+                    break;
+                }
+                default:
+                {
+                    var disc = Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1.5f, 0.14f, 1.5f), pink, new Vector3(90f, 0f, 0f), vis);
+                    var rim = Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, 0f), new Vector3(1.75f, 0.1f, 1.75f), pink, new Vector3(90f, 0f, 0f), vis);
+                    var hole = PatchworkAssets.Plain(new Color(0.45f, 0.12f, 0.25f), 0.3f);
+                    for (int i = 0; i < 4; i++)
+                    {
+                        float x = (i % 2 == 0 ? -1f : 1f) * 0.22f;
+                        float y = (i < 2 ? -1f : 1f) * 0.22f;
+                        Deco(PrimitiveType.Cylinder, new Vector3(x, y, 0f), new Vector3(0.18f, 0.16f, 0.18f), hole, new Vector3(90f, 0f, 0f), vis);
+                    }
+                    glow.Add(disc.GetComponent<Renderer>());
+                    glow.Add(rim.GetComponent<Renderer>());
+                    break;
+                }
             }
-            // The thread it hangs from, disappearing into the sky.
-            Deco(PrimitiveType.Cylinder, pos + Vector3.up * 20f, new Vector3(0.05f, 19.2f, 0.05f), PatchworkAssets.Yarn(Palette.AnchorPink));
-            anchor.Setup(vis, new Renderer[] { disc.GetComponent<Renderer>(), rim.GetComponent<Renderer>() }, new Color(1f, 0.45f, 0.65f));
+            // The thread it hangs from, up to whatever is holding it.
+            if (hangLength > 0f)
+                NoShadow(Deco(PrimitiveType.Cylinder, pos + Vector3.up * (hangLength * 0.5f + 0.4f), new Vector3(0.05f, hangLength * 0.5f, 0.05f), pinkYarn));
+            anchor.Setup(vis, glow.ToArray(), new Color(1f, 0.45f, 0.65f));
+            anchor.Swings = style != AnchorStyle.Knot && style != AnchorStyle.Spool;
             return anchor;
         }
 
@@ -503,32 +576,162 @@ namespace Patchwork
             return grate;
         }
 
-        public WaterCurrent Fountain(Vector3 basePos, float height)
+        // What a fountain or a geyser comes out of. The water column itself always looks the same
+        // (bright, glassy, bubbling, with a foamy crown), so Water Form always knows it can ride it.
+        public enum FountainStyle
+        {
+            Stone,      // a round carved-stone basin with a fish spout (town squares, gardens)
+            Pipe,       // a copper pipe sticking out of the ground (mills, workshops, sewers)
+            Teapot,     // the spout of a giant toppled teapot
+            Spring      // just a bubbling patch of water (canals, ponds)
+        }
+
+        public WaterCurrent Fountain(Vector3 basePos, float height, FountainStyle style = FountainStyle.Stone)
         {
             var current = Volume<WaterCurrent>(basePos + Vector3.up * height * 0.5f, new Vector3(2.4f, height, 2.4f), "Fountain");
-            var water = PatchworkAssets.Water(FormLibrary.Get(FormType.Water).PrimaryColor);
-            var light = PatchworkAssets.Water(FormLibrary.Get(FormType.Water).SecondaryColor);
-            Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.15f, new Vector3(3f, 0.15f, 3f), PatchworkAssets.Felt(Palette.Denim));
-            Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.3f, new Vector3(2.6f, 0.04f, 2.6f), water);
-            var rings = new Transform[6];
-            for (int i = 0; i < rings.Length; i++)
-                rings[i] = Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(2.2f, 0.04f, 2.2f), i % 2 == 0 ? water : light, default(Vector3), current.transform);
-            // A thin central jet.
-            Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.35f, height * 0.5f, 0.35f), light, default(Vector3), current.transform);
-            current.SetupRings(rings, height);
+            Color waterCol = FormLibrary.Get(FormType.Water).PrimaryColor;
+            var surface = PatchworkAssets.Water(waterCol);
+            var glass = PatchworkAssets.Bubble(new Color(0.62f, 0.85f, 1f, 0.5f));
+            var core = PatchworkAssets.Bubble(new Color(0.85f, 0.95f, 1f, 0.65f));
+            var foam = PatchworkAssets.Felt(new Color(0.94f, 0.98f, 1f));
+
+            // ----- What it comes out of -----
+            switch (style)
+            {
+                case FountainStyle.Pipe:
+                {
+                    var copper = PatchworkAssets.Plain(new Color(0.78f, 0.48f, 0.3f), 0.75f);
+                    NoShadow(Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.35f, new Vector3(1.3f, 0.35f, 1.3f), copper));
+                    Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.72f, new Vector3(1.55f, 0.05f, 1.55f), copper);
+                    for (int i = 0; i < 6; i++)
+                    {
+                        float a = i / 6f * Mathf.PI * 2f;
+                        Deco(PrimitiveType.Sphere, basePos + new Vector3(Mathf.Cos(a) * 0.72f, 0.72f, Mathf.Sin(a) * 0.72f), Vector3.one * 0.14f, PatchworkAssets.Plain(new Color(0.6f, 0.4f, 0.28f), 0.6f));
+                    }
+                    Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.06f, new Vector3(2.6f, 0.04f, 2.6f), surface);
+                    break;
+                }
+                case FountainStyle.Teapot:
+                {
+                    var china = PatchworkAssets.Plain(new Color(0.95f, 0.95f, 0.98f), 0.85f);
+                    var blue = PatchworkAssets.Plain(new Color(0.35f, 0.5f, 0.85f), 0.8f);
+                    var pot = Group("Teapot", basePos + new Vector3(-2.1f, 1.1f, 0f));
+                    Deco(PrimitiveType.Sphere, Vector3.zero, new Vector3(2.6f, 2.1f, 2.4f), china, new Vector3(0f, 0f, -12f), pot);
+                    Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, 0f), new Vector3(2.66f, 0.08f, 2.46f), blue, new Vector3(0f, 0f, -12f), pot);
+                    Deco(PrimitiveType.Cylinder, new Vector3(-0.3f, 1.1f, 0f), new Vector3(1f, 0.1f, 1f), china, new Vector3(0f, 0f, -12f), pot);
+                    Deco(PrimitiveType.Sphere, new Vector3(-0.35f, 1.25f, 0f), Vector3.one * 0.3f, blue, default(Vector3), pot);
+                    var handle = Deco(PrimitiveType.Capsule, new Vector3(-1.45f, 0.1f, 0f), new Vector3(0.22f, 0.7f, 0.22f), china, new Vector3(0f, 0f, -20f), pot);
+                    handle.name = "Handle";
+                    // The spout curves up to the jet.
+                    Rope(basePos + new Vector3(-1f, 0.7f, 0f), basePos + new Vector3(-0.2f, 0.55f, 0f), china, 0.55f);
+                    Deco(PrimitiveType.Cylinder, basePos + new Vector3(0f, 0.55f, 0f), new Vector3(0.6f, 0.12f, 0.6f), blue);
+                    var col = pot.gameObject.AddComponent<SphereCollider>();
+                    col.radius = 1.05f;
+                    Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.04f, new Vector3(2.8f, 0.03f, 2.8f), surface);
+                    break;
+                }
+                case FountainStyle.Spring:
+                    Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.04f, new Vector3(3f, 0.03f, 3f), surface);
+                    break;
+                default:
+                {
+                    // A Victorian stone basin: a fat lip, a carved band and a little fish on top.
+                    var stone = PatchworkAssets.Plaster(new Color(0.86f, 0.84f, 0.8f));
+                    var band = PatchworkAssets.Cobble(new Color(0.75f, 0.74f, 0.72f));
+                    NoShadow(Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.3f, new Vector3(3.6f, 0.3f, 3.6f), stone));
+                    Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.62f, new Vector3(3.9f, 0.06f, 3.9f), band);
+                    Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.63f, new Vector3(3.2f, 0.05f, 3.2f), surface);
+                    Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.75f, new Vector3(0.9f, 0.15f, 0.9f), stone);
+                    var fish = Group("Fish", basePos + Vector3.up * 1f);
+                    var gold = PatchworkAssets.Plain(new Color(0.95f, 0.65f, 0.3f), 0.7f);
+                    Deco(PrimitiveType.Sphere, new Vector3(0f, 0.05f, 0f), new Vector3(0.5f, 0.42f, 0.3f), gold, new Vector3(0f, 0f, 70f), fish);
+                    Deco(PrimitiveType.Cube, new Vector3(0f, -0.3f, 0f), new Vector3(0.3f, 0.25f, 0.05f), gold, new Vector3(0f, 0f, 45f), fish);
+                    break;
+                }
+            }
+
+            // ----- The water column -----
+            float r0 = 0.62f;
+            var column = Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(r0 * 2f, height * 0.5f, r0 * 2f), glass, default(Vector3), current.transform);
+            column.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var jet = Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.45f, height * 0.5f, 0.45f), core, default(Vector3), current.transform);
+            jet.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            // Bubbles rising inside it.
+            var bubbles = new Transform[10];
+            for (int i = 0; i < bubbles.Length; i++)
+            {
+                bubbles[i] = Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 0.25f, core, default(Vector3), current.transform);
+                bubbles[i].GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            // Foamy crown at the top and droplets arcing out from it.
+            var crown = new Transform[8];
+            for (int i = 0; i < crown.Length; i++)
+                crown[i] = Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 0.45f, foam, default(Vector3), current.transform);
+            var drops = new Transform[12];
+            for (int i = 0; i < drops.Length; i++)
+            {
+                drops[i] = Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 0.16f, glass, default(Vector3), current.transform);
+                drops[i].GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            current.SetupVisuals(column, jet, bubbles, crown, drops, height, style != FountainStyle.Spring && style != FountainStyle.Pipe ? 1.6f : 1.2f);
+            AmbientEmitter.Create(current.transform, basePos + Vector3.up * 0.5f, Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.25f, 1.5f, 12f);
             return current;
         }
 
-        public WindUpdraft Updraft(Vector3 basePos, float height)
+        // What an updraft rises out of. Wind Form can always ride the white swirl above it.
+        public enum UpdraftStyle
+        {
+            Vent,       // a round felt vent in the ground (the original)
+            Chimney,    // smoke from a brick chimney (put basePos on the chimney top)
+            Steam       // a brass grate breathing warm steam
+        }
+
+        public WindUpdraft Updraft(Vector3 basePos, float height, UpdraftStyle style = UpdraftStyle.Vent)
         {
             var up = Volume<WindUpdraft>(basePos + Vector3.up * height * 0.5f, new Vector3(2.6f, height, 2.6f), "Updraft");
-            Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.12f, new Vector3(2.6f, 0.12f, 2.6f), PatchworkAssets.Felt(new Color(0.85f, 0.92f, 0.95f)));
-            Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.25f, new Vector3(2.0f, 0.02f, 2.0f), PatchworkAssets.Plain(new Color(0.3f, 0.35f, 0.4f), 0.2f));
+            switch (style)
+            {
+                case UpdraftStyle.Chimney:
+                {
+                    var brick = PatchworkAssets.Brick(new Color(0.72f, 0.4f, 0.32f));
+                    var stack = Block(basePos + Vector3.down * 1.6f, new Vector3(1.6f, 3.2f, 1.6f), new Color(0.72f, 0.4f, 0.32f), "Chimney", brick);
+                    SetTiling(stack.GetComponent<Renderer>(), 1f, 2f);
+                    Deco(PrimitiveType.Cube, basePos + Vector3.up * 0.1f, new Vector3(1.9f, 0.2f, 1.9f), brick);
+                    Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.4f, new Vector3(0.7f, 0.3f, 0.7f), PatchworkAssets.Plain(new Color(0.75f, 0.45f, 0.3f), 0.4f));
+                    Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.71f, new Vector3(0.5f, 0.02f, 0.5f), PatchworkAssets.Plain(new Color(0.1f, 0.08f, 0.08f), 0.2f));
+                    break;
+                }
+                case UpdraftStyle.Steam:
+                {
+                    var brass = PatchworkAssets.Plain(new Color(0.85f, 0.68f, 0.35f), 0.75f);
+                    Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.05f, new Vector3(2.6f, 0.05f, 2.6f), brass);
+                    for (int i = -2; i <= 2; i++)
+                        Deco(PrimitiveType.Cube, basePos + new Vector3(i * 0.42f, 0.1f, 0f), new Vector3(0.12f, 0.04f, 2.1f), PatchworkAssets.Plain(new Color(0.25f, 0.2f, 0.18f), 0.4f));
+                    break;
+                }
+                default:
+                    Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.12f, new Vector3(2.6f, 0.12f, 2.6f), PatchworkAssets.Felt(new Color(0.85f, 0.92f, 0.95f)));
+                    Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.25f, new Vector3(2.0f, 0.02f, 2.0f), PatchworkAssets.Plain(new Color(0.3f, 0.35f, 0.4f), 0.2f));
+                    break;
+            }
             var ribbon = PatchworkAssets.Glow(new Color(0.85f, 1f, 0.97f), 0.4f);
             var ribbons = new Transform[8];
             for (int i = 0; i < ribbons.Length; i++)
                 ribbons[i] = Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(0.1f, 0.9f, 0.03f), ribbon, default(Vector3), up.transform);
             up.SetupRibbons(ribbons, height);
+            if (style != UpdraftStyle.Vent)
+            {
+                // Soft puffs of smoke or steam rising and spreading.
+                var puffMat = PatchworkAssets.Felt(style == UpdraftStyle.Chimney ? new Color(0.88f, 0.88f, 0.9f) : new Color(0.97f, 0.97f, 1f));
+                var puffs = new Transform[7];
+                for (int i = 0; i < puffs.Length; i++)
+                {
+                    puffs[i] = Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 0.6f, puffMat, default(Vector3), up.transform);
+                    puffs[i].GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
+                up.SetupPuffs(puffs);
+            }
+            AmbientEmitter.Create(up.transform, basePos + Vector3.up * 0.8f, Sfx.Ambient(Sfx.AmbientClip.Vent), 0.18f, 1.5f, 9f);
             return up;
         }
 
@@ -970,15 +1173,22 @@ namespace Patchwork
             var g = Group("Bunting", a);
             Vector3 d = b - a;
             float len = d.magnitude;
-            var str = Deco(PrimitiveType.Cylinder, (a + b) * 0.5f, new Vector3(0.05f, len * 0.5f, 0.05f), PatchworkAssets.Yarn(Palette.Cream));
-            str.rotation = Quaternion.FromToRotation(Vector3.up, d.normalized);
-            NoShadow(str);
+            float sagMax = Mathf.Min(1.2f, len * 0.08f);
+            System.Func<float, Vector3> P = k => Vector3.Lerp(a, b, k) + Vector3.down * (Mathf.Sin(k * Mathf.PI) * sagMax);
+            var yarn = PatchworkAssets.Yarn(Palette.Cream);
+            int segs = Mathf.Clamp(Mathf.RoundToInt(len / 1.5f), 2, 16);
+            for (int i = 0; i < segs; i++)
+            {
+                Vector3 p0 = P(i / (float)segs), p1 = P((i + 1) / (float)segs);
+                var str = Deco(PrimitiveType.Cylinder, (p0 + p1) * 0.5f, new Vector3(0.05f, (p1 - p0).magnitude * 0.5f + 0.02f, 0.05f), yarn);
+                str.rotation = Quaternion.FromToRotation(Vector3.up, (p1 - p0).normalized);
+                NoShadow(str);
+            }
             int flags = Mathf.Max(2, Mathf.RoundToInt(len / 2.2f));
             for (int i = 1; i < flags; i++)
             {
                 float k = i / (float)flags;
-                float sag = Mathf.Sin(k * Mathf.PI) * 1.2f;
-                Vector3 p = Vector3.Lerp(a, b, k) + Vector3.down * (sag + 0.45f);
+                Vector3 p = P(k) + Vector3.down * 0.45f;
                 var flag = Deco(PrimitiveType.Cube, p, new Vector3(0.75f, 0.75f, 0.04f), PatchworkAssets.Fabric(colors[i % colors.Length]),
                     new Vector3(0f, Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg + 90f, 45f));
                 NoShadow(flag);

@@ -7,7 +7,7 @@ namespace Patchwork
     // scraggly grey yarn beard, an eyepatch, a felt tricorn, a pencil peg leg, a crochet hook for a
     // hand and a little yarn parrot on his shoulder. He turns to watch Patch, sways with the ship,
     // and talks in grumbly little blips from where he stands.
-    public class NpcYarny : MonoBehaviour
+    public class NpcYarny : Npc
     {
         public const string DisplayName = "Captain Yarny";
         const string MetKey = "Yarny_met";
@@ -21,9 +21,9 @@ namespace Patchwork
         float talkPulse;
         float greetCooldown;
         int chatIndex;
-        public bool Talking { get; set; }
+        public override string DisplayNameText { get { return DisplayName; } }
 
-        public Vector3 HeadPosition { get { return transform.position + Vector3.up * 1.9f; } }
+        public override Vector3 HeadPosition { get { return transform.position + Vector3.up * 1.9f; } }
 
         public static NpcYarny Create(LevelKit kit, Vector3 feet, float faceYaw)
         {
@@ -198,7 +198,7 @@ namespace Patchwork
         }
 
         // A grumbly little syllable, from where he's standing.
-        public void Blip()
+        public override void Blip()
         {
             if (voice == null) return;
             talkPulse = 1f;
@@ -208,7 +208,7 @@ namespace Patchwork
         }
 
         // A hearty "arr" when you walk up to him (not every single time).
-        public void Greet()
+        public override void Greet()
         {
             if (greetCooldown > 0f || voice == null) return;
             greetCooldown = 12f;
@@ -220,7 +220,7 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ What he says
 
-        public string[] NextLines()
+        public override string[] NextLines()
         {
             if (!GameState.IsHintSeen(MetKey))
             {
@@ -231,9 +231,9 @@ namespace Patchwork
                     "Arr! A new deckhand aboard! Name's Captain Yarny, master o' the Cardboard Skiff.",
                     "I've been sailin' these patchwork skies since I were a single loose thread.",
                     "But there be trouble below. A grey static's creepin' over the world. We sailors call it the Fray.",
-                    "It slipped in through a tear in the sky, and it unravels whatever it touches. Gardens, rivers, whole kingdoms o' cloth.",
+                    "It slipped in through a tear in the sky, and it unravels whatever it touches. Towns, rivers, whole kingdoms o' cloth.",
                     "Every place has golden Heartstrings holdin' it together. Find 'em, thread 'em back where they belong, and the Fray lets go.",
-                    "See that globe at the bow? Step up to the helm and give it a turn. The Sewing Basket Garden's where it struck first.",
+                    "See that globe at the bow? Step up to the helm and give it a turn. Toybox Town's where it struck first. And on the Mayor's weddin' day, no less!",
                     "Now off ye go. And mind ye don't unravel!"
                 };
             }
@@ -244,20 +244,21 @@ namespace Patchwork
             bool done1 = GameState.IsLevelComplete(Level1Builder.SceneName);
             int hearts = 0;
             foreach (var id in Level1Builder.HeartstringIds) if (GameState.IsCollected(id)) hearts++;
-            if (!done1 && hearts < Level1Builder.HeartstringsNeeded)
-                lines.Add(new[] { "The Fray's got the Sewing Basket Garden all tangled up.", "Find " + Level1Builder.HeartstringsNeeded + " Heartstrings and the Heart Spool will wake. Ye've got " + hearts + " so far.",
-                                  "Four corners to that garden: the Peaks, the Falls, the Bluffs and the Ruins. Start wherever ye fancy!" });
+            int band = Level1Director.BandCount();
+            if (!done1 && band < 3)
+                lines.Add(new[] { "The Fray's spoiled the Toybox Town band, and the Mayor won't wed without music.", "Ye've found " + band + " o' the 3 things the band needs. A lute string, some valve dew, and their piper Wisp.",
+                                  "Spindle Hill to the west, the Dye Works to the east, the rooftops to the south. Start wherever ye fancy!" });
             else if (!done1)
-                lines.Add(new[] { "The Heart Spool's awake! That golden thread'll carry ye right up to the Fray's knot.", "Pop the knots holdin' it together and set the garden's heart free!" });
+                lines.Add(new[] { "The whole band's back together! Go tell the Mayor, deckhand.", "Music like that'll shake the Fray's knot right off the clock tower!" });
             else
-                lines.Add(new[] { "Ye mended the garden! The Fray's knot came right undone. Proud o' ye, deckhand.",
+                lines.Add(new[] { "Ye saved the wedding! The Fray's knot came right undone. Proud o' ye, deckhand.",
                                   "But where there's one tear in the sky, there's bound to be more...", "Mark me words. We'll be needin' that globe again." });
             if (hearts < Level1Builder.HeartstringIds.Length)
-                lines.Add(new[] { "There be " + (Level1Builder.HeartstringIds.Length - hearts) + " Heartstrings still loose in the garden.",
+                lines.Add(new[] { "There be " + (Level1Builder.HeartstringIds.Length - hearts) + " Heartstrings still loose in Toybox Town.",
                                   "Some only show up when ye beat a challenge. Knots to pop, races to run, Snarlings to sort out." });
             lines.Add(new[] { "Snarlings, they call the Fray's little critters. All grumble, no bite.", "Hop on their heads and they come right undone!" });
             if (found < needed)
-                lines.Add(new[] { "Word on the wind is there be " + (needed - found) + " golden button" + (needed - found == 1 ? "" : "s") + " still hidin' in that garden.",
+                lines.Add(new[] { "Word on the wind is there be " + (needed - found) + " golden button" + (needed - found == 1 ? "" : "s") + " still hidin' in Toybox Town.",
                                   "One of 'em hums a little tune, they say. Keep yer ears open, matey." });
             else
                 lines.Add(new[] { "Ye found every golden button! Me cabin door's come unstitched.", "Go on in. There be somethin' shiny in there for a captain-in-trainin'." });

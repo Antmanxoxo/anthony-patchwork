@@ -153,7 +153,7 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 2.45f, MidBowZ + 13.1f), new Vector3(0.36f, 0.36f, 0.5f), PatchworkAssets.Plain(new Color(0.3f, 0.3f, 0.32f), 0.3f));
 
             // Bunting from the mast to the bow and the stern.
-            kit.Bunting(new Vector3(0f, 12f, 6f), new Vector3(0f, 1.4f, MidBowZ + 7.6f), LevelKit.Palette.Quilt);
+            kit.Bunting(new Vector3(0f, 12f, 6f), new Vector3(0f, 2.5f, MidBowZ + 12.8f), LevelKit.Palette.Quilt);
             kit.Bunting(new Vector3(0f, 12f, 6f), CabinFlagTop, LevelKit.Palette.Quilt);
         }
 
@@ -446,8 +446,7 @@ namespace Patchwork
             AmbientEmitter.Create(root, new Vector3(0f, -0.5f, MidBowZ + 2f), Sfx.Ambient(Sfx.AmbientClip.Creak), 0.4f, 3f, 14f);
             AmbientEmitter.Create(root, new Vector3(0f, 16.5f, 1f), Sfx.Ambient(Sfx.AmbientClip.Balloon), 0.6f, 5f, 24f);
             AmbientEmitter.Create(root, new Vector3(3.2f, 1.2f, -14.4f), Sfx.Ambient(Sfx.AmbientClip.Clock), 0.45f, 1f, 7f);
-            AmbientEmitter.Create(root, new Vector3(0f, 0.5f, 2.4f), Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.3f, 1.5f, 10f);
-            AmbientEmitter.Create(root, new Vector3(6f, 1f, -11.5f), Sfx.Ambient(Sfx.AmbientClip.Vent), 0.3f, 1.5f, 10f);
+            // (The fountain and the air vent bring their own sounds.)
         }
 
         // ---------------------------------------------------------------- Practice spots
@@ -503,7 +502,9 @@ namespace Patchwork
                 kit.Rope(end, new Vector3(c.x + 2.6f, 0.6f, z), rope, 0.07f);
             }
 
-            kit.Anchor(new Vector3(-11.5f, 6.5f, 2f), 13f);
+            // A pencil crossbar between the davits for the swing button to hang from.
+            kit.Rope(new Vector3(-11.5f, 8.5f, c.z - 2.4f), new Vector3(-11.5f, 8.5f, c.z + 2.4f), pencil, 0.24f);
+            kit.Anchor(new Vector3(-11.5f, 6.5f, 2f), 13f, LevelKit.AnchorStyle.Button, 1.6f);
             kit.AddCameraZone(new Vector3(-12.5f, 2f, 2f), new Vector3(13f, 20f, 10f), 2f, 5f);
         }
 

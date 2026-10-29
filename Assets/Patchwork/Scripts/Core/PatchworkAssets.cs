@@ -70,14 +70,14 @@ namespace Patchwork
         {
             EnsureInit();
             var t = PatchworkTextures.Weave;
-            return Get("fabric", color, t.Albedo, 0.08f, Color.black, t.Normal, 0.8f);
+            return Get("fabric", color, t.Albedo, 0.08f, Color.black, t.Normal, 1.1f);
         }
 
         public static Material Felt(Color color)
         {
             EnsureInit();
             var t = PatchworkTextures.Felt;
-            return Get("felt", color, t.Albedo, 0.02f, Color.black, t.Normal, 0.6f);
+            return Get("felt", color, t.Albedo, 0.02f, Color.black, t.Normal, 0.9f);
         }
 
         // Wound yarn (balls of yarn, strings, ropes).
@@ -85,7 +85,7 @@ namespace Patchwork
         {
             EnsureInit();
             var t = PatchworkTextures.Wrap;
-            return Get("yarn", color, t.Albedo, 0.05f, Color.black, t.Normal, 1f);
+            return Get("yarn", color, t.Albedo, 0.05f, Color.black, t.Normal, 1.4f);
         }
 
         // Knitted stitches (Patch's yarn body).
@@ -93,35 +93,78 @@ namespace Patchwork
         {
             EnsureInit();
             var t = PatchworkTextures.Knit;
-            return Get("knit", color, t.Albedo, 0.04f, Color.black, t.Normal, 1.2f);
+            return Get("knit", color, t.Albedo, 0.04f, Color.black, t.Normal, 1.5f);
         }
 
         public static Material Wicker(Color color)
         {
             EnsureInit();
             var t = PatchworkTextures.Wicker;
-            return Get("wicker", color, t.Albedo, 0.1f, Color.black, t.Normal, 1.3f);
+            return Get("wicker", color, t.Albedo, 0.1f, Color.black, t.Normal, 1.7f);
         }
 
         public static Material Grass(Color color)
         {
             EnsureInit();
             var t = PatchworkTextures.Grass;
-            return Get("grass", color, t.Albedo, 0.03f, Color.black, t.Normal, 1f);
+            return Get("grass", color, t.Albedo, 0.03f, Color.black, t.Normal, 1.4f);
         }
 
         public static Material Wood(Color color)
         {
             EnsureInit();
             var t = PatchworkTextures.Wood;
-            return Get("wood", color, t.Albedo, 0.25f, Color.black, t.Normal, 0.7f);
+            return Get("wood", color, t.Albedo, 0.25f, Color.black, t.Normal, 1.1f);
+        }
+
+        public static Material Cobble(Color color)
+        {
+            EnsureInit();
+            var t = PatchworkTextures.Cobble;
+            return Get("cobble", color, t.Albedo, 0.18f, Color.black, t.Normal, 1.6f);
+        }
+
+        public static Material Brick(Color color)
+        {
+            EnsureInit();
+            var t = PatchworkTextures.Brick;
+            return Get("brick", color, t.Albedo, 0.08f, Color.black, t.Normal, 1.5f);
+        }
+
+        public static Material Plaster(Color color)
+        {
+            EnsureInit();
+            var t = PatchworkTextures.Plaster;
+            return Get("plaster", color, t.Albedo, 0.06f, Color.black, t.Normal, 0.8f);
+        }
+
+        public static Material Shingle(Color color)
+        {
+            EnsureInit();
+            var t = PatchworkTextures.Shingle;
+            return Get("shingle", color, t.Albedo, 0.12f, Color.black, t.Normal, 1.6f);
+        }
+
+        public static Material Planks(Color color)
+        {
+            EnsureInit();
+            var t = PatchworkTextures.Planks;
+            return Get("planks", color, t.Albedo, 0.2f, Color.black, t.Normal, 1.3f);
+        }
+
+        // Swirly Victorian brocade: wallpaper, curtains, upholstery.
+        public static Material Damask(Color color)
+        {
+            EnsureInit();
+            var t = PatchworkTextures.Damask;
+            return Get("damask", color, t.Albedo, 0.15f, Color.black, t.Normal, 0.9f);
         }
 
         public static Material Cardboard(Color color)
         {
             EnsureInit();
             var t = PatchworkTextures.Cardboard;
-            return Get("cardboard", color, t.Albedo, 0.06f, Color.black, t.Normal, 0.9f);
+            return Get("cardboard", color, t.Albedo, 0.06f, Color.black, t.Normal, 1.2f);
         }
 
         // Marbled paint and ink. Each call makes its own copy so it can be scrolled.

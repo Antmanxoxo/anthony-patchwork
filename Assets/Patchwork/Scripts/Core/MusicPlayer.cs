@@ -7,7 +7,7 @@ namespace Patchwork
     // different instrument for each form, crossfading when Patch changes:
     //   Water = music box with little bubble blips, Yarn = plucked strings, Wind = breathy flute and air.
     // 72 BPM, 8 bars: Fmaj7 Em7 Dm9 Cmaj7 Fmaj7 Em7 Dm7 G6sus
-    public class MusicPlayer : MonoBehaviour
+    public partial class MusicPlayer : MonoBehaviour
     {
         const string OldOnKey = "pw_music_on";
         const string VolumeKey = "pw_music_volume";
@@ -105,6 +105,8 @@ namespace Patchwork
 
             float target = MaxVolume * Volume / 10f * duck;
             master = Mathf.MoveTowards(master, target, udt * 0.6f);
+            // Level soundtracks (like Toybox Town) crossfade with the Skiff's music.
+            float skiff = UpdateLevelTrack(udt);
 
             for (int i = 0; i < StemCount; i++)
             {
@@ -116,7 +118,7 @@ namespace Patchwork
                 }
                 // Equal-power curve so the overall loudness stays even mid-crossfade.
                 float gain = i == (int)Stem.Base ? 1f : Mathf.Sin(layerMix[i] * Mathf.PI * 0.5f);
-                sources[i].volume = master * gain;
+                sources[i].volume = master * gain * skiff;
                 filters[i].cutoffFrequency = cutoff;
             }
         }

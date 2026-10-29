@@ -16,7 +16,8 @@ namespace Patchwork
         Dance,      // the D-pad easter egg: Patch dances, the camera turns it into a little cutscene
         Intro,      // studio logo and title screen (first time the Skiff loads)
         LevelSelect, // at the Skiff's helm, turning the globe
-        Talk         // chatting with an NPC (Captain Yarny)
+        Talk,        // chatting with an NPC
+        Cutscene     // a scripted moment (the wedding)
     }
 
     // Main game object, one per scene. Builds the level, camera, light and player,
@@ -105,6 +106,7 @@ namespace Patchwork
         {
             Instance = this;
             currentLevel = levelId;
+            MusicPlayer.SetTrack(levelId == LevelId.Level1 ? MusicTrack.Toybox : MusicTrack.Skiff);
             Time.timeScale = 1f;
             // VSync is on in Quality settings; this cap only matters if a graphics driver forces it off,
             // so the game never runs at hundreds of frames per second and heats up people's computers.
@@ -312,9 +314,13 @@ namespace Patchwork
                 case UIMode.Talk:
                     Dialogue.Update(udt);
                     break;
+                case UIMode.Cutscene:
+                    cutsceneAngle += udt * 9f;
+                    PlaceCutsceneCamera();
+                    break;
             }
 
-            if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel || Mode == UIMode.Dance || Mode == UIMode.Intro || Mode == UIMode.LevelSelect || Mode == UIMode.Talk)
+            if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel || Mode == UIMode.Dance || Mode == UIMode.Intro || Mode == UIMode.LevelSelect || Mode == UIMode.Talk || Mode == UIMode.Cutscene)
             {
                 PlayerInputFrame frame;
                 if (Mode == UIMode.Gameplay && !modeChangedThisFrame)
@@ -535,9 +541,48 @@ namespace Patchwork
 
         public void EndTalk()
         {
-            Dialogue.Close();
+            var who = Dialogue.Close();
             SetMode(UIMode.Gameplay, 1f);
             Sfx.Play(SfxId.MenuCancel, 0.3f);
+            if (who != null) who.OnTalkEnd();
+        }
+
+        // ------------------------------------------------------------------ Cutscenes
+        // A little scripted moment (like the Mayor's wedding): Patch stands still, the camera slowly
+        // circles a spot with cinema bars, and whoever started it calls EndCutscene when it's done.
+
+        public string CutsceneCaption { get; set; }
+        Vector3 cutsceneCenter;
+        float cutsceneRadius, cutsceneHeight, cutsceneAngle;
+
+        public void StartCutscene(Vector3 center, float radius, float height, float startAngle)
+        {
+            Player.Forms.CancelAll();
+            Player.Motor.Velocity = Vector3.zero;
+            cutsceneCenter = center;
+            cutsceneRadius = radius;
+            cutsceneHeight = height;
+            cutsceneAngle = startAngle;
+            CameraRig.ShowcaseBlendSpeed = 0.7f;
+            CameraRig.Showcase = true;
+            PlaceCutsceneCamera();
+            ToastTimer = 0f;
+            if (ActiveHint != null) HintAge = HintDuration;
+            SetMode(UIMode.Cutscene, 1f);
+        }
+
+        public void EndCutscene()
+        {
+            CameraRig.ShowcaseBlendSpeed = 0.9f;
+            CameraRig.Showcase = false;
+            SetMode(UIMode.Gameplay, 1f);
+        }
+
+        void PlaceCutsceneCamera()
+        {
+            float a = cutsceneAngle * Mathf.Deg2Rad;
+            CameraRig.ShowcasePosition = cutsceneCenter + new Vector3(Mathf.Sin(a) * cutsceneRadius, cutsceneHeight, Mathf.Cos(a) * cutsceneRadius);
+            CameraRig.ShowcaseLookAt = cutsceneCenter + Vector3.up * 1.5f;
         }
 
         void OpenLevelSelect()

@@ -112,7 +112,7 @@ namespace Patchwork
             string name = r != null && r.sharedMaterial != null ? r.sharedMaterial.name : "";
             if (name.Contains("wicker")) lastGroundStep = SfxId.StepWicker;
             else if (name.Contains("cardboard")) lastGroundStep = SfxId.StepCardboard;
-            else if (name.Contains("wood")) lastGroundStep = SfxId.StepWood;
+            else if (name.Contains("wood") || name.Contains("planks") || name.Contains("cobble") || name.Contains("brick") || name.Contains("shingle")) lastGroundStep = SfxId.StepWood;
             else if (name.Contains("grass")) lastGroundStep = SfxId.StepGrass;
             else lastGroundStep = SfxId.StepFelt;
             return lastGroundStep;

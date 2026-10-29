@@ -69,7 +69,7 @@ namespace Patchwork
             }
 
             DrawLetterbox(kb);
-            if (Game.Mode != UIMode.Loading && Game.Mode != UIMode.Warping && Game.Mode != UIMode.Dance && Game.Mode != UIMode.LevelSelect && Game.Mode != UIMode.Talk)
+            if (Game.Mode != UIMode.Loading && Game.Mode != UIMode.Warping && Game.Mode != UIMode.Dance && Game.Mode != UIMode.LevelSelect && Game.Mode != UIMode.Talk && Game.Mode != UIMode.Cutscene)
             {
                 DrawHelmPrompt(kb);
                 DrawTalkPrompt(kb);
@@ -105,12 +105,19 @@ namespace Patchwork
         void DrawLetterbox(bool kb)
         {
             float k = Game.CameraRig != null ? Game.CameraRig.CutsceneBlend : 0f;
+            if (Game.Mode == UIMode.Cutscene && Game.CameraRig != null) k = Mathf.Max(k, Game.CameraRig.ShowcaseBlend);
             if (k <= 0.001f) return;
             float e = Mathf.SmoothStep(0f, 1f, k);
             float bar = 110f * e;
             var black = new Color(0.06f, 0.04f, 0.08f, 1f);
             UIKit.Fill(new Rect(0f, 0f, UIKit.Width, bar), black);
             UIKit.Fill(new Rect(0f, UIKit.Height - bar, UIKit.Width, bar), black);
+            if (Game.Mode == UIMode.Cutscene && !string.IsNullOrEmpty(Game.CutsceneCaption))
+            {
+                UIKit.Label(new Rect(0f, UIKit.Height - bar + 26f, UIKit.Width, 60f), Game.CutsceneCaption,
+                    UIKit.Style(30, true, TextAnchor.MiddleCenter, new Color(1f, 0.92f, 0.7f, e)));
+                return;
+            }
             if (Game.Mode != UIMode.Dance) return;
 
             float t = Time.unscaledTime;
@@ -209,6 +216,24 @@ namespace Patchwork
             var level = Game.Level;
             int total = level.CollectibleIds.Count;
             float y = 24f;
+            if (level.Id == Level1Builder.SceneName)
+            {
+                // Toybox Town: the town band is the goal.
+                int band = Level1Director.BandCount();
+                var br = new Rect(28f, y, 330f, 112f);
+                UIKit.Panel(br, new Color(1f, 0.95f, 0.88f, 0.95f), new Color(0.75f, 0.32f, 0.36f, 0.9f), 20f);
+                UIKit.Label(new Rect(br.x + 20f, br.y + 8f, 290f, 36f), "Town Band  " + band + " / 3",
+                    UIKit.Style(24, true, TextAnchor.MiddleLeft, new Color(0.45f, 0.2f, 0.18f)));
+                string[] names = { "Lute", "Trumpet", "Piper" };
+                for (int i = 0; i < 3; i++)
+                {
+                    bool got = Level1Director.Has(Level1Director.BandIds[i]);
+                    var chip = new Rect(br.x + 16f + i * 102f, br.y + 52f, 94f, 44f);
+                    UIKit.Fill(chip, got ? new Color(1f, 0.78f, 0.3f) : new Color(0.62f, 0.6f, 0.66f, 0.55f), 22f);
+                    UIKit.Label(chip, names[i], UIKit.Style(19, true, TextAnchor.MiddleCenter, got ? new Color(0.4f, 0.22f, 0.08f) : new Color(1f, 1f, 1f, 0.9f)));
+                }
+                y += 124f;
+            }
             if (level.HeartstringIds.Count > 0)
             {
                 // Heartstrings first: they're what the level is about.
@@ -218,7 +243,7 @@ namespace Patchwork
                 UIKit.Heart(new Vector2(hr.x + 50f, hr.y + 48f), 58f, new Color(1f, 0.72f, 0.3f));
                 UIKit.Label(new Rect(hr.x + 92f, hr.y + 10f, 160f, 50f), got + " / " + level.HeartstringIds.Count,
                     UIKit.Style(36, true, TextAnchor.MiddleLeft, new Color(0.45f, 0.25f, 0.1f)));
-                string sub = got >= level.HeartstringsNeeded ? "The lift is open!" : "Need " + level.HeartstringsNeeded + " for the lift";
+                string sub = level.HeartstringsNeeded <= 0 ? "Bonus finds" : got >= level.HeartstringsNeeded ? "The lift is open!" : "Need " + level.HeartstringsNeeded + " for the lift";
                 UIKit.Label(new Rect(hr.x + 92f, hr.y + 54f, 170f, 28f), sub, UIKit.Style(17, true, TextAnchor.MiddleLeft, new Color(0.45f, 0.25f, 0.1f, 0.8f)));
                 y += 104f;
             }

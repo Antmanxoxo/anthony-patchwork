@@ -3,13 +3,15 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    // A big pink felt button hanging from a thread. Yarn Form can tether to it.
+    // Something wrapped in pink yarn (a button, peg, lantern, spool or knot). Yarn Form can tether to it.
     public class YarnAnchor : MonoBehaviour
     {
         public static readonly List<YarnAnchor> All = new List<YarnAnchor>();
 
         public float Range = 13f;
         public bool Highlighted;
+        // Hanging things sway gently; knots tied to beams and spools on hooks stay put.
+        public bool Swings = true;
 
         Renderer[] glowRenderers;
         Material glowMat;
@@ -50,7 +52,7 @@ namespace Patchwork
             {
                 float s = 1f + (Highlighted ? 0.12f + Mathf.Sin(time * 8f) * 0.05f : 0f) + pulse * 0.3f;
                 visual.localScale = Vector3.one * s;
-                visual.localRotation = Quaternion.Euler(0f, Mathf.Sin(time * 0.8f) * 25f, Mathf.Sin(time * 1.3f) * 6f);
+                visual.localRotation = Swings ? Quaternion.Euler(0f, Mathf.Sin(time * 0.8f) * 25f, Mathf.Sin(time * 1.3f) * 6f) : Quaternion.identity;
             }
         }
     }

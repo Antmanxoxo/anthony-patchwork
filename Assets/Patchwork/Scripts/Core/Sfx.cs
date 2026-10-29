@@ -53,7 +53,7 @@ namespace Patchwork
     {
         Bubbles,   // Water Form rising in a fountain
         Glide,     // Wind Form gliding
-        Meadow,    // Level 1 background: light breeze over a lake of paint (slow gloops and drips)
+        Meadow,    // Level 1 background: light breeze, distant birds and a far-off bell
         Skiff      // Hub background: wind in the balloon, creaking cardboard, a flapping flag
     }
 
@@ -578,8 +578,8 @@ namespace Patchwork
             return ToClip("air", data);
         }
 
-        // Level 1 background: a light, airy breeze (no big swells) over a lake of thick paint:
-        // slow gloopy bubbles rising and popping, and the odd drip.
+        // Level 1 background (Toybox Town): a light, airy breeze, birds chirping far off, and a
+        // church bell tolling somewhere across the town.
         static AudioClip MeadowLoop()
         {
             float duration = 12f;
@@ -598,41 +598,40 @@ namespace Patchwork
                 hp += Alpha(350f) * (y2 - hp);
                 data[i] = (y2 - hp) * 0.55f * sway;
             }
-            // Paint gloops: a slow low bubble that swells, then a soft pop.
+            // Little birds chirping now and then, far off across the rooftops.
             var r2 = new System.Random(23);
-            for (float when = 0.4f; when < duration - 0.8f; when += 0.7f + (float)r2.NextDouble() * 1.4f)
+            for (float when = 0.6f; when < duration - 1f; when += 1.4f + (float)r2.NextDouble() * 2.2f)
             {
-                float f0 = 70f + (float)r2.NextDouble() * 60f;
-                float len = 0.35f + (float)r2.NextDouble() * 0.3f;
-                float vol = 0.22f + (float)r2.NextDouble() * 0.18f;
-                int start = Mathf.FloorToInt(when * Rate);
-                int m = Mathf.CeilToInt(len * Rate);
-                float phase = 0f;
-                for (int j = 0; j < m && start + j < n; j++)
+                int chirps = 2 + r2.Next(3);
+                float f0 = 2600f + (float)r2.NextDouble() * 900f;
+                float vol = 0.035f + (float)r2.NextDouble() * 0.03f;
+                for (int c = 0; c < chirps; c++)
                 {
-                    float k = j / (float)m;
-                    float f = f0 * (1f + 0.9f * k * k);
-                    phase += 2f * Mathf.PI * f / Rate;
-                    float env = Mathf.Sin(Mathf.PI * Mathf.Pow(k, 0.6f));
-                    data[start + j] += Mathf.Sin(phase) * env * vol;
-                }
-                // The pop at the end.
-                int pop = start + m;
-                for (int j = 0; j < Rate / 25 && pop + j < n; j++)
-                {
-                    float tt = j / (float)Rate;
-                    data[pop + j] += Mathf.Sin(2f * Mathf.PI * (f0 * 3.2f) * tt) * Mathf.Exp(-tt * 90f) * vol * 0.6f;
+                    int start = Mathf.FloorToInt((when + c * 0.11f) * Rate);
+                    int m = Mathf.CeilToInt(0.07f * Rate);
+                    float phase = 0f;
+                    for (int j = 0; j < m && start + j < n; j++)
+                    {
+                        float k = j / (float)m;
+                        float f = f0 * (1f + 0.35f * Mathf.Sin(Mathf.PI * k));
+                        phase += 2f * Mathf.PI * f / Rate;
+                        data[start + j] += Mathf.Sin(phase) * Mathf.Sin(Mathf.PI * k) * vol;
+                    }
                 }
             }
-            // A few drips of paint falling into the lake.
-            float[] drips = { 1.7f, 4.9f, 7.3f, 10.1f };
-            foreach (float when in drips)
+            // A church bell tolling somewhere far away, twice in the loop.
+            float[] tolls = { 2.2f, 8.2f };
+            foreach (float when in tolls)
             {
                 int start = Mathf.FloorToInt(when * Rate);
-                for (int j = 0; j < Rate / 8 && start + j < n; j++)
+                int m = Mathf.CeilToInt(3.5f * Rate);
+                for (int j = 0; j < m && start + j < n; j++)
                 {
                     float tt = j / (float)Rate;
-                    data[start + j] += Bloop(tt, 520f, 0.09f) * 0.16f;
+                    float env = Mathf.Exp(-tt * 1.3f) * Mathf.Min(1f, tt * 200f);
+                    float v = Mathf.Sin(2f * Mathf.PI * 392f * tt) + 0.5f * Mathf.Sin(2f * Mathf.PI * 784f * tt) * Mathf.Exp(-tt * 2f)
+                            + 0.35f * Mathf.Sin(2f * Mathf.PI * 470.4f * tt) + 0.25f * Mathf.Sin(2f * Mathf.PI * 196f * tt);
+                    data[start + j] += v * env * 0.06f;
                 }
             }
             LowPass(data, 4000f);

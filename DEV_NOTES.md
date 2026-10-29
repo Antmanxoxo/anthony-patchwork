@@ -66,7 +66,8 @@ Stuff I need to remember about how Patchwork is put together.
   swaps them for the button icon.
 - Hats: 0-1 free, 2 = half of Level 1's threads in one run, 3 = all threads, 4 = Golden Crown from the
   Button Box (`HatPedestal`). Best thread counts are saved as "Level1=23/40".
-- Footstep sound comes from the ground's material name (wicker / wood / grass, otherwise felt).
+- Footstep sound comes from the ground's material name (wicker / wood, planks, cobble, brick,
+  shingle / grass, otherwise felt).
 - Ambience loops (`LoopId.Meadow`, `LoopId.Room`) are requested every frame by `PatchworkGame`.
 - Start-up: `TitleSequence` plays the studio logo + title the first time the hub loads after
   starting the game. The logo is `Resources/Branding/StudioLogo.png` if it exists, otherwise a
@@ -80,6 +81,7 @@ Stuff I need to remember about how Patchwork is put together.
 - NPCs: `NpcYarny` (looks, lines, 3D voice blips) + `TalkZone` (stand in it, press Ability) ->
   `DialogueBox` (UIMode.Talk). Whether you've met him is saved as the hint id "Yarny_met".
 - Positional loops: `AmbientEmitter.Create(parent, pos, Sfx.Ambient(...), volume, near, far)`.
+  `kit.Fountain` and `kit.Updraft` add their own.
   The AudioListener is on its own object between the camera and Patch.
 - Don't let two boxes overlap with faces at the same height (they flicker). Use `kit.Prism` for
   odd shapes, or make one piece a hair shorter.
@@ -91,10 +93,21 @@ Stuff I need to remember about how Patchwork is put together.
   except while swinging on yarn. Don't build anything you're meant to stand on below y = -2.
 - Normal jump goes about 5m. Wind with glide + gust goes about 13.4m (the gust only gives a small
   fixed lift, so it can't re-launch the glide).
-- Level 1 regions sit around the Mending Square (radius 17): North z 27+, East x 27+, West x -27-,
-  South z -27-. Section origins are constants at the top of `Level1Builder`.
-- `Level1Director` runs the Heartstring story (pegs, snarls, Fray regions, the lift, the sky knot).
-  Heartstring ids are `L1_hs_*` in the save's collected list.
+- Toybox Town: the square is an octagon (radius 21) round (0,0,0), spawn at (0,0,-14). Clock tower
+  at z 27 (barracks behind it), Spindle Hill west over the ravine (x -51..-37, bed at -5), the Dye
+  Works east over the canal (x 32..40, bed at -2), rooftops south. Toybox walls at +-90.
+  `LevelInfo.FailY` is -9 there so you can climb out of the ravine and canal.
+- `Level1Director` runs the wedding story: band pieces are `L1_band_lute/trumpet/piper` in the
+  collected list (`BandPiece`), each mends its `FrayRegion` and adds a music stem
+  (`MusicPlayer.SetBand`). Talking to the Mayor with all three starts the wedding cutscene
+  (`PatchworkGame.StartCutscene`). Bonus Heartstring ids are `L1_hs_*`.
+- Toys are `ToyNpc.Create(kit, feet, yaw, kind, name, colours, instrument)`; their lines are a
+  `Func<string[]>` so they change with progress. Their `TalkZone` is parented to them.
+- Town pieces are in `TownKit` (houses, lamps, clotheslines, lantern gates, bridges, stairs...).
+  `MakeHouse` returns where its chimney top is, for a chimney-smoke updraft.
+- Fountain rule: height = shelf top + 2, shelf edge 1.2-2.2 m from the jet. Updraft height = rise.
+- `kit.Anchor(pos, range, style, hangLength)`: the thread is only drawn when hangLength > 0, so
+  give it something to hang from.
 - Fray knots (`SnarlKnot`) and `Snarling`s pop when Patch lands on them moving down, crashes in
   faster than 9 m/s, gusts into them, or swings into them. Otherwise they push him away.
 - Yarn gaps are 15m, Wind glide gap is 7m, gust gap is 11m. The rim swing goes from the thimble
