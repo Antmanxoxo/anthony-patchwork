@@ -335,7 +335,12 @@ namespace Patchwork
                 phase += 2f * Mathf.PI * f * vib / Rate;
                 float bright = 0.4f + 0.6f * att;
                 float w = 0f;
-                for (int h = 1; h <= 8; h++) w += Mathf.Sin(phase * h) * Mathf.Pow(bright, h - 1) / h;
+                float amp = 1f;
+                for (int h = 1; h <= 8; h++)
+                {
+                    w += Mathf.Sin(phase * h) * amp / h;
+                    amp *= bright;
+                }
                 Add(data, s0 + i, w * att * rel * vol);
             }
         }

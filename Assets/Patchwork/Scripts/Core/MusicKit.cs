@@ -16,6 +16,12 @@ namespace Patchwork
             public float Len;    // in beats
         }
 
+        // MIDI note number to frequency (A4 = 69 = 440 Hz).
+        static float Freq(float midi)
+        {
+            return 440f * Mathf.Pow(2f, (midi - 69f) / 12f);
+        }
+
         // Parses a tune: space-separated "Name:beats" tokens, "r" for a rest, "|" ignored.
         // Names are like C5, F#4, Bb5 (C4 is middle C).
         protected static List<Note> Line(string text, float startBeat)

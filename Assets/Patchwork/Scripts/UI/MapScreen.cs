@@ -45,7 +45,18 @@ namespace Patchwork
         public void Open()
         {
             openTime = 0f;
-            if (painting == null) Capture();
+            if (painting == null)
+            {
+                // If the snapshot can't be taken for any reason, the map still opens (as a plain
+                // sheet with its pins) instead of breaking the game.
+                try { Capture(); }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning("Map snapshot failed: " + e.Message);
+                    var level = game.Level;
+                    area = level.MapArea.size.sqrMagnitude > 1f ? level.MapArea : level.Area;
+                }
+            }
         }
 
         public void Update(float udt)
