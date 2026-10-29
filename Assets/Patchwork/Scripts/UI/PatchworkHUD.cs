@@ -69,9 +69,10 @@ namespace Patchwork
             }
 
             DrawLetterbox(kb);
-            if (Game.Mode != UIMode.Loading && Game.Mode != UIMode.Warping && Game.Mode != UIMode.Dance && Game.Mode != UIMode.LevelSelect)
+            if (Game.Mode != UIMode.Loading && Game.Mode != UIMode.Warping && Game.Mode != UIMode.Dance && Game.Mode != UIMode.LevelSelect && Game.Mode != UIMode.Talk)
             {
                 DrawHelmPrompt(kb);
+                DrawTalkPrompt(kb);
                 DrawAnchorPrompt(kb);
                 DrawFormBadge(kb);
                 DrawButtons();
@@ -89,6 +90,7 @@ namespace Patchwork
                 case UIMode.Paused: Game.Pause.Draw(); break;
                 case UIMode.Complete: DrawComplete(kb); break;
                 case UIMode.LevelSelect: Game.LevelSelect.Draw(kb); break;
+                case UIMode.Talk: Game.Dialogue.Draw(kb); break;
             }
 
             if (Game.Fade > 0.001f)
@@ -400,18 +402,29 @@ namespace Patchwork
             UIKit.Label(new Rect(0f, y + 66f, UIKit.Width, 40f), Game.Level.Subtitle, sub, true);
         }
 
+        // Floating "Talk" prompt over an NPC you're standing next to.
+        void DrawTalkPrompt(bool kb)
+        {
+            if (Game.Mode != UIMode.Gameplay || Game.Talker == null || Game.Talker.Npc == null || Game.Helm != null) return;
+            DrawWorldPrompt(Game.Talker.Npc.HeadPosition + Vector3.up * 1.3f, "Talk", kb);
+        }
+
         // Floating "Set course" prompt over the Skiff's helm while you're standing at it.
         void DrawHelmPrompt(bool kb)
         {
             if (Game.Mode != UIMode.Gameplay || Game.Helm == null) return;
+            DrawWorldPrompt(Game.Helm.PromptPoint, "Set course", kb);
+        }
+
+        void DrawWorldPrompt(Vector3 world, string text, bool kb)
+        {
             var cam = Game.CameraRig.Cam;
-            Vector3 sp = cam.WorldToScreenPoint(Game.Helm.PromptPoint);
+            Vector3 sp = cam.WorldToScreenPoint(world);
             if (sp.z <= 0f) return;
             float gx = sp.x / UIKit.Scale;
             float gy = (Screen.height - sp.y) / UIKit.Scale;
             float bob = Mathf.Sin(Time.unscaledTime * 4f) * 5f;
             var label = UIKit.Style(26, true, TextAnchor.MiddleLeft, Color.white);
-            const string text = "Set course";
             float w = 56f + 12f + UIKit.TextWidth(text, label) + 36f;
             var r = new Rect(gx - w * 0.5f, gy - 34f + bob, w, 68f);
             UIKit.Pill(r);

@@ -73,7 +73,9 @@ namespace Patchwork
         static AudioSource[] loopSources;
         static AudioLowPassFilter[] loopFilters;
         static float[] loopTargets;
-        static readonly float[] LoopVolumes = { 0.45f, 0.3f, 0.5f, 0.35f };
+        // The Skiff's own loop is only a soft wind bed now; the ship's real sounds come from
+        // AmbientEmitters placed where they happen.
+        static readonly float[] LoopVolumes = { 0.45f, 0.3f, 0.5f, 0.12f };
         static AudioClip bubbleClip, airClip, meadowClip, skiffClip, chirpClip;
         static float loopCutoff = 22000f, loopCutoffTarget = 22000f;
 
@@ -139,6 +141,7 @@ namespace Patchwork
         // Forget the audio sources from the last Play session (they belonged to the old camera).
         public static void ResetStatics()
         {
+            ambient.Clear();
             voices = null;
             loopSources = null;
             loopFilters = null;
@@ -188,6 +191,39 @@ namespace Patchwork
             v.volume = vol;
             v.pitch = pitch;
             v.Play();
+        }
+
+        // How muffled the gameplay loops are right now (22000 = clear). Positional sounds follow it too.
+        public static float LoopCutoff { get { return loopCutoff; } }
+
+        // Clips for sounds that play from a spot in the world (AmbientEmitter, NPC voices).
+        public enum AmbientClip { Propeller, Flag, Creak, Balloon, Clock, Fountain, Vent }
+        static readonly Dictionary<AmbientClip, AudioClip> ambient = new Dictionary<AmbientClip, AudioClip>();
+
+        public static AudioClip Ambient(AmbientClip which)
+        {
+            AudioClip c;
+            if (ambient.TryGetValue(which, out c) && c != null) return c;
+            switch (which)
+            {
+                case AmbientClip.Propeller: c = PropellerLoop(); break;
+                case AmbientClip.Flag: c = FlagLoop(); break;
+                case AmbientClip.Creak: c = CreakLoop(); break;
+                case AmbientClip.Balloon: c = BalloonLoop(); break;
+                case AmbientClip.Clock: c = ClockLoop(); break;
+                case AmbientClip.Fountain: c = bubbleClip != null ? bubbleClip : (bubbleClip = BubbleLoop()); break;
+                default: c = airClip != null ? airClip : (airClip = AirLoop()); break;
+            }
+            ambient[which] = c;
+            return c;
+        }
+
+        // A one-shot sound effect clip (for sounds played from a 3D source, like Yarny's voice).
+        public static AudioClip Clip(SfxId id)
+        {
+            AudioClip c;
+            if (clips.Count == 0) Build();
+            return clips.TryGetValue(id, out c) ? c : null;
         }
 
         // A yarn bird's chirp. Birds play it from their own 3D sound source so you can hear where they are.
@@ -643,6 +679,120 @@ namespace Patchwork
             LowPass(data, 3000f);
             LoopBlend(data);
             return ToClip("skiff", data);
+        }
+
+        // ----- Positional ship sounds (all loop seamlessly) -----
+
+        // Spinning lolly-stick propeller: a low hum with a "whup" each time a blade passes.
+        static AudioClip PropellerLoop()
+        {
+            float duration = 2f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var data = new float[n];
+            var rng = new System.Random(31);
+            float y = 0f, y2 = 0f;
+            float a = Alpha(700f);
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                y += a * ((float)(rng.NextDouble() * 2.0 - 1.0) - y);
+                y2 += a * (y - y2);
+                float blade = 0.5f + 0.5f * Mathf.Sin(2f * Mathf.PI * 3.5f * t);
+                blade *= blade;
+                float hum = Mathf.Sin(2f * Mathf.PI * 70f * t) * 0.25f + Mathf.Sin(2f * Mathf.PI * 140f * t) * 0.1f;
+                data[i] = (y2 * 2.2f * (0.3f + 0.7f * blade)) + hum * (0.6f + 0.4f * blade);
+            }
+            LoopBlend(data);
+            return ToClip("propeller", data);
+        }
+
+        // Felt flag flapping: flutter that comes and goes with the gusts.
+        static AudioClip FlagLoop()
+        {
+            float duration = 4f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var data = new float[n];
+            var rng = new System.Random(41);
+            float y = 0f, y2 = 0f, hp = 0f;
+            float a = Alpha(2200f);
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                y += a * ((float)(rng.NextDouble() * 2.0 - 1.0) - y);
+                y2 += a * (y - y2);
+                hp += Alpha(300f) * (y2 - hp);
+                float gust = 0.5f + 0.5f * Mathf.Sin(2f * Mathf.PI * t / duration);
+                float flap = Mathf.Pow(0.5f + 0.5f * Mathf.Sin(2f * Mathf.PI * 9f * t + Mathf.Sin(2f * Mathf.PI * 2f * t)), 3f);
+                data[i] = (y2 - hp) * 1.8f * (0.25f + 0.75f * flap * gust);
+            }
+            LoopBlend(data);
+            return ToClip("flag", data);
+        }
+
+        // Mostly quiet, with two slow cardboard creaks.
+        static AudioClip CreakLoop()
+        {
+            float duration = 9f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var data = new float[n];
+            float[] creaks = { 1.4f, 5.9f };
+            float[] lows = { 120f, 95f };
+            for (int c = 0; c < creaks.Length; c++)
+            {
+                int start = Mathf.FloorToInt(creaks[c] * Rate);
+                int m = Mathf.CeilToInt(0.7f * Rate);
+                float phase = 0f;
+                for (int j = 0; j < m && start + j < n; j++)
+                {
+                    float k = j / (float)m;
+                    phase += 2f * Mathf.PI * Mathf.Lerp(lows[c] * 1.5f, lows[c], k) / Rate;
+                    float rough = 0.55f + 0.45f * Mathf.Sin(2f * Mathf.PI * 31f * j / Rate);
+                    data[start + j] += (Mathf.Sin(phase) + 0.4f * Mathf.Sin(phase * 2.01f) + 0.2f * Mathf.Sin(phase * 3.03f)) * rough * Mathf.Sin(Mathf.PI * k) * 0.5f;
+                }
+            }
+            LowPass(data, 2000f);
+            LoopBlend(data);
+            return ToClip("creak", data);
+        }
+
+        // The balloon overhead: a deep, soft fabric rustle with the odd "thwump" as it fills.
+        static AudioClip BalloonLoop()
+        {
+            float duration = 6f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var data = new float[n];
+            var rng = new System.Random(51);
+            float y = 0f, y2 = 0f;
+            float a = Alpha(260f);
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                y += a * ((float)(rng.NextDouble() * 2.0 - 1.0) - y);
+                y2 += a * (y - y2);
+                float swell = 0.6f + 0.4f * Mathf.Sin(2f * Mathf.PI * t / duration * 2f);
+                float thump = 0f;
+                float tt = t - 2.2f;
+                if (tt > 0f && tt < 0.4f) thump = Mathf.Sin(2f * Mathf.PI * 55f * tt) * Mathf.Sin(Mathf.PI * tt / 0.4f) * 0.5f;
+                data[i] = y2 * 3f * swell + thump;
+            }
+            LoopBlend(data);
+            return ToClip("balloon", data);
+        }
+
+        // A clock in the captain's cabin: tick, tock.
+        static AudioClip ClockLoop()
+        {
+            float duration = 2f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var data = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                float tickT = t % 1f;
+                bool tock = t >= 1f;
+                data[i] = tickT < 0.04f ? Mathf.Sin(2f * Mathf.PI * (tock ? 1500f : 1900f) * tickT) * Mathf.Exp(-tickT * 140f) * 0.6f : 0f;
+            }
+            return ToClip("clock", data);
         }
 
         // A short two-note "tweedle" chirp.

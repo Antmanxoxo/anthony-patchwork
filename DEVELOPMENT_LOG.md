@@ -1,5 +1,23 @@
 # Development Log
 
+## Captain Yarny and a tidier Skiff
+- Captain Yarny, an old yarn-ball pirate with an eyepatch, a grey yarn beard, a tricorn, a pencil
+  peg leg, a crochet-hook hand and a yarn parrot, stands by the helm. Press Ability next to him to
+  talk; he has an introduction the first time and different chat after that, depending on what
+  you've found.
+- Ship sounds now come from where they happen (propellers, flag, creaking hull, the balloon,
+  a clock in the cabin, the fountain and the air vent), so they get louder as you walk up to them
+  instead of playing at full volume everywhere. Sounds are heard from near Patch, not the camera.
+- Fixed flickering: the bow is one solid piece instead of overlapping boxes, rail corners,
+  the cabin walls, the drain crate, the lifeboat and the crow's nest no longer overlap, and tape
+  strips sit just above the surface.
+- The balloon is one smooth shape with the patchwork painted on (the stuck-on patches floated),
+  it no longer bobs away from its ropes, the flag swings on its pole instead of sliding off it,
+  propellers have shafts into the hull, the rudder is taped on, and the globe's ring has legs.
+- More pirate ship: cardboard-tube cannons with yarn cannonballs, a treasure chest of golden
+  buttons, a skull-and-needles flag, paper lanterns on the rails, tin-can barrels, rope coils,
+  a painted stripe on the hull, cabin windows, and a desk, map, candle, clock and hammock inside.
+
 ## The Cardboard Skiff
 - Starting the game now shows the Little Colossus studio logo (with its own chime), then the
   Patchwork title screen over a slow fly-around of the hub. Any button starts.

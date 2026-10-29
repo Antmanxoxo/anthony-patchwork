@@ -18,6 +18,7 @@ namespace Patchwork
         // Full-colour textures (not tinted by the material colour).
         public static Texture2D PaintMarble;   // swirled paint and ink for the lake under Level 1
         public static Texture2D GlobeMap;      // the quilted world map on the Skiff's globe
+        public static Texture2D BalloonQuilt;  // the Skiff's patched balloon
 
         static bool built;
 
@@ -36,6 +37,7 @@ namespace Patchwork
             Cardboard = Build(128, CardboardHeight, 0.82f, 0.18f, 1.8f);
             PaintMarble = BuildMarble(256);
             GlobeMap = BuildGlobe(256, 128);
+            BalloonQuilt = BuildBalloon(256, 128);
         }
 
         // ------------------------------------------------------------------ Builder
@@ -277,6 +279,37 @@ namespace Patchwork
                     bool dashV = Mathf.Repeat(fv * 6f, 1f) < 0.55f, dashH = Mathf.Repeat(fu * 6f, 1f) < 0.55f;
                     if ((nearV && dashV && !nearH) || (nearH && dashH && !nearV)) c = Color.Lerp(c, new Color(1f, 0.97f, 0.9f), 0.75f);
                     if (fu < 0.02f || fv < 0.02f) c *= 0.75f; // seam shadow
+                    c.a = 1f;
+                    px[y * w + x] = c;
+                }
+            t.SetPixels(px);
+            t.Apply(true);
+            return t;
+        }
+
+        // Long patchwork panels (like balloon gores) in soft colours, with stitched seams.
+        static Texture2D BuildBalloon(int w, int h)
+        {
+            Color[] cols = { new Color(0.93f, 0.6f, 0.62f), new Color(0.98f, 0.86f, 0.55f), new Color(0.64f, 0.74f, 0.88f),
+                             new Color(0.96f, 0.9f, 0.8f), new Color(0.78f, 0.7f, 0.9f), new Color(0.65f, 0.8f, 0.62f), new Color(0.98f, 0.72f, 0.6f) };
+            var t = NewColourTex(w, h);
+            var px = new Color[w * h];
+            const int gores = 14, rows = 5;
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    float u = x / (float)w, v = y / (float)h;
+                    int gx = Mathf.FloorToInt(u * gores);
+                    // Each gore is split into a few patches at staggered heights.
+                    float off = Hash(gx, 7) * 0.5f;
+                    int gy = Mathf.FloorToInt(v * rows + off);
+                    Color c = cols[(gx * 3 + gy * 5) % cols.Length];
+                    c *= 0.95f + Hash(x, y) * 0.07f + (WeaveHeight(Mathf.Repeat(u * 8f, 1f), Mathf.Repeat(v * 4f, 1f), (x * 4) % 128, (y * 4) % 128) - 0.4f) * 0.1f;
+                    float fu = u * gores - gx, fv = v * rows + off - gy;
+                    bool nearV = fu < 0.07f || fu > 0.93f, nearH = fv < 0.06f || fv > 0.94f;
+                    bool dashV = Mathf.Repeat(v * 40f, 1f) < 0.55f, dashH = Mathf.Repeat(u * 60f, 1f) < 0.55f;
+                    if ((nearV && dashV) || (nearH && dashH && !nearV)) c = Color.Lerp(c, new Color(1f, 0.97f, 0.9f), 0.8f);
+                    if (fu < 0.015f || fv < 0.015f) c *= 0.8f;
                     c.a = 1f;
                     px[y * w + x] = c;
                 }

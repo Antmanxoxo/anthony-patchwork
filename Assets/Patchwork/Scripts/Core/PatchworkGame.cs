@@ -15,7 +15,8 @@ namespace Patchwork
         Loading,
         Dance,      // the D-pad easter egg: Patch dances, the camera turns it into a little cutscene
         Intro,      // studio logo and title screen (first time the Skiff loads)
-        LevelSelect // at the Skiff's helm, turning the globe
+        LevelSelect, // at the Skiff's helm, turning the globe
+        Talk         // chatting with an NPC (Captain Yarny)
     }
 
     // Main game object, one per scene. Builds the level, camera, light and player,
@@ -42,6 +43,11 @@ namespace Patchwork
         public LevelSelectMenu LevelSelect { get; private set; }
         // The helm you're standing at on the Skiff (null when you're not at it).
         public HelmStation Helm { get; private set; }
+        // The NPC you're close enough to talk to (null if none).
+        public TalkZone Talker { get; private set; }
+        public DialogueBox Dialogue { get; private set; }
+        // The ears: sit between the camera and Patch, so sounds get louder as Patch walks up to them.
+        Transform listener;
 
         // Messages
         public string ToastText { get; private set; }
@@ -113,7 +119,9 @@ namespace Patchwork
             cam.fieldOfView = 60f;
             cam.nearClipPlane = 0.1f;
             cam.farClipPlane = 600f;
-            camGo.AddComponent<AudioListener>();
+            var ears = new GameObject("Listener");
+            ears.AddComponent<AudioListener>();
+            listener = ears.transform;
             var urpData = cam.GetUniversalAdditionalCameraData();
             if (urpData != null)
             {
@@ -147,6 +155,7 @@ namespace Patchwork
 
             Title = new TitleSequence(this);
             LevelSelect = new LevelSelectMenu(this);
+            Dialogue = new DialogueBox(this);
 
             Mode = UIMode.Gameplay;
             // Coming from the loading screen, it's still covering everything, so skip our own fade.
@@ -259,6 +268,7 @@ namespace Patchwork
                     else if (Input.FormWheel.WasPressedThisFrame()) OpenWheel();
                     else if (Input.Satchel.WasPressedThisFrame()) OpenSatchel();
                     else if (Helm != null && Input.Ability.WasPressedThisFrame() && Player.Motor.Grounded) OpenLevelSelect();
+                    else if (Talker != null && Talker.Npc != null && Input.Ability.WasPressedThisFrame() && Player.Motor.Grounded) StartTalk();
                     else if (FacePressed())
                     {
                         SetPatchFace(pressedFace, true);
@@ -299,9 +309,12 @@ namespace Patchwork
                 case UIMode.LevelSelect:
                     LevelSelect.Update(udt);
                     break;
+                case UIMode.Talk:
+                    Dialogue.Update(udt);
+                    break;
             }
 
-            if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel || Mode == UIMode.Dance || Mode == UIMode.Intro || Mode == UIMode.LevelSelect)
+            if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel || Mode == UIMode.Dance || Mode == UIMode.Intro || Mode == UIMode.LevelSelect || Mode == UIMode.Talk)
             {
                 PlayerInputFrame frame;
                 if (Mode == UIMode.Gameplay && !modeChangedThisFrame)
@@ -366,6 +379,12 @@ namespace Patchwork
                 CameraRig.Gliding = wind != null && wind.Gliding;
                 CameraRig.Tick(stick, mouse, udt);
             }
+            if (listener != null && CameraRig != null && Player != null)
+            {
+                Transform cam = CameraRig.transform;
+                listener.position = Vector3.Lerp(cam.position, Player.Motor.Center + Vector3.up * 0.3f, 0.7f);
+                listener.rotation = cam.rotation;
+            }
         }
 
         PlayerInputFrame ReadFrame()
@@ -422,6 +441,11 @@ namespace Patchwork
                     break;
                 case UIMode.Intro:
                     // The title sequence sets the music itself (quiet under the studio logo).
+                    Sfx.SetLoopCutoff(22000f);
+                    Haptics.SetSilenced(true);
+                    break;
+                case UIMode.Talk:
+                    MusicPlayer.SetMuffle(22000f, 0.6f);
                     Sfx.SetLoopCutoff(22000f);
                     Haptics.SetSilenced(true);
                     break;
@@ -494,6 +518,27 @@ namespace Patchwork
         public void SetHelm(HelmStation station) { Helm = station; }
 
         public void ClearHelm(HelmStation station) { if (Helm == station) Helm = null; }
+
+        public void SetTalker(TalkZone zone) { Talker = zone; }
+
+        public void ClearTalker(TalkZone zone) { if (Talker == zone) Talker = null; }
+
+        void StartTalk()
+        {
+            Player.Forms.CancelAll();
+            Player.Motor.Velocity = Vector3.zero;
+            Dialogue.Open(Talker.Npc);
+            SetMode(UIMode.Talk, 1f);
+            ToastTimer = 0f;
+            if (ActiveHint != null) HintAge = HintDuration;
+        }
+
+        public void EndTalk()
+        {
+            Dialogue.Close();
+            SetMode(UIMode.Gameplay, 1f);
+            Sfx.Play(SfxId.MenuCancel, 0.3f);
+        }
 
         void OpenLevelSelect()
         {

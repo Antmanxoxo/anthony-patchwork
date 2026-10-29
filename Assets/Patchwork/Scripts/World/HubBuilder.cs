@@ -20,6 +20,8 @@ namespace Patchwork
         static readonly Color KraftLight = new Color(0.88f, 0.74f, 0.55f);
         const float DeckHalfWidth = 8f;
         const float SternZ = -16f, MidBowZ = 18f;
+        // Top of the flagpole on the captain's cabin (the bunting ties on here).
+        static readonly Vector3 CabinFlagTop = new Vector3(3.2f, 8.4f, -14.8f);
 
         public static LevelInfo Build(LevelKit kit)
         {
@@ -59,9 +61,17 @@ namespace Patchwork
             kit.Spool(new Vector3(-6.2f, 0f, 8.5f), 1.4f, LevelKit.Palette.Rose);
             kit.Spool(new Vector3(-6.6f, 1.4f, 8.5f), 1f, LevelKit.Palette.Sky);
             kit.YarnBall(new Vector3(6.3f, 0f, 9f), 0.8f, new Color(0.95f, 0.55f, 0.6f));
-            kit.YarnBall(new Vector3(-6.3f, 0f, -5.5f), 0.6f, new Color(0.55f, 0.7f, 0.95f));
+            kit.YarnBall(new Vector3(-6.4f, 0f, -3.2f), 0.6f, new Color(0.55f, 0.7f, 0.95f));
+
+            PirateDressing(kit);
+            ShipSounds(kit);
+
+            // Captain Yarny stands by the helm, keeping an eye on the globe (and on you).
+            var yarny = NpcYarny.Create(kit, new Vector3(-4.4f, 0f, 12.6f), 160f);
+            var talk = kit.Volume<TalkZone>(new Vector3(-4.4f, 1.2f, 11.4f), new Vector3(3.4f, 3f, 3.6f), "TalkToYarny");
+            talk.Npc = yarny;
             kit.Cardboard(new Vector3(6.4f, 0.6f, 4.8f), new Vector3(1.6f, 1.2f, 1.6f), KraftLight, "SmallBox");
-            kit.Tape(new Vector3(6.4f, 1.21f, 4.8f), new Vector3(1.62f, 0.02f, 0.35f));
+            kit.Tape(new Vector3(6.4f, 1.215f, 4.8f), new Vector3(1.62f, 0.03f, 0.35f));
             kit.Thimble(new Vector3(6.4f, 1.2f, 4.8f), 0.6f);
 
             return info;
@@ -75,20 +85,26 @@ namespace Patchwork
             float len = MidBowZ - SternZ;
             float midZ = (MidBowZ + SternZ) * 0.5f;
 
-            // Deck (rectangle plus a diamond for the pointed bow).
+            // Deck: a rectangle, plus a triangle for the pointed bow (one piece each, nothing overlapping).
             kit.Cardboard(new Vector3(0f, -0.5f, midZ), new Vector3(DeckHalfWidth * 2f, 1f, len), Kraft, "Deck");
-            var bowDeck = kit.Cardboard(new Vector3(0f, -0.5f, MidBowZ), new Vector3(11.31f, 1f, 11.31f), Kraft, "BowDeck");
-            bowDeck.rotation = Quaternion.Euler(0f, 45f, 0f);
-            // Packing tape across the deck seams.
+            kit.Prism(new[] { new Vector2(-DeckHalfWidth, MidBowZ), new Vector2(0f, MidBowZ + 8f), new Vector2(DeckHalfWidth, MidBowZ) },
+                -1f, 0f, kraft, "BowDeck");
+            // Packing tape across the deck seams (raised a little so it never flickers into the deck).
             for (float z = SternZ + 4f; z < MidBowZ; z += 6f)
-                kit.Tape(new Vector3(0f, 0.005f, z), new Vector3(DeckHalfWidth * 2f, 0.02f, 0.5f));
-            kit.Tape(new Vector3(0f, 0.005f, MidBowZ + 2f), new Vector3(0.5f, 0.02f, 12f));
+                kit.Tape(new Vector3(0f, 0.02f, z), new Vector3(DeckHalfWidth * 2f - 0.6f, 0.03f, 0.5f));
+            kit.Tape(new Vector3(0f, 0.02f, MidBowZ + 2.5f), new Vector3(0.5f, 0.03f, 9f));
 
-            // Hull below the deck, a bit darker.
-            kit.Cardboard(new Vector3(0f, -3f, midZ), new Vector3(DeckHalfWidth * 2f - 0.4f, 4f, len - 0.2f), KraftDark, "Hull");
-            var bowHull = kit.Cardboard(new Vector3(0f, -3f, MidBowZ), new Vector3(11f, 4f, 11f), KraftDark, "BowHull");
-            bowHull.rotation = Quaternion.Euler(0f, 45f, 0f);
-            kit.Cardboard(new Vector3(0f, -5.4f, midZ + 2f), new Vector3(6f, 1f, len - 4f), KraftDark, "Keel");
+            // Hull below the deck, a bit darker, narrowing to a keel.
+            var kraftDark = PatchworkAssets.Cardboard(KraftDark);
+            kit.Cardboard(new Vector3(0f, -3f, midZ), new Vector3(DeckHalfWidth * 2f - 0.4f, 4f, len), KraftDark, "Hull");
+            kit.Prism(new[] { new Vector2(-DeckHalfWidth + 0.2f, MidBowZ), new Vector2(0f, MidBowZ + 7.6f), new Vector2(DeckHalfWidth - 0.2f, MidBowZ) },
+                -5f, -1f, kraftDark, "BowHull");
+            kit.Prism(new[] { new Vector2(-4f, SternZ + 1f), new Vector2(-4f, MidBowZ), new Vector2(0f, MidBowZ + 5f), new Vector2(4f, MidBowZ), new Vector2(4f, SternZ + 1f) },
+                -6.5f, -5f, kraftDark, "Keel");
+            // A painted stripe along the hull, just under the deck.
+            var stripe = PatchworkAssets.Felt(new Color(0.62f, 0.27f, 0.3f));
+            for (int s = -1; s <= 1; s += 2)
+                kit.Deco(PrimitiveType.Cube, new Vector3(s * (DeckHalfWidth - 0.17f), -1.35f, midZ), new Vector3(0.06f, 0.5f, len), stripe);
 
             // Round portholes drawn along both sides.
             var glass = PatchworkAssets.Plain(new Color(0.55f, 0.75f, 0.92f), 0.9f);
@@ -96,27 +112,41 @@ namespace Patchwork
             for (float z = SternZ + 3f; z < MidBowZ; z += 5f)
                 for (int s = -1; s <= 1; s += 2)
                 {
-                    float x = s * (DeckHalfWidth - 0.15f);
+                    float x = s * (DeckHalfWidth - 0.16f);
                     kit.Deco(PrimitiveType.Cylinder, new Vector3(x, -2.4f, z), new Vector3(1.3f, 0.06f, 1.3f), ring, new Vector3(0f, 0f, 90f));
                     kit.Deco(PrimitiveType.Cylinder, new Vector3(x + s * 0.02f, -2.4f, z), new Vector3(1.05f, 0.07f, 1.05f), glass, new Vector3(0f, 0f, 90f));
                 }
 
             // Rails: low cardboard walls, with a gap on the west side for the lifeboat swing.
-            Rail(kit, new Vector3(DeckHalfWidth - 0.15f, 0f, SternZ), new Vector3(DeckHalfWidth - 0.15f, 0f, MidBowZ));
-            Rail(kit, new Vector3(-DeckHalfWidth + 0.15f, 0f, SternZ), new Vector3(-DeckHalfWidth + 0.15f, 0f, -1f));
-            Rail(kit, new Vector3(-DeckHalfWidth + 0.15f, 0f, 5f), new Vector3(-DeckHalfWidth + 0.15f, 0f, MidBowZ));
-            Rail(kit, new Vector3(-DeckHalfWidth, 0f, SternZ + 0.15f), new Vector3(DeckHalfWidth, 0f, SternZ + 0.15f));
-            Rail(kit, new Vector3(DeckHalfWidth - 0.15f, 0f, MidBowZ), new Vector3(0f, 0f, MidBowZ + 7.85f));
-            Rail(kit, new Vector3(-DeckHalfWidth + 0.15f, 0f, MidBowZ), new Vector3(0f, 0f, MidBowZ + 7.85f));
+            // (Each rail is a hair different in height so the corners where they meet don't flicker.)
+            Rail(kit, new Vector3(DeckHalfWidth - 0.15f, 0f, SternZ + 0.3f), new Vector3(DeckHalfWidth - 0.15f, 0f, MidBowZ), 1f);
+            Rail(kit, new Vector3(-DeckHalfWidth + 0.15f, 0f, SternZ + 0.3f), new Vector3(-DeckHalfWidth + 0.15f, 0f, -1f), 1f);
+            Rail(kit, new Vector3(-DeckHalfWidth + 0.15f, 0f, 5f), new Vector3(-DeckHalfWidth + 0.15f, 0f, MidBowZ), 1f);
+            Rail(kit, new Vector3(-DeckHalfWidth, 0f, SternZ + 0.15f), new Vector3(DeckHalfWidth, 0f, SternZ + 0.15f), 0.96f);
+            Rail(kit, new Vector3(DeckHalfWidth - 0.15f, 0f, MidBowZ), new Vector3(0f, 0f, MidBowZ + 7.85f), 0.98f);
+            Rail(kit, new Vector3(-DeckHalfWidth + 0.15f, 0f, MidBowZ), new Vector3(0f, 0f, MidBowZ + 7.85f), 0.94f);
+            // Posts where the rails meet, and lanterns on a few of them.
+            Vector3[] posts = { new Vector3(DeckHalfWidth - 0.15f, 0f, SternZ + 0.15f), new Vector3(-DeckHalfWidth + 0.15f, 0f, SternZ + 0.15f),
+                                new Vector3(DeckHalfWidth - 0.15f, 0f, MidBowZ), new Vector3(-DeckHalfWidth + 0.15f, 0f, MidBowZ),
+                                new Vector3(0f, 0f, MidBowZ + 7.85f), new Vector3(-DeckHalfWidth + 0.15f, 0f, -1f), new Vector3(-DeckHalfWidth + 0.15f, 0f, 5f) };
+            foreach (var p in posts)
+                kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * 0.65f, new Vector3(0.5f, 0.65f, 0.5f), PatchworkAssets.Cardboard(KraftDark));
+            Lantern(kit, posts[2]);
+            Lantern(kit, posts[3]);
+            Lantern(kit, posts[5]);
+            Lantern(kit, posts[6]);
+            Lantern(kit, new Vector3(DeckHalfWidth - 0.15f, 0f, 2f));
             kit.Hint(new Vector3(-7f, 1.5f, 2f), new Vector3(3f, 4f, 6f), "Practice: Yarn Swing",
                 "In Yarn Form, hold {Ability} near the pink button to swing over to the lifeboat. Swing back the same way.", HintTheme.Yarn);
 
-            // Propellers at the stern: spool hubs with lolly-stick blades.
-            Propeller(kit, new Vector3(-4f, -2.5f, SternZ - 0.6f), 1f);
-            Propeller(kit, new Vector3(4f, -2.5f, SternZ - 0.6f), -1f);
-            // Rudder.
-            var rudder = kit.Cardboard(new Vector3(0f, -3.2f, SternZ - 1.4f), new Vector3(0.3f, 3.6f, 2.4f), KraftLight, "Rudder");
+            // Propellers at the stern: spool hubs with lolly-stick blades, on pencil shafts into the hull.
+            Propeller(kit, new Vector3(-4f, -2.5f, SternZ - 1.1f), 1f);
+            Propeller(kit, new Vector3(4f, -2.5f, SternZ - 1.1f), -1f);
+            // Rudder, hinged on the stern with two tape straps.
+            var rudder = kit.Cardboard(new Vector3(0f, -3.4f, SternZ - 1.2f), new Vector3(0.3f, 3.4f, 2.4f), KraftLight, "Rudder");
             Object.Destroy(rudder.GetComponent<Collider>());
+            kit.Tape(new Vector3(0f, -2.4f, SternZ - 0.05f), new Vector3(0.5f, 0.35f, 0.3f));
+            kit.Tape(new Vector3(0f, -4.4f, SternZ - 0.05f), new Vector3(0.5f, 0.35f, 0.3f));
             // A pencil bowsprit poking out the front.
             var pencil = PatchworkAssets.Plain(new Color(0.98f, 0.8f, 0.3f), 0.4f);
             kit.Rope(new Vector3(0f, 0.6f, MidBowZ + 6.5f), new Vector3(0f, 2.4f, MidBowZ + 13f), pencil, 0.35f);
@@ -124,18 +154,42 @@ namespace Patchwork
 
             // Bunting from the mast to the bow and the stern.
             kit.Bunting(new Vector3(0f, 12f, 6f), new Vector3(0f, 1.4f, MidBowZ + 7.6f), LevelKit.Palette.Quilt);
-            kit.Bunting(new Vector3(0f, 12f, 6f), new Vector3(0f, 7f, SternZ + 1f), LevelKit.Palette.Quilt);
+            kit.Bunting(new Vector3(0f, 12f, 6f), CabinFlagTop, LevelKit.Palette.Quilt);
         }
 
-        static void Rail(LevelKit kit, Vector3 a, Vector3 b)
+        static void Rail(LevelKit kit, Vector3 a, Vector3 b, float height)
         {
             Vector3 d = b - a;
             float len = d.magnitude;
-            var rail = kit.Cardboard((a + b) * 0.5f + Vector3.up * 0.5f, new Vector3(0.3f, 1f, len), KraftLight, "Rail");
+            var rail = kit.Cardboard((a + b) * 0.5f + Vector3.up * height * 0.5f, new Vector3(0.3f, height, len), KraftLight, "Rail");
             rail.rotation = Quaternion.LookRotation(d.normalized, Vector3.up);
             // Rolled-paper cap along the top.
-            var cap = kit.Deco(PrimitiveType.Cylinder, (a + b) * 0.5f + Vector3.up * 1.02f, new Vector3(0.36f, len * 0.5f, 0.36f), PatchworkAssets.Felt(new Color(0.95f, 0.9f, 0.8f)));
+            var cap = kit.Deco(PrimitiveType.Cylinder, (a + b) * 0.5f + Vector3.up * (height + 0.02f), new Vector3(0.36f, len * 0.5f, 0.36f), PatchworkAssets.Felt(new Color(0.95f, 0.9f, 0.8f)));
             cap.rotation = Quaternion.FromToRotation(Vector3.up, d.normalized);
+        }
+
+        // A little paper lantern on a pencil hook, glowing warm.
+        static void Lantern(LevelKit kit, Vector3 post)
+        {
+            var pencil = PatchworkAssets.Plain(new Color(0.98f, 0.8f, 0.3f), 0.4f);
+            Vector3 top = post + Vector3.up * 2.2f;
+            kit.Rope(post + Vector3.up * 1.2f, top, pencil, 0.12f);
+            Vector3 hook = top + new Vector3(post.x > 0.1f ? -0.5f : (post.x < -0.1f ? 0.5f : 0f), 0f, post.x == 0f ? -0.5f : 0f);
+            kit.Rope(top, hook, pencil, 0.1f);
+            kit.Rope(hook, hook + Vector3.down * 0.3f, PatchworkAssets.Yarn(LevelKit.Palette.Walnut), 0.03f);
+            Vector3 c = hook + Vector3.down * 0.65f;
+            kit.Deco(PrimitiveType.Sphere, c, new Vector3(0.45f, 0.55f, 0.45f), PatchworkAssets.Glow(new Color(1f, 0.8f, 0.5f), 1.6f));
+            kit.Deco(PrimitiveType.Cylinder, c + Vector3.up * 0.3f, new Vector3(0.3f, 0.04f, 0.3f), PatchworkAssets.Felt(LevelKit.Palette.Rose));
+            kit.Deco(PrimitiveType.Cylinder, c + Vector3.down * 0.3f, new Vector3(0.3f, 0.04f, 0.3f), PatchworkAssets.Felt(LevelKit.Palette.Rose));
+            var go = new GameObject("LanternLight");
+            go.transform.SetParent(kit.Root, false);
+            go.transform.position = c;
+            var l = go.AddComponent<Light>();
+            l.type = LightType.Point;
+            l.color = new Color(1f, 0.8f, 0.55f);
+            l.range = 6f;
+            l.intensity = 0.9f;
+            l.shadows = LightShadows.None;
         }
 
         static void Propeller(LevelKit kit, Vector3 pos, float dir)
@@ -152,6 +206,8 @@ namespace Patchwork
                 b.localPosition = Quaternion.Euler(0f, 0f, i * 120f) * new Vector3(0f, 1.1f, 0f);
             }
             kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0f, -0.6f), Vector3.one * 0.5f, PatchworkAssets.Felt(LevelKit.Palette.Gold), default(Vector3), g);
+            // Pencil shaft back into the hull.
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, 0.8f), new Vector3(0.25f, 0.6f, 0.25f), PatchworkAssets.Plain(new Color(0.98f, 0.8f, 0.3f), 0.4f), new Vector3(90f, 0f, 0f), g);
             var spin = blades.gameObject.AddComponent<Spinner>();
             spin.Axis = Vector3.forward;
             spin.Speed = 420f * dir;
@@ -163,39 +219,12 @@ namespace Patchwork
             Vector3 c = new Vector3(0f, 22f, 1f);
             Vector3 r = new Vector3(10f, 6f, 15f);
             var g = kit.Group("Balloon", c);
-            kit.Deco(PrimitiveType.Sphere, Vector3.zero, r * 2f, PatchworkAssets.Fabric(new Color(0.93f, 0.6f, 0.62f)), default(Vector3), g);
-
-            // Patches sewn all over it.
-            Color[] patchCols = { LevelKit.Palette.Butter, LevelKit.Palette.Sky, LevelKit.Palette.Cream, LevelKit.Palette.Lavender, LevelKit.Palette.Sage, LevelKit.Palette.Peach };
-            int n = 0;
-            for (int ring = 0; ring < 4; ring++)
-            {
-                float theta = Mathf.Lerp(0.35f, 1.75f, ring / 3f);   // from near the top to just under the middle
-                int count = 6 + ring * 2;
-                for (int i = 0; i < count; i++)
-                {
-                    float phi = (i + (ring % 2) * 0.5f) / count * Mathf.PI * 2f;
-                    Vector3 unit = new Vector3(Mathf.Sin(theta) * Mathf.Cos(phi), Mathf.Cos(theta), Mathf.Sin(theta) * Mathf.Sin(phi));
-                    Vector3 p = Vector3.Scale(unit, r);
-                    Vector3 normal = new Vector3(p.x / (r.x * r.x), p.y / (r.y * r.y), p.z / (r.z * r.z)).normalized;
-                    float size = Random.Range(2.2f, 3.4f);
-                    var patch = kit.Deco(PrimitiveType.Cube, p + normal * 0.05f, new Vector3(size, size * Random.Range(0.7f, 1f), 0.12f),
-                        PatchworkAssets.Fabric(patchCols[n++ % patchCols.Length]), default(Vector3), g);
-                    patch.localRotation = Quaternion.LookRotation(normal, Vector3.up) * Quaternion.Euler(0f, 0f, Random.Range(-20f, 20f));
-                }
-            }
-            // A stitched band round the middle.
-            for (int i = 0; i < 28; i++)
-            {
-                float phi = i / 28f * Mathf.PI * 2f;
-                Vector3 p = new Vector3(Mathf.Cos(phi) * r.x, -0.6f, Mathf.Sin(phi) * r.z);
-                var st = kit.Deco(PrimitiveType.Cube, p * 1.005f, new Vector3(1.4f, 0.18f, 0.12f), PatchworkAssets.Felt(new Color(1f, 0.96f, 0.88f)), default(Vector3), g);
-                st.localRotation = Quaternion.LookRotation(new Vector3(p.x / (r.x * r.x), 0f, p.z / (r.z * r.z)).normalized, Vector3.up);
-            }
-            var bob = g.gameObject.AddComponent<Spinner>();
-            bob.Speed = 0f;
-            bob.BobHeight = 0.25f;
-            bob.BobSpeed = 0.5f;
+            // One smooth shape with the patchwork painted on (separate patch pieces stuck to a curved
+            // surface flickered and floated off it).
+            kit.Deco(PrimitiveType.Sphere, Vector3.zero, r * 2f, PatchworkAssets.BalloonQuilt(), new Vector3(0f, 0f, 0f), g);
+            // A felt ring where the ropes gather underneath, and a little tassel on top.
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -r.y + 0.35f, 0f), new Vector3(4.5f, 0.15f, 6f), PatchworkAssets.Felt(new Color(0.62f, 0.27f, 0.3f)), default(Vector3), g);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, r.y - 0.05f, 0f), new Vector3(1.2f, 0.6f, 1.2f), PatchworkAssets.Yarn(LevelKit.Palette.Gold), default(Vector3), g);
 
             // Ropes from the rails up to the balloon's belly.
             var rope = PatchworkAssets.Yarn(new Color(0.96f, 0.92f, 0.82f));
@@ -265,6 +294,14 @@ namespace Patchwork
                 kit.Deco(PrimitiveType.Sphere, p, Vector3.one * 0.22f, brass);
             }
 
+            // Two brass legs up from the stand to the ends of the ring.
+            for (int s = -1; s <= 1; s += 2)
+            {
+                float a = (s < 0 ? 195f : -15f) * Mathf.Deg2Rad;
+                Vector3 end = globeCenter + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * (radius + 0.25f);
+                kit.Rope(new Vector3(s * 1.05f, 0.95f, globeCenter.z), end, brass, 0.12f);
+            }
+
             var root = kit.Group("Globe", globeCenter);
             var spin = new GameObject("Spin").transform;
             spin.SetParent(root, false);
@@ -329,6 +366,90 @@ namespace Patchwork
             light.shadows = LightShadows.None;
         }
 
+        // ---------------------------------------------------------------- Pirate dressing
+
+        static void PirateDressing(LevelKit kit)
+        {
+            // Cardboard-tube cannons poking over the rails.
+            Cannon(kit, new Vector3(6.6f, 0f, -4f), 1f);
+            Cannon(kit, new Vector3(6.6f, 0f, 12.6f), 1f);
+            Cannon(kit, new Vector3(-6.6f, 0f, -6.2f), -1f);
+            Cannon(kit, new Vector3(-6.6f, 0f, 11f), -1f);
+
+            // A treasure chest spilling golden buttons.
+            Vector3 chest = new Vector3(6.3f, 0f, -6.6f);
+            kit.Cardboard(chest + new Vector3(0f, 0.45f, 0f), new Vector3(1.1f, 0.9f, 1.6f), KraftDark, "Chest");
+            var lid = kit.Cardboard(chest + new Vector3(-0.62f, 1.15f, 0f), new Vector3(0.12f, 0.75f, 1.6f), KraftDark, "ChestLid");
+            lid.rotation = Quaternion.Euler(0f, 0f, 25f);
+            Object.Destroy(lid.GetComponent<Collider>());
+            kit.Deco(PrimitiveType.Cube, chest + new Vector3(0f, 0.6f, 0f), new Vector3(1.14f, 0.12f, 1.64f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f));
+            kit.Deco(PrimitiveType.Sphere, chest + new Vector3(0f, 0.9f, 0f), new Vector3(0.9f, 0.25f, 1.3f), PatchworkAssets.Glow(LevelKit.Palette.Gold, 0.5f));
+            kit.SewingButton(chest + new Vector3(-0.9f, 0.03f, 0.4f), 0.45f, LevelKit.Palette.Gold, Vector3.zero);
+            kit.SewingButton(chest + new Vector3(-1.2f, 0.03f, -0.2f), 0.4f, LevelKit.Palette.Gold, new Vector3(0f, 0f, 8f));
+            kit.SewingButton(chest + new Vector3(-0.8f, 0.03f, -0.7f), 0.35f, LevelKit.Palette.Gold, Vector3.zero);
+
+            // Tin-can barrels by the drain crate.
+            for (int i = 0; i < 2; i++)
+            {
+                Vector3 can = new Vector3(-7f + i * 0.9f, 0f, -8.6f - i * 0.4f);
+                kit.Deco(PrimitiveType.Cylinder, can + Vector3.up * 0.55f, new Vector3(0.8f, 0.55f, 0.8f), PatchworkAssets.Plain(new Color(0.8f, 0.82f, 0.86f), 0.85f));
+                kit.Deco(PrimitiveType.Cylinder, can + Vector3.up * 0.55f, new Vector3(0.84f, 0.3f, 0.84f), PatchworkAssets.Felt(i == 0 ? LevelKit.Palette.Rose : LevelKit.Palette.Butter));
+                var col = kit.Group("CanCollider", can + Vector3.up * 0.55f).gameObject.AddComponent<CapsuleCollider>();
+                col.radius = 0.42f;
+                col.height = 1.1f;
+            }
+
+            // Coils of rope on the deck.
+            RopeCoil(kit, new Vector3(-3f, 0f, -14.2f + 6.8f));
+            RopeCoil(kit, new Vector3(3.2f, 0f, 15.6f));
+
+            // Yarn birds: two resting on the rails, one circling the balloon.
+            kit.YarnBird(new Vector3(DeckHalfWidth - 0.15f, 1.2f, 7.5f), LevelKit.Palette.Sky, false);
+            kit.YarnBird(new Vector3(0f, 1.3f, MidBowZ + 7.85f), LevelKit.Palette.Peach, false);
+            kit.YarnBird(new Vector3(0f, 18f, 1f), LevelKit.Palette.Lavender, true, 17f);
+        }
+
+        static void Cannon(LevelKit kit, Vector3 pos, float side)
+        {
+            kit.Cardboard(pos + new Vector3(0f, 0.6f, 0f), new Vector3(1f, 1.2f, 1.1f), KraftDark, "CannonCarriage");
+            var barrel = kit.Deco(PrimitiveType.Cylinder, pos + new Vector3(side * 0.6f, 1.5f, 0f), new Vector3(0.6f, 0.95f, 0.6f), PatchworkAssets.Cardboard(new Color(0.3f, 0.28f, 0.32f)), new Vector3(0f, 0f, 90f));
+            kit.Deco(PrimitiveType.Cylinder, pos + new Vector3(side * 1.55f, 1.5f, 0f), new Vector3(0.7f, 0.06f, 0.7f), PatchworkAssets.Felt(LevelKit.Palette.Gold), new Vector3(0f, 0f, 90f));
+            kit.Deco(PrimitiveType.Cylinder, pos + new Vector3(side * 1.59f, 1.5f, 0f), new Vector3(0.4f, 0.04f, 0.4f), PatchworkAssets.Plain(new Color(0.1f, 0.08f, 0.1f), 0.2f), new Vector3(0f, 0f, 90f));
+            for (int s = -1; s <= 1; s += 2)
+                kit.SewingButton(pos + new Vector3(0f, 0.4f, s * 0.58f), 0.6f, LevelKit.Palette.Rose, new Vector3(90f, 0f, 0f));
+            // A little pile of yarn cannonballs.
+            var ball = PatchworkAssets.Yarn(new Color(0.35f, 0.33f, 0.38f));
+            Vector3 pile = pos + new Vector3(-side * 0.95f, 0f, 0.2f);
+            kit.Deco(PrimitiveType.Sphere, pile + new Vector3(0f, 0.2f, 0.2f), Vector3.one * 0.4f, ball);
+            kit.Deco(PrimitiveType.Sphere, pile + new Vector3(0f, 0.2f, -0.2f), Vector3.one * 0.4f, ball);
+            kit.Deco(PrimitiveType.Sphere, pile + new Vector3(0f, 0.52f, 0f), Vector3.one * 0.4f, ball);
+        }
+
+        static void RopeCoil(LevelKit kit, Vector3 pos)
+        {
+            var rope = PatchworkAssets.Yarn(new Color(0.9f, 0.82f, 0.62f));
+            for (int i = 0; i < 3; i++)
+                kit.Deco(PrimitiveType.Cylinder, pos + Vector3.up * (0.06f + i * 0.1f), new Vector3(1.2f - i * 0.15f, 0.05f, 1.2f - i * 0.15f), rope);
+            kit.Deco(PrimitiveType.Cylinder, pos + Vector3.up * 0.33f, new Vector3(0.5f, 0.02f, 0.5f), PatchworkAssets.Plain(new Color(0.35f, 0.28f, 0.22f), 0.2f));
+        }
+
+        // ---------------------------------------------------------------- Sounds
+        // Every ship sound comes from where it happens, so it only gets loud when you're close.
+
+        static void ShipSounds(LevelKit kit)
+        {
+            var root = kit.Group("ShipSounds", Vector3.zero);
+            AmbientEmitter.Create(root, new Vector3(-4f, -2.5f, SternZ - 1.1f), Sfx.Ambient(Sfx.AmbientClip.Propeller), 0.5f, 2f, 16f);
+            AmbientEmitter.Create(root, new Vector3(4f, -2.5f, SternZ - 1.1f), Sfx.Ambient(Sfx.AmbientClip.Propeller), 0.5f, 2f, 16f);
+            AmbientEmitter.Create(root, CabinFlagTop + Vector3.down * 0.6f, Sfx.Ambient(Sfx.AmbientClip.Flag), 0.4f, 1.5f, 11f);
+            AmbientEmitter.Create(root, new Vector3(0f, -0.5f, -3f), Sfx.Ambient(Sfx.AmbientClip.Creak), 0.5f, 3f, 16f);
+            AmbientEmitter.Create(root, new Vector3(0f, -0.5f, MidBowZ + 2f), Sfx.Ambient(Sfx.AmbientClip.Creak), 0.4f, 3f, 14f);
+            AmbientEmitter.Create(root, new Vector3(0f, 16.5f, 1f), Sfx.Ambient(Sfx.AmbientClip.Balloon), 0.6f, 5f, 24f);
+            AmbientEmitter.Create(root, new Vector3(3.2f, 1.2f, -14.4f), Sfx.Ambient(Sfx.AmbientClip.Clock), 0.45f, 1f, 7f);
+            AmbientEmitter.Create(root, new Vector3(0f, 0.5f, 2.4f), Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.3f, 1.5f, 10f);
+            AmbientEmitter.Create(root, new Vector3(6f, 1f, -11.5f), Sfx.Ambient(Sfx.AmbientClip.Vent), 0.3f, 1.5f, 10f);
+        }
+
         // ---------------------------------------------------------------- Practice spots
 
         // The mast (a knitting needle) with a crow's nest you reach by riding a fountain as Water.
@@ -344,8 +465,8 @@ namespace Patchwork
             // Crow's nest: a cardboard tub around the mast, top at 5 m.
             kit.Cardboard(mast + new Vector3(0f, 4.75f, 0f), new Vector3(3.4f, 0.5f, 3.4f), KraftLight, "CrowsNest");
             kit.Cardboard(mast + new Vector3(0f, 5.4f, 1.6f), new Vector3(3.4f, 0.8f, 0.2f), Kraft, "NestWall");
-            kit.Cardboard(mast + new Vector3(1.6f, 5.4f, 0f), new Vector3(0.2f, 0.8f, 3.4f), Kraft, "NestWall");
-            kit.Cardboard(mast + new Vector3(-1.6f, 5.4f, 0f), new Vector3(0.2f, 0.8f, 3.4f), Kraft, "NestWall");
+            kit.Cardboard(mast + new Vector3(1.6f, 5.4f, -0.1f), new Vector3(0.2f, 0.8f, 3.2f), Kraft, "NestWall");
+            kit.Cardboard(mast + new Vector3(-1.6f, 5.4f, -0.1f), new Vector3(0.2f, 0.8f, 3.2f), Kraft, "NestWall");
             kit.Thread(mast + new Vector3(0.9f, 5.6f, 0.9f), LevelKit.Palette.Sky);
             kit.Thread(mast + new Vector3(-0.9f, 5.6f, 0.9f), LevelKit.Palette.Sky);
             kit.YarnBird(mast + new Vector3(1.2f, 5.8f, 1.6f), LevelKit.Palette.Butter, false);
@@ -362,8 +483,8 @@ namespace Patchwork
             kit.Cardboard(c + new Vector3(0f, -0.5f, 0f), new Vector3(6f, 1f, 6f), KraftLight, "Lifeboat");
             kit.Cardboard(c + new Vector3(0f, -1.3f, 0f), new Vector3(5f, 0.8f, 5.4f), KraftDark, "LifeboatHull");
             kit.Cardboard(c + new Vector3(-2.85f, 0.35f, 0f), new Vector3(0.3f, 0.7f, 6f), Kraft, "LifeboatSide");
-            kit.Cardboard(c + new Vector3(0f, 0.35f, 2.85f), new Vector3(6f, 0.7f, 0.3f), Kraft, "LifeboatSide");
-            kit.Cardboard(c + new Vector3(0f, 0.35f, -2.85f), new Vector3(6f, 0.7f, 0.3f), Kraft, "LifeboatSide");
+            kit.Cardboard(c + new Vector3(0.15f, 0.35f, 2.85f), new Vector3(5.7f, 0.7f, 0.3f), Kraft, "LifeboatSide");
+            kit.Cardboard(c + new Vector3(0.15f, 0.35f, -2.85f), new Vector3(5.7f, 0.7f, 0.3f), Kraft, "LifeboatSide");
             kit.Thread(c + new Vector3(0f, 1f, 0f), LevelKit.Palette.Rose);
             kit.Thread(c + new Vector3(-1.5f, 1f, 1.5f), LevelKit.Palette.Rose);
 
@@ -396,15 +517,16 @@ namespace Patchwork
             const float x0 = -4f, x1 = 4f, z0 = -15.6f, z1 = -7.6f, h = 4f;
             float cx = (x0 + x1) * 0.5f, cz = (z0 + z1) * 0.5f;
 
-            kit.Cardboard(new Vector3(x0 + 0.2f, h * 0.5f, cz), new Vector3(0.4f, h, z1 - z0), Kraft, "CabinWall");
-            kit.Cardboard(new Vector3(x1 - 0.2f, h * 0.5f, cz), new Vector3(0.4f, h, z1 - z0), Kraft, "CabinWall");
+            // Side walls fit between the front and back walls, so no two faces sit on top of each other.
+            kit.Cardboard(new Vector3(x0 + 0.2f, h * 0.5f, cz), new Vector3(0.4f, h, z1 - z0 - 0.8f), Kraft, "CabinWall");
+            kit.Cardboard(new Vector3(x1 - 0.2f, h * 0.5f, cz), new Vector3(0.4f, h, z1 - z0 - 0.8f), Kraft, "CabinWall");
             kit.Cardboard(new Vector3(cx, h * 0.5f, z0 + 0.2f), new Vector3(x1 - x0, h, 0.4f), Kraft, "CabinWall");
             kit.Cardboard(new Vector3(cx - 2.6f, h * 0.5f, z1 - 0.2f), new Vector3(2.8f, h, 0.4f), Kraft, "CabinFront");
             kit.Cardboard(new Vector3(cx + 2.6f, h * 0.5f, z1 - 0.2f), new Vector3(2.8f, h, 0.4f), Kraft, "CabinFront");
             kit.Cardboard(new Vector3(cx, 3.5f, z1 - 0.2f), new Vector3(2.4f, 1f, 0.4f), Kraft, "CabinLintel");
             kit.Cardboard(new Vector3(cx, h + 0.2f, cz), new Vector3(x1 - x0 + 0.4f, 0.4f, z1 - z0 + 0.4f), KraftLight, "CabinRoof");
-            kit.Tape(new Vector3(cx, h + 0.41f, cz), new Vector3(x1 - x0 + 0.42f, 0.02f, 0.6f));
-            kit.Quilt(new Vector3(cx, 0.06f, cz), new Vector3(x1 - x0 - 0.8f, 0.12f, z1 - z0 - 0.8f), new[] { LevelKit.Palette.Butter, LevelKit.Palette.Peach, LevelKit.Palette.Cream }, 2.4f, "CabinRug");
+            kit.Tape(new Vector3(cx, h + 0.42f, cz), new Vector3(x1 - x0 + 0.42f, 0.03f, 0.6f));
+            kit.Quilt(new Vector3(cx, 0.08f, cz), new Vector3(x1 - x0 - 0.8f, 0.12f, z1 - z0 - 0.8f), new[] { LevelKit.Palette.Butter, LevelKit.Palette.Peach, LevelKit.Palette.Cream }, 2.4f, "CabinRug");
             // Painted sign over the door.
             kit.Cardboard(new Vector3(cx, h - 0.15f, z1 + 0.05f), new Vector3(3.2f, 0.7f, 0.1f), LevelKit.Palette.Cream, "CabinSign");
 
@@ -443,15 +565,49 @@ namespace Patchwork
             pedestal.Setup(4, FormVisuals.HatNames[4], vis);
             kit.Lamp(new Vector3(cx, 3.2f, cz), h);
 
-            // Flagpole on the roof with a felt pennant.
-            Vector3 pole = new Vector3(x1 - 0.8f, h + 0.4f, z0 + 0.8f);
+            // Flagpole on the roof flying the Skiff's colours: a felt flag with a button skull and
+            // crossed knitting needles.
+            Vector3 pole = new Vector3(CabinFlagTop.x, h + 0.4f, CabinFlagTop.z);
             kit.Deco(PrimitiveType.Cylinder, pole + Vector3.up * 2f, new Vector3(0.12f, 2f, 0.12f), PatchworkAssets.Plain(new Color(0.98f, 0.8f, 0.3f), 0.4f));
-            var flag = kit.Group("Pennant", pole + new Vector3(0f, 3.5f, 0f));
-            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0f, -0.9f), new Vector3(0.05f, 0.9f, 1.8f), PatchworkAssets.Felt(LevelKit.Palette.AnchorPink), default(Vector3), flag);
-            var wave = flag.gameObject.AddComponent<Spinner>();
-            wave.Speed = 0f;
-            wave.BobHeight = 0.08f;
-            wave.BobSpeed = 3f;
+            kit.Deco(PrimitiveType.Sphere, CabinFlagTop, Vector3.one * 0.22f, PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f));
+            var flag = kit.Group("JollyRoger", CabinFlagTop + Vector3.down * 0.65f);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0f, -0.9f), new Vector3(0.05f, 1.1f, 1.8f), PatchworkAssets.Felt(new Color(0.18f, 0.15f, 0.2f)), default(Vector3), flag);
+            var bone = PatchworkAssets.Felt(new Color(0.97f, 0.95f, 0.9f));
+            var needle = PatchworkAssets.Plain(new Color(0.85f, 0.86f, 0.9f), 0.8f);
+            for (int s = -1; s <= 1; s += 2)
+            {
+                float x = s * 0.04f;
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(x, 0.1f, -0.9f), new Vector3(0.42f, 0.02f, 0.42f), bone, new Vector3(0f, 0f, 90f), flag);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(x * 1.4f, 0.14f, -0.98f), new Vector3(0.1f, 0.02f, 0.1f), PatchworkAssets.Felt(new Color(0.18f, 0.15f, 0.2f)), new Vector3(0f, 0f, 90f), flag);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(x * 1.4f, 0.14f, -0.82f), new Vector3(0.1f, 0.02f, 0.1f), PatchworkAssets.Felt(new Color(0.18f, 0.15f, 0.2f)), new Vector3(0f, 0f, 90f), flag);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(x, -0.3f, -0.9f), new Vector3(0.05f, 0.42f, 0.05f), needle, new Vector3(45f, 0f, 0f), flag);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(x, -0.3f, -0.9f), new Vector3(0.05f, 0.42f, 0.05f), needle, new Vector3(-45f, 0f, 0f), flag);
+            }
+            flag.gameObject.AddComponent<FlagWave>();
+
+            // Round windows on the side walls.
+            var glass = PatchworkAssets.Plain(new Color(0.55f, 0.75f, 0.92f), 0.9f);
+            var frame = PatchworkAssets.Plain(new Color(0.25f, 0.2f, 0.25f), 0.3f);
+            for (int s = -1; s <= 1; s += 2)
+            {
+                float x = s * (x1 + 0.03f);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(x, 2.3f, cz), new Vector3(1.1f, 0.05f, 1.1f), frame, new Vector3(0f, 0f, 90f));
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(x + s * 0.02f, 2.3f, cz), new Vector3(0.85f, 0.06f, 0.85f), glass, new Vector3(0f, 0f, 90f));
+            }
+
+            // Inside: the captain's desk with a treasure map, a candle and a ticking clock, and a hammock.
+            kit.Cardboard(new Vector3(2.5f, 0.5f, z0 + 1.1f), new Vector3(2f, 0.8f, 1.1f), KraftDark, "CaptainsDesk");
+            kit.Deco(PrimitiveType.Cube, new Vector3(2.4f, 0.915f, z0 + 1.1f), new Vector3(1.2f, 0.02f, 0.8f), PatchworkAssets.Felt(new Color(0.96f, 0.9f, 0.75f)), new Vector3(0f, 12f, 0f));
+            kit.Deco(PrimitiveType.Cube, new Vector3(2.6f, 0.93f, z0 + 1.05f), new Vector3(0.25f, 0.01f, 0.05f), PatchworkAssets.Felt(new Color(0.85f, 0.2f, 0.25f)), new Vector3(0f, 45f, 0f));
+            kit.Deco(PrimitiveType.Cube, new Vector3(2.6f, 0.93f, z0 + 1.05f), new Vector3(0.25f, 0.01f, 0.05f), PatchworkAssets.Felt(new Color(0.85f, 0.2f, 0.25f)), new Vector3(0f, -45f, 0f));
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(1.8f, 1.05f, z0 + 1.3f), new Vector3(0.12f, 0.15f, 0.12f), PatchworkAssets.Felt(LevelKit.Palette.Cream));
+            kit.Deco(PrimitiveType.Sphere, new Vector3(1.8f, 1.26f, z0 + 1.3f), new Vector3(0.07f, 0.12f, 0.07f), PatchworkAssets.Glow(new Color(1f, 0.75f, 0.35f), 2f));
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(3.2f, 1.15f, z0 + 1.2f), new Vector3(0.45f, 0.06f, 0.45f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f), new Vector3(90f, 0f, 0f));
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(3.2f, 1.15f, z0 + 1.15f), new Vector3(0.38f, 0.065f, 0.38f), PatchworkAssets.Felt(LevelKit.Palette.Cream), new Vector3(90f, 0f, 0f));
+            kit.Deco(PrimitiveType.Sphere, new Vector3(-2.7f, 1.3f, cz), new Vector3(1.1f, 0.35f, 4.4f), PatchworkAssets.Fabric(LevelKit.Palette.Sky));
+            var rope = PatchworkAssets.Yarn(new Color(0.96f, 0.92f, 0.82f));
+            kit.Rope(new Vector3(-2.7f, 1.45f, cz - 2.1f), new Vector3(-2.7f, 2.6f, z0 + 0.4f), rope, 0.05f);
+            kit.Rope(new Vector3(-2.7f, 1.45f, cz + 2.1f), new Vector3(-2.7f, 2.6f, z1 - 0.4f), rope, 0.05f);
             kit.Thread(new Vector3(-2f, h + 1f, cz), LevelKit.Palette.Cream);
             kit.Thread(new Vector3(0f, h + 1f, cz), LevelKit.Palette.Cream);
             kit.Thread(new Vector3(2f, h + 1f, cz), LevelKit.Palette.Cream);
@@ -462,12 +618,12 @@ namespace Patchwork
         {
             Vector3 c = new Vector3(-6f, 0f, -12f);
             kit.Cardboard(c + new Vector3(0f, 1.25f, -1.4f), new Vector3(3.2f, 2.5f, 0.3f), KraftLight, "CrateBack");
-            kit.Cardboard(c + new Vector3(-1.45f, 1.25f, 0f), new Vector3(0.3f, 2.5f, 3f), KraftLight, "CrateSide");
-            kit.Cardboard(c + new Vector3(1.45f, 1.25f, 0f), new Vector3(0.3f, 2.5f, 3f), KraftLight, "CrateSide");
+            kit.Cardboard(c + new Vector3(-1.45f, 1.25f, 0f), new Vector3(0.3f, 2.5f, 2.5f), KraftLight, "CrateSide");
+            kit.Cardboard(c + new Vector3(1.45f, 1.25f, 0f), new Vector3(0.3f, 2.5f, 2.5f), KraftLight, "CrateSide");
             kit.Cardboard(c + new Vector3(0f, 2.65f, 0f), new Vector3(3.4f, 0.3f, 3.2f), Kraft, "CrateLid");
-            kit.Tape(new Vector3(c.x, 2.81f, c.z), new Vector3(0.5f, 0.02f, 3.22f));
-            kit.Cardboard(c + new Vector3(-0.95f, 1.25f, 1.4f), new Vector3(1.0f, 2.5f, 0.3f), KraftLight, "CrateFront");
-            kit.Cardboard(c + new Vector3(0.95f, 1.25f, 1.4f), new Vector3(1.0f, 2.5f, 0.3f), KraftLight, "CrateFront");
+            kit.Tape(new Vector3(c.x, 2.82f, c.z), new Vector3(0.5f, 0.03f, 3.22f));
+            kit.Cardboard(c + new Vector3(-1.025f, 1.25f, 1.4f), new Vector3(1.15f, 2.5f, 0.3f), KraftLight, "CrateFront");
+            kit.Cardboard(c + new Vector3(1.025f, 1.25f, 1.4f), new Vector3(1.15f, 2.5f, 0.3f), KraftLight, "CrateFront");
             kit.Cardboard(c + new Vector3(0f, 1.75f, 1.4f), new Vector3(0.9f, 1.5f, 0.3f), KraftLight, "CrateFront");
             kit.Grate(c + new Vector3(0f, 0.5f, 1.4f), new Vector3(0.9f, 1f, 0.2f));
             kit.SewingButton(c + new Vector3(0f, 0.05f, -0.2f), 1.1f, LevelKit.Palette.Gold, Vector3.zero);

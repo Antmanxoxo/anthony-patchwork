@@ -77,6 +77,12 @@ Stuff I need to remember about how Patchwork is put together.
   turns the `LevelGlobe` and uses the camera's Showcase mode (`PlayerCamera.Showcase`).
 - Yarn birds (`YarnBird`, `kit.YarnBird`) play their chirps from their own 3D AudioSource.
 - `PaintLake` scrolls a marbled texture (`PatchworkTextures.PaintMarble`).
+- NPCs: `NpcYarny` (looks, lines, 3D voice blips) + `TalkZone` (stand in it, press Ability) ->
+  `DialogueBox` (UIMode.Talk). Whether you've met him is saved as the hint id "Yarny_met".
+- Positional loops: `AmbientEmitter.Create(parent, pos, Sfx.Ambient(...), volume, near, far)`.
+  The AudioListener is on its own object between the camera and Patch.
+- Don't let two boxes overlap with faces at the same height (they flicker). Use `kit.Prism` for
+  odd shapes, or make one piece a hair shorter.
 - `BlobShadow` puts the shadow disc under Patch; its material copies the see-through + glow setup
   so the build already keeps that shader version.
 

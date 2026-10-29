@@ -133,6 +133,12 @@ namespace Patchwork
             return m;
         }
 
+        public static Material BalloonQuilt()
+        {
+            EnsureInit();
+            return Get("balloonquilt", Color.white, PatchworkTextures.BalloonQuilt, 0.1f, Color.black);
+        }
+
         public static Material GlobeMap()
         {
             EnsureInit();

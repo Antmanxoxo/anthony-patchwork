@@ -283,6 +283,68 @@ namespace Patchwork
             return Block(center, size, color, name, PatchworkAssets.Cardboard(color));
         }
 
+        // A solid slab shaped like a flat polygon (given as x,z corners, convex) from yBottom to yTop.
+        // Used where boxes would have to overlap (like a ship's pointed bow), since overlapping
+        // faces at the same height flicker.
+        public Transform Prism(Vector2[] corners, float yBottom, float yTop, Material mat, string name = "Prism", float uvScale = 2.5f)
+        {
+            int n = corners.Length;
+            var verts = new List<Vector3>();
+            var norms = new List<Vector3>();
+            var uvs = new List<Vector2>();
+            var tris = new List<int>();
+            Vector2 centre = Vector2.zero;
+            foreach (var c in corners) centre += c;
+            centre /= n;
+
+            // Adds a triangle facing "outward".
+            System.Action<Vector3, Vector3, Vector3, Vector3, Vector2, Vector2, Vector2> tri = (a, b, c, outward, ua, ub, uc) =>
+            {
+                Vector3 nrm = Vector3.Cross(b - a, c - a);
+                if (Vector3.Dot(nrm, outward) < 0f) { var tv = b; b = c; c = tv; var tu = ub; ub = uc; uc = tu; }
+                int i0 = verts.Count;
+                verts.Add(a); verts.Add(b); verts.Add(c);
+                norms.Add(outward); norms.Add(outward); norms.Add(outward);
+                uvs.Add(ua); uvs.Add(ub); uvs.Add(uc);
+                tris.Add(i0); tris.Add(i0 + 1); tris.Add(i0 + 2);
+            };
+
+            Vector3 ctTop = new Vector3(centre.x, yTop, centre.y), ctBot = new Vector3(centre.x, yBottom, centre.y);
+            for (int i = 0; i < n; i++)
+            {
+                Vector2 p = corners[i], q = corners[(i + 1) % n];
+                Vector3 pt = new Vector3(p.x, yTop, p.y), qt = new Vector3(q.x, yTop, q.y);
+                Vector3 pb = new Vector3(p.x, yBottom, p.y), qb = new Vector3(q.x, yBottom, q.y);
+                tri(ctTop, pt, qt, Vector3.up, centre / uvScale, p / uvScale, q / uvScale);
+                tri(ctBot, pb, qb, Vector3.down, centre / uvScale, p / uvScale, q / uvScale);
+                Vector2 edge = q - p;
+                Vector3 outward = new Vector3(edge.y, 0f, -edge.x).normalized;
+                if (Vector2.Dot(new Vector2(outward.x, outward.z), (p + q) * 0.5f - centre) < 0f) outward = -outward;
+                float len = edge.magnitude / uvScale;
+                float h0 = yBottom / uvScale, h1 = yTop / uvScale;
+                tri(pb, qb, qt, outward, new Vector2(0f, h0), new Vector2(len, h0), new Vector2(len, h1));
+                tri(pb, qt, pt, outward, new Vector2(0f, h0), new Vector2(len, h1), new Vector2(0f, h1));
+            }
+
+            var mesh = new Mesh();
+            mesh.name = name;
+            mesh.SetVertices(verts);
+            mesh.SetNormals(norms);
+            mesh.SetUVs(0, uvs);
+            mesh.SetTriangles(tris, 0);
+            mesh.RecalculateBounds();
+            mesh.RecalculateTangents();
+
+            var go = new GameObject(name);
+            go.transform.SetParent(Root, false);
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            go.AddComponent<MeshRenderer>().sharedMaterial = mat;
+            var col = go.AddComponent<MeshCollider>();
+            col.sharedMesh = mesh;
+            col.convex = true;
+            return go.transform;
+        }
+
         // A strip of shiny brown packing tape (decoration).
         public Transform Tape(Vector3 center, Vector3 size, Vector3 euler = default(Vector3))
         {
