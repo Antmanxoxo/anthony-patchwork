@@ -23,6 +23,7 @@ namespace Patchwork
         Vector3 knotScale, crackScale;
         Vector3 wispFrom, wispTo, streakFrom, streakTo, blobHover;
         bool snapped, wispGone, knotTied;
+        float skipHold;
 
         static readonly Vector3 CrackPos = new Vector3(0f, 40.8f, 89.85f);
 
@@ -63,7 +64,7 @@ namespace Patchwork
             if (t < 0f)
             {
                 // Wait for the loading fade, then roll.
-                if (game.Mode != UIMode.Gameplay || game.Fade > 0.02f) return;
+                if (game.Mode != UIMode.Gameplay || game.Fade > 0.02f || LoadingScreen.Busy) return;
                 wait += Time.unscaledDeltaTime;
                 if (wait < 0.4f) return;
                 t = 0f;
@@ -75,7 +76,11 @@ namespace Patchwork
 
             float dt = Time.deltaTime;
             t += dt;
-            if (t > 0.6f && (game.Input.Confirm.WasPressedThisFrame() || game.Input.Pause.WasPressedThisFrame()))
+            // Hold Confirm (or Pause) to skip, so a stray jump press can't skip it by accident.
+            bool held = t > 0.6f && (game.Input.Confirm.IsPressed() || game.Input.Pause.IsPressed());
+            skipHold = held ? skipHold + Time.unscaledDeltaTime : Mathf.Max(0f, skipHold - Time.unscaledDeltaTime * 2f);
+            game.CutsceneSkipFill = skipHold / 0.9f;
+            if (skipHold >= 0.9f)
             {
                 Finish(game);
                 return;
@@ -251,6 +256,7 @@ namespace Patchwork
             Director.ApplySavedState();
             GameState.SetHintSeen(SeenKey);
             game.CutsceneCaption = null;
+            game.CutsceneSkipFill = 0f;
             game.EndCutscene();
             game.ShowToast("Talk to the toys of Toybox Town to find out what the band needs!");
         }

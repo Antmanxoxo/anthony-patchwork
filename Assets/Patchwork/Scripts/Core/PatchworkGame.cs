@@ -400,7 +400,9 @@ namespace Patchwork
                 // Lower the camera focus for small forms so it fits through tunnels.
                 float wantHeight = Player.Forms.Definition.HeadHeight * 0.75f + 0.2f;
                 CameraRig.TargetHeight = Mathf.MoveTowards(CameraRig.TargetHeight, wantHeight, udt * 2.5f);
-                CameraRig.TargetGrounded = Player.Motor.Grounded;
+                CameraRig.TargetGrounded = Player.Motor.Grounded || Player.Motor.WasSwimming;
+                // While swimming, keep the camera up above the water.
+                CameraRig.MinY = Player.Motor.WasSwimming ? Player.Motor.SwimSurface + 1.1f : float.NegativeInfinity;
                 CameraRig.TargetVelocity = Player.Motor.Velocity;
                 var yarn = Player.Forms.Ability as YarnAbility;
                 CameraRig.Swinging = yarn != null && yarn.Attached;
@@ -611,6 +613,7 @@ namespace Patchwork
 
         public string CutsceneCaption { get; set; }
         public bool CutsceneSkippable { get; set; }
+        public float CutsceneSkipFill { get; set; }   // 0..1 while the skip button is held
         bool cutsceneManual;   // the camera is placed by whoever runs the cutscene
         Vector3 cutsceneCenter;
         float cutsceneRadius, cutsceneHeight, cutsceneAngle;

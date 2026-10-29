@@ -9,7 +9,8 @@ namespace Patchwork
     // Older saves that lived in PlayerPrefs are moved over the first time the game loads.
     public static class GameState
     {
-        const int Version = 1;
+        // 2: Level 1 became Toybox Town, so finishing the old garden level no longer counts.
+        const int Version = 2;
         const string FileName = "save.json";
 
         [System.Serializable]
@@ -214,6 +215,11 @@ namespace Patchwork
             {
                 if (File.Exists(SavePath)) File.Delete(SavePath);
                 if (File.Exists(BackupPath)) File.Delete(BackupPath);
+                // Very old saves lived in PlayerPrefs; clear those too, or they'd come back.
+                foreach (var key in new[] { "pw_current_form", "pw_unlocked_forms", "pw_cosmetic_hat" }) PlayerPrefs.DeleteKey(key);
+                foreach (var id in Level1Builder.CollectibleIds) PlayerPrefs.DeleteKey("pw_collect_" + id);
+                foreach (var level in new[] { HubBuilder.SceneName, Level1Builder.SceneName }) PlayerPrefs.DeleteKey("pw_complete_" + level);
+                PlayerPrefs.Save();
             }
             catch (System.Exception e)
             {
@@ -234,14 +240,24 @@ namespace Patchwork
             if (data == null)
             {
                 data = FromOldPlayerPrefs();
+                data.version = 1;   // so the version upgrade below still runs on it
                 dirty = true;
-                Save();
             }
             if (data.collected == null) data.collected = new List<string>();
             if (data.completedLevels == null) data.completedLevels = new List<string>();
+            if (data.version < 2)
+            {
+                // The old Level 1 (the Sewing Basket Garden) is gone; Toybox Town starts fresh.
+                data.completedLevels.Remove(Level1Builder.SceneName);
+                // Its Heartstrings were in different places, so those start fresh too.
+                data.collected.RemoveAll(id => id.StartsWith("L1_hs_"));
+                data.version = 2;
+                dirty = true;
+            }
             if (data.hintsSeen == null) data.hintsSeen = new List<string>();
             if (data.bestThreads == null) data.bestThreads = new List<string>();
             if (data.unlockedHats == null) data.unlockedHats = new List<int>();
+            if (dirty) Save();
         }
 
         static SaveData TryRead(string path)

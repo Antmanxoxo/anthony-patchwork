@@ -180,6 +180,34 @@ namespace Patchwork
             var roofMat = PatchworkAssets.Shingle(roof);
             GableRoof(kit, W(0f, h, 0f), w + 0.9f, d + 1.1f, rise, yaw, roofMat, plaster);
             house.RoofTop = pos.y + h + rise;
+            // Gutters under the eaves and a drainpipe down one corner on each long side.
+            var tin = PatchworkAssets.Plain(new Color(0.5f, 0.55f, 0.6f), 0.6f);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                float ez = side * (d * 0.5f + 0.5f);
+                kit.Deco(PrimitiveType.Cylinder, W(0f, h - 0.14f, ez), new Vector3(0.2f, (w + 0.8f) * 0.5f, 0.2f), tin, new Vector3(0f, yaw, 90f));
+                float px = side * (w * 0.5f - 0.25f), pz = side * (d * 0.5f + 0.24f);
+                kit.Deco(PrimitiveType.Cylinder, W(px, (0.35f + h - 0.45f) * 0.5f, pz), new Vector3(0.17f, (h - 0.8f) * 0.5f, 0.17f), tin, new Vector3(0f, yaw, 0f));
+                Vector3 a = new Vector3(px, h - 0.45f, pz), b = new Vector3(px, h - 0.14f, ez);
+                var elbow = kit.Deco(PrimitiveType.Cylinder, W((a.x + b.x) * 0.5f, (a.y + b.y) * 0.5f, (a.z + b.z) * 0.5f), new Vector3(0.17f, (b - a).magnitude * 0.5f + 0.06f, 0.17f), tin);
+                elbow.rotation = r * Quaternion.FromToRotation(Vector3.up, (b - a).normalized);
+                kit.Deco(PrimitiveType.Cylinder, W(px, 0.38f, pz + side * 0.08f), new Vector3(0.22f, 0.06f, 0.22f), tin, new Vector3(90f, yaw, 0f));
+                for (float by = 1.2f; by < h - 0.8f; by += 2.4f)
+                    kit.Deco(PrimitiveType.Cube, W(px, by, pz - side * 0.1f), new Vector3(0.26f, 0.06f, 0.2f), tin, new Vector3(0f, yaw, 0f));
+            }
+            // Some houses have ivy climbing one end wall.
+            if (seed % 3 == 0)
+            {
+                Color[] greens = { new Color(0.4f, 0.62f, 0.38f), new Color(0.5f, 0.7f, 0.42f), new Color(0.34f, 0.55f, 0.36f) };
+                float ex = (seed % 2 == 0 ? -1f : 1f) * (w * 0.5f + 0.1f);
+                for (int i = 0; i < 26; i++)
+                {
+                    float t = i / 26f;
+                    float iz = Mathf.Sin(seed * 1.7f + i * 0.9f) * d * 0.32f * (0.4f + t);
+                    float iy = 0.5f + t * (h - 1.2f) + Mathf.Sin(i * 2.3f) * 0.2f;
+                    kit.Deco(PrimitiveType.Sphere, W(ex, iy, iz), new Vector3(0.14f, 0.5f, 0.6f), PatchworkAssets.Felt(greens[i % 3]), new Vector3(Mathf.Sin(i * 1.3f) * 30f, yaw, 0f));
+                }
+            }
             if (chimney != 0)
             {
                 float cz = chimney * d * 0.22f;
@@ -204,6 +232,11 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cube, p + r * new Vector3(-0.75f, 0f, 0.03f), new Vector3(0.42f, 1.3f, 0.05f), shutter, new Vector3(0f, yaw, 0f));
             kit.Deco(PrimitiveType.Cube, p + r * new Vector3(0.75f, 0f, 0.03f), new Vector3(0.42f, 1.3f, 0.05f), shutter, new Vector3(0f, yaw, 0f));
             kit.Deco(PrimitiveType.Cube, p + r * new Vector3(0f, -0.72f, 0.1f), new Vector3(1.2f, 0.08f, 0.22f), frame, new Vector3(0f, yaw, 0f));
+            // Lace curtains tied back at the sides, and a frill along the top.
+            var lace = PatchworkAssets.Damask(new Color(0.98f, 0.93f, 0.88f));
+            kit.Deco(PrimitiveType.Cube, p + r * new Vector3(-0.31f, 0.05f, 0.058f), new Vector3(0.2f, 1.05f, 0.012f), lace, new Vector3(0f, yaw, 0f));
+            kit.Deco(PrimitiveType.Cube, p + r * new Vector3(0.31f, 0.05f, 0.058f), new Vector3(0.2f, 1.05f, 0.012f), lace, new Vector3(0f, yaw, 0f));
+            kit.Deco(PrimitiveType.Cube, p + r * new Vector3(0f, 0.48f, 0.064f), new Vector3(0.84f, 0.16f, 0.012f), lace, new Vector3(0f, yaw, 0f));
             if (flowers)
             {
                 kit.Deco(PrimitiveType.Cube, p + r * new Vector3(0f, -0.88f, 0.2f), new Vector3(1.1f, 0.25f, 0.3f), PatchworkAssets.Planks(new Color(0.55f, 0.38f, 0.25f)), new Vector3(0f, yaw, 0f));
@@ -406,6 +439,16 @@ namespace Patchwork
             }
         }
 
+        // An invisible box to bump into, for props built from several decorative pieces.
+        public static void Solid(LevelKit kit, Vector3 center, Vector3 size, float yaw)
+        {
+            var go = new GameObject("Solid");
+            go.transform.SetParent(kit.Root, false);
+            go.transform.position = center;
+            go.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            go.AddComponent<BoxCollider>().size = size;
+        }
+
         public static void Bench(LevelKit kit, Vector3 feet, float yaw)
         {
             var r = Rot(yaw);
@@ -415,6 +458,9 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cube, feet + r * new Vector3(0f, 0.95f, -0.28f), new Vector3(2.2f, 0.5f, 0.08f), wood, new Vector3(-10f, yaw, 0f));
             for (int s = -1; s <= 1; s += 2)
                 kit.Deco(PrimitiveType.Cube, feet + r * new Vector3(s * 0.95f, 0.35f, 0f), new Vector3(0.08f, 0.7f, 0.6f), iron, new Vector3(0f, yaw, 0f));
+            // Solid: you can hop up and sit on the seat, but not walk through it.
+            Solid(kit, feet + r * new Vector3(0f, 0.28f, 0f), new Vector3(2.2f, 0.56f, 0.62f), yaw);
+            Solid(kit, feet + r * new Vector3(0f, 0.95f, -0.28f), new Vector3(2.2f, 0.8f, 0.12f), yaw);
         }
 
         public static void FlowerBed(LevelKit kit, Vector3 center, Vector2 size, int seed)
@@ -446,7 +492,10 @@ namespace Patchwork
             var r = Rot(yaw);
             var white = PatchworkAssets.Wood(new Color(0.97f, 0.95f, 0.9f));
             for (int s = -1; s <= 1; s += 2)
+            {
                 kit.Deco(PrimitiveType.Cylinder, feet + r * new Vector3(s * width * 0.5f, 1.4f, 0f), new Vector3(0.18f, 1.4f, 0.18f), white);
+                Solid(kit, feet + r * new Vector3(s * width * 0.5f, 1.4f, 0f), new Vector3(0.25f, 2.8f, 0.25f), yaw);
+            }
             Color[] cols = { LevelKit.Palette.Rose, new Color(1f, 0.85f, 0.88f), LevelKit.Palette.Butter, new Color(0.97f, 0.97f, 0.97f), LevelKit.Palette.Lavender };
             for (int i = 0; i <= 18; i++)
             {

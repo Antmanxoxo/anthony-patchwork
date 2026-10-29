@@ -129,6 +129,13 @@ Stuff I need to remember about how Patchwork is put together.
 - `PatchworkAssets.CraftWater(alpha, tiling)` is the crafted water material (scroll it with
   PaintLake). Its shader variant is kept for builds by `Resources/PW_Keep_SeeThroughBumpy.mat`.
 - `kit.AddDrumPad` is a bounce pad dressed as a toy drum. `XyloKey` plays a note when stepped on.
+- Other toys: `DominoRun` (pivots tip in turn, `Finished` callback), `BubbleBlower` +
+  `BubbleBounce` (pool of bubble volumes), `WindChime`, `SqueakToy`, `BellRinger`.
+- Decorations don't collide. `Level1Builder.Solid` / `TownKit.Solid` add an invisible box;
+  `Bumper.Add` gives a moving prop a collider and pushes Patch away from it.
+- Save version is 2 (`GameState.Version`). Older saves drop the Level 1 completion and its
+  Heartstrings when they load.
+- `PatchworkAssets.Plain` uses the gentle `PatchworkTextures.Paint` brushstroke texture.
 - Town pieces are in `TownKit` (houses, lamps, clotheslines, lantern gates, bridges, stairs...).
   `MakeHouse` returns where its chimney top is, for a chimney-smoke updraft.
 - Fountain rule: height = shelf top + 2, shelf edge 1.2-2.2 m from the jet. Updraft height = rise.

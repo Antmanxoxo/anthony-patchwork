@@ -21,6 +21,8 @@ namespace Patchwork
         // Crafted water: rippling blue satin with stitched white wave lines and sequin sparkles
         // (full colour; tint it white).
         public static Pair CraftWater;
+        // Soft brushed paint for the smooth painted toys (very gentle, so they still look glossy).
+        public static Pair Paint;
         // Full-colour textures (not tinted by the material colour).
         public static Texture2D PaintMarble;   // swirled paint and ink for the lake under Level 1
         public static Texture2D GlobeMap;      // the quilted world map on the Skiff's globe
@@ -54,6 +56,7 @@ namespace Patchwork
             Shingle = Build(256, ShingleHeight, 0.5f, 0.5f, 4.5f, new Color(0.7f, 0.72f, 0.66f), 0.8f, 0.12f, 3);
             Planks = Build(256, PlankHeight, 0.6f, 0.4f, 3.5f, new Color(0.62f, 0.5f, 0.42f), 0.6f, 0.12f, 3);
             Damask = Build(256, DamaskHeight, 0.72f, 0.28f, 2.2f, new Color(0.86f, 0.82f, 0.9f), 0.3f, 0.06f, 4);
+            Paint = Build(256, PaintHeight, 0.92f, 0.08f, 1.1f, new Color(1f, 1f, 1f), 0.15f, 0.05f, 3);
             CraftWater = BuildCraftWater(256);
             PaintMarble = BuildMarble(256);
             GlobeMap = BuildGlobe(256, 128);
@@ -335,6 +338,16 @@ namespace Patchwork
         }
 
         // Corrugated cardboard: faint ridges, paper fibres and the odd crease.
+        // Rows of brush strokes that wander a little, with fine bristle lines along them.
+        static float PaintHeight(float u, float v, int x, int y)
+        {
+            float row = v * 12f + (ValueNoise(u, v, 4, 31) - 0.5f) * 1.6f;
+            float stroke = Mathf.Sin(row * Mathf.PI * 2f) * 0.5f + 0.5f;
+            float load = ValueNoise(u, v, 6, 37);
+            float bristle = ValueNoise(u * 0.25f, v, 96, 41);
+            return 0.45f + stroke * load * 0.25f + bristle * 0.18f;
+        }
+
         static float CardboardHeight(float u, float v, int x, int y)
         {
             float ridges = Mathf.Sin(u * 16f * Mathf.PI * 2f) * 0.5f + 0.5f;

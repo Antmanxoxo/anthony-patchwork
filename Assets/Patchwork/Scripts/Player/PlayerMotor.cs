@@ -37,6 +37,9 @@ namespace Patchwork
         // from the surface. Both reset every frame.
         [System.NonSerialized] public float SpeedBoost;
         [System.NonSerialized] public bool Swimming;
+        [System.NonSerialized] public float SwimSurface;
+        // Whether Patch was swimming last frame (Swimming itself resets every frame), for the camera.
+        public bool WasSwimming { get; private set; }
 
         // ---- Timed overrides ----
         float dashTimer;
@@ -246,6 +249,7 @@ namespace Patchwork
 
         void ClearFrameModifiers()
         {
+            WasSwimming = Swimming;
             FallSpeedCap = -1f;
             HasLift = false;
             SpeedBoost = 0f;

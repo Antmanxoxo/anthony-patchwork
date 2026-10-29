@@ -31,7 +31,7 @@ namespace Patchwork
         public const string SceneName = "Level1";
         // Same ids as before so old saves keep their buttons.
         public static readonly string[] CollectibleIds = { "L1_fountain", "L1_swing", "L1_updraft" };
-        public static readonly string[] HeartstringIds = { "L1_hs_knots", "L1_hs_race", "L1_hs_tangle", "L1_hs_belfry", "L1_hs_cloud" };
+        public static readonly string[] HeartstringIds = { "L1_hs_knots", "L1_hs_race", "L1_hs_tangle", "L1_hs_belfry", "L1_hs_cloud", "L1_hs_bubbles" };
         public const int HeartstringsNeeded = 0;   // all optional in Toybox Town; the band is the goal
 
         static readonly Vector3 SpawnPoint = new Vector3(0f, 0f, -14f);
@@ -259,6 +259,7 @@ namespace Patchwork
                 float a = (i + 0.5f) / 8f * Mathf.PI * 2f;
                 Vector3 p = b + new Vector3(Mathf.Cos(a) * 5.1f, 0.9f, Mathf.Sin(a) * 5.1f);
                 kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * 1.6f, new Vector3(0.24f, 1.6f, 0.24f), white);
+                Solid(kit, p + Vector3.up * 1.6f, new Vector3(0.3f, 3.2f, 0.3f));
                 tops[i] = p + Vector3.up * 3.2f;
             }
             for (int i = 0; i < 8; i++)
@@ -356,7 +357,15 @@ namespace Patchwork
             for (int sx = -1; sx <= 1; sx += 2)
                 for (int sz = -1; sz <= 1; sz += 2)
                     kit.Block(t + new Vector3(sx * 3.4f, 25.7f, sz * 3.4f), new Vector3(1.2f, 4.6f, 1.2f), bc, "BelfryColumn", brick);
-            kit.Deco(PrimitiveType.Sphere, t + new Vector3(0f, 25.6f, 0f), new Vector3(2.4f, 2.8f, 2.4f), PatchworkAssets.Plain(new Color(0.9f, 0.7f, 0.35f), 0.85f));
+            // The bell hangs from a pivot so it can swing; glide into the belfry to ring it.
+            var bellPivot = kit.Group("BellPivot", t + new Vector3(0f, 27.6f, 0f));
+            var brass = PatchworkAssets.Plain(new Color(0.9f, 0.7f, 0.35f), 0.85f);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -1.6f, 0f), new Vector3(2.4f, 2.8f, 2.4f), brass, default(Vector3), bellPivot);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -2.9f, 0f), new Vector3(2.7f, 0.12f, 2.7f), brass, default(Vector3), bellPivot);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -3.1f, 0f), Vector3.one * 0.45f, PatchworkAssets.Plain(TownKit.Iron, 0.5f), default(Vector3), bellPivot);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.2f, 0f), new Vector3(0.25f, 0.25f, 0.25f), PatchworkAssets.Plain(TownKit.Iron, 0.5f), default(Vector3), bellPivot);
+            var ringer = kit.Volume<BellRinger>(t + new Vector3(0f, 25.8f, 0f), new Vector3(8f, 5.6f, 8f), "BellRinger");
+            ringer.Bell = bellPivot;
             kit.Block(t + new Vector3(0f, 28.3f, 0f), new Vector3(8.8f, 0.6f, 8.8f), bc, "BelfryRoof", stone);
             var slate = PatchworkAssets.Shingle(new Color(0.32f, 0.4f, 0.55f));
             for (int i = 0; i < 4; i++)
@@ -374,9 +383,18 @@ namespace Patchwork
                 Vector3 face = t + Vector3.up * 19f + r * new Vector3(0f, 0f, -4.08f);
                 kit.Deco(PrimitiveType.Cylinder, face, new Vector3(4.6f, 0.08f, 4.6f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.7f), new Vector3(90f, i * 90f, 0f));
                 kit.Deco(PrimitiveType.Cylinder, face + r * new Vector3(0f, 0f, -0.06f), new Vector3(4f, 0.06f, 4f), PatchworkAssets.Felt(new Color(0.98f, 0.95f, 0.85f)), new Vector3(90f, i * 90f, 0f));
-                var hand1 = kit.Deco(PrimitiveType.Cube, face + r * new Vector3(0f, 0.6f, -0.15f), new Vector3(0.18f, 1.3f, 0.05f), PatchworkAssets.Plain(TownKit.Iron, 0.5f), new Vector3(0f, i * 90f, 0f));
-                var hand2 = kit.Deco(PrimitiveType.Cube, face + r * new Vector3(0.45f, 0f, -0.16f), new Vector3(0.9f, 0.15f, 0.05f), PatchworkAssets.Plain(TownKit.Iron, 0.5f), new Vector3(0f, i * 90f, 0f));
-                hand1.name = "ClockHand"; hand2.name = "ClockHand";
+                // Working hands: the minute hand goes round once a minute, the hour hand slowly.
+                for (int hnd = 0; hnd < 2; hnd++)
+                {
+                    var pivot = kit.Group("ClockHand", face + r * new Vector3(0f, 0f, -0.15f - hnd * 0.02f));
+                    pivot.rotation = r * Quaternion.Euler(0f, 0f, i * 37f + hnd * 120f);
+                    float len = hnd == 0 ? 1.4f : 0.9f;
+                    kit.Deco(PrimitiveType.Cube, new Vector3(0f, len * 0.42f, 0f), new Vector3(hnd == 0 ? 0.12f : 0.2f, len, 0.05f), PatchworkAssets.Plain(TownKit.Iron, 0.5f), default(Vector3), pivot);
+                    var turn = pivot.gameObject.AddComponent<Spinner>();
+                    turn.Axis = Vector3.back;
+                    turn.Speed = hnd == 0 ? 6f : 0.5f;
+                }
+                kit.Deco(PrimitiveType.Cylinder, face + r * new Vector3(0f, 0f, -0.2f), new Vector3(0.25f, 0.04f, 0.25f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.7f), new Vector3(90f, i * 90f, 0f));
                 for (int n = 0; n < 12; n++)
                 {
                     float a = n / 12f * Mathf.PI * 2f;
@@ -869,7 +887,7 @@ namespace Patchwork
             npc.Tag = tag;
             if (talk)
             {
-                var zone = kit.Volume<TalkZone>(feet + Vector3.up * 1.2f, new Vector3(2.8f, 3f, 2.8f), "Talk_" + name);
+                var zone = kit.Volume<TalkZone>(feet + Vector3.up * 1.2f, new Vector3(3.8f, 3.2f, 3.8f), "Talk_" + name);
                 zone.Npc = npc;
                 zone.transform.SetParent(npc.transform, true);
             }

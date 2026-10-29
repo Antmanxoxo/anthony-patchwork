@@ -1,5 +1,31 @@
 # Development Log
 
+## Toys to play with, solid props and fixes
+- Fixes:
+  - The Mayor said the same thing whether or not you had the band pieces, and the opening
+    cutscene never played. An old save from before the town rebuild was marking Toybox Town
+    as finished. Saves now upgrade themselves and drop that, and Reset Save Data clears
+    everything.
+  - Talking was fiddly. Toys are easier to talk to from further away, and when two are close
+    you talk to the nearest one.
+  - You could walk through benches, the train, wagons, soldiers, flower pots, the signpost,
+    chairs, the picnic, the scarecrow, vats and posts. They're solid now, and the moving toys
+    push you away.
+  - The camera dipped under the water while swimming. It now stays above the surface.
+  - The intro cutscene can be skipped by holding Confirm.
+- New things to play with:
+  - A domino run up the east side of town. Knock over the first domino and they all fall,
+    ring a bell and drop threads.
+  - A giant bubble wand that keeps blowing bubbles. Bounce from bubble to bubble up to a sponge
+    with a new Heartstring on it ("Bubble Bath").
+  - Wind chimes on the bandstand, the rooftops and the spire that play notes as you brush
+    past.
+  - Rubber ducks squeak and squish when you touch them.
+  - The clock tower bell swings and rings when you reach the belfry, and the clock hands turn.
+- More detail:
+  - Houses have lace curtains, gutters, drainpipes and sometimes ivy.
+  - Smooth painted toys have a soft brushstroke texture.
+
 ## Deep water and ink holes
 - The canal and the ravine stream are now deep water (5 m and 3 m).
   - The surface is crafted: glossy, see-through blue satin with stitched white wave lines,

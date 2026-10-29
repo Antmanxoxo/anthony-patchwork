@@ -33,6 +33,8 @@ namespace Patchwork
 
         // Set by the game every frame before Tick.
         [System.NonSerialized] public bool TargetGrounded = true;
+        // The camera never dips below this height (used to keep it above water while swimming).
+        [System.NonSerialized] public float MinY = float.NegativeInfinity;
         [System.NonSerialized] public Vector3 TargetVelocity;
         [System.NonSerialized] public bool Swinging;
         [System.NonSerialized] public Vector3 SwingAnchor;
@@ -176,6 +178,12 @@ namespace Patchwork
             else currentDistance = Mathf.Lerp(currentDistance, wanted, 1f - Mathf.Exp(-4f * dt));
 
             Vector3 pos = focus + back * currentDistance;
+            if (pos.y < MinY)
+            {
+                pos.y = MinY;
+                Vector3 look = focus - pos;
+                if (look.sqrMagnitude > 0.01f) rot = Quaternion.LookRotation(look.normalized, Vector3.up);
+            }
             ShowcaseBlend = Mathf.MoveTowards(ShowcaseBlend, Showcase ? 1f : 0f, dt * ShowcaseBlendSpeed);
             if (ShowcaseBlend > 0f)
             {

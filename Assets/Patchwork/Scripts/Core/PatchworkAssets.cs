@@ -303,7 +303,10 @@ namespace Patchwork
 
         public static Material Plain(Color color, float smoothness)
         {
-            return Get("plain" + smoothness.ToString("0.00"), color, null, smoothness, Color.black);
+            EnsureInit();
+            var t = PatchworkTextures.Paint;
+            if (t == null || t.Albedo == null) return Get("plain" + smoothness.ToString("0.00"), color, null, smoothness, Color.black);
+            return Get("plain" + smoothness.ToString("0.00"), color, t.Albedo, smoothness, Color.black, t.Normal, 0.35f);
         }
 
         static Material Get(string kind, Color color, Texture2D tex, float smoothness, Color emission,

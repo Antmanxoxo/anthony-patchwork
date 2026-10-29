@@ -22,7 +22,8 @@ namespace Patchwork
             if (player.Forms.Current == FormType.Water)
             {
                 // Float with the surface at about the middle of the body; let jumps leave the water.
-                float centreTarget = SurfaceY - 0.1f;
+                // Ride high in the water so Patch's face (and the camera) stay above the surface.
+                float centreTarget = SurfaceY + 0.12f;
                 float c = m.Center.y;
                 if (m.Velocity.y < 3f)
                 {
@@ -31,6 +32,7 @@ namespace Patchwork
                     m.LiftAcceleration = 40f;
                 }
                 m.Swimming = true;
+                m.SwimSurface = SurfaceY;
                 m.SpeedBoost = SwimBoost;
                 // A little wake while moving.
                 Vector3 flat = new Vector3(m.Velocity.x, 0f, m.Velocity.z);

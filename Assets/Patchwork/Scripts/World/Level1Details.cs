@@ -220,6 +220,7 @@ namespace Patchwork
         static void FlowerPot(LevelKit kit, Vector3 feet, Color bloom)
         {
             var g = kit.Group("FlowerPot", feet);
+            Solid(kit, feet + Vector3.up * 0.5f, new Vector3(0.7f, 1f, 0.7f));
             var clay = PatchworkAssets.Felt(new Color(0.82f, 0.48f, 0.34f));
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.3f, 0f), new Vector3(0.6f, 0.3f, 0.6f), clay, default(Vector3), g);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.6f, 0f), new Vector3(0.7f, 0.05f, 0.7f), clay, default(Vector3), g);
@@ -516,6 +517,7 @@ namespace Patchwork
             Vector3[] jacks = { new Vector3(-70f, 0f, -63f), new Vector3(74f, 0f, 66f), new Vector3(-26f, 0f, 76f) };
             foreach (var j in jacks)
             {
+                Solid(kit, j + Vector3.up * 0.9f, new Vector3(1.8f, 1.8f, 1.8f));
                 var g = kit.Group("Jack", j + Vector3.up * 0.9f);
                 g.rotation = Quaternion.Euler(20f, j.x * 3f, 15f);
                 var metal = PatchworkAssets.Plain(new Color(0.85f, 0.4f, 0.4f), 0.85f);
@@ -575,6 +577,7 @@ namespace Patchwork
                         for (int lx = -1; lx <= 1; lx += 2)
                             for (int lz = -1; lz <= 1; lz += 2)
                                 whiteBatch.Box(p + new Vector3(lx * 0.32f, 0.22f, lz * 0.3f), new Vector3(0.06f, 0.44f, 0.06f), Quaternion.identity);
+                        if (c == 1) Solid(kit, p + Vector3.up * 0.25f, new Vector3(3.1f, 0.5f, 0.75f));
                         // A satin bow on every chair back.
                         kit.Deco(PrimitiveType.Sphere, p + new Vector3(0f, 1.05f, -0.36f), new Vector3(0.3f, 0.16f, 0.06f), PatchworkAssets.Felt(new Color(1f, 0.72f, 0.8f)));
                     }
@@ -663,6 +666,7 @@ namespace Patchwork
         {
             var post = PatchworkAssets.Wood(new Color(0.55f, 0.38f, 0.26f));
             kit.Deco(PrimitiveType.Cylinder, feet + Vector3.up * 1.4f, new Vector3(0.16f, 1.4f, 0.16f), post);
+            Solid(kit, feet + Vector3.up * 1.4f, new Vector3(0.3f, 2.8f, 0.3f));
             kit.Deco(PrimitiveType.Sphere, feet + Vector3.up * 2.85f, Vector3.one * 0.22f, PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.7f));
             var board = PatchworkAssets.Planks(new Color(0.9f, 0.82f, 0.62f));
             float[] yaws = { -90f, 90f, 180f };
@@ -761,6 +765,10 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.72f, 0.7f) * scale, new Vector3(0.3f, 0.12f, 0.3f) * scale, orange, default(Vector3), d);
             for (int s = -1; s <= 1; s += 2)
                 kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.2f, 0.9f, 0.55f) * scale, Vector3.one * 0.1f * scale, PatchworkAssets.Plain(UIKit.Ink, 0.7f), default(Vector3), d);
+            var squeak = kit.Volume<SqueakToy>(d.position + Vector3.up * 0.5f * scale, Vector3.one * (1.1f * scale + 0.6f), "Squeak");
+            squeak.transform.SetParent(d, true);
+            squeak.Body = d.GetChild(0);
+            squeak.Pitch = 1.6f / Mathf.Max(0.5f, scale);
             var m = d.gameObject.AddComponent<PathMover>();
             m.BobHeight = 0.05f;
             m.BobSpeed = 2.2f;
@@ -868,6 +876,7 @@ namespace Patchwork
                 }
             }
             var crow = kit.Group("Scarecrow", new Vector3(-71.6f, 0f, -8.6f));
+            Solid(kit, new Vector3(-71.6f, 1.3f, -8.6f), new Vector3(0.4f, 2.6f, 0.4f));
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.2f, 0f), new Vector3(0.1f, 1.2f, 0.1f), PatchworkAssets.Wood(TownKit.DarkWood), default(Vector3), crow);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.8f, 0f), new Vector3(0.08f, 0.8f, 0.08f), PatchworkAssets.Wood(TownKit.DarkWood), new Vector3(0f, 0f, 90f), crow);
             kit.Deco(PrimitiveType.Capsule, new Vector3(0f, 1.6f, 0f), new Vector3(0.6f, 0.5f, 0.4f), PatchworkAssets.Fabric(new Color(0.45f, 0.55f, 0.75f)), default(Vector3), crow);
@@ -943,6 +952,8 @@ namespace Patchwork
                 kit.Deco(PrimitiveType.Cube, p + new Vector3(0.3f, 0.08f, 0.2f), new Vector3(0.3f, 0.08f, 0.3f), PatchworkAssets.Felt(new Color(0.98f, 0.9f, 0.7f)), new Vector3(0f, 45f, 0f));
             }
             var basket = kit.Group("Basket", c + new Vector3(-2f, 0f, 1.2f));
+            Solid(kit, c + new Vector3(-2f, 0.4f, 1.2f), new Vector3(1.2f, 0.8f, 0.8f));
+            Solid(kit, c + new Vector3(0f, 0.45f, 0f), new Vector3(0.9f, 0.9f, 0.9f));
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.35f, 0f), new Vector3(1.2f, 0.7f, 0.8f), PatchworkAssets.Wicker(new Color(0.85f, 0.65f, 0.4f)), default(Vector3), basket);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.75f, 0f), new Vector3(1f, 0.04f, 0.5f), PatchworkAssets.Wicker(new Color(0.85f, 0.65f, 0.4f)), new Vector3(90f, 0f, 0f), basket);
             // A pond with stones round it, a little jetty and two ducklings.
@@ -1026,19 +1037,24 @@ namespace Patchwork
             var engine = kit.Group("Engine", trackPts[0]);
             BuildEngine(kit, engine);
             engine.gameObject.AddComponent<PathMover>().Setup(trackPts, 3f, 0f);
+            Bumper.Add(engine, new Vector3(1.6f, 2.2f, 3.6f), new Vector3(0f, 1.25f, 0.1f));
             Color[] wagonCols = { new Color(0.35f, 0.55f, 0.85f), new Color(0.95f, 0.75f, 0.3f), new Color(0.45f, 0.7f, 0.45f) };
             for (int i = 0; i < 3; i++)
             {
                 var w = kit.Group("Wagon", trackPts[0]);
                 BuildWagon(kit, w, wagonCols[i], i);
                 w.gameObject.AddComponent<PathMover>().Setup(trackPts, 3f, -3.3f - i * 2.9f);
+                Bumper.Add(w, new Vector3(1.5f, 1.1f, 2.4f), new Vector3(0f, 0.75f, 0f));
             }
             // A station with a roof on posts, a bench, a clock and a stationmaster.
             Vector3 st = new Vector3(70f, 0f, -51.2f);
             var planks = PatchworkAssets.Planks(new Color(0.7f, 0.52f, 0.38f));
             kit.Block(st + new Vector3(0f, 0.2f, 0f), new Vector3(10f, 0.4f, 2.4f), new Color(0.7f, 0.52f, 0.38f), "Platform", planks);
             for (int i = -2; i <= 2; i++)
+            {
                 kit.Deco(PrimitiveType.Cylinder, st + new Vector3(i * 2.3f, 1.8f, 0.9f), new Vector3(0.14f, 1.4f, 0.14f), PatchworkAssets.Plain(new Color(0.25f, 0.4f, 0.3f), 0.5f));
+                Solid(kit, st + new Vector3(i * 2.3f, 1.8f, 0.9f), new Vector3(0.25f, 2.8f, 0.25f));
+            }
             TownKit.GableRoof(kit, st + new Vector3(0f, 3.2f, 0.4f), 11f, 3.4f, 1f, 0f, PatchworkAssets.Shingle(new Color(0.3f, 0.45f, 0.35f)), planks);
             TownKit.Bench(kit, st + new Vector3(-2.5f, 0.4f, 0.6f), 180f);
             kit.Deco(PrimitiveType.Cylinder, st + new Vector3(2.3f, 2.6f, -0.4f), new Vector3(0.7f, 0.06f, 0.7f), PatchworkAssets.Felt(LevelKit.Palette.Cream), new Vector3(90f, 0f, 0f));
@@ -1160,6 +1176,7 @@ namespace Patchwork
             {
                 Vector3 p = o + new Vector3(-2.6f + i * 1.4f, 0f, 5.2f - (i % 2) * 0.3f);
                 kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * 0.4f, new Vector3(1.1f, 0.4f, 1.1f), copper);
+                Solid(kit, p + Vector3.up * 0.4f, new Vector3(1f, 0.8f, 1f));
                 kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * 0.81f, new Vector3(0.95f, 0.01f, 0.95f), PatchworkAssets.Water(dyes[i + 1]));
             }
         }
@@ -1240,9 +1257,166 @@ namespace Patchwork
             for (int i = 0; i < 4; i++) MarchingSoldier(kit, drill, -i * 2.2f, i % 2 == 0 ? new Color(0.8f, 0.22f, 0.25f) : new Color(0.25f, 0.35f, 0.7f));
             Carousel(kit, new Vector3(-22f, 0f, 63f));
 
+            DominoRun(kit);
+            BubbleWand(kit, new Vector3(4f, 0f, 80f));
+            // Wind chimes: on the bandstand, along the rooftop glide and on the spire.
+            WindChimes(kit, Bandstand + new Vector3(4.6f, 3.9f, 0f), false);
+            WindChimes(kit, Bandstand + new Vector3(-4.6f, 3.9f, 0f), false);
+            WindChimes(kit, new Vector3(-3f, 11.3f, -46f), true);
+            WindChimes(kit, new Vector3(3f, 10.3f, -58f), true);
+            WindChimes(kit, new Vector3(2.4f, 14.6f, -68.8f), false);
+            WindChimes(kit, new Vector3(52f, 9.4f, -26f), true);
+
             var pins = kit.Info.MapPins;
             pins.Add(new MapPin("Xylophone Bridge", new Vector3((CanalWest + CanalEast) * 0.5f, 0f, 60f)));
             pins.Add(new MapPin("Carousel", new Vector3(-22f, 0f, 63f)));
+            pins.Add(new MapPin("Domino Run", new Vector3(24f, 0f, 44f)));
+            pins.Add(new MapPin("Bubble Wand", new Vector3(4f, 0f, 80f)));
+        }
+
+        // Giant dominoes in a wiggly line up the east side of town. Walk into the first one to
+        // knock them all down; the last one rings a bell and some threads appear.
+        static void DominoRun(LevelKit kit)
+        {
+            const int count = 14;
+            var pivots = new Transform[count];
+            var white = PatchworkAssets.Plain(new Color(0.97f, 0.95f, 0.9f), 0.7f);
+            var pip = PatchworkAssets.Plain(new Color(0.12f, 0.1f, 0.14f), 0.6f);
+            Vector3 Pt(int i) => new Vector3(24f + Mathf.Sin(i * 0.45f) * 2.4f, 0f, 32f + i * 1.6f);
+            for (int i = 0; i < count; i++)
+            {
+                Vector3 p = Pt(i), next = Pt(i + 1);
+                var dir = (next - p).normalized;
+                var pivot = kit.Group("Domino", p);
+                pivot.rotation = Quaternion.LookRotation(dir, Vector3.up);
+                var body = kit.Block(Vector3.zero, new Vector3(1.3f, 2.6f, 0.4f), Color.white, "Domino", white);
+                body.SetParent(pivot, false);
+                body.localPosition = new Vector3(0f, 1.3f, -0.2f);
+                body.localRotation = Quaternion.identity;
+                body.localScale = new Vector3(1.3f, 2.6f, 0.4f);
+                // A line across the middle and pips on the face you walk up to.
+                var line = kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.3f, -0.42f), new Vector3(1.1f, 0.06f, 0.04f), pip, default(Vector3), pivot);
+                line.name = "Line";
+                int top = 1 + i % 6, bottom = 1 + (i * 2 + 3) % 6;
+                Pips(kit, pivot, top, 1.95f, pip);
+                Pips(kit, pivot, bottom, 0.65f, pip);
+                pivots[i] = pivot;
+                ClearGrass(p, 0.9f);
+            }
+            // The bell at the end of the line.
+            Vector3 end = Pt(count) + new Vector3(0f, 0f, 0.8f);
+            kit.Deco(PrimitiveType.Cylinder, end + Vector3.up * 1.3f, new Vector3(0.18f, 1.3f, 0.18f), PatchworkAssets.Wood(TownKit.DarkWood));
+            kit.Deco(PrimitiveType.Cube, end + Vector3.up * 2.6f, new Vector3(1.4f, 0.14f, 0.14f), PatchworkAssets.Wood(TownKit.DarkWood));
+            var bell = kit.Group("DominoBell", end + Vector3.up * 2.55f);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -0.4f, 0f), new Vector3(0.7f, 0.8f, 0.7f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.85f), default(Vector3), bell);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.78f, 0f), new Vector3(0.8f, 0.04f, 0.8f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.85f), default(Vector3), bell);
+            Solid(kit, end + Vector3.up * 1.3f, new Vector3(0.3f, 2.6f, 0.3f));
+            var reward = new List<ThreadSpool>();
+            for (int i = 0; i < 6; i++)
+            {
+                var th = kit.Thread(Pt(i * 2) + Vector3.up * 3.6f, LevelKit.Palette.Lavender);
+                th.gameObject.SetActive(false);
+                reward.Add(th);
+            }
+            Vector3 start = Pt(0) - (Pt(1) - Pt(0)).normalized * 0.9f;
+            var run = kit.Volume<DominoRun>(start + Vector3.up * 1.2f, new Vector3(2f, 2.4f, 1.6f), "DominoStart");
+            run.Setup(pivots, bell);
+            run.Finished = () =>
+            {
+                foreach (var r in reward) if (r != null) r.gameObject.SetActive(true);
+                var game = PatchworkGame.Instance;
+                if (game != null) game.ShowToast("Ding! Threads tumbled out of the dominoes.");
+            };
+            kit.Hint(start + Vector3.up * 1.5f + new Vector3(0f, 0f, -3f), new Vector3(4f, 3f, 3f), "Domino Run", "Give the first domino a nudge and see what happens!");
+        }
+
+        static void Pips(LevelKit kit, Transform pivot, int n, float y, Material m)
+        {
+            Vector2[] spots;
+            switch (n)
+            {
+                case 1: spots = new[] { Vector2.zero }; break;
+                case 2: spots = new[] { new Vector2(-0.3f, 0.3f), new Vector2(0.3f, -0.3f) }; break;
+                case 3: spots = new[] { new Vector2(-0.3f, 0.3f), Vector2.zero, new Vector2(0.3f, -0.3f) }; break;
+                case 4: spots = new[] { new Vector2(-0.3f, 0.3f), new Vector2(0.3f, 0.3f), new Vector2(-0.3f, -0.3f), new Vector2(0.3f, -0.3f) }; break;
+                case 5: spots = new[] { new Vector2(-0.3f, 0.3f), new Vector2(0.3f, 0.3f), Vector2.zero, new Vector2(-0.3f, -0.3f), new Vector2(0.3f, -0.3f) }; break;
+                default: spots = new[] { new Vector2(-0.3f, 0.35f), new Vector2(0.3f, 0.35f), new Vector2(-0.3f, 0f), new Vector2(0.3f, 0f), new Vector2(-0.3f, -0.35f), new Vector2(0.3f, -0.35f) }; break;
+            }
+            foreach (var s in spots)
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(s.x, y + s.y, -0.42f), new Vector3(0.16f, 0.02f, 0.16f), m, new Vector3(90f, 0f, 0f), pivot);
+        }
+
+        // A giant bubble wand on a stand by a big bottle of bubble mix. It keeps blowing bubbles
+        // that float up; hop from bubble to bubble to reach the sponge up high.
+        static void BubbleWand(LevelKit kit, Vector3 feet)
+        {
+            var wood = PatchworkAssets.Wood(new Color(0.85f, 0.55f, 0.65f));
+            kit.Deco(PrimitiveType.Cylinder, feet + new Vector3(0f, 1.2f, 0f), new Vector3(0.2f, 1.2f, 0.2f), wood);
+            kit.Deco(PrimitiveType.Cylinder, feet + new Vector3(0f, 0.08f, 0f), new Vector3(1.2f, 0.08f, 1.2f), wood);
+            Solid(kit, feet + Vector3.up * 1.2f, new Vector3(0.35f, 2.4f, 0.35f));
+            Vector3 ring = feet + new Vector3(0f, 2.9f, 0f);
+            var loop = PatchworkAssets.Plain(new Color(0.98f, 0.5f, 0.7f), 0.7f);
+            for (int i = 0; i < 20; i++)
+            {
+                float a = i / 20f * Mathf.PI * 2f;
+                kit.Deco(PrimitiveType.Sphere, ring + new Vector3(Mathf.Cos(a) * 0.7f, Mathf.Sin(a) * 0.7f, 0f), Vector3.one * 0.18f, loop);
+            }
+            kit.Deco(PrimitiveType.Cylinder, ring + new Vector3(0f, 0f, 0.02f), new Vector3(1.3f, 0.005f, 1.3f), PatchworkAssets.Bubble(new Color(0.85f, 0.9f, 1f, 0.3f)), new Vector3(90f, 0f, 0f));
+            // The bottle of bubble mix.
+            Vector3 bottle = feet + new Vector3(-1.8f, 0f, 0.6f);
+            kit.Deco(PrimitiveType.Cylinder, bottle + Vector3.up * 0.9f, new Vector3(1f, 0.9f, 1f), PatchworkAssets.Bubble(new Color(0.8f, 0.9f, 1f, 0.45f)));
+            kit.Deco(PrimitiveType.Cylinder, bottle + Vector3.up * 0.7f, new Vector3(0.9f, 0.68f, 0.9f), PatchworkAssets.Glow(new Color(1f, 0.6f, 0.8f), 0.25f));
+            kit.Deco(PrimitiveType.Cylinder, bottle + Vector3.up * 1.95f, new Vector3(0.6f, 0.15f, 0.6f), PatchworkAssets.Plain(new Color(0.4f, 0.75f, 0.95f), 0.6f));
+            Solid(kit, bottle + Vector3.up * 1f, new Vector3(1f, 2f, 1f));
+            ClearGrass(feet, 1.4f);
+            // The bubbles.
+            var blower = kit.Group("BubbleBlower", feet).gameObject.AddComponent<BubbleBlower>();
+            var pool = new Transform[9];
+            var film = PatchworkAssets.Bubble(new Color(0.8f, 0.9f, 1f, 0.32f));
+            var shine = PatchworkAssets.Glow(new Color(1f, 0.85f, 0.95f), 0.7f);
+            for (int i = 0; i < pool.Length; i++)
+            {
+                var b = kit.Volume<BubbleBounce>(ring, new Vector3(1.8f, 1.8f, 1.8f), "Bubble");
+                b.Owner = blower;
+                kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 1.7f, film, default(Vector3), b.transform).GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                kit.Deco(PrimitiveType.Sphere, new Vector3(-0.38f, 0.42f, -0.4f), new Vector3(0.3f, 0.18f, 0.1f), shine, new Vector3(0f, 0f, 35f), b.transform);
+                pool[i] = b.transform;
+            }
+            blower.Setup(ring, pool);
+            // The sponge up top, with a Heartstring on it.
+            Vector3 sponge = feet + new Vector3(2.8f, 12.4f, 2f);
+            kit.Block(sponge, new Vector3(3f, 1.1f, 2f), new Color(1f, 0.85f, 0.35f), "Sponge", PatchworkAssets.Felt(new Color(1f, 0.85f, 0.35f)));
+            for (int i = 0; i < 9; i++)
+                kit.Deco(PrimitiveType.Sphere, sponge + new Vector3(-1.2f + (i % 5) * 0.6f, (i % 2 == 0 ? 0.3f : -0.2f), -1.01f), new Vector3(0.22f, 0.18f, 0.04f), PatchworkAssets.Felt(new Color(0.85f, 0.65f, 0.2f)));
+            MakeHeartstring(kit, "L1_hs_bubbles", "Bubble Bath", sponge + new Vector3(0f, 1.8f, 0f), false);
+            kit.ThreadLine(feet + new Vector3(0.3f, 4.5f, 0.3f), feet + new Vector3(1.8f, 10.5f, 1.4f), 4);
+            kit.Hint(feet + new Vector3(0f, 1.5f, -2.5f), new Vector3(4f, 3f, 3f), "Bubble Wand", "Land on a bubble to bounce off it. Hop from bubble to bubble to reach the sponge!");
+        }
+
+        // A set of wind chimes on a little bracket. Brush through them to make them ring.
+        static void WindChimes(LevelKit kit, Vector3 hang, bool onPost)
+        {
+            var wood = PatchworkAssets.Wood(new Color(0.6f, 0.42f, 0.3f));
+            if (onPost) kit.Deco(PrimitiveType.Cylinder, hang + Vector3.down * 0.9f, new Vector3(0.1f, 0.9f, 0.1f), wood);
+            kit.Deco(PrimitiveType.Cylinder, hang + Vector3.up * 0.05f, new Vector3(0.7f, 0.05f, 0.7f), wood);
+            var tubes = new Transform[5];
+            var metal = PatchworkAssets.Plain(new Color(0.85f, 0.85f, 0.92f), 0.9f);
+            var gold = PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.85f);
+            for (int i = 0; i < 5; i++)
+            {
+                float a = i / 5f * Mathf.PI * 2f;
+                var pivot = kit.Group("ChimeTube", hang + new Vector3(Mathf.Cos(a) * 0.26f, 0f, Mathf.Sin(a) * 0.26f));
+                float len = 0.5f + i * 0.12f;
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -len * 0.5f - 0.1f, 0f), new Vector3(0.07f, len * 0.5f, 0.07f), i % 2 == 0 ? metal : gold, default(Vector3), pivot);
+                tubes[i] = pivot;
+            }
+            var sail = kit.Group("ChimeSail", hang);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, -1.25f, 0f), new Vector3(0.22f, 0.3f, 0.02f), PatchworkAssets.Felt(LevelKit.Palette.Rose), default(Vector3), sail);
+            var chime = kit.Volume<WindChime>(hang + Vector3.down * 0.6f, new Vector3(2.2f, 2.2f, 2.2f), "WindChime");
+            var all = new Transform[6];
+            for (int i = 0; i < 5; i++) all[i] = tubes[i];
+            all[5] = sail;
+            chime.Setup(all);
         }
 
         // A walk-on xylophone across the canal: run over it to play a scale. Play the whole scale
@@ -1354,6 +1528,7 @@ namespace Patchwork
             mover.BobSpeed = 9f;
             mover.Sway = 4f;
             mover.Setup(loop, 1.4f, start);
+            Bumper.Add(g, new Vector3(0.7f, 2.3f, 0.6f), new Vector3(0f, 1.15f, 0f));
         }
 
         // A merry-go-round turning slowly, its horses rising and falling.

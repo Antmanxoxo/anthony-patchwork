@@ -115,7 +115,16 @@ namespace Patchwork
             UIKit.Fill(new Rect(0f, 0f, UIKit.Width, bar), black);
             UIKit.Fill(new Rect(0f, UIKit.Height - bar, UIKit.Width, bar), black);
             if (Game.Mode == UIMode.Cutscene && Game.CutsceneSkippable)
-                UIKit.PromptLabel(UIKit.Width - 230f, bar - 78f, 40f, PromptAction.Confirm, "Skip", kb, new Color(1f, 0.92f, 0.7f), e * 0.85f);
+            {
+                float sx = UIKit.Width - 330f, sy = bar - 78f;
+                UIKit.PromptLabel(sx, sy, 40f, PromptAction.Confirm, "Hold to skip", kb, new Color(1f, 0.92f, 0.7f), e * 0.85f);
+                float fill = Mathf.Clamp01(Game.CutsceneSkipFill);
+                if (fill > 0f)
+                {
+                    UIKit.Fill(new Rect(sx, sy + 48f, 290f, 8f), new Color(1f, 1f, 1f, 0.2f * e), 4f);
+                    UIKit.Fill(new Rect(sx, sy + 48f, 290f * fill, 8f), new Color(1f, 0.85f, 0.5f, e), 4f);
+                }
+            }
             if (Game.Mode == UIMode.Cutscene && !string.IsNullOrEmpty(Game.CutsceneCaption))
             {
                 UIKit.Label(new Rect(0f, UIKit.Height - bar + 26f, UIKit.Width, 60f), Game.CutsceneCaption,

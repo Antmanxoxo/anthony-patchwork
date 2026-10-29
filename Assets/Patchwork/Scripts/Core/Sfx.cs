@@ -48,7 +48,12 @@ namespace Patchwork
         VoiceAww,
         // Toybox Town's toys
         Xylo,          // one xylophone key (C5; pitch it for the others)
-        Drum           // a toy drum's thump (the drum bounce pads)
+        Drum,          // a toy drum's thump (the drum bounce pads)
+        BigBell,       // the clock tower bell / the domino run's bell
+        Squeak,        // a rubber duck
+        Clack,         // a domino toppling
+        Pop,           // a bubble popping
+        Chime          // one wind-chime tube (pitch it)
     }
 
     // Continuous sounds that fade in while something requests them each frame.
@@ -404,6 +409,17 @@ namespace Patchwork
                 Sine(t, 440f + Mathf.Sin(t * 60f) * 60f) * Env(t, d, 0.02f) * 0.3f, 2500f);
             clips[SfxId.Xylo] = Make("xylo", 0.8f, (t, d) =>
                 (Sine(t, 523.25f) + Sine(t, 523.25f * 3.93f) * 0.35f * Mathf.Exp(-t * 20f)) * Mathf.Clamp01(t / 0.002f) * Mathf.Exp(-t * 6f) * 0.5f, 9000f);
+            clips[SfxId.BigBell] = Make("bigbell", 2.6f, (t, d) =>
+                (Sine(t, 392f) + Sine(t, 784f) * 0.5f * Mathf.Exp(-t * 2f) + Sine(t, 470.4f) * 0.35f + Sine(t, 196f) * 0.3f)
+                * Mathf.Clamp01(t / 0.004f) * Mathf.Exp(-t * 1.4f) * 0.3f, 6000f);
+            clips[SfxId.Squeak] = Make("squeak", 0.22f, (t, d) =>
+                Sine(t, Mathf.Lerp(900f, 1300f, Mathf.Sin(Mathf.PI * t / d))) * Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / d)) * 0.35f, 5000f);
+            clips[SfxId.Clack] = Make("clack", 0.12f, (t, d) =>
+                (Noise(t) * 0.5f + Sine(t, 1200f) * 0.5f) * Mathf.Exp(-t * 60f) * 0.5f, 6000f);
+            clips[SfxId.Pop] = Make("pop", 0.15f, (t, d) =>
+                (Sine(t, Mathf.Lerp(700f, 200f, t / d)) * 0.6f + Noise(t) * 0.3f) * Mathf.Exp(-t * 35f) * 0.6f, 7000f);
+            clips[SfxId.Chime] = Make("chime", 1.6f, (t, d) =>
+                (Sine(t, 1046.5f) + Sine(t, 1046.5f * 2.76f) * 0.3f * Mathf.Exp(-t * 4f)) * Mathf.Clamp01(t / 0.002f) * Mathf.Exp(-t * 2.4f) * 0.35f, 10000f);
             clips[SfxId.Drum] = Make("drum", 0.45f, (t, d) =>
                 (Sine(t, Mathf.Lerp(160f, 90f, Mathf.Clamp01(t / 0.12f))) * Mathf.Exp(-t * 9f) * 0.7f + Noise(t) * Mathf.Exp(-t * 40f) * 0.25f) * Mathf.Clamp01(t / 0.003f), 3000f);
         }
