@@ -84,7 +84,7 @@ namespace Patchwork
         {
             sb.AppendLine("== Blocked spots");
             Vector3 s = game.Level.Spawn;
-            if (Physics.CheckCapsule(s + Vector3.up * 0.5f, s + Vector3.up * 1.2f, 0.4f, ~0, QueryTriggerInteraction.Ignore))
+            if (Solid(Physics.OverlapCapsule(s + Vector3.up * 0.5f, s + Vector3.up * 1.2f, 0.4f, ~0, QueryTriggerInteraction.Ignore)))
                 sb.AppendLine("spawn " + V(s) + " is inside something solid");
             var things = new List<Component>();
             things.AddRange(Object.FindObjectsByType<ThreadSpool>(FindObjectsSortMode.None));
@@ -95,9 +95,17 @@ namespace Patchwork
             foreach (var t in things)
             {
                 Vector3 p = t.transform.position;
-                if (Physics.CheckSphere(p, 0.3f, ~0, QueryTriggerInteraction.Ignore))
+                if (Solid(Physics.OverlapSphere(p, 0.3f, ~0, QueryTriggerInteraction.Ignore)))
                     sb.AppendLine(t.GetType().Name + " " + PathOf(t.transform) + " at " + V(p) + " is inside something solid");
             }
+        }
+
+        // Anything hit that isn't Patch himself.
+        static bool Solid(Collider[] hits)
+        {
+            foreach (var h in hits)
+                if (h.GetComponentInParent<PatchworkPlayer>() == null) return true;
+            return false;
         }
 
         // Grounded props at least waist-ish high and wider than a post, with nothing solid in them.
@@ -111,6 +119,7 @@ namespace Patchwork
                 if (b.size.x > 14f || b.size.z > 14f) continue;      // ground, walls, merged batches
                 if (b.size.y < 0.9f || b.size.x < 0.5f || b.size.z < 0.5f) continue;
                 if (r.shadowCastingMode == UnityEngine.Rendering.ShadowCastingMode.Off && IsSeeThrough(r)) continue;
+                if (r.GetComponentInParent<Snarling>() != null || r.GetComponentInParent<SnarlKnot>() != null) continue;   // they push you away
                 RaycastHit hit;
                 if (!Physics.Raycast(new Vector3(b.center.x, b.min.y + 0.35f, b.center.z), Vector3.down, out hit, 1.2f, ~0, QueryTriggerInteraction.Ignore))
                     continue;                                        // not standing on anything
@@ -121,7 +130,7 @@ namespace Patchwork
                 var key = new Vector3Int(Mathf.RoundToInt(b.center.x / 2f), 0, Mathf.RoundToInt(b.center.z / 2f));
                 List<string> list;
                 if (!spots.TryGetValue(key, out list)) spots[key] = list = new List<string>();
-                list.Add(PathOf(r.transform) + " size " + V(b.size));
+                list.Add(PathOf(r.transform) + " at " + V(b.center) + " size " + V(b.size));
             }
             foreach (var kv in spots)
             {
@@ -156,22 +165,39 @@ namespace Patchwork
                     if (boxes[i].Value.sharedMaterial == boxes[j].Value.sharedMaterial) continue;
                     for (int k = 0; k < 3; k++)
                     {
-                        bool same = Mathf.Abs(a.max[k] - b.max[k]) < eps || Mathf.Abs(a.min[k] - b.min[k]) < eps;
-                        if (!same) continue;
+                        bool top = Mathf.Abs(a.max[k] - b.max[k]) < eps;
+                        bool bottom = Mathf.Abs(a.min[k] - b.min[k]) < eps && k != 1;   // undersides never show
+                        if (!top && !bottom) continue;
                         int u = (k + 1) % 3, v = (k + 2) % 3;
                         float ou = Mathf.Min(a.max[u], b.max[u]) - Mathf.Max(a.min[u], b.min[u]);
                         float ov = Mathf.Min(a.max[v], b.max[v]) - Mathf.Max(a.min[v], b.min[v]);
                         if (ou > 0.05f && ov > 0.05f)
                         {
+                            // Is the shared face out in the open? Look just in front of its middle.
+                            Vector3 mid = Vector3.zero, normal = Vector3.zero;
+                            mid[u] = (Mathf.Max(a.min[u], b.min[u]) + Mathf.Min(a.max[u], b.max[u])) * 0.5f;
+                            mid[v] = (Mathf.Max(a.min[v], b.min[v]) + Mathf.Min(a.max[v], b.max[v])) * 0.5f;
+                            mid[k] = top ? a.max[k] : a.min[k];
+                            normal[k] = top ? 1f : -1f;
+                            Vector3 front = mid + normal * 0.03f;
+                            if (Covered(front, boxes, i, j)) break;
                             if (n++ < 60)
                                 sb.AppendLine(PathOf(boxes[i].Value.transform) + " / " + PathOf(boxes[j].Value.transform)
-                                    + " at " + V(a.center) + " axis " + "XYZ"[k]);
+                                    + " at " + V(mid) + " facing " + V(normal));
                             break;
                         }
                     }
                 }
             }
             sb.AppendLine("count " + n);
+        }
+
+        static bool Covered(Vector3 p, List<KeyValuePair<Bounds, MeshRenderer>> boxes, int skipA, int skipB)
+        {
+            if (Physics.CheckSphere(p, 0.01f, ~0, QueryTriggerInteraction.Ignore)) return true;
+            for (int i = 0; i < boxes.Count; i++)
+                if (i != skipA && i != skipB && boxes[i].Key.Contains(p)) return true;
+            return false;
         }
 
         static bool AxisAligned(Quaternion q)

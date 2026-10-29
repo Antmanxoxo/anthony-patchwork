@@ -373,6 +373,7 @@ namespace Patchwork
                 float s = 7f - i * 1.7f;
                 var tier = kit.Deco(PrimitiveType.Cube, t + new Vector3(0f, 29.1f + i * 1.2f, 0f), new Vector3(s, 1.2f, s), slate);
                 tier.rotation = Quaternion.Euler(0f, i * 12f, 0f);
+                TownKit.Solid(kit, tier.position, new Vector3(s, 1.2f, s), i * 12f);
             }
             kit.Deco(PrimitiveType.Cylinder, t + new Vector3(0f, 35f, 0f), new Vector3(0.12f, 1.4f, 0.12f), PatchworkAssets.Plain(TownKit.Iron, 0.6f));
             kit.Deco(PrimitiveType.Sphere, t + new Vector3(0f, 36.4f, 0f), Vector3.one * 0.5f, PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f));
@@ -462,6 +463,7 @@ namespace Patchwork
                 kit.Deco(PrimitiveType.Cylinder, c + new Vector3(0f, 0.9f, -0.4f), new Vector3(0.6f, 1f, 0.6f), PatchworkAssets.Plain(new Color(0.3f, 0.3f, 0.34f), 0.7f), new Vector3(70f, 0f, 0f));
                 kit.Deco(PrimitiveType.Cylinder, c + new Vector3(-0.45f, 0.45f, 0f), new Vector3(0.9f, 0.08f, 0.9f), PatchworkAssets.Wood(new Color(0.85f, 0.25f, 0.28f)), new Vector3(0f, 0f, 90f));
                 kit.Deco(PrimitiveType.Cylinder, c + new Vector3(0.45f, 0.45f, 0f), new Vector3(0.9f, 0.08f, 0.9f), PatchworkAssets.Wood(new Color(0.85f, 0.25f, 0.28f)), new Vector3(0f, 0f, 90f));
+                TownKit.Solid(kit, c + new Vector3(0f, 0.7f, 0f), new Vector3(1.1f, 1.4f, 2f), 0f);
             }
             TownKit.Crate(kit, new Vector3(-12f, 0.06f, 40f), 1.4f, 5f);
             TownKit.Crate(kit, new Vector3(-12.6f, 1.46f, 40.2f), 1f, -20f);

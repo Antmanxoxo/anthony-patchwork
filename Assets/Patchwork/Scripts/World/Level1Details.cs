@@ -405,6 +405,15 @@ namespace Patchwork
             var wax = PatchworkAssets.Plain(col, 0.35f);
             var t = kit.Deco(PrimitiveType.Cylinder, baseP + d / len * body * 0.5f, new Vector3(1.4f, body * 0.5f, 1.4f), wax);
             t.rotation = rot;
+            // Solid along its whole length.
+            var solid = new GameObject("Solid");
+            solid.transform.SetParent(kit.Root, false);
+            solid.transform.position = baseP + d * 0.5f;
+            solid.transform.rotation = rot;
+            var cap = solid.AddComponent<CapsuleCollider>();
+            cap.direction = 1;
+            cap.radius = 0.72f;
+            cap.height = len + 1.4f;
             var paper = kit.Deco(PrimitiveType.Cylinder, baseP + d / len * body * 0.5f, new Vector3(1.44f, body * 0.32f, 1.44f), PatchworkAssets.Felt(Color.Lerp(col, Color.white, 0.55f)));
             paper.rotation = rot;
             for (int i = 0; i < 2; i++)
@@ -1236,7 +1245,10 @@ namespace Patchwork
             XylophoneBridge(kit, 60f);
             // Toy drums to bounce on: up the alphabet blocks, onto the bandstand roof, up to the rooftops.
             kit.AddDrumPad(new Vector3(-7.5f, 0.06f, 9.5f), 16f, new Color(0.85f, 0.25f, 0.3f));
-            kit.ThreadLine(new Vector3(-3.6f, 5.1f, 7f), new Vector3(3.6f, 5.1f, 7f), 3);
+            // An arc of threads over the bandstand's roof (clear of its tiers).
+            kit.ThreadLine(new Vector3(-3.6f, 6f, 7f), new Vector3(-3.6f, 6f, 7f), 1);
+            kit.ThreadLine(new Vector3(0f, 7f, 7f), new Vector3(0f, 7f, 7f), 1);
+            kit.ThreadLine(new Vector3(3.6f, 6f, 7f), new Vector3(3.6f, 6f, 7f), 1);
             kit.AddDrumPad(new Vector3(77f, 0f, 72f), 16f, new Color(0.3f, 0.5f, 0.85f));
             kit.AddDrumPad(new Vector3(83.6f, 5f, 78f), 16f, new Color(0.95f, 0.75f, 0.3f));
             kit.AddDrumPad(new Vector3(-77f, 0f, -68.5f), 21f, new Color(0.45f, 0.7f, 0.45f));
