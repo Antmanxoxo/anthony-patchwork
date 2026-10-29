@@ -185,7 +185,7 @@ namespace Patchwork
             float speed = new Vector3(v.x, 0f, v.z).magnitude;
 
             root.localScale = punch;
-            else root.localRotation = Quaternion.identity;
+            root.localRotation = Quaternion.identity;
 
             danceWeight = Mathf.MoveTowards(danceWeight, dancing ? 1f : 0f, dt * 3f);
             if (danceWeight > 0.001f) ApplyDance(DanceBeat, danceWeight);
