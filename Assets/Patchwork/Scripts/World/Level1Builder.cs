@@ -780,7 +780,7 @@ namespace Patchwork
             Vector3 spire = new Vector3(0f, 0f, -72f);
             var bc = new Color(0.62f, 0.4f, 0.36f);
             kit.Block(spire + Vector3.up * 8f, new Vector3(6f, 16f, 6f), bc, "Spire", PatchworkAssets.Brick(bc));
-            kit.Deco(PrimitiveType.Cube, spire + Vector3.up * 15.8f, new Vector3(6.6f, 0.4f, 6.6f), PatchworkAssets.Cobble(TownKit.Stone));
+            kit.Deco(PrimitiveType.Cube, spire + Vector3.up * 15.83f, new Vector3(6.6f, 0.4f, 6.6f), PatchworkAssets.Cobble(TownKit.Stone));
             Weathervane(kit, spire + new Vector3(-1.6f, 16f, -1.6f));
             // Wisp, the best piper in town, stranded and tangled in the Fray.
             var stranded = ToyNpc.Create(kit, spire + new Vector3(1.4f, 16f, 0.8f), 0f, ToyNpc.Kind.Bird, "Wisp", new Color(0.45f, 0.65f, 0.95f), new Color(0.95f, 0.5f, 0.55f));

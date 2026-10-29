@@ -624,6 +624,11 @@ namespace Patchwork
                     for (int i = 0; i < 3; i++)
                         Deco(PrimitiveType.Cylinder, basePos + Vector3.up * (0.12f + i * 0.33f), new Vector3(i == 1 ? 2.1f : 1.96f, 0.05f, i == 1 ? 2.1f : 1.96f), brass);
                     Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.88f, new Vector3(1.7f, 0.02f, 1.7f), surface);
+                    // Solid, so you hop up onto it instead of walking through the staves.
+                    var solid = new GameObject("BarrelSolid");
+                    solid.transform.SetParent(Root, false);
+                    solid.transform.position = basePos + Vector3.up * 0.45f;
+                    solid.AddComponent<BoxCollider>().size = new Vector3(1.5f, 0.9f, 1.5f);
                     var tap = Group("Tap", basePos + new Vector3(0f, 0.3f, -1.05f));
                     Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.12f, 0.12f, 0.12f), brass, new Vector3(90f, 0f, 0f), tap);
                     Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.08f, -0.1f), new Vector3(0.08f, 0.08f, 0.08f), brass, default(Vector3), tap);

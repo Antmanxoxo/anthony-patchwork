@@ -8,6 +8,8 @@
 - Pressing Play in the editor now writes a level check to the Logs folder, listing props you
   can walk through, flickering faces and anything stuck inside a wall.
 - README and project status updated for the Cardboard Skiff and Toybox Town.
+- Fixes from the level check: solid crayons, cannons, belfry roof and the Skiff's water barrel;
+  threads moved out of the bandstand roof; flickering bench legs, line poles and spire cap.
 
 ## Toys to play with, solid props and fixes
 - Fixes:

@@ -348,7 +348,7 @@ namespace Patchwork
             foreach (var f in new[] { footA, footB })
             {
                 kit.Block(f + Vector3.up * (height * 0.5f + 0.15f), new Vector3(0.35f, height + 0.3f, 0.35f), new Color(0.7f, 0.52f, 0.36f), "LinePole", wood);
-                kit.Deco(PrimitiveType.Cube, f + Vector3.up * (height + 0.2f), new Vector3(1.2f, 0.2f, 0.2f), wood, new Vector3(0f, Mathf.Atan2(footB.x - footA.x, footB.z - footA.z) * Mathf.Rad2Deg + 90f, 0f));
+                kit.Deco(PrimitiveType.Cube, f + Vector3.up * (height + 0.23f), new Vector3(1.2f, 0.2f, 0.2f), wood, new Vector3(0f, Mathf.Atan2(footB.x - footA.x, footB.z - footA.z) * Mathf.Rad2Deg + 90f, 0f));
             }
             var rope = PatchworkAssets.Yarn(new Color(0.95f, 0.92f, 0.85f));
             System.Func<float, Vector3> P = k => Vector3.Lerp(footA, footB, k) + Vector3.up * (height - Mathf.Sin(k * Mathf.PI) * sag);
@@ -457,7 +457,7 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cube, feet + r * new Vector3(0f, 0.5f, 0f), new Vector3(2.2f, 0.1f, 0.6f), wood, new Vector3(0f, yaw, 0f));
             kit.Deco(PrimitiveType.Cube, feet + r * new Vector3(0f, 0.95f, -0.28f), new Vector3(2.2f, 0.5f, 0.08f), wood, new Vector3(-10f, yaw, 0f));
             for (int s = -1; s <= 1; s += 2)
-                kit.Deco(PrimitiveType.Cube, feet + r * new Vector3(s * 0.95f, 0.35f, 0f), new Vector3(0.08f, 0.7f, 0.6f), iron, new Vector3(0f, yaw, 0f));
+                kit.Deco(PrimitiveType.Cube, feet + r * new Vector3(s * 0.95f, 0.35f, 0f), new Vector3(0.08f, 0.7f, 0.54f), iron, new Vector3(0f, yaw, 0f));
             // Solid: you can hop up and sit on the seat, but not walk through it.
             Solid(kit, feet + r * new Vector3(0f, 0.28f, 0f), new Vector3(2.2f, 0.56f, 0.62f), yaw);
             Solid(kit, feet + r * new Vector3(0f, 0.95f, -0.28f), new Vector3(2.2f, 0.8f, 0.12f), yaw);
