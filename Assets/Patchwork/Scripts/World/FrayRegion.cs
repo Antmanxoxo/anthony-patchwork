@@ -14,7 +14,39 @@ namespace Patchwork
         readonly List<Transform> bloom = new List<Transform>();
         readonly List<Vector3> bloomScale = new List<Vector3>();
         float clearT = -1f;   // < 0 not mending; 0..1 mending; > 1 done
+        float growT = -1f;    // the intro: the Fray spreading in
         public bool Mended { get; private set; }
+
+        // Toybox Town's intro starts with the town still clean: the Fray is hidden, then grows in.
+        public void HideFray()
+        {
+            if (Mended) return;
+            foreach (var t in fray) if (t != null) t.gameObject.SetActive(false);
+        }
+
+        public void GrowFray()
+        {
+            if (Mended) return;
+            growT = 0f;
+            for (int i = 0; i < fray.Count; i++)
+            {
+                if (fray[i] == null) continue;
+                fray[i].gameObject.SetActive(true);
+                fray[i].localScale = Vector3.zero;
+            }
+        }
+
+        public void ShowFrayNow()
+        {
+            if (Mended) return;
+            growT = -1f;
+            for (int i = 0; i < fray.Count; i++)
+            {
+                if (fray[i] == null) continue;
+                fray[i].gameObject.SetActive(true);
+                fray[i].localScale = frayScale[i];
+            }
+        }
 
         public void AddFray(Transform t)
         {
@@ -49,6 +81,17 @@ namespace Patchwork
 
         void Update()
         {
+            if (growT >= 0f && !Mended)
+            {
+                growT += Time.deltaTime / 1.6f;
+                for (int i = 0; i < fray.Count; i++)
+                {
+                    if (fray[i] == null) continue;
+                    float k = Mathf.Clamp01((growT - (i % 5) * 0.08f) / 0.6f);
+                    fray[i].localScale = frayScale[i] * UIKit.EaseOutBack(k);
+                }
+                if (growT > 1.5f) growT = -1f;
+            }
             if (clearT < 0f || clearT > 1.5f) return;
             clearT += Time.deltaTime / 2.2f;
             for (int i = 0; i < fray.Count; i++)

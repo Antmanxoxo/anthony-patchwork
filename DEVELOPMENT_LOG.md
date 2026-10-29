@@ -1,5 +1,42 @@
 # Development Log
 
+## A lived-in Toybox Town
+- The first time you visit Toybox Town, a cutscene shows the Fray arriving. The band is
+  playing when a crack opens in the toybox lid and the Fray swoops out onto the bandstand. It
+  snaps the lute string (which flies off to Spindle Hill), seizes up the trumpet, and blows
+  Wisp onto the weathervane, and the music stops. Then it knots itself round the clock tower
+  and grey threads spread over town. Confirm skips it, and it only plays once.
+- Home hoops now ask "Head back to the town square?" before sending you anywhere (No is picked
+  to start with), so you can't fall through one by accident.
+- Fixed: the Dye Works floors were solid blocks right behind the drain, so you came through
+  into a wall. The drain now opens into a clear hall and the pipes climb up behind it.
+- Fixed: doors flickered because each door's front sat at exactly the same depth as its frame.
+  Doors are now layered (frame, door, then hinges and knocker), and no timber posts run
+  through doorways.
+- The Skiff's fountain is now a ship's water barrel with brass hoops instead of a stone basin.
+- Yarn grass grows over all the open ground in clumps, with clover, pebbles and pompom
+  flowers. Felt and fabric patches are sewn onto the grass with running stitches. All of it
+  is batched into a few meshes, so it's cheap to draw.
+- Outside the toybox is the nursery: a rug, the box's painted outside, a window full of sky
+  with curtains, a bed, a chest of drawers and a lamp. A patchwork balloon drifts round the
+  town and a cot mobile turns overhead.
+- Giant toys round the edges: alphabet blocks to climb (threads on top), crayons leaning on the
+  walls, a rocking horse, a wobbling spinning top, marbles, jacks, and yarn balls with knitting
+  needles.
+- More of the town:
+  - In the square: the wedding cake, white chairs with bows, two market stalls, a pillar box,
+    a signpost to each part of town, flower pots by every door, barrels, puddles and a
+    penny-farthing.
+  - Around town: string lights across the streets, hedges and canal railings, lollipop trees,
+    and rubber ducks paddling up the canal past lily pads and reeds.
+  - In the ravine: rocks and stepping stones, plus a culvert where the stream comes in.
+  - On Spindle Hill: a fenced vegetable patch with a scarecrow, and stepping-stone paths.
+  - In the north park: a picnic, a pond with ducklings and a kite.
+  - At the Dye Works: drying lines of dyed cloth and vats of dye.
+- A toy train runs round a track with a station, a cardboard tunnel and a chatty
+  stationmaster.
+- Butterflies flutter round the flower beds.
+
 ## Toybox Town
 - Level 1 is now Toybox Town: a little Victorian town built inside a giant open toybox, with
   cobbled streets, timber-framed shops with fish-scale roofs, gas lamps, a bandstand, a wedding

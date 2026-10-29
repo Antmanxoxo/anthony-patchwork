@@ -17,11 +17,17 @@ namespace Patchwork
             if (ring != null) ring.localRotation = Quaternion.Euler(0f, Time.time * 90f, 0f);
         }
 
+        // Asks first, so you can't fall through one by accident. Say No and step out; walking
+        // back in asks again.
         protected override void OnPlayerEnter(PatchworkPlayer player)
         {
-            Sfx.Play(SfxId.PortalWarp, 0.6f);
-            FxBurst.Spawn(FxBurst.Kind.Sparkle, player.Motor.Center, new Color(0.85f, 0.7f, 1f));
-            player.Game.WarpPlayer(Target, TargetYaw);
+            var game = player.Game;
+            game.Ask("Head back to the town square?", "This hoop will whisk you home to the middle of town.", () =>
+            {
+                Sfx.Play(SfxId.PortalWarp, 0.6f);
+                FxBurst.Spawn(FxBurst.Kind.Sparkle, player.Motor.Center, new Color(0.85f, 0.7f, 1f));
+                game.WarpPlayer(Target, TargetYaw);
+            });
         }
     }
 }

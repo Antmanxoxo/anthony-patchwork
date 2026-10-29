@@ -616,7 +616,7 @@ namespace Patchwork
         }
 
         // A running-stitch border whose dashes march around the rectangle.
-        static void MarchingStitches(Rect r, Color c, float phase)
+        public static void MarchingStitches(Rect r, Color c, float phase)
         {
             const float dash = 12f, gap = 8f, thick = 3f;
             float period = dash + gap;

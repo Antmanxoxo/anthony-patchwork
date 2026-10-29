@@ -26,7 +26,7 @@ namespace Patchwork
     //   South  - the rooftop lane: steam and chimney smoke up to the weathervane spire
     // Extras: 5 Heartstrings (knots to pop, a thread race, Snarlings, the belfry, a cloud patch)
     // and 3 golden buttons (one per region, off the main path).
-    public static class Level1Builder
+    public static partial class Level1Builder
     {
         public const string SceneName = "Level1";
         // Same ids as before so old saves keep their buttons.
@@ -63,6 +63,7 @@ namespace Patchwork
             info.HeartstringsNeeded = HeartstringsNeeded;
             info.Area.SetMinMax(new Vector3(-Half, -6f, -Half), new Vector3(Half, 40f, Half));
 
+            YarnGrass.ClearZones.Clear();
             var dirGo = new GameObject("Level1Director");
             dirGo.transform.SetParent(kit.Root, false);
             director = dirGo.AddComponent<Level1Director>();
@@ -80,6 +81,7 @@ namespace Patchwork
             Townsfolk(kit);
             Knots(kit);
             YarnBirds(kit);
+            Details(kit);
 
             var sounds = kit.Group("LevelSounds", Vector3.zero);
             for (float z = -60f; z <= 60f; z += 30f)
@@ -90,6 +92,8 @@ namespace Patchwork
             AmbientEmitter.Create(sounds, new Vector3(0f, 21f, -72f), Sfx.Ambient(Sfx.AmbientClip.Flag), 0.35f, 2f, 14f);
 
             director.ApplySavedState();
+            IntroProps(kit);
+            GroundCover(kit);
             return info;
         }
 
@@ -611,31 +615,36 @@ namespace Patchwork
 
             // ----- Inside -----
             var planks = PatchworkAssets.Planks(new Color(0.62f, 0.45f, 0.32f));
-            kit.Deco(PrimitiveType.Cube, L(0f, 0.04f, 0f), new Vector3(hw * 2f - t * 2f, 0.04f, hd * 2f - t * 2f), planks);
-            kit.Fountain(L(-4.5f, 0f, -3f), 7f, LevelKit.FountainStyle.Pipe);
-            kit.Block(L(-1.15f, 2.5f, -3.2f), new Vector3(4.3f, 5f, 4.4f), new Color(0.62f, 0.45f, 0.32f), "MillFloor1", planks);
-            kit.Fountain(L(-0.2f, 5f, -3f), 6f, LevelKit.FountainStyle.Pipe);
-            kit.Block(L(3.8f, 4.5f, -1.7f), new Vector3(5.2f, 9f, 7.4f), new Color(0.62f, 0.45f, 0.32f), "MillFloor2", planks);
+            // The drain opens into a clear hall (x -2..2, z -5.4..-2); the floors climb up behind it.
+            kit.Deco(PrimitiveType.Cube, L(0f, 0.01f, 0f), new Vector3(hw * 2f - t * 2f, 0.02f, hd * 2f - t * 2f), planks);
+            kit.Fountain(L(-4.6f, 0f, -0.8f), 7f, LevelKit.FountainStyle.Pipe);
+            kit.Block(L(-1.4f, 2.5f, -0.25f), new Vector3(3.8f, 5f, 3.5f), new Color(0.62f, 0.45f, 0.32f), "MillFloor1", planks);
+            kit.Fountain(L(-0.4f, 5f, -0.2f), 6f, LevelKit.FountainStyle.Pipe);
+            kit.Block(L(3.8f, 4.5f, 2.2f), new Vector3(5.2f, 9f, 6.4f), new Color(0.62f, 0.45f, 0.32f), "MillFloor2", planks);
+            // Ladders painted on the floors' fronts (just for looks) and a railing round the top.
+            for (int i = 0; i < 9; i++)
+                kit.Deco(PrimitiveType.Cube, L(3.8f, 0.6f + i * 0.95f, -1.04f), new Vector3(0.9f, 0.08f, 0.06f), PatchworkAssets.Wood(TownKit.DarkWood));
+            kit.Rope(L(1.3f, 10f, -0.95f), L(6.3f, 10f, -0.95f), PatchworkAssets.Plain(new Color(0.78f, 0.48f, 0.3f), 0.75f), 0.08f);
             // The reservoir: a big copper vat with pipes.
             var copper = PatchworkAssets.Plain(new Color(0.78f, 0.48f, 0.3f), 0.75f);
-            kit.Deco(PrimitiveType.Cylinder, L(4.6f, 10.2f, 0.4f), new Vector3(2.6f, 1.2f, 2.6f), copper);
-            kit.Deco(PrimitiveType.Cylinder, L(4.6f, 11.42f, 0.4f), new Vector3(2.3f, 0.02f, 2.3f), PatchworkAssets.Water(new Color(0.45f, 0.75f, 0.95f)));
-            kit.Rope(L(4.6f, 11.4f, 0.4f), L(4.6f, 11.4f, 5f), copper, 0.3f);
+            kit.Deco(PrimitiveType.Cylinder, L(4.6f, 10.2f, 3.2f), new Vector3(2.6f, 1.2f, 2.6f), copper);
+            kit.Deco(PrimitiveType.Cylinder, L(4.6f, 11.42f, 3.2f), new Vector3(2.3f, 0.02f, 2.3f), PatchworkAssets.Water(new Color(0.45f, 0.75f, 0.95f)));
+            kit.Rope(L(4.6f, 11.4f, 3.2f), L(4.6f, 11.4f, 5f), copper, 0.3f);
             kit.Rope(L(4.6f, 11.4f, 5f), L(-6f, 11.4f, 5f), copper, 0.3f);
-            BandPieceAt(kit, Level1Director.TrumpetId, BandPiece.Part.Trumpet, "Valve Dew", L(2.8f, 10.5f, -3.8f), null);
-            MakeHomeHoop(kit, L(5f, 9f, -4.4f));
-            // A secret: a third pipe in the corner to a high shelf with a golden button.
-            kit.Fountain(L(-5.2f, 0f, 0.8f), 11f, LevelKit.FountainStyle.Pipe);
-            kit.Block(L(-5.1f, 4.5f, 3.9f), new Vector3(2.6f, 9f, 3f), new Color(0.62f, 0.45f, 0.32f), "MillShelf", planks);
-            kit.GoldenButton(CollectibleIds[0], L(-5.1f, 10.1f, 4.2f));
-            TownKit.Crate(kit, L(-2f, 0.04f, 3.6f), 1.2f, 20f);
-            TownKit.Crate(kit, L(0.2f, 0.04f, 4.4f), 1f, -10f);
+            BandPieceAt(kit, Level1Director.TrumpetId, BandPiece.Part.Trumpet, "Valve Dew", L(2.6f, 10.5f, 0.6f), null);
+            MakeHomeHoop(kit, L(5.3f, 9f, 0.2f));
+            // A secret: a third pipe in the back corner up to a high shelf with a golden button.
+            kit.Fountain(L(-5.2f, 0f, 2.6f), 11f, LevelKit.FountainStyle.Pipe);
+            kit.Block(L(-5.2f, 4.5f, 4.6f), new Vector3(2.4f, 9f, 1.6f), new Color(0.62f, 0.45f, 0.32f), "MillShelf", planks);
+            kit.GoldenButton(CollectibleIds[0], L(-5.2f, 10.1f, 4.7f));
+            TownKit.Crate(kit, L(-1.6f, 0.02f, 3.4f), 1.2f, 20f);
+            TownKit.Crate(kit, L(-1.4f, 1.22f, 3.5f), 0.8f, -15f);
             kit.Lamp(L(-2f, 9.8f, 2.5f), h);
             kit.Lamp(L(1f, 7.5f, -4f), h);
             kit.AddCameraZone(L(0f, 6f, 0f), new Vector3(hw * 2f - 1f, h, hd * 2f - 1f), -3.5f, 12f);
             kit.AddCheckpoint(L(0f, 0f, -4.5f), 0f);
-            kit.Thread(L(-4.5f, 3.5f, -3f), LevelKit.Palette.Sky);
-            kit.Thread(L(-0.2f, 8f, -3f), LevelKit.Palette.Sky);
+            kit.Thread(L(-4.6f, 3.5f, -0.8f), LevelKit.Palette.Sky);
+            kit.Thread(L(-0.4f, 8f, -0.2f), LevelKit.Palette.Sky);
             // Spilled dye and the Fray around the works.
             for (int i = 0; i < 4; i++)
                 kit.Deco(PrimitiveType.Cylinder, L(-9f + i * 2.5f, 0.06f, -9f - (i % 2) * 2f), new Vector3(1.8f, 0.02f, 1.4f), PatchworkAssets.Water(FlowerColors[i]));
@@ -683,6 +692,7 @@ namespace Patchwork
             // Wisp, the best piper in town, stranded and tangled in the Fray.
             var stranded = ToyNpc.Create(kit, spire + new Vector3(1.4f, 16f, 0.8f), 0f, ToyNpc.Kind.Bird, "Wisp", new Color(0.45f, 0.65f, 0.95f), new Color(0.95f, 0.5f, 0.55f));
             stranded.LookAtPatch = true;
+            director.StrandedPiper = stranded;
             BandPieceAt(kit, Level1Director.PiperId, BandPiece.Part.Piper, "Wisp the Piper", spire + new Vector3(1.4f, 17f, 0.8f), stranded);
             FrayTendril(kit, region, spire + new Vector3(-2.6f, 16f, 0.2f), 2.4f);
             FrayTendril(kit, region, spire + new Vector3(2.6f, 16f, 2.6f), 2f);

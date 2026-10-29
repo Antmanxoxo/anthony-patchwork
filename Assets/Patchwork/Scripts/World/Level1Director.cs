@@ -22,6 +22,7 @@ namespace Patchwork
         public ToyNpc Lute, Trumpet, Piper, Drummer, Mayor, Bride;
         public readonly List<ToyNpc> Crowd = new List<ToyNpc>();
         public Transform TowerKnot;
+        public ToyNpc StrandedPiper;             // Wisp up on the weathervane, waiting to be rescued
         public Vector3 ArchCenter;
         public Vector3 MayorSpot, BrideSpot;
 

@@ -352,6 +352,7 @@ namespace Patchwork
             var col = go.AddComponent<MeshCollider>();
             col.sharedMesh = mesh;
             col.convex = true;
+            go.AddComponent<OwnedMesh>().Mesh = mesh;
             return go.transform;
         }
 
@@ -583,7 +584,8 @@ namespace Patchwork
             Stone,      // a round carved-stone basin with a fish spout (town squares, gardens)
             Pipe,       // a copper pipe sticking out of the ground (mills, workshops, sewers)
             Teapot,     // the spout of a giant toppled teapot
-            Spring      // just a bubbling patch of water (canals, ponds)
+            Spring,     // just a bubbling patch of water (canals, ponds)
+            Barrel      // a ship's water barrel with brass hoops (the Skiff)
         }
 
         public WaterCurrent Fountain(Vector3 basePos, float height, FountainStyle style = FountainStyle.Stone)
@@ -633,6 +635,25 @@ namespace Patchwork
                 case FountainStyle.Spring:
                     Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.04f, new Vector3(3f, 0.03f, 3f), surface);
                     break;
+                case FountainStyle.Barrel:
+                {
+                    // A squat water butt: bulging staves, brass hoops, a little tap, and the
+                    // water spouting out of the open top.
+                    var staves = PatchworkAssets.Planks(new Color(0.62f, 0.42f, 0.28f));
+                    var brass = PatchworkAssets.Plain(new Color(0.88f, 0.7f, 0.38f), 0.8f);
+                    NoShadow(Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.45f, new Vector3(1.9f, 0.45f, 1.9f), staves));
+                    Deco(PrimitiveType.Sphere, basePos + Vector3.up * 0.45f, new Vector3(2.05f, 0.7f, 2.05f), staves);
+                    for (int i = 0; i < 3; i++)
+                        Deco(PrimitiveType.Cylinder, basePos + Vector3.up * (0.12f + i * 0.33f), new Vector3(i == 1 ? 2.1f : 1.96f, 0.05f, i == 1 ? 2.1f : 1.96f), brass);
+                    Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.88f, new Vector3(1.7f, 0.02f, 1.7f), surface);
+                    var tap = Group("Tap", basePos + new Vector3(0f, 0.3f, -1.05f));
+                    Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.12f, 0.12f, 0.12f), brass, new Vector3(90f, 0f, 0f), tap);
+                    Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.08f, -0.1f), new Vector3(0.08f, 0.08f, 0.08f), brass, default(Vector3), tap);
+                    Deco(PrimitiveType.Cube, new Vector3(0f, 0.1f, -0.03f), new Vector3(0.2f, 0.04f, 0.04f), brass, default(Vector3), tap);
+                    // A puddle where it's dripped on the deck.
+                    Deco(PrimitiveType.Cylinder, basePos + new Vector3(0.1f, 0.01f, -1.25f), new Vector3(0.7f, 0.01f, 0.45f), surface);
+                    break;
+                }
                 default:
                 {
                     // A Victorian stone basin: a fat lip, a carved band and a little fish on top.

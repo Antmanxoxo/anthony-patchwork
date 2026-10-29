@@ -135,6 +135,7 @@ namespace Patchwork
                 for (int i = 0; i <= posts; i++)
                 {
                     float x = -w * 0.5f + w * i / posts;
+                    if (side > 0 && door && Mathf.Abs(x) < 1f) continue;   // no post through the doorway
                     kit.Deco(PrimitiveType.Cube, W(x, (h + 0.6f) * 0.5f, fz), RotSize(new Vector3(0.18f, h - 0.6f, 0.1f), yaw), beam);
                 }
                 for (float y = 3f; y < h - 0.5f; y += 3f)
@@ -215,11 +216,20 @@ namespace Patchwork
         static void Door(LevelKit kit, Vector3 p, float yaw, Color col)
         {
             var r = Rot(yaw);
+            // Layers from the wall out, each a few cm in front of the last so nothing flickers:
+            // the dark frame and its arch, then the door and its arched top, then the knob.
             var wood = PatchworkAssets.Planks(col);
-            kit.Deco(PrimitiveType.Cube, p + r * new Vector3(0f, 1.1f, 0f), new Vector3(1.3f, 2.2f, 0.1f), wood, new Vector3(0f, yaw, 0f));
-            kit.Deco(PrimitiveType.Cylinder, p + r * new Vector3(0f, 2.2f, 0f), new Vector3(1.3f, 0.05f, 0.6f), wood, new Vector3(90f, yaw, 0f));
-            kit.Deco(PrimitiveType.Cube, p + r * new Vector3(0f, 1.15f, 0.02f), new Vector3(1.5f, 2.35f, 0.06f), PatchworkAssets.Wood(DarkWood), new Vector3(0f, yaw, 0f));
-            kit.Deco(PrimitiveType.Sphere, p + r * new Vector3(0.42f, 1.05f, 0.1f), Vector3.one * 0.12f, PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f));
+            var frame = PatchworkAssets.Wood(DarkWood);
+            kit.Deco(PrimitiveType.Cube, p + r * new Vector3(0f, 1.15f, 0f), new Vector3(1.55f, 2.3f, 0.08f), frame, new Vector3(0f, yaw, 0f));
+            kit.Deco(PrimitiveType.Cylinder, p + r * new Vector3(0f, 2.3f, 0f), new Vector3(1.55f, 0.035f, 0.75f), frame, new Vector3(90f, yaw, 0f));
+            kit.Deco(PrimitiveType.Cube, p + r * new Vector3(0f, 1.1f, 0.09f), new Vector3(1.25f, 2.2f, 0.08f), wood, new Vector3(0f, yaw, 0f));
+            kit.Deco(PrimitiveType.Cylinder, p + r * new Vector3(0f, 2.2f, 0.085f), new Vector3(1.25f, 0.03f, 0.55f), wood, new Vector3(90f, yaw, 0f));
+            // Iron strap hinges and a brass knob and knocker.
+            var iron = PatchworkAssets.Plain(Iron, 0.5f);
+            kit.Deco(PrimitiveType.Cube, p + r * new Vector3(-0.25f, 1.75f, 0.145f), new Vector3(0.7f, 0.07f, 0.03f), iron, new Vector3(0f, yaw, 0f));
+            kit.Deco(PrimitiveType.Cube, p + r * new Vector3(-0.25f, 0.45f, 0.145f), new Vector3(0.7f, 0.07f, 0.03f), iron, new Vector3(0f, yaw, 0f));
+            kit.Deco(PrimitiveType.Sphere, p + r * new Vector3(0.42f, 1.05f, 0.18f), Vector3.one * 0.12f, PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f));
+            kit.Deco(PrimitiveType.Cylinder, p + r * new Vector3(0f, 1.5f, 0.16f), new Vector3(0.22f, 0.015f, 0.22f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f), new Vector3(90f, yaw, 0f));
             kit.Deco(PrimitiveType.Cube, p + r * new Vector3(0f, 0.08f, 0.45f), new Vector3(1.9f, 0.16f, 0.9f), PatchworkAssets.Cobble(Stone), new Vector3(0f, yaw, 0f));
             // A little lamp beside the door.
             Vector3 lamp = p + r * new Vector3(-1.05f, 2.3f, 0.25f);

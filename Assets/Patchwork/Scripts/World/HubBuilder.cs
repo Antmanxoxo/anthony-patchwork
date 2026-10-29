@@ -470,7 +470,7 @@ namespace Patchwork
             kit.Thread(mast + new Vector3(-0.9f, 5.6f, 0.9f), LevelKit.Palette.Sky);
             kit.YarnBird(mast + new Vector3(1.2f, 5.8f, 1.6f), LevelKit.Palette.Butter, false);
 
-            kit.Fountain(new Vector3(0f, 0f, 2.4f), 7f);
+            kit.Fountain(new Vector3(0f, 0f, 2.4f), 7f, LevelKit.FountainStyle.Barrel);
             kit.Hint(new Vector3(2.8f, 1.5f, 2.4f), new Vector3(3f, 3f, 3.5f), "Practice: Water",
                 "Water Form rides blue fountains up to the crow's nest, and slips through blue drain grates.", HintTheme.Water);
         }

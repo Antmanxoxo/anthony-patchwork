@@ -103,6 +103,15 @@ Stuff I need to remember about how Patchwork is put together.
   (`PatchworkGame.StartCutscene`). Bonus Heartstring ids are `L1_hs_*`.
 - Toys are `ToyNpc.Create(kit, feet, yaw, kind, name, colours, instrument)`; their lines are a
   `Func<string[]>` so they change with progress. Their `TalkZone` is parented to them.
+- Toybox Town's dressing is in `Level1Details.cs` (same `Level1Builder` partial class). The
+  first-visit cutscene is `ToyboxIntro` (saved as hint id "L1_intro_seen"); it uses
+  `PatchworkGame.StartScriptedCutscene` + `SetCutsceneCamera` to move the camera itself.
+- Lots of small shapes go through `MeshBatch` (one mesh per material). `YarnGrass.Scatter` /
+  `Patches` grow ground cover only where a downward ray hits a grass/knit collider at ground
+  height, so build them last. `YarnGrass.ClearZones` keeps spots bare.
+- `PatchworkGame.Ask(title, body, onYes)` shows a Yes/No card (`AskBox`, `UIMode.Ask`). Home
+  hoops use it.
+- Moving decorations: `PathMover` (loops of points), `Rocker` (rock on one axis), `Butterfly`.
 - Town pieces are in `TownKit` (houses, lamps, clotheslines, lantern gates, bridges, stairs...).
   `MakeHouse` returns where its chimney top is, for a chimney-smoke updraft.
 - Fountain rule: height = shelf top + 2, shelf edge 1.2-2.2 m from the jet. Updraft height = rise.

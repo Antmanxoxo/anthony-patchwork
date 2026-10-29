@@ -17,7 +17,8 @@ namespace Patchwork
         Intro,      // studio logo and title screen (first time the Skiff loads)
         LevelSelect, // at the Skiff's helm, turning the globe
         Talk,        // chatting with an NPC
-        Cutscene     // a scripted moment (the wedding)
+        Cutscene,    // a scripted moment (the wedding)
+        Ask          // a little Yes / No question (like "go back to the square?")
     }
 
     // Main game object, one per scene. Builds the level, camera, light and player,
@@ -47,6 +48,7 @@ namespace Patchwork
         // The NPC you're close enough to talk to (null if none).
         public TalkZone Talker { get; private set; }
         public DialogueBox Dialogue { get; private set; }
+        public AskBox Asker { get; private set; }
         // The ears: sit between the camera and Patch, so sounds get louder as Patch walks up to them.
         Transform listener;
 
@@ -158,6 +160,7 @@ namespace Patchwork
             Title = new TitleSequence(this);
             LevelSelect = new LevelSelectMenu(this);
             Dialogue = new DialogueBox(this);
+            Asker = new AskBox(this);
 
             Mode = UIMode.Gameplay;
             // Coming from the loading screen, it's still covering everything, so skip our own fade.
@@ -314,13 +317,19 @@ namespace Patchwork
                 case UIMode.Talk:
                     Dialogue.Update(udt);
                     break;
+                case UIMode.Ask:
+                    Asker.Update(udt);
+                    break;
                 case UIMode.Cutscene:
-                    cutsceneAngle += udt * 9f;
-                    PlaceCutsceneCamera();
+                    if (!cutsceneManual)
+                    {
+                        cutsceneAngle += udt * 9f;
+                        PlaceCutsceneCamera();
+                    }
                     break;
             }
 
-            if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel || Mode == UIMode.Dance || Mode == UIMode.Intro || Mode == UIMode.LevelSelect || Mode == UIMode.Talk || Mode == UIMode.Cutscene)
+            if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel || Mode == UIMode.Dance || Mode == UIMode.Intro || Mode == UIMode.LevelSelect || Mode == UIMode.Talk || Mode == UIMode.Cutscene || Mode == UIMode.Ask)
             {
                 PlayerInputFrame frame;
                 if (Mode == UIMode.Gameplay && !modeChangedThisFrame)
@@ -547,11 +556,33 @@ namespace Patchwork
             if (who != null) who.OnTalkEnd();
         }
 
+        // ------------------------------------------------------------------ Yes / No questions
+
+        // Pops up a little question card. Patch stops where he is; Yes runs onYes.
+        public void Ask(string title, string body, System.Action onYes)
+        {
+            if (Mode != UIMode.Gameplay) return;
+            Player.Motor.Velocity = new Vector3(0f, Mathf.Min(0f, Player.Motor.Velocity.y), 0f);
+            Asker.Open(title, body, onYes);
+            SetMode(UIMode.Ask, 1f);
+            ToastTimer = 0f;
+            Sfx.Play(SfxId.MenuOpen, 0.45f);
+        }
+
+        public void CloseAsk(bool yes)
+        {
+            var action = Asker.Close();
+            SetMode(UIMode.Gameplay, 1f);
+            if (yes && action != null) action();
+        }
+
         // ------------------------------------------------------------------ Cutscenes
         // A little scripted moment (like the Mayor's wedding): Patch stands still, the camera slowly
         // circles a spot with cinema bars, and whoever started it calls EndCutscene when it's done.
 
         public string CutsceneCaption { get; set; }
+        public bool CutsceneSkippable { get; set; }
+        bool cutsceneManual;   // the camera is placed by whoever runs the cutscene
         Vector3 cutsceneCenter;
         float cutsceneRadius, cutsceneHeight, cutsceneAngle;
 
@@ -563,6 +594,7 @@ namespace Patchwork
             cutsceneRadius = radius;
             cutsceneHeight = height;
             cutsceneAngle = startAngle;
+            cutsceneManual = false;
             CameraRig.ShowcaseBlendSpeed = 0.7f;
             CameraRig.Showcase = true;
             PlaceCutsceneCamera();
@@ -571,8 +603,30 @@ namespace Patchwork
             SetMode(UIMode.Cutscene, 1f);
         }
 
+        // A cutscene where the caller moves the camera itself (SetCutsceneCamera every frame).
+        public void StartScriptedCutscene(Vector3 camPos, Vector3 lookAt, float blendSpeed)
+        {
+            Player.Forms.CancelAll();
+            Player.Motor.Velocity = Vector3.zero;
+            cutsceneManual = true;
+            CameraRig.ShowcaseBlendSpeed = blendSpeed;
+            CameraRig.Showcase = true;
+            SetCutsceneCamera(camPos, lookAt);
+            ToastTimer = 0f;
+            if (ActiveHint != null) HintAge = HintDuration;
+            SetMode(UIMode.Cutscene, 1f);
+        }
+
+        public void SetCutsceneCamera(Vector3 camPos, Vector3 lookAt)
+        {
+            CameraRig.ShowcasePosition = camPos;
+            CameraRig.ShowcaseLookAt = lookAt;
+        }
+
         public void EndCutscene()
         {
+            cutsceneManual = false;
+            CutsceneSkippable = false;
             CameraRig.ShowcaseBlendSpeed = 0.9f;
             CameraRig.Showcase = false;
             SetMode(UIMode.Gameplay, 1f);
