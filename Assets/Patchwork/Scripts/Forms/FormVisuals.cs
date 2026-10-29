@@ -50,7 +50,6 @@ namespace Patchwork
         bool gliding;
         bool tethered;
         Vector3 tetherTarget;
-        float warp = 1f;
 
         // Transition state
         bool transitioning;
@@ -170,9 +169,6 @@ namespace Patchwork
             }
         }
 
-        // 1 = normal, 0 = fully shrunk (portal warp).
-        public void SetWarp(float scale) { warp = scale; }
-
         public void PunchScale(Vector3 s) { punch = s; }
 
         // ------------------------------------------------------------------ Animation
@@ -188,8 +184,7 @@ namespace Patchwork
             Vector3 localVel = motor.transform.InverseTransformDirection(v);
             float speed = new Vector3(v.x, 0f, v.z).magnitude;
 
-            root.localScale = punch * warp;
-            if (warp < 0.999f) root.localRotation = Quaternion.Euler(0f, (1f - warp) * 900f, 0f);
+            root.localScale = punch;
             else root.localRotation = Quaternion.identity;
 
             danceWeight = Mathf.MoveTowards(danceWeight, dancing ? 1f : 0f, dt * 3f);

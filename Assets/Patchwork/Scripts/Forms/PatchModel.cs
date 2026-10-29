@@ -176,14 +176,6 @@ namespace Patchwork
 
             SetFace(CurrentFace);
             BuildGraph(model);
-
-            Debug.Log("[PatchModel] renderers=" + skinned.Length +
-                      " albedo=" + (albedo != null ? albedo.width + "x" + albedo.height : "MISSING") +
-                      " normal=" + (normal != null ? normal.width + "x" + normal.height : "MISSING") +
-                      " shader=" + mat.shader.name + " baseMap=" + (mat.GetTexture("_BaseMap") != null) +
-                      " submeshes=" + (body.sharedMesh != null ? body.sharedMesh.subMeshCount : -1) +
-                      " yaw=" + yaw.ToString("0") + " scale=" + modelRoot.localScale.y.ToString("0.###") +
-                      " clips=" + ClipCount());
             return true;
         }
 
@@ -222,13 +214,6 @@ namespace Patchwork
 
         Material patchMaterial;
         bool reportedSwap;
-
-        int ClipCount()
-        {
-            int n = 0;
-            for (int i = 0; i < hasClip.Length; i++) if (hasClip[i]) n++;
-            return n;
-        }
 
         static Texture2D LoadTexture(string name)
         {

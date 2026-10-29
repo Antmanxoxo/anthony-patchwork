@@ -6,8 +6,7 @@ namespace Patchwork
     public enum LevelId
     {
         Hub = 0,
-        Level1 = 1,
-        Gym = 2
+        Level1 = 1
     }
 
     public class LevelInfo
@@ -22,7 +21,7 @@ namespace Patchwork
         // Falling this far below the floor (y = 0) counts as a fall, so you respawn right away
         // instead of waiting to drop all the way to KillY. Ignored while swinging on yarn.
         public float FailY = -3f;
-        // The room's walls (set by Enclosure). Used to size the reflection probe.
+        // The play space (set by each level's builder). Sizes the reflection probe and the map.
         public Bounds Area = new Bounds(Vector3.zero, Vector3.zero);
         public Color Sky = new Color(0.78f, 0.86f, 0.95f);
         // Haze and draw distance. FogColor's alpha 0 means "same as Sky".
@@ -60,7 +59,7 @@ namespace Patchwork
     }
 
     // Helpers for building handcrafted levels from code: quilted platforms, walls, and all the
-    // interactive pieces (anchors, grates, fountains, updrafts, checkpoints, buttons, goal, portal).
+    // interactive pieces (anchors, grates, fountains, updrafts, checkpoints).
     public class LevelKit
     {
         public static class Palette
@@ -75,7 +74,6 @@ namespace Patchwork
             public static readonly Color Butter = new Color(0.98f, 0.88f, 0.55f);
             public static readonly Color Rose = new Color(0.84f, 0.64f, 0.68f);
             public static readonly Color AnchorPink = new Color(0.95f, 0.45f, 0.62f);
-            public static readonly Color Denim = new Color(0.38f, 0.5f, 0.72f);
             public static readonly Color Walnut = new Color(0.55f, 0.4f, 0.3f);
             public static readonly Color Moss = new Color(0.45f, 0.62f, 0.45f);
             public static readonly Color Gold = new Color(1f, 0.8f, 0.25f);
@@ -265,23 +263,6 @@ namespace Patchwork
             }
         }
 
-        public void Pinwheel(Vector3 basePos, Color a, Color b)
-        {
-            var g = Group("Pinwheel", basePos);
-            Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.5f, 0f), new Vector3(0.08f, 1.5f, 0.08f), PatchworkAssets.Felt(Palette.Walnut), default(Vector3), g);
-            var head = new GameObject("Head").transform;
-            head.SetParent(g, false);
-            head.localPosition = new Vector3(0f, 3.1f, 0.1f);
-            for (int i = 0; i < 4; i++)
-            {
-                var blade = Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(0.35f, 0.9f, 0.03f), PatchworkAssets.Fabric(i % 2 == 0 ? a : b), new Vector3(0f, 0f, i * 90f), head);
-                blade.localPosition = Quaternion.Euler(0f, 0f, i * 90f) * new Vector3(0f, 0.45f, 0f);
-            }
-            var spin = head.gameObject.AddComponent<Spinner>();
-            spin.Axis = Vector3.forward;
-            spin.Speed = 220f;
-        }
-
         public Transform Cloud(Vector3 pos, float size)
         {
             var g = Group("Cloud", pos);
@@ -410,21 +391,6 @@ namespace Patchwork
             var b = go.AddComponent<YarnBird>();
             b.Setup(circling ? Patchwork.YarnBird.Mode.Circle : Patchwork.YarnBird.Mode.Perch, pos, radius, color);
             return b;
-        }
-
-        // Huge quilt far below the level so gaps feel deep (no collision).
-        public void Backdrop(float y)
-        {
-            var g = Group("Backdrop", new Vector3(0f, y, 40f));
-            int n = 8;
-            float cell = 30f;
-            for (int ix = 0; ix < n; ix++)
-                for (int iz = 0; iz < n; iz++)
-                {
-                    Color c = Palette.Quilt[(ix * 3 + iz * 5) % Palette.Quilt.Length];
-                    Deco(PrimitiveType.Cube, new Vector3((ix - n / 2 + 0.5f) * cell, 0f, (iz - n / 2 + 0.5f) * cell),
-                        new Vector3(cell - 0.6f, 1f, cell - 0.6f), PatchworkAssets.Fabric(Color.Lerp(c, Palette.Lavender, 0.35f)), default(Vector3), g);
-                }
         }
 
         // ------------------------------------------------------------------ Gameplay pieces
@@ -786,94 +752,6 @@ namespace Patchwork
             return h;
         }
 
-        public GoalZone Goal(Vector3 feet)
-        {
-            var goal = Volume<GoalZone>(feet + Vector3.up * 1.5f, new Vector3(4.5f, 4f, 2.5f), "Goal");
-            // Stitched archway with a banner.
-            Block(feet + new Vector3(-2.6f, 2.2f, 0f), new Vector3(0.6f, 4.4f, 0.6f), Palette.Rose, "ArchPost");
-            Block(feet + new Vector3(2.6f, 2.2f, 0f), new Vector3(0.6f, 4.4f, 0.6f), Palette.Rose, "ArchPost");
-            Block(feet + new Vector3(0f, 4.6f, 0f), new Vector3(6.2f, 0.6f, 0.6f), Palette.Butter, "ArchTop");
-            Deco(PrimitiveType.Cube, feet + new Vector3(0f, 3.9f, 0.1f), new Vector3(4.2f, 0.8f, 0.05f), PatchworkAssets.Glow(Palette.Gold, 0.3f));
-            Spool(feet + new Vector3(0f, 0f, 3f), 2f, Palette.Rose);
-            return goal;
-        }
-
-        // A swirling embroidery-hoop portal: a wooden hoop with stitched trim, four counter-rotating
-        // glowing rings, sparkles spiralling into the centre and a soft pulsing light.
-        public Portal AddPortal(Vector3 feet, float yaw, string targetScene, bool completed)
-        {
-            Quaternion rot = Quaternion.Euler(0f, yaw, 0f);
-            Vector3 center = feet + Vector3.up * 2.3f;
-            var portal = Volume<Portal>(feet + Vector3.up * 1.6f, new Vector3(3f, 3.2f, 1.6f), "Portal_" + targetScene);
-            portal.TargetScene = targetScene;
-
-            var g = Group("PortalVisual", center);
-            g.rotation = rot;
-
-            // Embroidery hoop: ring of wooden segments with a stitched (alternating) trim and a brass clasp.
-            var wood = PatchworkAssets.Felt(new Color(0.78f, 0.58f, 0.38f));
-            var trim = PatchworkAssets.Felt(Palette.Rose);
-            int segments = 28;
-            float radius = 2.15f;
-            for (int i = 0; i < segments; i++)
-            {
-                float a = i * Mathf.PI * 2f / segments;
-                Vector3 pos = new Vector3(Mathf.Cos(a) * radius, Mathf.Sin(a) * radius, 0f);
-                float len = 2f * Mathf.PI * radius / segments * 1.08f;
-                Deco(PrimitiveType.Cube, pos, new Vector3(0.32f, len, 0.42f), wood, new Vector3(0f, 0f, a * Mathf.Rad2Deg), g);
-                if (i % 2 == 0)
-                    Deco(PrimitiveType.Cube, pos * 0.9f + Vector3.back * 0.22f, new Vector3(0.08f, len * 0.6f, 0.03f), trim, new Vector3(0f, 0f, a * Mathf.Rad2Deg + 90f), g);
-            }
-            Deco(PrimitiveType.Cube, new Vector3(0f, radius + 0.25f, 0f), new Vector3(0.6f, 0.45f, 0.6f), PatchworkAssets.Plain(new Color(0.9f, 0.75f, 0.35f), 0.8f), default(Vector3), g);
-            Deco(PrimitiveType.Cylinder, new Vector3(0f, radius + 0.25f, 0f), new Vector3(0.18f, 0.45f, 0.18f), PatchworkAssets.Plain(new Color(0.75f, 0.6f, 0.25f), 0.8f), new Vector3(0f, 0f, 90f), g);
-
-            // Feet: two little spools holding the hoop up.
-            Spool(feet + rot * new Vector3(-1.5f, 0f, 0f), 0.8f, Palette.Lavender);
-            Spool(feet + rot * new Vector3(1.5f, 0f, 0f), 0.8f, Palette.Sky);
-
-            // Vortex rings (cylinders turned to face forward), largest at the back.
-            Color[] colors = { Palette.Lavender, Palette.Rose, Palette.Sky, new Color(1f, 0.95f, 0.85f) };
-            float[] sizes = { 3.9f, 3.0f, 2.1f, 1.1f };
-            float[] speeds = { 50f, -85f, 140f, -220f };
-            var rings = new Transform[colors.Length];
-            for (int i = 0; i < colors.Length; i++)
-            {
-                var mat = PatchworkAssets.Unique(PatchworkAssets.Glow(colors[i], 0.9f + i * 0.3f));
-                mat.SetTexture("_BaseMap", PatchworkTextures.Wrap.Albedo);
-                rings[i] = Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, 0.05f - i * 0.05f), new Vector3(sizes[i], 0.02f, sizes[i]), mat, new Vector3(90f, 0f, 0f), g);
-                rings[i].GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            }
-
-            // Sparkles that spiral inward forever.
-            var motes = new Transform[14];
-            var moteMat = PatchworkAssets.Glow(Color.white, 2f);
-            for (int i = 0; i < motes.Length; i++)
-            {
-                motes[i] = Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 0.1f, moteMat, default(Vector3), g);
-                motes[i].GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            }
-
-            var lightGo = new GameObject("PortalLight");
-            lightGo.transform.SetParent(g, false);
-            lightGo.transform.localPosition = new Vector3(0f, 0f, -1.2f);
-            var light = lightGo.AddComponent<Light>();
-            light.type = LightType.Point;
-            light.color = new Color(0.8f, 0.6f, 1f);
-            light.range = 9f;
-            light.intensity = 2f;
-            light.shadows = LightShadows.None;
-
-            portal.Setup(g, rings, speeds, motes, light);
-
-            if (completed)
-            {
-                var star = Deco(PrimitiveType.Sphere, feet + Vector3.up * 5.2f, Vector3.one * 0.6f, PatchworkAssets.Glow(Palette.Gold, 1.2f));
-                var s = star.gameObject.AddComponent<Spinner>();
-                s.BobHeight = 0.2f;
-            }
-            return portal;
-        }
-
         // ------------------------------------------------------------------ Interactive pieces
 
         // A squishy pin-cushion bounce pad, low enough to walk onto.
@@ -926,32 +804,6 @@ namespace Patchwork
             }
             pad.Setup(cushion);
             return pad;
-        }
-
-        // A big felt button that slides between two points. a/b are the top-centre positions.
-        public MovingPlatform MovingButton(Vector3 a, Vector3 b, float phase, Color color, float travel = 3f)
-        {
-            var go = new GameObject("MovingButton");
-            go.transform.SetParent(Root, false);
-            var col = go.AddComponent<BoxCollider>();
-            col.center = new Vector3(0f, -0.25f, 0f);
-            col.size = new Vector3(3.4f, 0.5f, 3.4f);
-            Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.25f, 0f), new Vector3(3.6f, 0.25f, 3.6f), PatchworkAssets.Felt(color), default(Vector3), go.transform);
-            Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.01f, 0f), new Vector3(2.8f, 0.02f, 2.8f), PatchworkAssets.Felt(Color.Lerp(color, Color.white, 0.25f)), default(Vector3), go.transform);
-            var hole = PatchworkAssets.Plain(Color.Lerp(color, Color.black, 0.5f), 0.2f);
-            for (int i = 0; i < 4; i++)
-            {
-                float x = (i % 2 == 0 ? -1f : 1f) * 0.45f;
-                float z = (i < 2 ? -1f : 1f) * 0.45f;
-                Deco(PrimitiveType.Cylinder, new Vector3(x, 0.02f, z), new Vector3(0.35f, 0.02f, 0.35f), hole, default(Vector3), go.transform);
-            }
-            var mp = go.AddComponent<MovingPlatform>();
-            mp.PointA = a;
-            mp.PointB = b;
-            mp.Phase = phase;
-            mp.TravelTime = travel;
-            mp.Init();
-            return mp;
         }
 
         // A floating thread spool to collect.
@@ -1021,99 +873,7 @@ namespace Patchwork
             col.height = size * 1.2f;
         }
 
-        public void Mushroom(Vector3 groundPos, float height, Color cap)
-        {
-            var g = Group("FeltMushroom", groundPos);
-            Deco(PrimitiveType.Cylinder, new Vector3(0f, height * 0.4f, 0f), new Vector3(height * 0.3f, height * 0.4f, height * 0.3f), PatchworkAssets.Felt(Palette.Cream), default(Vector3), g);
-            var capT = Deco(PrimitiveType.Sphere, new Vector3(0f, height * 0.85f, 0f), new Vector3(height, height * 0.55f, height), PatchworkAssets.Felt(cap), default(Vector3), g);
-            for (int i = 0; i < 5; i++)
-            {
-                float a = i * 1.3f;
-                Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 0.3f, 0.35f, Mathf.Sin(a) * 0.3f), new Vector3(0.12f, 0.08f, 0.12f), PatchworkAssets.Felt(Color.white), default(Vector3), capT);
-            }
-        }
-
         // ------------------------------------------------------------------ Set pieces
-
-        // A giant sewing pin stuck into the ground at an angle (decorative).
-        public void SewingPin(Vector3 groundPos, float length, Color head, Vector3 tilt)
-        {
-            var g = Group("SewingPin", groundPos);
-            g.rotation = Quaternion.Euler(tilt);
-            var steel = PatchworkAssets.Plain(new Color(0.8f, 0.82f, 0.88f), 0.9f);
-            NoShadow(Deco(PrimitiveType.Cylinder, new Vector3(0f, length * 0.5f, 0f), new Vector3(0.18f, length * 0.5f, 0.18f), steel, default(Vector3), g));
-            Deco(PrimitiveType.Sphere, new Vector3(0f, length, 0f), Vector3.one * length * 0.16f, PatchworkAssets.Plain(head, 0.7f), default(Vector3), g);
-        }
-
-        // A huge tomato pincushion with segments, a felt leaf top and pins poking out (solid).
-        public Transform Pincushion(Vector3 groundPos, float radius, Color body)
-        {
-            var g = Group("Pincushion", groundPos + Vector3.up * radius * 0.55f);
-            var felt = PatchworkAssets.Felt(body);
-            Deco(PrimitiveType.Sphere, Vector3.zero, new Vector3(radius * 2f, radius * 1.3f, radius * 2f), felt, default(Vector3), g);
-            // Stitched segment lines.
-            var seam = PatchworkAssets.Yarn(new Color(body.r * 0.6f, body.g * 0.5f, body.b * 0.5f));
-            for (int i = 0; i < 6; i++)
-            {
-                var ring = Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(radius * 2.02f, 0.03f, radius * 1.32f), seam, new Vector3(90f, i * 30f, 0f), g);
-                ring.localScale = new Vector3(radius * 2.02f, 0.03f, radius * 1.32f);
-            }
-            // Leafy felt top.
-            var leaf = PatchworkAssets.Felt(new Color(0.4f, 0.65f, 0.35f));
-            for (int i = 0; i < 5; i++)
-                Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(i * 1.256f) * radius * 0.25f, radius * 0.62f, Mathf.Sin(i * 1.256f) * radius * 0.25f),
-                    new Vector3(radius * 0.45f, radius * 0.08f, radius * 0.2f), leaf, new Vector3(0f, -i * 72f, 0f), g);
-            // Pins.
-            Color[] heads = { Palette.Gold, Palette.Sky, Palette.Cream, Palette.Lavender, Palette.Rose };
-            for (int i = 0; i < 7; i++)
-            {
-                float a = i * 0.9f + 0.3f;
-                Vector3 n = new Vector3(Mathf.Cos(a) * 0.75f, 0.55f + (i % 3) * 0.12f, Mathf.Sin(a) * 0.75f).normalized;
-                Vector3 p = new Vector3(n.x * radius, n.y * radius * 0.65f, n.z * radius);
-                var pin = Deco(PrimitiveType.Cylinder, p + n * radius * 0.3f, new Vector3(0.08f, radius * 0.3f, 0.08f), PatchworkAssets.Plain(new Color(0.8f, 0.82f, 0.88f), 0.9f), default(Vector3), g);
-                pin.rotation = Quaternion.FromToRotation(Vector3.up, n);
-                Deco(PrimitiveType.Sphere, p + n * radius * 0.62f, Vector3.one * 0.32f, PatchworkAssets.Plain(heads[i % heads.Length], 0.7f), default(Vector3), g);
-            }
-            var col = g.gameObject.AddComponent<SphereCollider>();
-            col.radius = radius * 0.9f;
-            return g;
-        }
-
-        // A pair of giant scissors lying open on the ground (decorative).
-        public void Scissors(Vector3 groundPos, float size, float yaw)
-        {
-            var g = Group("Scissors", groundPos + Vector3.up * 0.15f * size);
-            g.rotation = Quaternion.Euler(0f, yaw, 0f);
-            var steel = PatchworkAssets.Plain(new Color(0.82f, 0.84f, 0.9f), 0.9f);
-            var handle = PatchworkAssets.Plain(new Color(0.9f, 0.35f, 0.4f), 0.5f);
-            for (int s = -1; s <= 1; s += 2)
-            {
-                var blade = new GameObject("Blade").transform;
-                blade.SetParent(g, false);
-                blade.localRotation = Quaternion.Euler(0f, s * 14f, 0f);
-                Deco(PrimitiveType.Cube, new Vector3(0f, 0f, size * 1.1f), new Vector3(size * 0.22f, size * 0.06f, size * 2.2f), steel, default(Vector3), blade);
-                Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, -size * 0.6f), new Vector3(size * 0.7f, size * 0.05f, size * 0.5f), handle, default(Vector3), blade);
-                Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.01f, -size * 0.6f), new Vector3(size * 0.45f, size * 0.06f, size * 0.3f), PatchworkAssets.Plain(new Color(0.3f, 0.2f, 0.25f), 0.3f), default(Vector3), blade);
-            }
-            Deco(PrimitiveType.Cylinder, new Vector3(0f, size * 0.05f, 0f), new Vector3(size * 0.18f, size * 0.06f, size * 0.18f), PatchworkAssets.Plain(Palette.Gold, 0.8f), default(Vector3), g);
-        }
-
-        // A yellow measuring tape lying on the ground from a to b, with tick marks (decorative).
-        public void MeasuringTape(Vector3 a, Vector3 b)
-        {
-            Vector3 d = b - a;
-            float len = d.magnitude;
-            var g = Group("MeasuringTape", (a + b) * 0.5f);
-            g.rotation = Quaternion.LookRotation(d.normalized, Vector3.up);
-            var tape = PatchworkAssets.Felt(new Color(1f, 0.85f, 0.3f));
-            var ink = PatchworkAssets.Plain(new Color(0.2f, 0.15f, 0.2f), 0.2f);
-            NoShadow(Deco(PrimitiveType.Cube, new Vector3(0f, 0.03f, 0f), new Vector3(0.9f, 0.04f, len), tape, default(Vector3), g));
-            for (float z = -len * 0.5f + 0.5f; z < len * 0.5f; z += 0.5f)
-            {
-                bool big = Mathf.Abs(Mathf.Repeat(z + len * 0.5f, 2.5f)) < 0.01f;
-                NoShadow(Deco(PrimitiveType.Cube, new Vector3(-0.3f + (big ? 0.12f : 0f), 0.055f, z), new Vector3(big ? 0.5f : 0.25f, 0.01f, 0.05f), ink, default(Vector3), g));
-            }
-        }
 
         // A tall stack of thread spools (solid). The top is flat so you can stand on it.
         public void SpoolTower(Vector3 groundPos, float height, Color[] threads)
@@ -1132,94 +892,7 @@ namespace Patchwork
             col.size = new Vector3(2.6f, height, 2.6f);
         }
 
-        // A big stitched felt sun pinned to a wall, facing direction "facing".
-        public void FeltSun(Vector3 pos, float radius, Vector3 facing)
-        {
-            var g = Group("FeltSun", pos);
-            g.rotation = Quaternion.LookRotation(facing, Vector3.up);
-            var yellow = PatchworkAssets.Glow(new Color(1f, 0.85f, 0.35f), 0.35f);
-            NoShadow(Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(radius * 2f, 0.1f, radius * 2f), yellow, new Vector3(90f, 0f, 0f), g));
-            for (int i = 0; i < 12; i++)
-            {
-                float a = i * 30f;
-                var ray = Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(radius * 0.25f, radius * 0.55f, 0.08f), PatchworkAssets.Felt(new Color(1f, 0.7f, 0.3f)), new Vector3(0f, 0f, a), g);
-                ray.localPosition = Quaternion.Euler(0f, 0f, a) * new Vector3(0f, radius * 1.3f, 0.05f);
-                NoShadow(ray);
-            }
-            // Sleepy happy face.
-            var dark = PatchworkAssets.Plain(new Color(0.45f, 0.25f, 0.1f), 0.3f);
-            for (int s = -1; s <= 1; s += 2)
-                NoShadow(Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(radius * 0.3f, radius * 0.06f, 0.06f), dark, new Vector3(0f, 0f, s * 15f), g)).localPosition = new Vector3(s * radius * 0.35f, radius * 0.2f, 0.08f);
-            for (int i = 0; i < 5; i++)
-            {
-                float k = i / 4f * 2f - 1f;
-                var dot = Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * radius * 0.09f, dark, default(Vector3), g);
-                dot.localPosition = new Vector3(k * radius * 0.35f, -radius * 0.25f - (1f - k * k) * radius * 0.12f, 0.08f);
-            }
-        }
-
         // ------------------------------------------------------------------ Enclosure
-
-        // Walls and a ceiling around the whole play space so the world feels like a cosy sewing room
-        // instead of an endless sky. Walls are striped quilt bands with giant buttons; the ceiling has
-        // bunting and warm hanging lamps. Nothing here casts shadows, so the sunlight still reaches in.
-        public void Enclosure(Vector3 min, Vector3 max, Color[] bands, Color ceiling, bool wicker = false)
-        {
-            Info.Area.SetMinMax(min, max);
-            var g = Group("Enclosure", Vector3.zero);
-            float t = 2f;
-            float height = max.y - min.y;
-            float bandH = height / bands.Length;
-            float sx = max.x - min.x, sz = max.z - min.z;
-            float cx = (min.x + max.x) * 0.5f, cz = (min.z + max.z) * 0.5f;
-
-            for (int b = 0; b < bands.Length; b++)
-            {
-                float y = min.y + bandH * (b + 0.5f);
-                Color c = bands[b];
-                NoShadow(Block(new Vector3(min.x - t * 0.5f, y, cz), new Vector3(t, bandH, sz + t * 2f), c, "WallW", wicker ? PatchworkAssets.Wicker(c) : null));
-                NoShadow(Block(new Vector3(max.x + t * 0.5f, y, cz), new Vector3(t, bandH, sz + t * 2f), c, "WallE", wicker ? PatchworkAssets.Wicker(c) : null));
-                NoShadow(Block(new Vector3(cx, y, min.z - t * 0.5f), new Vector3(sx + t * 2f, bandH, t), c, "WallS", wicker ? PatchworkAssets.Wicker(c) : null));
-                NoShadow(Block(new Vector3(cx, y, max.z + t * 0.5f), new Vector3(sx + t * 2f, bandH, t), c, "WallN", wicker ? PatchworkAssets.Wicker(c) : null));
-                // Stitched seam between bands.
-                if (b > 0)
-                {
-                    float sy = min.y + bandH * b;
-                    var seam = PatchworkAssets.Felt(new Color(1f, 0.96f, 0.88f));
-                    NoShadow(Deco(PrimitiveType.Cube, new Vector3(min.x + 0.05f, sy, cz), new Vector3(0.1f, 0.25f, sz), seam));
-                    NoShadow(Deco(PrimitiveType.Cube, new Vector3(max.x - 0.05f, sy, cz), new Vector3(0.1f, 0.25f, sz), seam));
-                    NoShadow(Deco(PrimitiveType.Cube, new Vector3(cx, sy, min.z + 0.05f), new Vector3(sx, 0.25f, 0.1f), seam));
-                    NoShadow(Deco(PrimitiveType.Cube, new Vector3(cx, sy, max.z - 0.05f), new Vector3(sx, 0.25f, 0.1f), seam));
-                }
-            }
-            NoShadow(Block(new Vector3(cx, max.y + t * 0.5f, cz), new Vector3(sx + t * 2f, t, sz + t * 2f), ceiling, "Ceiling", PatchworkAssets.Felt(ceiling)));
-
-            // Giant sewing buttons pinned to the walls.
-            Color[] buttonColors = { Palette.Gold, Palette.Rose, Palette.Sky, Palette.Peach, Palette.Lavender };
-            int bi = 0;
-            for (float z = min.z + 18f; z < max.z - 10f; z += 26f)
-            {
-                SewingButton(new Vector3(min.x + 0.2f, 9f + (bi % 2) * 6f, z), 4.5f, buttonColors[bi % buttonColors.Length], new Vector3(0f, 0f, -90f));
-                SewingButton(new Vector3(max.x - 0.2f, 12f - (bi % 2) * 5f, z + 9f), 3.8f, buttonColors[(bi + 2) % buttonColors.Length], new Vector3(0f, 0f, 90f));
-                bi++;
-            }
-            for (float x = min.x + 12f; x < max.x - 6f; x += 20f)
-            {
-                SewingButton(new Vector3(x, 10f, max.z - 0.2f), 4f, buttonColors[bi % buttonColors.Length], new Vector3(-90f, 0f, 0f));
-                SewingButton(new Vector3(x + 6f, 13f, min.z + 0.2f), 3.4f, buttonColors[(bi + 1) % buttonColors.Length], new Vector3(90f, 0f, 0f));
-                bi++;
-            }
-
-            // Bunting strings and lamps under the ceiling.
-            float lampY = max.y - 4f;
-            int li = 0;
-            for (float z = min.z + 14f; z < max.z - 6f; z += 24f)
-            {
-                Bunting(new Vector3(min.x, max.y - 2.5f, z), new Vector3(max.x, max.y - 2.5f, z + 6f), Palette.Quilt);
-                Lamp(new Vector3(cx + (li % 2 == 0 ? -6f : 6f), lampY, z + 10f), max.y);
-                li++;
-            }
-        }
 
         static Transform NoShadow(Transform t)
         {

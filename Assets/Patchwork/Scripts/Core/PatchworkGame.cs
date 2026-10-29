@@ -11,7 +11,6 @@ namespace Patchwork
         Satchel,
         Paused,
         Complete,
-        Warping,
         Loading,
         Dance,      // the D-pad easter egg: Patch dances, the camera turns it into a little cutscene
         Intro,      // studio logo and title screen (first time the Skiff loads)
@@ -36,8 +35,6 @@ namespace Patchwork
         public UIMode Mode { get; private set; }
         public PatchworkHUD Hud { get; private set; }
         public DanceParty Dance { get; private set; }
-        // Only in the Test Gym: measures jump distance and height.
-        public JumpMeter Meter { get; private set; }
 
         public FormSelector Selector { get; private set; }
         public SatchelMenu Satchel { get; private set; }
@@ -72,10 +69,6 @@ namespace Patchwork
 
         static readonly Color DefaultFadeColor = new Color(0.16f, 0.1f, 0.2f);
         static Color carriedFadeColor = new Color(0.16f, 0.1f, 0.2f);
-
-        Portal warpPortal;
-        float warpTime;
-        Vector3 warpStart;
 
         Checkpoint activeCheckpoint;
         Vector3 respawnPoint;
@@ -145,7 +138,6 @@ namespace Patchwork
             switch (levelId)
             {
                 case LevelId.Level1: Level = Level1Builder.Build(kit); break;
-                case LevelId.Gym: Level = GymBuilder.Build(kit); Meter = new JumpMeter(); break;
                 default: Level = HubBuilder.Build(kit); break;
             }
             SetupEnvironment(cam);
@@ -179,6 +171,9 @@ namespace Patchwork
             Hud = gameObject.AddComponent<PatchworkHUD>();
             // Start painting the level's map now, while the loading screen is still up.
             if (MapScreen.Available(Level)) Map.Prepare();
+#if UNITY_EDITOR
+            LevelAudit.Schedule(this);
+#endif
             Hud.Game = this;
 
             // First time on the Skiff since the game started: studio logo, then the title screen.
@@ -313,9 +308,6 @@ namespace Patchwork
                 case UIMode.Complete:
                     if (Input.Confirm.WasPressedThisFrame()) LoadScene(HubBuilder.SceneName);
                     break;
-                case UIMode.Warping:
-                    UpdateWarp(udt);
-                    break;
                 case UIMode.Intro:
                     if (Title.Update(udt))
                     {
@@ -358,9 +350,7 @@ namespace Patchwork
                     frame.AbilityHeld = Input.Ability.IsPressed();
                     frame.JumpHeld = Input.Jump.IsPressed();
                 }
-                MovingPlatform.TickAll(dt);
                 Player.Tick(frame, dt);
-                if (Meter != null) Meter.Tick(Player.Motor);
 
                 if (Player.transform.position.y < Level.KillY || (Player.Motor.Center.y < Level.FailY && !Swinging())) Respawn(true);
             }
@@ -863,41 +853,6 @@ namespace Patchwork
             Sfx.Play(SfxId.Complete, 0.8f);
             FxBurst.Spawn(FxBurst.Kind.Scraps, Player.Motor.Center + Vector3.up, new Color(1f, 0.8f, 0.25f));
             FxBurst.Spawn(FxBurst.Kind.Sparkle, Player.Motor.Center + Vector3.up, Color.white);
-        }
-
-        // Starts the portal warp: Patch is pulled into the vortex, spins, shrinks, then the scene loads.
-        public void EnterPortal(Portal portal)
-        {
-            if (Mode != UIMode.Gameplay && Mode != UIMode.FormWheel) return;
-            Player.Forms.CancelAll();
-            warpPortal = portal;
-            warpTime = 0f;
-            warpStart = Player.transform.position;
-            SetMode(UIMode.Warping, 1f);
-            Player.Motor.Controller.enabled = false;
-            portal.Excite();
-            Sfx.Play(SfxId.PortalWarp, 0.8f);
-        }
-
-        void UpdateWarp(float udt)
-        {
-            const float Duration = 1.1f;
-            warpTime += udt;
-            float k = Mathf.Clamp01(warpTime / Duration);
-            float ease = k * k * (3f - 2f * k);
-            Vector3 target = warpPortal != null ? warpPortal.Center - Vector3.up * 0.5f : Player.transform.position;
-            Player.transform.position = Vector3.Lerp(warpStart, target, ease);
-            Player.Visuals.SetWarp(1f - ease);
-            Player.Visuals.Tick(Player.Motor, udt);
-            if (k > 0.55f && Mathf.Repeat(warpTime, 0.12f) < udt) FxBurst.Spawn(FxBurst.Kind.Sparkle, target, new Color(0.85f, 0.7f, 1f));
-            if (k >= 1f && warpPortal != null)
-            {
-                string scene = warpPortal.TargetScene;
-                warpPortal = null;
-                FadeColor = new Color(0.97f, 0.93f, 1f);
-                carriedFadeColor = FadeColor;
-                LoadScene(scene);
-            }
         }
 
         // Every scene change goes through the loading screen (quilt patches, the level card, the

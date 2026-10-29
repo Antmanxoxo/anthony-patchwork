@@ -69,7 +69,7 @@ namespace Patchwork
             }
 
             DrawLetterbox(kb);
-            if (Game.Mode != UIMode.Loading && Game.Mode != UIMode.Warping && Game.Mode != UIMode.Dance && Game.Mode != UIMode.LevelSelect && Game.Mode != UIMode.Talk && Game.Mode != UIMode.Cutscene)
+            if (Game.Mode != UIMode.Loading && Game.Mode != UIMode.Dance && Game.Mode != UIMode.LevelSelect && Game.Mode != UIMode.Talk && Game.Mode != UIMode.Cutscene)
             {
                 DrawHelmPrompt(kb);
                 DrawTalkPrompt(kb);
@@ -80,7 +80,6 @@ namespace Patchwork
                 DrawHintCard();
                 DrawToast();
                 DrawTitle();
-                DrawMeter();
                 DrawRaceTimer();
             }
 
@@ -425,22 +424,6 @@ namespace Patchwork
             var r = new Rect((UIKit.Width - w) * 0.5f, UIKit.Height * 0.68f, w, 54f);
             UIKit.Fill(r, new Color(0.13f, 0.11f, 0.19f, 0.82f * a), 27f);
             UIKit.Label(r, Game.ToastText, style);
-        }
-
-        // Test Gym readout: last jump's distance and height, and the best distance so far.
-        void DrawMeter()
-        {
-            var m = Game.Meter;
-            if (m == null) return;
-            var r = new Rect(UIKit.Width - 420f, 28f, 390f, 132f);
-            UIKit.Panel(r, UIKit.Paper, UIKit.Thread);
-            var ink = UIKit.Ink;
-            string form = Game.Player.Forms.Definition.DisplayName;
-            UIKit.Label(new Rect(r.x + 26f, r.y + 16f, r.width - 52f, 30f), form, UIKit.Style(24, true, TextAnchor.MiddleLeft, ink));
-            string last = m.HasJump ? m.LastDistance.ToString("0.0") + " m far,  " + m.LastHeight.ToString("0.0") + " m high" : "Jump to measure";
-            UIKit.Label(new Rect(r.x + 26f, r.y + 52f, r.width - 52f, 30f), last, UIKit.Style(22, false, TextAnchor.MiddleLeft, ink));
-            UIKit.Label(new Rect(r.x + 26f, r.y + 86f, r.width - 52f, 30f), "Best: " + m.BestDistance.ToString("0.0") + " m",
-                UIKit.Style(22, false, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.75f)));
         }
 
         void DrawTitle()

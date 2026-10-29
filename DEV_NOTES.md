@@ -31,7 +31,7 @@ Stuff I need to remember about how Patchwork is put together.
   `WaterAbility` / `YarnAbility` / `WindAbility`, `FormVisuals` (bodies + change animations), `FxBurst`,
   `PatchModel` (loads the Blender model, picks his animation from movement, swaps his three faces)
 - **World** - `LevelKit` (building blocks), `HubBuilder`, `Level1Builder`, and the interactive bits
-  (`PlayerVolume` and friends, `YarnAnchor`, `WaterGrate`, `BouncePad`, `MovingPlatform`, `ThreadSpool`)
+  (`PlayerVolume` and friends, `YarnAnchor`, `WaterGrate`, `BouncePad`, `ThreadSpool`)
 - **UI** - `UIKit`, `UIArt`, `PatchworkHUD`, `FormSelector` (wheel), `SatchelMenu`, `PauseMenu`
 
 ## Rules I'm sticking to
@@ -136,6 +136,12 @@ Stuff I need to remember about how Patchwork is put together.
 - Save version is 2 (`GameState.Version`). Older saves drop the Level 1 completion and its
   Heartstrings when they load.
 - `PatchworkAssets.Plain` uses the gentle `PatchworkTextures.Paint` brushstroke texture.
+- `LevelAudit` (editor only) runs 1.5 s after a level loads in Play mode and writes
+  `Logs/PatchworkAudit_<level>.txt`: walk-through props, flickering faces, collectibles stuck in
+  solids, broken materials and counts.
+- Builds: Patchwork > Build for Windows. Every shader keyword combo the game turns on at runtime
+  needs a `PW_Keep_*` material in Resources (the editor setup recreates them). The app icon is
+  `Assets/Patchwork/Icons/PatchworkIcon.png`, applied on editor load.
 - Town pieces are in `TownKit` (houses, lamps, clotheslines, lantern gates, bridges, stairs...).
   `MakeHouse` returns where its chimney top is, for a chimney-smoke updraft.
 - Fountain rule: height = shelf top + 2, shelf edge 1.2-2.2 m from the jet. Updraft height = rise.

@@ -274,8 +274,6 @@ namespace Patchwork
             }
         }
 
-        public static int DanceBeatsPerBar(FormType f) { return f == FormType.Wind ? 3 : 4; }
-
         // Yarn: a plucky hoedown. Water: a steel-drum calypso. Wind: a floaty waltz. 8 bars each, looping.
         public static AudioClip DanceSong(FormType f)
         {
@@ -482,24 +480,6 @@ namespace Patchwork
                 phase += 2f * Mathf.PI * f * Mathf.Lerp(0.8f, 1.25f, t / 0.09f) / Rate;
                 float env = Mathf.Clamp01(t / 0.004f) * Mathf.Exp(-t * 35f);
                 Add(data, s0 + i, Mathf.Sin(phase) * env * vol);
-            }
-        }
-
-        static void AddEPiano(float[] data, float start, float dur, float f, float vol)
-        {
-            int s0 = Mathf.FloorToInt(start * Rate);
-            int count = Mathf.CeilToInt((dur + 0.5f) * Rate);
-            float detune = 1.003f;
-            for (int i = 0; i < count; i++)
-            {
-                float t = i / (float)Rate;
-                float env = Mathf.Clamp01(t / 0.01f) * Mathf.Exp(-t * 1.6f) * Mathf.Clamp01((dur + 0.5f - t) / 0.5f);
-                float w = Mathf.Sin(2f * Mathf.PI * f * t) * 0.7f
-                        + Mathf.Sin(2f * Mathf.PI * f * detune * t) * 0.3f
-                        + Mathf.Sin(2f * Mathf.PI * f * 2f * t) * 0.12f * Mathf.Exp(-t * 4f);
-                // Slow tremolo for that lo-fi wobble.
-                w *= 1f + 0.08f * Mathf.Sin(2f * Mathf.PI * 4.2f * t);
-                Add(data, s0 + i, w * env * vol);
             }
         }
 

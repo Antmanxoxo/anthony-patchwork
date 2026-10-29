@@ -1,4 +1,5 @@
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
@@ -17,6 +18,7 @@ namespace Patchwork.EditorTools
         const string OpenedHubKey = "Patchwork.OpenedHubOnce";
         const string MaterialFolder = "Assets/Patchwork/Resources";
         const string MaterialPath = "Assets/Patchwork/Resources/PW_Lit.mat";
+        const string IconPath = "Assets/Patchwork/Icons/PatchworkIcon.png";
 
         static PatchworkEditorSetup()
         {
@@ -28,6 +30,7 @@ namespace Patchwork.EditorTools
             ApplyPlayModeStartScene();
             EnsureLitMaterial();
             EnsureVariantMaterials();
+            EnsureIcon();
             PatchModelImport.EnsureImported();
 
             if (!SessionState.GetBool(OpenedHubKey, false))
@@ -79,6 +82,7 @@ namespace Patchwork.EditorTools
             changed |= KeepMaterial(shader, "PW_Keep_Glow", null, true, false);
             changed |= KeepMaterial(shader, "PW_Keep_BumpyGlow", normal, true, false);
             changed |= KeepMaterial(shader, "PW_Keep_SeeThrough", null, true, true);
+            changed |= KeepMaterial(shader, "PW_Keep_SeeThroughBumpy", normal, true, true);
             if (changed) AssetDatabase.SaveAssets();
         }
 
@@ -136,6 +140,17 @@ namespace Patchwork.EditorTools
             if (isNew) AssetDatabase.CreateAsset(m, path);
             else EditorUtility.SetDirty(m);
             return true;
+        }
+
+        // The game's app icon (window, taskbar and the .exe).
+        static void EnsureIcon()
+        {
+            var icon = AssetDatabase.LoadAssetAtPath<Texture2D>(IconPath);
+            if (icon == null) return;
+            var icons = PlayerSettings.GetIcons(NamedBuildTarget.Unknown, IconKind.Any);
+            if (icons != null && icons.Length > 0 && icons[0] == icon) return;
+            PlayerSettings.SetIcons(NamedBuildTarget.Unknown, new[] { icon }, IconKind.Any);
+            AssetDatabase.SaveAssets();
         }
 
         [MenuItem("Patchwork/Open Hub Scene", false, 1)]

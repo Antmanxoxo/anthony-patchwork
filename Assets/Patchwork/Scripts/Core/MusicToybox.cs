@@ -306,20 +306,6 @@ namespace Patchwork
             return FinishStems(data, "pw_toybox_", new[] { "bed", "lute", "trumpet", "pipe" }, 7000f);
         }
 
-        // Harpsichord: a bright plucked string with a quick buzzy second partial.
-        static void AddHarpsichord(float[] data, float start, float dur, float f, float vol, int seed)
-        {
-            AddPluck(data, start, dur, f, vol, seed);
-            int s0 = Mathf.FloorToInt(start * Rate);
-            int count = Mathf.CeilToInt(Mathf.Min(dur, 0.4f) * Rate);
-            for (int i = 0; i < count; i++)
-            {
-                float t = i / (float)Rate;
-                float w = Mathf.Sin(2f * Mathf.PI * f * 2f * t) * 0.5f + Mathf.Sin(2f * Mathf.PI * f * 3f * t) * 0.3f;
-                Add(data, s0 + i, w * Mathf.Exp(-t * 14f) * vol * 0.5f);
-            }
-        }
-
         // Brass: a stack of harmonics that brighten as the note swells, with a little vibrato.
         static void AddBrass(float[] data, float start, float dur, float f, float vol)
         {

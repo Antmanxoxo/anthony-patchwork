@@ -60,13 +60,6 @@ namespace Patchwork
             return (Data.unlockedForms & (1 << (int)form)) != 0;
         }
 
-        public static void SetFormUnlocked(FormType form, bool unlocked)
-        {
-            int mask = Data.unlockedForms;
-            if (unlocked) mask |= 1 << (int)form; else mask &= ~(1 << (int)form);
-            if (mask != Data.unlockedForms) { Data.unlockedForms = mask; dirty = true; }
-        }
-
         // ----- Cosmetics (independent from forms) -----
         public static int HatIndex
         {

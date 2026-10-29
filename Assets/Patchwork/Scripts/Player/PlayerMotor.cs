@@ -50,8 +50,6 @@ namespace Patchwork
         float airTime;
         bool launched;
 
-        // Extra horizontal speed kept in the air (e.g. jumping off a moving platform). Cleared on landing.
-        [System.NonSerialized] public Vector3 Carry;
 
 
         // The collider Patch is standing on (for moving platforms). Null when airborne.
@@ -120,7 +118,6 @@ namespace Patchwork
             transform.rotation = Quaternion.Euler(0f, yaw, 0f);
             Controller.enabled = true;
             Velocity = Vector3.zero;
-            Carry = Vector3.zero;
             launched = false;
             ResetTransientState();
         }
@@ -146,7 +143,7 @@ namespace Patchwork
             }
             else
             {
-                Vector3 target = moveWorld * Params.MoveSpeed * (1f + SpeedBoost) + (Grounded ? Vector3.zero : Carry);
+                Vector3 target = moveWorld * Params.MoveSpeed * (1f + SpeedBoost);
                 float accel = Grounded || Swimming ? Params.GroundAcceleration * (1f + SpeedBoost) : Params.AirAcceleration;
                 horizontal = Vector3.MoveTowards(horizontal, target, accel * dt);
             }
@@ -220,7 +217,6 @@ namespace Patchwork
                 if (!wasGrounded && airTime > 0.15f) JustLanded = true;
                 allowJumpCut = false;
                 launched = false;
-                Carry = Vector3.zero;
                 airTime = 0f;
             }
             else

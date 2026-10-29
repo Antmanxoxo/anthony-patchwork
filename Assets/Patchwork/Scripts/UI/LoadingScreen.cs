@@ -13,8 +13,6 @@ namespace Patchwork
 
         // True from the moment a load starts until the new level is fully revealed.
         public static bool Busy { get { return instance != null; } }
-        // True while the screen is completely covered (the new level shouldn't show its own fade).
-        public static bool Covered { get { return instance != null && instance.cover >= 0.999f; } }
 
         enum Phase { CoverIn, Loading, Activating, Reveal }
 

@@ -412,7 +412,7 @@ namespace Patchwork
         static void Cannon(LevelKit kit, Vector3 pos, float side)
         {
             kit.Cardboard(pos + new Vector3(0f, 0.6f, 0f), new Vector3(1f, 1.2f, 1.1f), KraftDark, "CannonCarriage");
-            var barrel = kit.Deco(PrimitiveType.Cylinder, pos + new Vector3(side * 0.6f, 1.5f, 0f), new Vector3(0.6f, 0.95f, 0.6f), PatchworkAssets.Cardboard(new Color(0.3f, 0.28f, 0.32f)), new Vector3(0f, 0f, 90f));
+            kit.Deco(PrimitiveType.Cylinder, pos + new Vector3(side * 0.6f, 1.5f, 0f), new Vector3(0.6f, 0.95f, 0.6f), PatchworkAssets.Cardboard(new Color(0.3f, 0.28f, 0.32f)), new Vector3(0f, 0f, 90f));
             kit.Deco(PrimitiveType.Cylinder, pos + new Vector3(side * 1.55f, 1.5f, 0f), new Vector3(0.7f, 0.06f, 0.7f), PatchworkAssets.Felt(LevelKit.Palette.Gold), new Vector3(0f, 0f, 90f));
             kit.Deco(PrimitiveType.Cylinder, pos + new Vector3(side * 1.59f, 1.5f, 0f), new Vector3(0.4f, 0.04f, 0.4f), PatchworkAssets.Plain(new Color(0.1f, 0.08f, 0.1f), 0.2f), new Vector3(0f, 0f, 90f));
             for (int s = -1; s <= 1; s += 2)

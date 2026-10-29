@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Patchwork.EditorTools
 {
-    // Patchwork menu: one-click Windows build, and the movement Test Gym.
+    // Patchwork menu: one-click Windows build.
     public static class PatchworkBuild
     {
         const string BuildFolder = "Builds/Windows";
@@ -40,14 +40,6 @@ namespace Patchwork.EditorTools
             {
                 Debug.LogError("Patchwork: Windows build " + summary.result + " with " + summary.totalErrors + " error(s). See the Console.");
             }
-        }
-
-        [MenuItem("Patchwork/Play Test Gym", false, 21)]
-        static void PlayGym()
-        {
-            if (EditorApplication.isPlaying) return;
-            SessionState.SetBool("Patchwork.PlayGym", true);
-            EditorApplication.isPlaying = true;
         }
     }
 }

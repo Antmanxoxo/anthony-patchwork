@@ -38,18 +38,6 @@ namespace Patchwork
 
         public void Tick(PlayerInputFrame input, float dt)
         {
-            // Ride moving platforms: move with whatever we're standing on.
-            Vector3 platformVelocity = Vector3.zero;
-            if (Motor.Grounded && !Motor.ExternalControl && Motor.GroundCollider != null)
-            {
-                var platform = Motor.GroundCollider.GetComponentInParent<MovingPlatform>();
-                if (platform != null && platform.Delta.sqrMagnitude > 0f)
-                {
-                    Motor.Controller.Move(platform.Delta);
-                    if (dt > 0f) platformVelocity = platform.Delta / dt;
-                }
-            }
-
             Forms.Tick(dt);
             Forms.Ability.PreMove(input, dt);
             PlayerVolume.UpdateAll(this, dt);
@@ -58,12 +46,6 @@ namespace Patchwork
 
             if (Motor.JustJumped)
             {
-                // Jumping off a moving platform keeps its speed instead of stopping dead.
-                if (platformVelocity.sqrMagnitude > 0f)
-                {
-                    Motor.Carry = new Vector3(platformVelocity.x, 0f, platformVelocity.z);
-                    Motor.Velocity += new Vector3(platformVelocity.x, Mathf.Max(0f, platformVelocity.y), platformVelocity.z);
-                }
                 Visuals.PunchScale(new Vector3(0.8f, 1.25f, 0.8f));
                 Sfx.Play(SfxId.Jump, 0.35f);
                 // A little "hup" on about every other jump, so it never gets tiring.

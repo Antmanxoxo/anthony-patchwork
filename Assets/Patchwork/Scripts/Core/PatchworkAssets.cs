@@ -38,7 +38,6 @@ namespace Patchwork
             if (litTemplate != null) litShader = litTemplate.shader;
             if (litShader == null) litShader = Shader.Find("Universal Render Pipeline/Lit");
             if (litShader == null) litShader = Shader.Find("Universal Render Pipeline/Simple Lit");
-            if (litShader == null) litShader = Shader.Find("Standard");
 
             PatchworkTextures.EnsureBuilt();
             UIArt.EnsureBuilt();

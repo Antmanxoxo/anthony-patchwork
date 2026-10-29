@@ -17,8 +17,6 @@ namespace Patchwork
         bool taken;
         Light glow;
 
-        public bool Hidden { get { return hidden; } }
-
         public void Setup(string id, string title, Transform visualRoot, Transform ringRoot, Light light, bool startHidden)
         {
             Id = id;

@@ -14,8 +14,6 @@ namespace Patchwork
         readonly List<Vector2> uvs = new List<Vector2>();
         readonly List<int> tris = new List<int>();
 
-        public int VertexCount { get { return verts.Count; } }
-
         void Tri(Vector3 a, Vector3 b, Vector3 c, Vector2 ua, Vector2 ub, Vector2 uc)
         {
             Vector3 n = Vector3.Cross(b - a, c - a);

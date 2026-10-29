@@ -1,5 +1,14 @@
 # Development Log
 
+## Ready for a first build
+- Cleaned out code the game no longer uses: the Test Gym, portals, moving platforms, the old
+  Sewing Basket props, a few unused instruments, and Unity's sample scene and readme.
+- Builds keep every material look the game makes (no pink objects), anti-aliasing is on, the
+  window opens at 1920x1080 and can be resized, and the game has its own icon.
+- Pressing Play in the editor now writes a level check to the Logs folder, listing props you
+  can walk through, flickering faces and anything stuck inside a wall.
+- README and project status updated for the Cardboard Skiff and Toybox Town.
+
 ## Toys to play with, solid props and fixes
 - Fixes:
   - The Mayor said the same thing whether or not you had the band pieces, and the opening

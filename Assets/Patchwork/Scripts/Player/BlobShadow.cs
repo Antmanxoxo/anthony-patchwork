@@ -50,7 +50,7 @@ namespace Patchwork
         {
             if (disc == null || player == null) return;
             var game = player.Game;
-            bool hidden = game == null || game.Mode == UIMode.Warping || game.Mode == UIMode.Loading
+            bool hidden = game == null || game.Mode == UIMode.Loading
                           || !player.Motor.Controller.enabled;
 
             RaycastHit hit;
