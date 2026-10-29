@@ -216,7 +216,8 @@ namespace Patchwork
                 }
                 int threadTotal;
                 int best = GameState.BestThreads(entry.Scene, out threadTotal);
-                string line = "Golden buttons " + found + " / " + entry.Collectibles.Length +
+                string hearts = entry.Heartstrings.Length > 0 ? "Heartstrings " + LevelCatalog.FoundHeartstrings(entry) + " / " + entry.Heartstrings.Length + "      " : "";
+                string line = hearts + "Golden buttons " + found + " / " + entry.Collectibles.Length +
                               (threadTotal > 0 ? "      Best threads " + best + " / " + threadTotal : "");
                 UIKit.Label(new Rect(card.x, rowY + 70f, card.width, 36f), line, UIKit.Style(24, true, TextAnchor.MiddleCenter, new Color(ink.r, ink.g, ink.b, 0.8f * a)));
             }

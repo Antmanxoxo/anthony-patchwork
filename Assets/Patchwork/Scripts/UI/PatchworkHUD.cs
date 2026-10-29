@@ -81,6 +81,7 @@ namespace Patchwork
                 DrawToast();
                 DrawTitle();
                 DrawMeter();
+                DrawRaceTimer();
             }
 
             switch (Game.Mode)
@@ -208,6 +209,19 @@ namespace Patchwork
             var level = Game.Level;
             int total = level.CollectibleIds.Count;
             float y = 24f;
+            if (level.HeartstringIds.Count > 0)
+            {
+                // Heartstrings first: they're what the level is about.
+                int got = level.HeartstringCount();
+                var hr = new Rect(28f, y, 260f, 92f);
+                UIKit.Panel(hr, new Color(1f, 0.95f, 0.86f, 0.95f), new Color(0.9f, 0.6f, 0.3f, 0.9f), 20f);
+                UIKit.Heart(new Vector2(hr.x + 50f, hr.y + 48f), 58f, new Color(1f, 0.72f, 0.3f));
+                UIKit.Label(new Rect(hr.x + 92f, hr.y + 10f, 160f, 50f), got + " / " + level.HeartstringIds.Count,
+                    UIKit.Style(36, true, TextAnchor.MiddleLeft, new Color(0.45f, 0.25f, 0.1f)));
+                string sub = got >= level.HeartstringsNeeded ? "The lift is open!" : "Need " + level.HeartstringsNeeded + " for the lift";
+                UIKit.Label(new Rect(hr.x + 92f, hr.y + 54f, 170f, 28f), sub, UIKit.Style(17, true, TextAnchor.MiddleLeft, new Color(0.45f, 0.25f, 0.1f, 0.8f)));
+                y += 104f;
+            }
             if (total > 0)
             {
                 var r = new Rect(28f, y, 230f, 84f);
@@ -402,6 +416,22 @@ namespace Patchwork
             UIKit.Label(new Rect(0f, y + 66f, UIKit.Width, 40f), Game.Level.Subtitle, sub, true);
         }
 
+        // Thread Race countdown at the top of the screen.
+        void DrawRaceTimer()
+        {
+            var race = ThreadRace.Running;
+            if (race == null) return;
+            float W = UIKit.Width;
+            var r = new Rect((W - 360f) * 0.5f, 24f, 360f, 86f);
+            bool hurry = race.TimeLeft < 5f;
+            UIKit.Panel(r, new Color(0.92f, 0.98f, 1f, 0.95f), hurry ? new Color(0.95f, 0.4f, 0.4f, 0.9f) : new Color(0.3f, 0.65f, 0.85f, 0.9f), 20f);
+            float pulse = hurry ? 1f + Mathf.Abs(Mathf.Sin(Time.unscaledTime * 8f)) * 0.08f : 1f;
+            UIKit.Label(new Rect(r.x, r.y + 6f, r.width, 48f), Mathf.CeilToInt(race.TimeLeft).ToString(),
+                UIKit.Style(Mathf.RoundToInt(40 * pulse), true, TextAnchor.MiddleCenter, hurry ? new Color(0.8f, 0.2f, 0.25f) : UIKit.Ink));
+            UIKit.Label(new Rect(r.x, r.y + 50f, r.width, 30f), "Rings " + race.Got + " / " + race.Total,
+                UIKit.Style(20, true, TextAnchor.MiddleCenter, new Color(UIKit.Ink.r, UIKit.Ink.g, UIKit.Ink.b, 0.8f)));
+        }
+
         // Floating "Talk" prompt over an NPC you're standing next to.
         void DrawTalkPrompt(bool kb)
         {
@@ -463,6 +493,12 @@ namespace Patchwork
             UIKit.Icon(new Rect(panel.x + 200f, panel.y + 150f, 90f, 90f), PatchworkAssets.IconButton, Color.white);
             UIKit.Label(new Rect(panel.x + 305f, panel.y + 150f, 200f, 90f),
                 Game.Level.CollectedCount() + " / " + Game.Level.CollectibleIds.Count, UIKit.Style(44, true, TextAnchor.MiddleLeft, ink));
+            if (Game.Level.HeartstringIds.Count > 0)
+            {
+                UIKit.Heart(new Vector2(panel.x + 140f, panel.y + 195f), 70f, new Color(1f, 0.72f, 0.3f));
+                UIKit.Label(new Rect(panel.x + 90f, panel.y + 240f, 110f, 40f), Game.Level.HeartstringCount() + "/" + Game.Level.HeartstringIds.Count,
+                    UIKit.Style(28, true, TextAnchor.MiddleCenter, ink));
+            }
             if (Game.Level.ThreadTotal > 0)
             {
                 UIKit.Icon(new Rect(panel.x + 210f, panel.y + 236f, 70f, 70f), PatchworkAssets.IconYarn, Color.white);

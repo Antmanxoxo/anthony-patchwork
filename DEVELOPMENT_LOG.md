@@ -1,5 +1,30 @@
 # Development Log
 
+## The Fray and an open Level 1
+- Story: a grey static called the Fray has seeped into the world through a tear in the sky and
+  unravels whatever it touches. Every place is held together by golden Heartstrings; finding
+  them and threading them back mends it. Captain Yarny tells you about it on the Skiff.
+- Level 1 is now an open garden you can explore in any order, like a Mario Odyssey kingdom.
+  The middle is the Mending Square with the Heart Spool; four bridges lead to Pincushion Peaks
+  (Yarn swings and bounces), Dye Falls (Water fountains up dye cascades), Breezy Bluffs (Wind
+  glides, updrafts and gusts) and the Spoolwork Ruins (sliding buttons, a Snarling arena and a
+  drain into the old loom's courtyard).
+- 8 Heartstrings: one at the top of each region, plus challenges that make one appear: pop the
+  six Fray knots in the square, win the Thread Race at Dye Falls, unravel the Snarlings in the
+  arena, and a secret cloud patch above the windmill.
+- Each Heartstring lights a peg on the Heart Spool and pulls a snarl off it. Finding a region's
+  Heartstring peels the Fray off that region and flowers grow back.
+- Four Heartstrings wake the spool: a golden thread lifts any form up to the Fray's knot in the
+  sky. Pop the four knots holding it, and the garden's heart is freed (that finishes the level).
+- New: Fray knots and Snarlings (jump on them to pop them; walking into them pushes you back),
+  homeward hoops that whisk you back to the square, a Heartstring counter on the HUD, and a
+  countdown for the Thread Race.
+- The 3 golden buttons are still secrets: bottom of the first swing in the Peaks, inside the
+  drain hut on top of Dye Falls, and the humming spool tower in the Bluffs.
+- Settings menu rows are easier to read when they're not highlighted (solid cards, darker text,
+  values in their own coloured chips).
+- The gold in the captain's cabin no longer shimmers.
+
 ## Captain Yarny and a tidier Skiff
 - Captain Yarny, an old yarn-ball pirate with an eyepatch, a grey yarn beard, a tricorn, a pencil
   peg leg, a crochet-hook hand and a yarn parrot, stands by the helm. Press Ability next to him to

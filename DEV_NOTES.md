@@ -91,6 +91,12 @@ Stuff I need to remember about how Patchwork is put together.
   except while swinging on yarn. Don't build anything you're meant to stand on below y = -2.
 - Normal jump goes about 5m. Wind with glide + gust goes about 13.4m (the gust only gives a small
   fixed lift, so it can't re-launch the glide).
+- Level 1 regions sit around the Mending Square (radius 17): North z 27+, East x 27+, West x -27-,
+  South z -27-. Section origins are constants at the top of `Level1Builder`.
+- `Level1Director` runs the Heartstring story (pegs, snarls, Fray regions, the lift, the sky knot).
+  Heartstring ids are `L1_hs_*` in the save's collected list.
+- Fray knots (`SnarlKnot`) and `Snarling`s pop when Patch lands on them moving down, crashes in
+  faster than 9 m/s, gusts into them, or swings into them. Otherwise they push him away.
 - Yarn gaps are 15m, Wind glide gap is 7m, gust gap is 11m. The rim swing goes from the thimble
   (top 6m) to the rim (top 6m).
 - Water is 0.8m tall (0.32 radius), tunnels are 1m tall. Other forms are 1.4m tall (0.45 radius).

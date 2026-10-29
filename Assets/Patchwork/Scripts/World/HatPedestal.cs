@@ -22,7 +22,7 @@ namespace Patchwork
         {
             if (visual == null || !visual.gameObject.activeSelf) return;
             t += Time.deltaTime;
-            visual.localRotation = Quaternion.Euler(0f, t * 70f, 0f);
+            visual.localRotation = Quaternion.Euler(0f, t * 40f, 0f);
             visual.localPosition = new Vector3(0f, Mathf.Sin(t * 2f) * 0.12f, 0f);
         }
 

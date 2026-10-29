@@ -194,6 +194,16 @@ namespace Patchwork
             return 1f - x * x * x;
         }
 
+        // A little heart (two circles and a turned square), for Heartstrings.
+        public static void Heart(Vector2 c, float size, Color col)
+        {
+            float r = size * 0.3f;
+            Circle(new Vector2(c.x - r * 0.95f, c.y - r * 0.55f), r * 2f, col);
+            Circle(new Vector2(c.x + r * 0.95f, c.y - r * 0.55f), r * 2f, col);
+            float sq = size * 0.56f;
+            IconTransformed(new Rect(c.x - sq * 0.5f, c.y - sq * 0.35f, sq, sq), Texture2D.whiteTexture, col, 45f, 1f);
+        }
+
         // Dark rounded backing for white text.
         public static void Pill(Rect r, float alpha = 1f)
         {

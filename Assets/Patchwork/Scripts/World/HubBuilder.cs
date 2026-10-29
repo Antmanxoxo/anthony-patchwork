@@ -90,7 +90,7 @@ namespace Patchwork
             kit.Prism(new[] { new Vector2(-DeckHalfWidth, MidBowZ), new Vector2(0f, MidBowZ + 8f), new Vector2(DeckHalfWidth, MidBowZ) },
                 -1f, 0f, kraft, "BowDeck");
             // Packing tape across the deck seams (raised a little so it never flickers into the deck).
-            for (float z = SternZ + 4f; z < MidBowZ; z += 6f)
+            for (float z = SternZ + 10f; z < MidBowZ; z += 6f)
                 kit.Tape(new Vector3(0f, 0.02f, z), new Vector3(DeckHalfWidth * 2f - 0.6f, 0.03f, 0.5f));
             kit.Tape(new Vector3(0f, 0.02f, MidBowZ + 2.5f), new Vector3(0.5f, 0.03f, 9f));
 
@@ -531,10 +531,12 @@ namespace Patchwork
             kit.Cardboard(new Vector3(cx, h - 0.15f, z1 + 0.05f), new Vector3(3.2f, 0.7f, 0.1f), LevelKit.Palette.Cream, "CabinSign");
 
             // Three button sockets beside the door, gold for each one found.
-            var gold = PatchworkAssets.Glow(LevelKit.Palette.Gold, 0.5f);
+            // (Small, bright, glowing gold shimmered as the camera moved, so these are a soft satin
+            // gold with only a faint glow.)
+            var gold = PatchworkAssets.Glow(LevelKit.Palette.Gold, 0.12f);
             var empty = PatchworkAssets.Felt(new Color(0.35f, 0.3f, 0.4f));
             for (int i = 0; i < needed; i++)
-                kit.Deco(PrimitiveType.Cylinder, new Vector3(cx - 0.8f + i * 0.8f, h - 0.15f, z1 + 0.15f), new Vector3(0.55f, 0.05f, 0.55f), i < found ? gold : empty, new Vector3(90f, 0f, 0f));
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(cx - 0.8f + i * 0.8f, h - 0.15f, z1 + 0.2f), new Vector3(0.55f, 0.08f, 0.55f), i < found ? gold : empty, new Vector3(90f, 0f, 0f));
 
             if (!open)
             {
@@ -550,11 +552,11 @@ namespace Patchwork
             // Inside: the Golden Crown on a pedestal.
             Vector3 ped = new Vector3(cx, 0f, cz - 0.6f);
             kit.Deco(PrimitiveType.Cylinder, ped + Vector3.up * 0.4f, new Vector3(1.4f, 0.4f, 1.4f), PatchworkAssets.Felt(LevelKit.Palette.Cream));
-            kit.Deco(PrimitiveType.Cylinder, ped + Vector3.up * 0.82f, new Vector3(1.6f, 0.04f, 1.6f), gold);
+            kit.Deco(PrimitiveType.Cylinder, ped + Vector3.up * 0.84f, new Vector3(1.6f, 0.04f, 1.6f), PatchworkAssets.Felt(LevelKit.Palette.Gold));
             var pedestal = kit.Volume<HatPedestal>(ped + Vector3.up * 1.4f, new Vector3(2f, 2.8f, 2f), "CrownPedestal");
             var vis = new GameObject("Crown").transform;
             vis.SetParent(pedestal.transform, false);
-            var crownGold = PatchworkAssets.Glow(new Color(1f, 0.8f, 0.25f), 0.35f);
+            var crownGold = PatchworkAssets.Glow(new Color(1f, 0.8f, 0.25f), 0.1f);
             kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.9f, 0.16f, 0.9f), crownGold, default(Vector3), vis);
             for (int i = 0; i < 5; i++)
             {
@@ -602,8 +604,8 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cube, new Vector3(2.6f, 0.93f, z0 + 1.05f), new Vector3(0.25f, 0.01f, 0.05f), PatchworkAssets.Felt(new Color(0.85f, 0.2f, 0.25f)), new Vector3(0f, -45f, 0f));
             kit.Deco(PrimitiveType.Cylinder, new Vector3(1.8f, 1.05f, z0 + 1.3f), new Vector3(0.12f, 0.15f, 0.12f), PatchworkAssets.Felt(LevelKit.Palette.Cream));
             kit.Deco(PrimitiveType.Sphere, new Vector3(1.8f, 1.26f, z0 + 1.3f), new Vector3(0.07f, 0.12f, 0.07f), PatchworkAssets.Glow(new Color(1f, 0.75f, 0.35f), 2f));
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(3.2f, 1.15f, z0 + 1.2f), new Vector3(0.45f, 0.06f, 0.45f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f), new Vector3(90f, 0f, 0f));
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(3.2f, 1.15f, z0 + 1.15f), new Vector3(0.38f, 0.065f, 0.38f), PatchworkAssets.Felt(LevelKit.Palette.Cream), new Vector3(90f, 0f, 0f));
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(3.2f, 1.15f, z0 + 1.2f), new Vector3(0.45f, 0.06f, 0.45f), PatchworkAssets.Felt(LevelKit.Palette.Gold), new Vector3(90f, 0f, 0f));
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(3.2f, 1.15f, z0 + 1.28f), new Vector3(0.36f, 0.02f, 0.36f), PatchworkAssets.Felt(LevelKit.Palette.Cream), new Vector3(90f, 0f, 0f));
             kit.Deco(PrimitiveType.Sphere, new Vector3(-2.7f, 1.3f, cz), new Vector3(1.1f, 0.35f, 4.4f), PatchworkAssets.Fabric(LevelKit.Palette.Sky));
             var rope = PatchworkAssets.Yarn(new Color(0.96f, 0.92f, 0.82f));
             kit.Rope(new Vector3(-2.7f, 1.45f, cz - 2.1f), new Vector3(-2.7f, 2.6f, z0 + 0.4f), rope, 0.05f);

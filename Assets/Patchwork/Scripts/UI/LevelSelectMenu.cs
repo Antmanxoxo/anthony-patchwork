@@ -136,7 +136,7 @@ namespace Patchwork
             // The card on the right.
             float pop = UIKit.EaseOutBack(Mathf.Clamp01(changeTime / 0.3f));
             float sx = Mathf.Sin(shake * 40f) * 14f * shake;
-            float cw = 640f, ch = 600f;
+            float cw = 640f, ch = 680f;
             var card = new Rect(W - cw - 110f + sx + (1f - a) * 200f, (H - ch) * 0.5f - 20f, cw, ch);
             Color tint = e.Tint;
             UIKit.Panel(card, new Color(0.99f, 0.96f, 0.9f, 0.96f * a), new Color(tint.r * 0.7f, tint.g * 0.7f, tint.b * 0.7f, 0.9f * a));
@@ -166,6 +166,13 @@ namespace Patchwork
                     var c = new Vector2(card.x + 270f + i * 58f, y + 18f);
                     if (i < found) UIKit.Circle(c, 44f, new Color(1f, 0.8f, 0.25f, a));
                     else UIKit.CircleOutline(c, 44f, new Color(ink.r, ink.g, ink.b, 0.3f * a), 3f);
+                }
+                // Heartstrings.
+                if (e.Heartstrings.Length > 0)
+                {
+                    UIKit.Heart(new Vector2(card.x + 52f, y + 112f), 36f, new Color(1f, 0.72f, 0.3f, a));
+                    UIKit.Label(new Rect(card.x + 80f, y + 94f, card.width - 120f, 36f), "Heartstrings   " + LevelCatalog.FoundHeartstrings(e) + " / " + e.Heartstrings.Length,
+                        UIKit.Style(22, true, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.8f * a)));
                 }
                 // Threads.
                 int total;

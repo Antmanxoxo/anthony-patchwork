@@ -501,8 +501,10 @@ namespace Patchwork
 
                 if (!sel)
                 {
-                    UIKit.Fill(r, new Color(1f, 1f, 1f, 0.7f * alpha), 18f);
-                    UIKit.Outline(r, new Color(ink.r, ink.g, ink.b, 0.2f * alpha), 2f, 18f);
+                    // Solid cards with a soft shadow, so every row reads clearly even when it isn't picked.
+                    UIKit.Fill(new Rect(r.x + 2f, r.y + 4f, r.width, r.height), new Color(0.35f, 0.22f, 0.2f, 0.12f * alpha), 18f);
+                    UIKit.Fill(r, new Color(1f, 0.995f, 0.98f, 0.96f * alpha), 18f);
+                    UIKit.Outline(r, new Color(ink.r, ink.g, ink.b, 0.28f * alpha), 2f, 18f);
                 }
 
                 // Icon (animated when selected).
@@ -517,8 +519,20 @@ namespace Patchwork
                 UIKit.IconTransformed(iconRect, IconFor(item), new Color(1f, 1f, 1f, alpha), angle, scale);
                 if (sel && (item == Item.Music || item == Item.Sounds)) DrawFloatingNotes(iconRect, alpha);
 
-                var style = UIKit.Style(sel ? 25 : 23, true, TextAnchor.MiddleLeft, sel ? new Color(1f, 1f, 1f, alpha) : new Color(ink.r, ink.g, ink.b, alpha));
-                UIKit.Label(new Rect(r.x + 82f, r.y, r.width - 100f, r.height), LabelFor(item), style, sel);
+                // "Name:  Value" rows show the value in its own coloured chip on the right.
+                string label = LabelFor(item), value = null;
+                int split = label.IndexOf(":  ");
+                if (split > 0) { value = label.Substring(split + 3); label = label.Substring(0, split); }
+                var style = UIKit.Style(sel ? 25 : 24, true, TextAnchor.MiddleLeft, sel ? new Color(1f, 1f, 1f, alpha) : new Color(ink.r, ink.g, ink.b, alpha));
+                UIKit.Label(new Rect(r.x + 82f, r.y, r.width - 100f, r.height), label, style, sel);
+                if (value != null)
+                {
+                    var vs = UIKit.Style(21, true, TextAnchor.MiddleCenter, sel ? new Color(c.r * 0.6f, c.g * 0.6f, c.b * 0.6f, alpha) : new Color(1f, 1f, 1f, alpha));
+                    float vw = UIKit.TextWidth(value, vs) + 34f;
+                    var chip = new Rect(r.xMax - vw - 16f, r.y + (rowH - 38f) * 0.5f, vw, 38f);
+                    UIKit.Fill(chip, sel ? new Color(1f, 1f, 1f, 0.95f * alpha) : new Color(c.r * 0.85f, c.g * 0.85f, c.b * 0.85f, alpha), 19f);
+                    UIKit.Label(chip, value, vs);
+                }
                 if (IsSlider(item)) DrawSlider(new Rect(r.xMax - 236f, r.y + (rowH - 22f) * 0.5f, 210f, 22f), SliderValue(item), sel, alpha, ink);
             }
 
@@ -542,8 +556,8 @@ namespace Patchwork
                 var pill = new Rect(r.x + i * (w + gap), r.y, w, r.height);
                 bool on = i < value;
                 Color fill = sel
-                    ? new Color(1f, 1f, 1f, (on ? 0.95f : 0.25f) * alpha)
-                    : new Color(ink.r, ink.g, ink.b, (on ? 0.7f : 0.15f) * alpha);
+                    ? new Color(1f, 1f, 1f, (on ? 0.95f : 0.3f) * alpha)
+                    : new Color(ink.r, ink.g, ink.b, (on ? 0.85f : 0.2f) * alpha);
                 UIKit.Fill(pill, fill, 5f);
             }
             if (value == 0)

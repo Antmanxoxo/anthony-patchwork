@@ -640,6 +640,19 @@ namespace Patchwork
             return yarn != null && yarn.Attached;
         }
 
+        // Moves Patch somewhere else in the level (homeward hoops) with a quick fade, and makes
+        // that spot the new respawn point.
+        public void WarpPlayer(Vector3 feet, float yaw)
+        {
+            FadeColor = new Color(0.97f, 0.93f, 1f);
+            Fade = Mathf.Max(Fade, 0.85f);
+            respawnPoint = feet;
+            respawnYaw = yaw;
+            Player.Respawn(feet, yaw);
+            CameraRig.SnapBehind(yaw);
+            FxBurst.Spawn(FxBurst.Kind.Sparkle, feet + Vector3.up, new Color(0.85f, 0.7f, 1f));
+        }
+
         public void Respawn(bool fell)
         {
             if (fell)

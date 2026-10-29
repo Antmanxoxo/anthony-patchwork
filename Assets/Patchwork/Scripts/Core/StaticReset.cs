@@ -16,6 +16,8 @@ namespace Patchwork
             LoadingScreen.ResetStatics();
             TitleSequence.ResetStatics();
             LevelSelectMenu.ResetStatics();
+            Level1Director.ResetStatics();
+            ThreadRace.ResetStatics();
             PatchModel.CurrentFace = PatchModel.Face.Happy;
         }
     }

@@ -27,6 +27,15 @@ namespace Patchwork
         public Color Sky = new Color(0.78f, 0.86f, 0.95f);
         public readonly List<string> CollectibleIds = new List<string>();
         public int ThreadTotal;
+        // Heartstrings: the main things to find in a level (some open the way to the finale).
+        public readonly List<string> HeartstringIds = new List<string>();
+        public int HeartstringsNeeded;
+        public int HeartstringCount()
+        {
+            int n = 0;
+            foreach (var id in HeartstringIds) if (GameState.IsCollected(id)) n++;
+            return n;
+        }
         // The Skiff's level-select globe (hub only).
         public LevelGlobe Globe;
 
@@ -216,7 +225,7 @@ namespace Patchwork
             col.height = height;
         }
 
-        public void Flower(Vector3 pos, Color petals)
+        public Transform Flower(Vector3 pos, Color petals)
         {
             var g = Group("Flower", pos);
             Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.25f, 0f), new Vector3(0.05f, 0.25f, 0.05f), PatchworkAssets.Felt(Palette.Moss), default(Vector3), g);
@@ -227,6 +236,7 @@ namespace Patchwork
                 Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 0.14f, 0.55f, Mathf.Sin(a) * 0.14f), new Vector3(0.16f, 0.05f, 0.16f), pm, default(Vector3), g);
             }
             Deco(PrimitiveType.Sphere, new Vector3(0f, 0.57f, 0f), Vector3.one * 0.12f, PatchworkAssets.Felt(Palette.Butter), default(Vector3), g);
+            return g;
         }
 
         public void SewingButton(Vector3 pos, float size, Color color, Vector3 euler)
@@ -773,7 +783,7 @@ namespace Patchwork
         }
 
         // A huge tomato pincushion with segments, a felt leaf top and pins poking out (solid).
-        public void Pincushion(Vector3 groundPos, float radius, Color body)
+        public Transform Pincushion(Vector3 groundPos, float radius, Color body)
         {
             var g = Group("Pincushion", groundPos + Vector3.up * radius * 0.55f);
             var felt = PatchworkAssets.Felt(body);
@@ -803,6 +813,7 @@ namespace Patchwork
             }
             var col = g.gameObject.AddComponent<SphereCollider>();
             col.radius = radius * 0.9f;
+            return g;
         }
 
         // A pair of giant scissors lying open on the ground (decorative).

@@ -230,7 +230,10 @@ namespace Patchwork
                 {
                     "Arr! A new deckhand aboard! Name's Captain Yarny, master o' the Cardboard Skiff.",
                     "I've been sailin' these patchwork skies since I were a single loose thread.",
-                    "See that globe at the bow? Step up to the helm and give it a turn. It'll take ye anywhere that's stitched upon it.",
+                    "But there be trouble below. A grey static's creepin' over the world. We sailors call it the Fray.",
+                    "It slipped in through a tear in the sky, and it unravels whatever it touches. Gardens, rivers, whole kingdoms o' cloth.",
+                    "Every place has golden Heartstrings holdin' it together. Find 'em, thread 'em back where they belong, and the Fray lets go.",
+                    "See that globe at the bow? Step up to the helm and give it a turn. The Sewing Basket Garden's where it struck first.",
                     "Now off ye go. And mind ye don't unravel!"
                 };
             }
@@ -239,8 +242,20 @@ namespace Patchwork
             int found = GameState.GoldenButtonCount();
             int needed = Level1Builder.CollectibleIds.Length;
             bool done1 = GameState.IsLevelComplete(Level1Builder.SceneName);
-            if (!done1)
-                lines.Add(new[] { "The Sewing Basket Garden be waitin' for ye.", "Climb all the way out o' that basket, and keep out o' the paint below. It never comes out o' yarn!" });
+            int hearts = 0;
+            foreach (var id in Level1Builder.HeartstringIds) if (GameState.IsCollected(id)) hearts++;
+            if (!done1 && hearts < Level1Builder.HeartstringsNeeded)
+                lines.Add(new[] { "The Fray's got the Sewing Basket Garden all tangled up.", "Find " + Level1Builder.HeartstringsNeeded + " Heartstrings and the Heart Spool will wake. Ye've got " + hearts + " so far.",
+                                  "Four corners to that garden: the Peaks, the Falls, the Bluffs and the Ruins. Start wherever ye fancy!" });
+            else if (!done1)
+                lines.Add(new[] { "The Heart Spool's awake! That golden thread'll carry ye right up to the Fray's knot.", "Pop the knots holdin' it together and set the garden's heart free!" });
+            else
+                lines.Add(new[] { "Ye mended the garden! The Fray's knot came right undone. Proud o' ye, deckhand.",
+                                  "But where there's one tear in the sky, there's bound to be more...", "Mark me words. We'll be needin' that globe again." });
+            if (hearts < Level1Builder.HeartstringIds.Length)
+                lines.Add(new[] { "There be " + (Level1Builder.HeartstringIds.Length - hearts) + " Heartstrings still loose in the garden.",
+                                  "Some only show up when ye beat a challenge. Knots to pop, races to run, Snarlings to sort out." });
+            lines.Add(new[] { "Snarlings, they call the Fray's little critters. All grumble, no bite.", "Hop on their heads and they come right undone!" });
             if (found < needed)
                 lines.Add(new[] { "Word on the wind is there be " + (needed - found) + " golden button" + (needed - found == 1 ? "" : "s") + " still hidin' in that garden.",
                                   "One of 'em hums a little tune, they say. Keep yer ears open, matey." });
