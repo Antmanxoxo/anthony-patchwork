@@ -123,6 +123,11 @@ Stuff I need to remember about how Patchwork is put together.
 - `PatchworkGame.Ask(title, body, onYes)` shows a Yes/No card (`AskBox`, `UIMode.Ask`). Home
   hoops use it.
 - Moving decorations: `PathMover` (loops of points), `Rocker` (rock on one axis), `Butterfly`.
+- Deep water: `WaterBody` volume (SurfaceY). Water Form gets `Motor.Swimming` + `SpeedBoost`
+  each frame (lift to the surface, jump allowed); other forms splash and respawn.
+  Toybox Town's canal surface is y -0.6 (bed -5), the stream -5.35 (bed -8).
+- `PatchworkAssets.CraftWater(alpha, tiling)` is the crafted water material (scroll it with
+  PaintLake). Its shader variant is kept for builds by `Resources/PW_Keep_SeeThroughBumpy.mat`.
 - `kit.AddDrumPad` is a bounce pad dressed as a toy drum. `XyloKey` plays a note when stepped on.
 - Town pieces are in `TownKit` (houses, lamps, clotheslines, lantern gates, bridges, stairs...).
   `MakeHouse` returns where its chimney top is, for a chimney-smoke updraft.

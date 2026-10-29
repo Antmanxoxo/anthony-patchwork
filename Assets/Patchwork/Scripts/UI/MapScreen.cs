@@ -45,18 +45,7 @@ namespace Patchwork
         public void Open()
         {
             openTime = 0f;
-            if (painting == null)
-            {
-                // If the snapshot can't be taken for any reason, the map still opens (as a plain
-                // sheet with its pins) instead of breaking the game.
-                try { Capture(); }
-                catch (System.Exception e)
-                {
-                    Debug.LogWarning("Map snapshot failed: " + e.Message);
-                    var level = game.Level;
-                    area = level.MapArea.size.sqrMagnitude > 1f ? level.MapArea : level.Area;
-                }
-            }
+            if (painting == null) Prepare();
         }
 
         public void Update(float udt)
@@ -69,51 +58,68 @@ namespace Patchwork
         }
 
         // ------------------------------------------------------------------ Painting the map
+        // A camera high overhead renders the level into a texture for a few frames (started when
+        // the level loads), then the picture is read back and turned into a watercolour.
 
-        void Capture()
+        Camera capCam;
+        RenderTexture capRT;
+        int capFrames;
+
+        public void Prepare()
         {
+            if (painting != null || capCam != null) return;
             var level = game.Level;
             area = level.MapArea.size.sqrMagnitude > 1f ? level.MapArea : level.Area;
             float half = Mathf.Max(area.extents.x, area.extents.z) + 2f;
             const int size = 1024;
-            var rt = new RenderTexture(size, size, 24, RenderTextureFormat.ARGB32);
-            rt.antiAliasing = 4;
+            capRT = new RenderTexture(size, size, 24, RenderTextureFormat.ARGB32);
+            capRT.Create();
             var camGo = new GameObject("MapCamera");
-            var cam = camGo.AddComponent<Camera>();
-            cam.orthographic = true;
-            cam.orthographicSize = half;
-            cam.transform.position = new Vector3(area.center.x, level.MapCameraHeight, area.center.z);
-            cam.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-            cam.nearClipPlane = 0.3f;
-            cam.farClipPlane = level.MapCameraHeight + 30f;
-            cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0.93f, 0.88f, 0.76f);
-            cam.cullingMask = ~(1 << 2);
-            cam.targetTexture = rt;
-            cam.enabled = false;
-            var data = cam.GetUniversalAdditionalCameraData();
+            capCam = camGo.AddComponent<Camera>();
+            capCam.orthographic = true;
+            capCam.orthographicSize = half;
+            capCam.transform.position = new Vector3(area.center.x, level.MapCameraHeight, area.center.z);
+            capCam.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            capCam.nearClipPlane = 0.3f;
+            capCam.farClipPlane = level.MapCameraHeight + 30f;
+            capCam.clearFlags = CameraClearFlags.SolidColor;
+            capCam.backgroundColor = new Color(0.93f, 0.88f, 0.76f);
+            capCam.cullingMask = ~(1 << 2);
+            capCam.depth = -10f;
+            capCam.targetTexture = capRT;
+            var data = capCam.GetUniversalAdditionalCameraData();
             if (data != null) data.renderPostProcessing = false;
+            capFrames = 0;
+        }
 
-            bool fog = RenderSettings.fog;
-            RenderSettings.fog = false;
-            var req = new UniversalRenderPipeline.SingleCameraRequest { destination = rt };
-            if (RenderPipeline.SupportsRenderRequest(cam, req)) RenderPipeline.SubmitRenderRequest(cam, req);
-            else cam.Render();
-            RenderSettings.fog = fog;
-
-            var raw = new Texture2D(size, size, TextureFormat.RGBA32, false);
-            var prev = RenderTexture.active;
-            RenderTexture.active = rt;
-            raw.ReadPixels(new Rect(0, 0, size, size), 0, 0);
-            raw.Apply(false);
-            RenderTexture.active = prev;
-            cam.targetTexture = null;
-            Object.Destroy(camGo);
-            rt.Release();
-            Object.Destroy(rt);
-
-            painting = Stylize(raw);
-            Object.Destroy(raw);
+        // Called every frame by the game; finishes the painting once the camera has drawn.
+        public void Tick()
+        {
+            if (capCam == null) return;
+            capFrames++;
+            if (capFrames < 4) return;
+            try
+            {
+                int size = capRT.width;
+                var raw = new Texture2D(size, size, TextureFormat.RGBA32, false);
+                var prev = RenderTexture.active;
+                RenderTexture.active = capRT;
+                raw.ReadPixels(new Rect(0, 0, size, size), 0, 0);
+                raw.Apply(false);
+                RenderTexture.active = prev;
+                painting = Stylize(raw);
+                Object.Destroy(raw);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("Map painting failed: " + e.Message);
+            }
+            capCam.targetTexture = null;
+            Object.Destroy(capCam.gameObject);
+            capCam = null;
+            capRT.Release();
+            Object.Destroy(capRT);
+            capRT = null;
         }
 
         // Turns the snapshot into a soft watercolour on cream paper with brown ink outlines.
@@ -242,6 +248,7 @@ namespace Patchwork
             var mapR = new Rect(paperR.x + 60f, paperR.y + 80f, ms, ms);
             UIKit.Fill(new Rect(mapR.x - 10f, mapR.y - 10f, mapR.width + 20f, mapR.height + 20f), new Color(0.9f, 0.84f, 0.68f, k), 14f);
             if (painting != null) GUI.DrawTexture(mapR, painting, ScaleMode.StretchToFill, false, 0f, new Color(1f, 1f, 1f, k), 0f, 10f);
+            else UIKit.Label(mapR, "Painting the map...", UIKit.Style(30, true, TextAnchor.MiddleCenter, new Color(0.36f, 0.22f, 0.16f, 0.6f * k)));
             UIKit.Outline(new Rect(mapR.x - 6f, mapR.y - 6f, mapR.width + 12f, mapR.height + 12f), inkC, 3f, 12f);
             UIKit.Outline(new Rect(mapR.x - 13f, mapR.y - 13f, mapR.width + 26f, mapR.height + 26f), new Color(inkC.r, inkC.g, inkC.b, 0.5f * k), 2f, 16f);
 

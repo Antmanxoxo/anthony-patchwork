@@ -177,6 +177,8 @@ namespace Patchwork
             TitleTimer = LoadingScreen.Busy ? 5.2f : 4.5f;
 
             Hud = gameObject.AddComponent<PatchworkHUD>();
+            // Start painting the level's map now, while the loading screen is still up.
+            if (MapScreen.Available(Level)) Map.Prepare();
             Hud.Game = this;
 
             // First time on the Skiff since the game started: studio logo, then the title screen.
@@ -273,6 +275,7 @@ namespace Patchwork
             float udt = Mathf.Min(Time.unscaledDeltaTime, 0.1f);
             modeChangedThisFrame = false;
             Input.UpdateDeviceKind();
+            Map.Tick();
 
             switch (Mode)
             {

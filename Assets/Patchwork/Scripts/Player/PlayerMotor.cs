@@ -33,6 +33,10 @@ namespace Patchwork
         [System.NonSerialized] public bool HasLift;
         [System.NonSerialized] public float LiftTargetSpeed;
         [System.NonSerialized] public float LiftAcceleration;
+        // Set each frame by deep water while Water Form is swimming: faster moves, and Jump works
+        // from the surface. Both reset every frame.
+        [System.NonSerialized] public float SpeedBoost;
+        [System.NonSerialized] public bool Swimming;
 
         // ---- Timed overrides ----
         float dashTimer;
@@ -139,13 +143,13 @@ namespace Patchwork
             }
             else
             {
-                Vector3 target = moveWorld * Params.MoveSpeed + (Grounded ? Vector3.zero : Carry);
-                float accel = Grounded ? Params.GroundAcceleration : Params.AirAcceleration;
+                Vector3 target = moveWorld * Params.MoveSpeed * (1f + SpeedBoost) + (Grounded ? Vector3.zero : Carry);
+                float accel = Grounded || Swimming ? Params.GroundAcceleration * (1f + SpeedBoost) : Params.AirAcceleration;
                 horizontal = Vector3.MoveTowards(horizontal, target, accel * dt);
             }
 
             // ---------------- Jump ----------------
-            if (Grounded) coyoteTimer = CoyoteTime; else coyoteTimer -= dt;
+            if (Grounded || Swimming) coyoteTimer = CoyoteTime; else coyoteTimer -= dt;
             if (jumpPressed) jumpBufferTimer = JumpBufferTime; else jumpBufferTimer -= dt;
 
             float gravity = BaseGravity * Params.GravityScale;
@@ -244,6 +248,8 @@ namespace Patchwork
         {
             FallSpeedCap = -1f;
             HasLift = false;
+            SpeedBoost = 0f;
+            Swimming = false;
         }
 
         // Centre of the capsule in world space.

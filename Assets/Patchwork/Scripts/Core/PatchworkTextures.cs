@@ -18,6 +18,9 @@ namespace Patchwork
         // Town textures: cobblestones, brick, plaster, fish-scale roof shingles, wooden planks and
         // damask (the swirly Victorian wallpaper / upholstery pattern).
         public static Pair Cobble, Brick, Plaster, Shingle, Planks, Damask;
+        // Crafted water: rippling blue satin with stitched white wave lines and sequin sparkles
+        // (full colour; tint it white).
+        public static Pair CraftWater;
         // Full-colour textures (not tinted by the material colour).
         public static Texture2D PaintMarble;   // swirled paint and ink for the lake under Level 1
         public static Texture2D GlobeMap;      // the quilted world map on the Skiff's globe
@@ -51,6 +54,7 @@ namespace Patchwork
             Shingle = Build(256, ShingleHeight, 0.5f, 0.5f, 4.5f, new Color(0.7f, 0.72f, 0.66f), 0.8f, 0.12f, 3);
             Planks = Build(256, PlankHeight, 0.6f, 0.4f, 3.5f, new Color(0.62f, 0.5f, 0.42f), 0.6f, 0.12f, 3);
             Damask = Build(256, DamaskHeight, 0.72f, 0.28f, 2.2f, new Color(0.86f, 0.82f, 0.9f), 0.3f, 0.06f, 4);
+            CraftWater = BuildCraftWater(256);
             PaintMarble = BuildMarble(256);
             GlobeMap = BuildGlobe(256, 128);
             BalloonQuilt = BuildBalloon(256, 128);
@@ -338,6 +342,61 @@ namespace Patchwork
             float crease = Mathf.Abs(Mathf.Sin((v * 2f + u * 0.5f + ValueNoise(u, v, 4, 5) * 0.3f) * Mathf.PI * 2f));
             float c = crease > 0.985f ? -0.3f : 0f;
             return 0.35f + ridges * 0.18f + fibres * 0.4f + c;
+        }
+
+        // Satin water: soft ripple bands in two blues, three wavy rows of white running stitch,
+        // and the odd sequin glinting. The ripples and stitches are raised in the normal map.
+        static Pair BuildCraftWater(int size)
+        {
+            var h = new float[size * size];
+            var col = new Color[size * size];
+            Color deep = new Color(0.16f, 0.42f, 0.78f), mid = new Color(0.3f, 0.6f, 0.9f), light = new Color(0.62f, 0.85f, 0.98f);
+            Color stitch = new Color(0.96f, 0.98f, 1f);
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float u = x / (float)size, v = y / (float)size;
+                    float tau = Mathf.PI * 2f;
+                    float bend = 0.035f * Mathf.Sin(u * tau * 2f) + 0.02f * Mathf.Sin(u * tau * 5f + v * tau);
+                    float band = 0.5f + 0.5f * Mathf.Sin((v * 6f + bend * 6f) * tau);
+                    float soft = ValueNoise(u, v, 8, 61) * 0.25f;
+                    float hv = band * 0.7f + soft;
+                    Color c = Color.Lerp(deep, mid, Mathf.Clamp01(band * 1.2f));
+                    c = Color.Lerp(c, light, Mathf.Pow(Mathf.Clamp01(band - 0.55f) * 2.2f, 2f) * 0.8f);
+                    c *= 0.92f + soft * 0.4f;
+                    // Rows of white running stitch following the waves.
+                    for (int k = 0; k < 3; k++)
+                    {
+                        float line = (k + 0.5f) / 3f + 0.03f * Mathf.Sin(u * tau * 3f + k * 2f);
+                        float d = Mathf.Abs(Mathf.Repeat(v - line + 0.5f, 1f) - 0.5f);
+                        bool dash = Mathf.Repeat(u * 24f + k * 0.33f, 1f) < 0.55f;
+                        if (dash && d < 0.007f) { c = stitch; hv = 1f; }
+                    }
+                    // Sequins.
+                    if (Hash(x * 5 + 3, y * 7 + 1) > 0.9975f) { c = Color.Lerp(c, Color.white, 0.85f); hv = 0.9f; }
+                    c.a = 1f;
+                    col[y * size + x] = c;
+                    h[y * size + x] = hv;
+                }
+            var albedo = new Texture2D(size, size, TextureFormat.RGBA32, true, false);
+            var normal = new Texture2D(size, size, TextureFormat.RGBA32, true, true);
+            albedo.wrapMode = normal.wrapMode = TextureWrapMode.Repeat;
+            albedo.filterMode = normal.filterMode = FilterMode.Trilinear;
+            albedo.anisoLevel = normal.anisoLevel = 8;
+            var cn = new Color[size * size];
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float hl = h[y * size + (x - 1 + size) % size], hr = h[y * size + (x + 1) % size];
+                    float hd = h[((y - 1 + size) % size) * size + x], hu = h[((y + 1) % size) * size + x];
+                    Vector3 n = new Vector3((hl - hr) * 4f, (hd - hu) * 4f, 1f).normalized;
+                    cn[y * size + x] = new Color(n.x * 0.5f + 0.5f, n.y * 0.5f + 0.5f, n.z * 0.5f + 0.5f, 1f);
+                }
+            albedo.SetPixels(col);
+            albedo.Apply(true);
+            normal.SetPixels(cn);
+            normal.Apply(true);
+            return new Pair { Albedo = albedo, Normal = normal };
         }
 
         // ------------------------------------------------------------------ Colour textures

@@ -39,6 +39,7 @@ namespace Patchwork
         static readonly Vector3 Tower = new Vector3(0f, 0f, 27f);
         static readonly Vector3 Mill = new Vector3(64f, 0f, 8f);
         const float RavineEast = -37f, RavineWest = -51f, CanalWest = 32f, CanalEast = 40f, Half = 90f;
+        const float StreamWest = -46f, StreamEast = -42f, StreamSurface = -5.35f, CanalSurface = -0.6f;
 
         static readonly Color GrassCol = new Color(0.52f, 0.72f, 0.42f);
         static readonly Color CobbleCol = new Color(0.72f, 0.68f, 0.64f);
@@ -134,40 +135,65 @@ namespace Patchwork
             kit.Block(new Vector3((RavineEast + CanalWest) * 0.5f, -1f, 0f), new Vector3(CanalWest - RavineEast, 2f, Half * 2f), GrassCol, "TownGround", grass);
             kit.Block(new Vector3((CanalEast + Half) * 0.5f, -1f, 0f), new Vector3(Half - CanalEast, 2f, Half * 2f), GrassCol, "EastGround", grass);
             kit.Block(new Vector3((-Half + RavineWest) * 0.5f, -1f, 0f), new Vector3(RavineWest + Half, 2f, Half * 2f), GrassCol, "HillGround", grass);
-            // The ravine (5 m deep) and the canal (2 m deep), with brick walls and running water.
+            // The ravine: 5 m deep with cobbled banks, and a deep stream channel down the middle.
+            // The canal: 5 m deep, brimming with water. Only Water Form can swim in them.
             var brick = PatchworkAssets.Brick(new Color(0.7f, 0.45f, 0.38f));
-            kit.Block(new Vector3((RavineEast + RavineWest) * 0.5f, -6f, 0f), new Vector3(RavineEast - RavineWest, 2f, Half * 2f), GrassCol, "RavineBed", PatchworkAssets.Cobble(new Color(0.6f, 0.58f, 0.55f)));
+            var bankStone = PatchworkAssets.Cobble(new Color(0.6f, 0.58f, 0.55f));
+            var deepBed = PatchworkAssets.Felt(new Color(0.12f, 0.2f, 0.42f));
+            kit.Block(new Vector3((RavineWest + StreamWest) * 0.5f, -6.5f, 0f), new Vector3(StreamWest - RavineWest, 3f, Half * 2f), GrassCol, "RavineBank", bankStone);
+            kit.Block(new Vector3((StreamEast + RavineEast) * 0.5f, -6.5f, 0f), new Vector3(RavineEast - StreamEast, 3f, Half * 2f), GrassCol, "RavineBank", bankStone);
+            kit.Block(new Vector3((StreamWest + StreamEast) * 0.5f, -9f, 0f), new Vector3(StreamEast - StreamWest, 2f, Half * 2f), GrassCol, "StreamBed", deepBed);
             kit.Block(new Vector3(RavineEast - 0.1f, -2.5f, 0f), new Vector3(0.2f, 5f, Half * 2f), new Color(0.7f, 0.45f, 0.38f), "RavineWall", brick);
             kit.Block(new Vector3(RavineWest + 0.1f, -2.5f, 0f), new Vector3(0.2f, 5f, Half * 2f), new Color(0.7f, 0.45f, 0.38f), "RavineWall", brick);
-            FlowingWater(kit, new Vector3((RavineEast + RavineWest) * 0.5f, -4.96f, 0f), new Vector2(4f, Half * 2f), new Color(0.45f, 0.68f, 0.9f));
-            kit.Block(new Vector3((CanalWest + CanalEast) * 0.5f, -3f, 0f), new Vector3(CanalEast - CanalWest, 2f, Half * 2f), GrassCol, "CanalBed", PatchworkAssets.Cobble(new Color(0.55f, 0.55f, 0.52f)));
+            DeepWater(kit, StreamWest, StreamEast, StreamSurface, -8f, 0.05f);
+            // Stepping-stone pillars across the stream.
+            foreach (float sx in new[] { StreamWest + 1f, StreamEast - 1f })
+                kit.Block(new Vector3(sx, -6.55f, -30f), new Vector3(1.2f, 3f, 1.2f), TownKit.Stone, "SteppingStone", bankStone);
+
+            kit.Block(new Vector3((CanalWest + CanalEast) * 0.5f, -6f, 0f), new Vector3(CanalEast - CanalWest, 2f, Half * 2f), GrassCol, "CanalBed", deepBed);
             var stone = PatchworkAssets.Cobble(TownKit.Stone);
-            kit.Block(new Vector3(CanalWest + 0.1f, -1f, 0f), new Vector3(0.2f, 2f, Half * 2f), TownKit.Stone, "CanalWall", stone);
-            kit.Block(new Vector3(CanalEast - 0.1f, -1f, 0f), new Vector3(0.2f, 2f, Half * 2f), TownKit.Stone, "CanalWall", stone);
-            FlowingWater(kit, new Vector3((CanalWest + CanalEast) * 0.5f, -1.3f, 0f), new Vector2(CanalEast - CanalWest - 0.4f, Half * 2f), new Color(0.35f, 0.6f, 0.85f));
-            // Steps back up out of the ravine (east side) and the canal (both sides).
+            kit.Block(new Vector3(CanalWest + 0.1f, -2.5f, 0f), new Vector3(0.2f, 5f, Half * 2f), TownKit.Stone, "CanalWall", stone);
+            kit.Block(new Vector3(CanalEast - 0.1f, -2.5f, 0f), new Vector3(0.2f, 5f, Half * 2f), TownKit.Stone, "CanalWall", stone);
+            DeepWater(kit, CanalWest + 0.2f, CanalEast - 0.2f, CanalSurface, -5f, 0.08f);
+            // Steps back up out of the ravine (east side).
             TownKit.Stairs(kit, new Vector3(RavineEast - 1.5f, -5f, 6f), 0f, 5, 1f, 1.4f, 2.6f, stone);
             TownKit.Stairs(kit, new Vector3(RavineEast - 1.5f, -5f, -14f), 180f, 5, 1f, 1.4f, 2.6f, stone);
-            TownKit.Stairs(kit, new Vector3(CanalWest + 1.4f, -2f, 14f), 0f, 2, 1f, 1.2f, 2.4f, stone);
-            TownKit.Stairs(kit, new Vector3(CanalEast - 1.4f, -2f, -14f), 180f, 2, 1f, 1.2f, 2.4f, stone);
         }
 
-        // Water that slowly flows (its texture scrolls). No collision: it's shallow.
-        static void FlowingWater(LevelKit kit, Vector3 center, Vector2 size, Color col)
+        // Deep, slowly flowing water from x0 to x1 the whole length of the box: a crafted satin
+        // surface (see-through, so the dark deep bed shows), lace foam along the edges, and the
+        // swimming volume underneath.
+        static void DeepWater(LevelKit kit, float x0, float x1, float surface, float bottom, float flow)
         {
+            float w = x1 - x0, cx = (x0 + x1) * 0.5f;
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             Object.DestroyImmediate(go.GetComponent<Collider>());
-            go.name = "FlowingWater";
+            go.name = "DeepWater";
             go.transform.SetParent(kit.Root, false);
-            go.transform.position = center;
-            go.transform.localScale = new Vector3(size.x, 0.06f, size.y);
-            var mat = PatchworkAssets.Unique(PatchworkAssets.Water(col));
-            mat.SetTextureScale("_BaseMap", new Vector2(Mathf.Max(1f, size.x / 4f), size.y / 4f));
+            go.transform.position = new Vector3(cx, surface - 0.03f, 0f);
+            go.transform.localScale = new Vector3(w, 0.06f, Half * 2f);
+            var mat = PatchworkAssets.CraftWater(0.86f, new Vector2(Mathf.Max(1f, w / 5f), Half * 2f / 5f));
             go.GetComponent<Renderer>().sharedMaterial = mat;
             go.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            var flow = go.AddComponent<PaintLake>();
-            flow.Drift = new Vector2(0f, 0.25f);
-            flow.Setup(mat);
+            var drift = go.AddComponent<PaintLake>();
+            drift.Drift = new Vector2(0f, flow);
+            drift.Setup(mat);
+            // A second, darker layer a little lower gives the water some depth.
+            var under = kit.Deco(PrimitiveType.Cube, new Vector3(cx, surface - 0.9f, 0f), new Vector3(w, 0.05f, Half * 2f), PatchworkAssets.Bubble(new Color(0.12f, 0.3f, 0.6f, 0.5f)));
+            under.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            // Lace foam where the water meets the walls.
+            var lace = PatchworkAssets.Felt(new Color(0.96f, 0.98f, 1f));
+            for (int s = -1; s <= 1; s += 2)
+            {
+                var strip = kit.Deco(PrimitiveType.Cube, new Vector3(cx + s * (w * 0.5f - 0.12f), surface + 0.015f, 0f), new Vector3(0.24f, 0.03f, Half * 2f), lace);
+                strip.name = "Foam";
+                var batch = new MeshBatch();
+                for (float z = -Half + 0.3f; z < Half; z += 0.6f)
+                    batch.Ball(new Vector3(cx + s * (w * 0.5f - 0.26f), surface + 0.02f, z), new Vector3(0.28f, 0.05f, 0.28f), 2, 6);
+                batch.Build(kit.Root, "FoamScallops", lace);
+            }
+            var body = kit.Volume<WaterBody>(new Vector3(cx, (bottom + surface + 0.6f) * 0.5f, 0f), new Vector3(w, surface + 0.6f - bottom, Half * 2f), "WaterBody");
+            body.SurfaceY = surface;
         }
 
         // The walls of the giant toybox, papered inside with damask, brass corners, and the lid
@@ -177,10 +203,12 @@ namespace Patchwork
             var paper = PatchworkAssets.Damask(new Color(0.32f, 0.36f, 0.58f));
             var wood = PatchworkAssets.Planks(new Color(0.55f, 0.36f, 0.26f));
             float h = 44f, t = 2f;
-            kit.Block(new Vector3(Half + t * 0.5f, h * 0.5f - 2f, 0f), new Vector3(t, h, Half * 2f + t * 2f), new Color(0.32f, 0.36f, 0.58f), "BoxWall", paper);
-            kit.Block(new Vector3(-Half - t * 0.5f, h * 0.5f - 2f, 0f), new Vector3(t, h, Half * 2f + t * 2f), new Color(0.32f, 0.36f, 0.58f), "BoxWall", paper);
-            kit.Block(new Vector3(0f, h * 0.5f - 2f, Half + t * 0.5f), new Vector3(Half * 2f, h, t), new Color(0.32f, 0.36f, 0.58f), "BoxWall", paper);
-            kit.Block(new Vector3(0f, h * 0.5f - 2f, -Half - t * 0.5f), new Vector3(Half * 2f, h, t), new Color(0.32f, 0.36f, 0.58f), "BoxWall", paper);
+            // The walls go down below the ravine and canal beds so there's never a gap under them.
+            float wh = h + 8f, wy = (42f + -10f) * 0.5f;
+            kit.Block(new Vector3(Half + t * 0.5f, wy, 0f), new Vector3(t, wh, Half * 2f + t * 2f), new Color(0.32f, 0.36f, 0.58f), "BoxWall", paper);
+            kit.Block(new Vector3(-Half - t * 0.5f, wy, 0f), new Vector3(t, wh, Half * 2f + t * 2f), new Color(0.32f, 0.36f, 0.58f), "BoxWall", paper);
+            kit.Block(new Vector3(0f, wy, Half + t * 0.5f), new Vector3(Half * 2f, wh, t), new Color(0.32f, 0.36f, 0.58f), "BoxWall", paper);
+            kit.Block(new Vector3(0f, wy, -Half - t * 0.5f), new Vector3(Half * 2f, wh, t), new Color(0.32f, 0.36f, 0.58f), "BoxWall", paper);
             // Wooden skirting and a brass rim along the top.
             var brass = PatchworkAssets.Plain(new Color(0.9f, 0.72f, 0.38f), 0.8f);
             foreach (var side in new[] { new Vector3(1f, 0f, 0f), new Vector3(-1f, 0f, 0f), new Vector3(0f, 0f, 1f), new Vector3(0f, 0f, -1f) })
@@ -282,10 +310,11 @@ namespace Patchwork
                 float a = (i + 0.5f) / 8f * Mathf.PI * 2f;
                 TownKit.StreetLamp(kit, new Vector3(Mathf.Cos(a) * 17.5f, 0.06f, Mathf.Sin(a) * 17.5f));
             }
-            TownKit.Bench(kit, new Vector3(-8f, 0.06f, -15.5f), 0f);
-            TownKit.Bench(kit, new Vector3(8f, 0.06f, -15.5f), 0f);
-            TownKit.Bench(kit, new Vector3(-15f, 0.06f, 6f), 90f);
-            TownKit.Bench(kit, new Vector3(15f, 0.06f, 6f), -90f);
+            // (Kept clear of the ring of street lamps.)
+            TownKit.Bench(kit, new Vector3(-11f, 0.06f, -14.2f), 0f);
+            TownKit.Bench(kit, new Vector3(11f, 0.06f, -14.2f), 0f);
+            TownKit.Bench(kit, new Vector3(-15f, 0.06f, 2f), 90f);
+            TownKit.Bench(kit, new Vector3(15f, 0.06f, 2f), -90f);
             TownKit.FlowerBed(kit, new Vector3(-12f, 0.06f, 12f), new Vector2(3f, 2f), 1);
             TownKit.FlowerBed(kit, new Vector3(12f, 0.06f, 12f), new Vector2(3f, 2f), 2);
             TownKit.FlowerBed(kit, new Vector3(13f, 0.06f, -9f), new Vector2(2.5f, 2.5f), 3);
@@ -542,11 +571,16 @@ namespace Patchwork
             TownKit.Bench(kit, new Vector3(46.2f, 0.05f, 18f), -90f);
             TownKit.Bench(kit, new Vector3(46.2f, 0.05f, -22f), -90f);
             kit.AddCheckpoint(new Vector3(43.5f, 0.05f, 0f), 90f);
+            kit.Hint(new Vector3(43.5f, 1.5f, 8f), new Vector3(6f, 3f, 4f), "Deep Water",
+                "Only Water Form can swim, and it swims fast! Hop in through a gap in the railings, and {Jump} to leap back out.", HintTheme.Water);
+            // Threads floating down the canal for swimmers.
+            kit.ThreadLine(new Vector3(36f, CanalSurface + 0.45f, -78f), new Vector3(36f, CanalSurface + 0.45f, -52f), 5);
+            kit.ThreadLine(new Vector3(36f, CanalSurface + 0.45f, 48f), new Vector3(36f, CanalSurface + 0.45f, 78f), 5);
             // Toy sailboats bobbing on the canal.
             Color[] sails = { new Color(0.97f, 0.95f, 0.9f), LevelKit.Palette.Rose, LevelKit.Palette.Butter };
             for (int i = 0; i < 3; i++)
             {
-                var boat = kit.Group("ToyBoat", new Vector3(36f + (i - 1) * 1.6f, -1.25f, -20f + i * 22f));
+                var boat = kit.Group("ToyBoat", new Vector3(36f + (i - 1) * 1.6f, CanalSurface + 0.05f, -20f + i * 22f));
                 kit.Deco(PrimitiveType.Sphere, Vector3.zero, new Vector3(1.2f, 0.5f, 2.6f), PatchworkAssets.Planks(new Color(0.65f, 0.35f, 0.3f)), default(Vector3), boat);
                 kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.2f, 0f), new Vector3(0.08f, 1.2f, 0.08f), PatchworkAssets.Wood(TownKit.DarkWood), default(Vector3), boat);
                 kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.3f, 0.45f), new Vector3(0.04f, 1.6f, 0.9f), PatchworkAssets.Fabric(sails[i]), default(Vector3), boat);
@@ -612,7 +646,11 @@ namespace Patchwork
             TownKit.GableRoof(kit, L(0f, h, 0f), hw * 2f + 0.8f, hd * 2f + 1f, 5f, 0f, PatchworkAssets.Shingle(new Color(0.35f, 0.38f, 0.45f)), brick);
             kit.Block(L(4f, h + 4f, 2f), new Vector3(1.4f, 4f, 1.4f), bc, "MillChimney", brick);
             var footing = PatchworkAssets.Cobble(TownKit.Stone);
-            kit.Deco(PrimitiveType.Cube, L(0f, 0.3f, -hd - 0.08f), new Vector3(hw * 2f + 0.32f, 0.6f, 0.16f), footing);
+            // (The south footing stops either side of the drain, so the opening stays clear.)
+            kit.Deco(PrimitiveType.Cube, L(-(hw + 0.16f + 0.9f) * 0.5f, 0.3f, -hd - 0.08f), new Vector3(hw + 0.16f - 0.9f, 0.6f, 0.16f), footing);
+            kit.Deco(PrimitiveType.Cube, L((hw + 0.16f + 0.9f) * 0.5f, 0.3f, -hd - 0.08f), new Vector3(hw + 0.16f - 0.9f, 0.6f, 0.16f), footing);
+            // A dark mouth behind the bars so the drain reads as a way in.
+            kit.Deco(PrimitiveType.Cube, L(0f, 0.5f, -hd + t + 0.05f), new Vector3(1.6f, 1f, 0.04f), PatchworkAssets.Plain(new Color(0.08f, 0.07f, 0.12f), 0.2f));
             kit.Deco(PrimitiveType.Cube, L(0f, 0.3f, hd + 0.08f), new Vector3(hw * 2f + 0.32f, 0.6f, 0.16f), footing);
             kit.Deco(PrimitiveType.Cube, L(-hw - 0.08f, 0.3f, 0f), new Vector3(0.16f, 0.6f, hd * 2f), footing);
             kit.Deco(PrimitiveType.Cube, L(hw + 0.08f, 0.3f, 0f), new Vector3(0.16f, 0.6f, hd * 2f), footing);
@@ -653,7 +691,13 @@ namespace Patchwork
             // Ladders painted on the floors' fronts (just for looks) and a railing round the top.
             for (int i = 0; i < 9; i++)
                 kit.Deco(PrimitiveType.Cube, L(3.8f, 0.6f + i * 0.95f, -1.04f), new Vector3(0.9f, 0.08f, 0.06f), PatchworkAssets.Wood(TownKit.DarkWood));
-            kit.Rope(L(1.3f, 10f, -0.95f), L(6.3f, 10f, -0.95f), PatchworkAssets.Plain(new Color(0.78f, 0.48f, 0.3f), 0.75f), 0.08f);
+            var rail = PatchworkAssets.Plain(new Color(0.78f, 0.48f, 0.3f), 0.75f);
+            kit.Rope(L(1.3f, 10f, -0.85f), L(6.3f, 10f, -0.85f), rail, 0.08f);
+            foreach (float px in new[] { 1.3f, 3.8f, 6.3f })
+            {
+                kit.Deco(PrimitiveType.Cylinder, L(px, 9.5f, -0.85f), new Vector3(0.1f, 0.5f, 0.1f), rail);
+                kit.Deco(PrimitiveType.Sphere, L(px, 10.05f, -0.85f), Vector3.one * 0.16f, rail);
+            }
             // The reservoir: a big copper vat with pipes.
             var copper = PatchworkAssets.Plain(new Color(0.78f, 0.48f, 0.3f), 0.75f);
             kit.Deco(PrimitiveType.Cylinder, L(4.6f, 10.2f, 3.2f), new Vector3(2.6f, 1.2f, 2.6f), copper);
@@ -661,7 +705,7 @@ namespace Patchwork
             kit.Rope(L(4.6f, 11.4f, 3.2f), L(4.6f, 11.4f, 5f), copper, 0.3f);
             kit.Rope(L(4.6f, 11.4f, 5f), L(-6f, 11.4f, 5f), copper, 0.3f);
             BandPieceAt(kit, Level1Director.TrumpetId, BandPiece.Part.Trumpet, "Valve Dew", L(2.6f, 10.5f, 0.6f), null);
-            MakeHomeHoop(kit, L(5.3f, 9f, 0.2f));
+            MakeHomeHoop(kit, L(4.6f, 9f, 0f));
             // A secret: a third pipe in the back corner up to a high shelf with a golden button.
             kit.Fountain(L(-5.2f, 0f, 2.6f), 11f, LevelKit.FountainStyle.Pipe);
             kit.Block(L(-5.2f, 4.5f, 4.6f), new Vector3(2.4f, 9f, 1.6f), new Color(0.62f, 0.45f, 0.32f), "MillShelf", planks);
@@ -738,10 +782,22 @@ namespace Patchwork
             // Secret 2: steam on the spire lifts you to a cloud patch with a Heartstring.
             kit.Updraft(spire + new Vector3(1.5f, 16f, -1.5f), 10f, LevelKit.UpdraftStyle.Steam);
             Vector3 cloud = new Vector3(-6f, 22f, -78f);
-            kit.Prism(Octagon(cloud, 4f), cloud.y - 1f, cloud.y, PatchworkAssets.Felt(new Color(0.97f, 0.95f, 0.9f)), "CloudPatch");
-            kit.Cloud(cloud + new Vector3(0f, -1.2f, 0f), 2.6f);
+            // A walkable cloud: a soft flat top ringed and underpinned with puffs.
+            var fluff = PatchworkAssets.Felt(new Color(0.99f, 0.97f, 0.94f));
+            kit.Prism(Octagon(cloud, 4f), cloud.y - 1f, cloud.y, fluff, "CloudPatch");
+            for (int i = 0; i < 10; i++)
+            {
+                float a = i / 10f * Mathf.PI * 2f;
+                float s = 1.9f + (i % 3) * 0.35f;
+                kit.Deco(PrimitiveType.Sphere, cloud + new Vector3(Mathf.Cos(a) * 3.7f, -0.55f, Mathf.Sin(a) * 3.7f), new Vector3(s, s * 0.6f, s), fluff);
+            }
+            for (int i = 0; i < 5; i++)
+            {
+                float a = i / 5f * Mathf.PI * 2f + 0.4f;
+                kit.Deco(PrimitiveType.Sphere, cloud + new Vector3(Mathf.Cos(a) * 1.8f, -1.3f, Mathf.Sin(a) * 1.8f), new Vector3(3.2f, 1.6f, 3.2f), fluff);
+            }
             MakeHeartstring(kit, "L1_hs_cloud", "Cloud Patch", cloud + new Vector3(0f, 1.6f, 0f), false);
-            MakeHomeHoop(kit, cloud + new Vector3(2f, 0f, 2f));
+            MakeHomeHoop(kit, cloud + new Vector3(1.2f, 0f, 1.2f));
         }
 
         static void Weathervane(LevelKit kit, Vector3 feet)
@@ -870,7 +926,7 @@ namespace Patchwork
             var tock = Toy(kit, new Vector3(-6f, 0.06f, 21f), 180f, ToyNpc.Kind.TinSoldier, "Sergeant Tock", new Color(0.25f, 0.35f, 0.65f), LevelKit.Palette.Gold, ToyNpc.Instrument.None, 0.75f, new Color(0.25f, 0.32f, 0.55f));
             tock.Lines = () => new[] { "HALT! Oh. It's you. Carry on.", "Snarlings have taken the barracks, through the arch there. Little grey tangles of Fray.", "Jump on their heads, that's the drill! Stomp, stomp!" };
             var nob = Toy(kit, new Vector3(46f, 0.05f, 4f), -90f, ToyNpc.Kind.Nutcracker, "Nob the Nutcracker", new Color(0.3f, 0.5f, 0.35f), LevelKit.Palette.Gold, ToyNpc.Instrument.None, 0.65f, new Color(0.25f, 0.42f, 0.3f));
-            nob.Lines = () => new[] { "Crack! Welcome to the canal. Mind the water, it's only knee deep but awfully wet.", "The Dye Works is locked tighter than a walnut. But there's a drain in its south wall...", "And that toppled teapot by the Tea House? Still spouting. Water Form could ride it." };
+            nob.Lines = () => new[] { "Crack! Welcome to the canal. Mind the water, it's deep! Only Water Form can swim in it, and my, how fast it goes.", "The Dye Works is locked tighter than a walnut. But there's a drain in its south wall...", "And that toppled teapot by the Tea House? Still spouting. Water Form could ride it." };
             var jack = Toy(kit, new Vector3(-31f, 0.05f, 4f), 90f, ToyNpc.Kind.JackInBox, "Jack", new Color(0.35f, 0.55f, 0.85f), new Color(0.95f, 0.4f, 0.45f), ToyNpc.Instrument.None, 1.2f, new Color(0.35f, 0.5f, 0.8f));
             jack.Lines = () => new[] { "BOING! Ha! Got you.", "Want to cross the ravine? Swing from the clothesline peg wrapped in pink yarn. Yarn Form only, mind!", "Drop in? No bother. There are steps back up on this side." };
             var thimbleby = Toy(kit, new Vector3(-4f, 0.05f, -34f), 180f, ToyNpc.Kind.RagDoll, "Mrs. Thimbleby", new Color(0.55f, 0.45f, 0.75f), new Color(0.6f, 0.4f, 0.3f), ToyNpc.Instrument.None, 1.05f, new Color(0.5f, 0.4f, 0.7f));
@@ -1031,19 +1087,64 @@ namespace Patchwork
         // A little hoop that takes you back to the Mending Square.
         static void MakeHomeHoop(LevelKit kit, Vector3 feet)
         {
-            var hoop = kit.Volume<HomeHoop>(feet + Vector3.up * 1.3f, new Vector3(1.8f, 2.6f, 1.8f), "HomeHoop");
+            // An ink hole: a glossy pool of ink with a violet swirl turning in it, droplets bobbing
+            // above, a tipped-over inkwell spilling into it and a quill stuck in the edge.
+            var hoop = kit.Volume<HomeHoop>(feet + Vector3.up * 0.8f, new Vector3(2f, 1.6f, 2f), "InkHole");
             hoop.Target = SpawnPoint + new Vector3(0f, 0.1f, 2.5f);
             hoop.TargetYaw = 0f;
-            var ring = new GameObject("Ring").transform;
-            ring.SetParent(hoop.transform, false);
-            var wood = PatchworkAssets.Wood(new Color(0.85f, 0.68f, 0.45f));
-            var glow = PatchworkAssets.Glow(new Color(0.8f, 0.65f, 1f), 0.8f);
-            for (int i = 0; i < 18; i++)
+            var ink = PatchworkAssets.Plain(new Color(0.07f, 0.05f, 0.16f), 0.95f);
+            var rim = PatchworkAssets.Plain(new Color(0.14f, 0.1f, 0.3f), 0.9f);
+            kit.Deco(PrimitiveType.Cylinder, feet + Vector3.up * 0.02f, new Vector3(2.2f, 0.02f, 2.2f), ink);
+            for (int i = 0; i < 14; i++)
             {
-                float a = i / 18f * Mathf.PI * 2f;
-                kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 1.05f, Mathf.Sin(a) * 1.05f, 0f), Vector3.one * 0.26f, i % 3 == 0 ? glow : wood, default(Vector3), ring);
+                float a = i / 14f * Mathf.PI * 2f;
+                float r = 1.1f + Mathf.Sin(i * 2.3f) * 0.08f;
+                kit.Deco(PrimitiveType.Sphere, feet + new Vector3(Mathf.Cos(a) * r, 0.04f, Mathf.Sin(a) * r), new Vector3(0.42f, 0.08f, 0.3f), rim, new Vector3(0f, -a * Mathf.Rad2Deg, 0f));
             }
-            kit.Deco(PrimitiveType.Cylinder, feet + Vector3.up * 0.06f, new Vector3(1.6f, 0.06f, 1.6f), PatchworkAssets.Felt(LevelKit.Palette.Lavender));
+            var ring = new GameObject("Swirl").transform;
+            ring.SetParent(hoop.transform, false);
+            ring.localPosition = new Vector3(0f, -0.74f, 0f);
+            var swirl = PatchworkAssets.Glow(new Color(0.5f, 0.38f, 0.95f), 0.9f);
+            var shine = PatchworkAssets.Glow(new Color(0.85f, 0.8f, 1f), 0.8f);
+            for (int arm = 0; arm < 3; arm++)
+                for (int k = 0; k < 7; k++)
+                {
+                    float t = k / 7f;
+                    float a = arm * 2.094f + t * 4f;
+                    float r = Mathf.Lerp(0.95f, 0.12f, t);
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * r, 0.01f, Mathf.Sin(a) * r), new Vector3(0.24f - t * 0.12f, 0.02f, 0.13f), k % 3 == 0 ? shine : swirl, new Vector3(0f, -a * Mathf.Rad2Deg - 70f, 0f), ring);
+                }
+            for (int i = 0; i < 4; i++)
+            {
+                float a = i * 1.57f + 0.4f;
+                var drop = kit.Deco(PrimitiveType.Sphere, feet + new Vector3(Mathf.Cos(a) * 0.5f, 0.5f + i * 0.15f, Mathf.Sin(a) * 0.5f), new Vector3(0.16f, 0.2f, 0.16f), ink);
+                var bob = drop.gameObject.AddComponent<Spinner>();
+                bob.Speed = 0f;
+                bob.BobHeight = 0.15f;
+                bob.BobSpeed = 1.8f + i * 0.35f;
+            }
+            // The inkwell, on its side, spilling in.
+            var well = kit.Group("Inkwell", feet + new Vector3(1.35f, 0.32f, 0.55f));
+            well.rotation = Quaternion.Euler(0f, 205f, 82f);
+            kit.Deco(PrimitiveType.Sphere, Vector3.zero, new Vector3(0.6f, 0.55f, 0.6f), PatchworkAssets.Bubble(new Color(0.75f, 0.85f, 0.95f, 0.5f)), default(Vector3), well);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -0.08f, 0f), new Vector3(0.45f, 0.3f, 0.45f), ink, default(Vector3), well);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.36f, 0f), new Vector3(0.22f, 0.1f, 0.22f), PatchworkAssets.Bubble(new Color(0.75f, 0.85f, 0.95f, 0.5f)), default(Vector3), well);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.47f, 0f), new Vector3(0.24f, 0.03f, 0.24f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f), default(Vector3), well);
+            kit.Deco(PrimitiveType.Capsule, feet + new Vector3(1.02f, 0.04f, 0.42f), new Vector3(0.22f, 0.32f, 0.04f), ink, new Vector3(90f, 115f, 0f));
+            // A quill stuck in the far edge.
+            var quill = kit.Group("Quill", feet + new Vector3(-0.95f, 0f, -0.6f));
+            quill.rotation = Quaternion.Euler(14f, 30f, -12f);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.75f, 0f), new Vector3(0.04f, 0.75f, 0.04f), PatchworkAssets.Plain(new Color(0.95f, 0.92f, 0.85f), 0.6f), default(Vector3), quill);
+            kit.Deco(PrimitiveType.Capsule, new Vector3(0.08f, 1.15f, 0f), new Vector3(0.22f, 0.5f, 0.03f), PatchworkAssets.Felt(new Color(0.98f, 0.75f, 0.82f)), new Vector3(0f, 0f, -6f), quill);
+            var lightGo = new GameObject("InkGlow");
+            lightGo.transform.SetParent(hoop.transform, false);
+            lightGo.transform.localPosition = new Vector3(0f, -0.3f, 0f);
+            var glowLight = lightGo.AddComponent<Light>();
+            glowLight.type = LightType.Point;
+            glowLight.color = new Color(0.55f, 0.4f, 1f);
+            glowLight.range = 4f;
+            glowLight.intensity = 1.2f;
+            glowLight.shadows = LightShadows.None;
             hoop.Setup(ring);
         }
 

@@ -225,6 +225,40 @@ namespace Patchwork
             return m;
         }
 
+        // Crafted water: glossy, slightly see-through satin with stitched waves (scroll its texture
+        // to make it flow). Each call makes its own material so it can be tiled and scrolled.
+        public static Material CraftWater(float alpha, Vector2 tiling)
+        {
+            EnsureInit();
+            var m = litTemplate != null ? new Material(litTemplate) : new Material(litShader);
+            m.name = "PW_craftwater";
+            var tint = new Color(1f, 1f, 1f, alpha);
+            m.SetColor("_BaseColor", tint);
+            m.SetColor("_Color", tint);
+            m.SetTexture("_BaseMap", PatchworkTextures.CraftWater.Albedo);
+            m.SetTexture("_MainTex", PatchworkTextures.CraftWater.Albedo);
+            m.SetTextureScale("_BaseMap", tiling);
+            m.SetTexture("_BumpMap", PatchworkTextures.CraftWater.Normal);
+            m.SetFloat("_BumpScale", 1.2f);
+            m.EnableKeyword("_NORMALMAP");
+            m.SetFloat("_Smoothness", 0.88f);
+            m.SetFloat("_Surface", 1f);
+            m.SetFloat("_Blend", 0f);
+            m.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            m.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            m.SetFloat("_SrcBlendAlpha", (float)UnityEngine.Rendering.BlendMode.One);
+            m.SetFloat("_DstBlendAlpha", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            m.SetFloat("_ZWrite", 0f);
+            m.SetOverrideTag("RenderType", "Transparent");
+            m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            m.DisableKeyword("_ALPHATEST_ON");
+            m.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+            m.SetShaderPassEnabled("ShadowCaster", false);
+            m.EnableKeyword("_EMISSION");
+            m.SetColor("_EmissionColor", new Color(0.04f, 0.1f, 0.18f));
+            return m;
+        }
+
         // Soft dark see-through disc (the shadow under Patch). Uses the same see-through + glow
         // shader setup as the bubble so the build already keeps it.
         public static Material SoftShadow(Texture2D mask)

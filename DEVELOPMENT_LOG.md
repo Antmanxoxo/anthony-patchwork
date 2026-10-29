@@ -1,5 +1,25 @@
 # Development Log
 
+## Deep water and ink holes
+- The canal and the ravine stream are now deep water (5 m and 3 m).
+  - The surface is crafted: glossy, see-through blue satin with stitched white wave lines,
+    sequin glints and lace foam along the edges, over a dark deep bed.
+  - Water Form floats at the surface, swims nearly twice as fast and can jump back out.
+  - Every other form splashes and goes back to the last checkpoint.
+  - Threads float along the canal for swimmers.
+- The home hoops are now ink holes: glossy pools of ink with a turning violet swirl, bobbing
+  droplets, a tipped-over inkwell and a quill. They still ask before sending you home.
+- Fixes:
+  - The map's painted view came out blank. It's now taken by a camera while the level loads.
+  - The Dye Works drain was covered by the stone footing.
+  - A copper rail floated in mid-air inside the Dye Works.
+  - Cattail heads floated above the canal.
+  - The box walls left a gap at the end of the ravine.
+  - Street lamps grew through the square's benches.
+  - The cloud patch was a flat slab with a lumpy bun under it.
+  - The toy train's smoke looked like a mushroom.
+  - The park pond can't be walked on any more.
+
 ## Stylised Toybox Town, a map and new music
 - New look over everything: soft glow on bright and glowing things, richer colour, warm
   highlights with cool shadows, and a gentle vignette. Each level can tune it.

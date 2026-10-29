@@ -770,7 +770,7 @@ namespace Patchwork
 
         static void CanalDressing(LevelKit kit)
         {
-            float wy = -1.3f;
+            float wy = CanalSurface;
             Vector3[] loop = { new Vector3(34f, wy, -85f), new Vector3(34f, wy, 85f), new Vector3(36.8f, wy, 85f), new Vector3(36.8f, wy, -85f) };
             for (int i = 0; i < 6; i++) Duck(kit, loop, i * 61f, i == 0 ? 1.6f : 0.8f);
             // Lily pads with pink flowers, reeds and cattails along both edges.
@@ -785,8 +785,12 @@ namespace Patchwork
                 for (int r = 0; r < 5; r++)
                 {
                     float rx = (i % 2 == 0 ? CanalWest + 0.25f : CanalEast - 0.25f), rz = z + 2f + r * 0.3f;
-                    reedBatch.Blade(new Vector3(rx, -2f, rz), 1.9f + (r % 3) * 0.3f, 0.06f, new Vector3(0.1f * (r - 2), 0f, 0.05f), r * 40f);
-                    if (r % 2 == 0) cattailBatch.Ball(new Vector3(rx + 0.1f * (r - 2), 0.1f + (r % 3) * 0.3f, rz + 0.05f), new Vector3(0.12f, 0.4f, 0.12f), 3, 6);
+                    // Reeds rise out of the water by the wall; each cattail sits on top of its reed.
+                    float rh = 1.1f + (r % 3) * 0.25f;
+                    Vector3 root = new Vector3(rx, wy - 0.3f, rz);
+                    Vector3 lean = new Vector3(0.1f * (r - 2), 0f, 0.05f);
+                    reedBatch.Blade(root, rh, 0.06f, lean, r * 40f);
+                    if (r % 2 == 0) cattailBatch.Ball(root + Vector3.up * (rh - 0.12f) + lean * 0.9f, new Vector3(0.12f, 0.36f, 0.12f), 3, 6);
                 }
             }
             // A rowboat tied up by the steps, with bollards on the promenade.
@@ -825,14 +829,13 @@ namespace Patchwork
                     for (int r = 0; r < 4; r++)
                         reedBatch.Blade(new Vector3(x + 0.5f, bed, z + r * 0.25f), 1.2f + r * 0.2f, 0.05f, new Vector3(0.1f, 0f, 0.05f * r), r * 50f);
             }
-            // Stepping stones across the stream.
-            for (int i = 0; i < 5; i++) rocks.Ball(new Vector3(x0 - 2f + i, bed + 0.12f, -30f + (i % 2) * 0.4f), new Vector3(0.8f, 0.3f, 0.8f), 3, 6);
             rocks.Build(kit.Group("RavineRocks", Vector3.zero), "Rocks", rock, true);
             // A brick culvert at the north end where the stream comes in through the toybox wall.
             var brick = PatchworkAssets.Brick(new Color(0.7f, 0.45f, 0.38f));
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(x0, bed + 1.2f, Half - 0.2f), new Vector3(4.6f, 0.3f, 4.6f), brick, new Vector3(90f, 0f, 0f));
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(x0, bed + 1.2f, Half - 0.55f), new Vector3(3.6f, 0.05f, 3.6f), PatchworkAssets.Plain(new Color(0.12f, 0.1f, 0.12f), 0.2f), new Vector3(90f, 0f, 0f));
-            var fall = kit.Deco(PrimitiveType.Cube, new Vector3(x0, bed + 0.5f, Half - 1f), new Vector3(3.2f, 1.6f, 0.08f), PatchworkAssets.Bubble(new Color(0.65f, 0.85f, 1f, 0.6f)), new Vector3(-30f, 0f, 0f));
+            // (It sits over the deep stream channel, with the water pouring out at the surface.)
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(x0, StreamSurface + 0.6f, Half - 0.2f), new Vector3(4.6f, 0.3f, 4.6f), brick, new Vector3(90f, 0f, 0f));
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(x0, StreamSurface + 0.6f, Half - 0.55f), new Vector3(3.6f, 0.05f, 3.6f), PatchworkAssets.Plain(new Color(0.12f, 0.1f, 0.12f), 0.2f), new Vector3(90f, 0f, 0f));
+            var fall = kit.Deco(PrimitiveType.Cube, new Vector3(x0, StreamSurface + 0.25f, Half - 0.9f), new Vector3(3.2f, 0.9f, 0.08f), PatchworkAssets.Bubble(new Color(0.65f, 0.85f, 1f, 0.6f)), new Vector3(-35f, 0f, 0f));
             fall.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
 
@@ -944,7 +947,19 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.75f, 0f), new Vector3(1f, 0.04f, 0.5f), PatchworkAssets.Wicker(new Color(0.85f, 0.65f, 0.4f)), new Vector3(90f, 0f, 0f), basket);
             // A pond with stones round it, a little jetty and two ducklings.
             Vector3 pond = new Vector3(14f, 0f, 74f);
-            kit.Deco(PrimitiveType.Cylinder, pond + Vector3.up * 0.03f, new Vector3(10f, 0.02f, 8f), PatchworkAssets.Water(new Color(0.42f, 0.66f, 0.9f)));
+            var pondWater = kit.Deco(PrimitiveType.Cylinder, pond + Vector3.up * 0.03f, new Vector3(10f, 0.02f, 8f), PatchworkAssets.CraftWater(0.95f, new Vector2(2.5f, 2f)));
+            var ripple = pondWater.gameObject.AddComponent<PaintLake>();
+            ripple.Drift = new Vector2(0.02f, 0.01f);
+            ripple.Setup(pondWater.GetComponent<Renderer>().sharedMaterial);
+            // The stones round the edge keep everyone out of the pond (it's for the ducklings).
+            for (int i = 0; i < 16; i++)
+            {
+                float a0 = i / 16f * Mathf.PI * 2f, a1 = (i + 1) / 16f * Mathf.PI * 2f;
+                Vector3 p0 = pond + new Vector3(Mathf.Cos(a0) * 5.1f, 0f, Mathf.Sin(a0) * 4.1f);
+                Vector3 p1 = pond + new Vector3(Mathf.Cos(a1) * 5.1f, 0f, Mathf.Sin(a1) * 4.1f);
+                Vector3 d = p1 - p0;
+                Solid(kit, (p0 + p1) * 0.5f + Vector3.up * 1.1f, new Vector3(0.7f, 2.2f, d.magnitude + 0.1f), Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg);
+            }
             var edge = new MeshBatch();
             for (int i = 0; i < 26; i++)
             {
@@ -1069,12 +1084,16 @@ namespace Patchwork
             }
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.35f, 1.75f), new Vector3(1.3f, 0.4f, 0.4f), red, new Vector3(30f, 0f, 0f), e);
             kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 1.15f, 1.6f), Vector3.one * 0.3f, PatchworkAssets.Glow(new Color(1f, 0.9f, 0.6f), 1.5f), default(Vector3), e);
-            // A little puff of smoke that bobs over the chimney.
-            var puff = kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 2.9f, 1f), new Vector3(0.7f, 0.5f, 0.7f), PatchworkAssets.Felt(new Color(0.92f, 0.9f, 0.88f)), default(Vector3), e);
-            var bob = puff.gameObject.AddComponent<Spinner>();
-            bob.Speed = 30f;
-            bob.BobHeight = 0.25f;
-            bob.BobSpeed = 3f;
+            // Puffs of smoke trailing up and back from the chimney.
+            for (int i = 0; i < 3; i++)
+            {
+                float s = 0.35f + i * 0.15f;
+                var puff = kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 2.75f + i * 0.45f, 0.95f - i * 0.45f), Vector3.one * s, PatchworkAssets.Felt(new Color(0.95f, 0.94f, 0.92f)), default(Vector3), e);
+                var bob = puff.gameObject.AddComponent<Spinner>();
+                bob.Speed = 40f + i * 15f;
+                bob.BobHeight = 0.1f + i * 0.05f;
+                bob.BobSpeed = 4f - i * 0.8f;
+            }
         }
 
         static void BuildWagon(LevelKit kit, Transform w, Color col, int cargo)
