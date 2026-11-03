@@ -42,7 +42,7 @@ namespace Patchwork
 
             kit.AddCheckpoint(new Vector3(0f, 0f, -4f), 0f);
             kit.Hint(new Vector3(0f, 1.5f, -3f), new Vector3(10f, 4f, 6f), "Welcome aboard the Skiff!",
-                "Move, {Jump} to jump, and press {Wheel} to switch between Water, Yarn and Wind. {Satchel} opens the Satchel to swap hats.");
+                "Move, {Jump} to jump. Tap the D-pad to change into Water, Yarn or Wind (or use {Wheel}). {Sticker} opens your stickers, and {Satchel} the Satchel.");
 
             HelmAndGlobe(kit);
             MastAndFountain(kit);
@@ -64,6 +64,8 @@ namespace Patchwork
             kit.YarnBall(new Vector3(-6.4f, 0f, -3.2f), 0.6f, new Color(0.55f, 0.7f, 0.95f));
 
             PirateDressing(kit);
+            Decorations(kit);
+            Grabbable.BeachBall(kit, new Vector3(5.5f, 0.05f, -5.5f), 0.6f);
             ShipSounds(kit);
 
             // Captain Yarny stands by the helm, keeping an eye on the globe (and on you).
@@ -211,6 +213,92 @@ namespace Patchwork
             var spin = blades.gameObject.AddComponent<Spinner>();
             spin.Axis = Vector3.forward;
             spin.Speed = 420f * dir;
+        }
+
+        // Skiff decorations found in prize bubbles.
+        static void Decorations(LevelKit kit)
+        {
+            // Duck Captain: a big rubber duck in a captain's hat, keeping watch from the cabin roof.
+            if (Prizes.HasDecoration(0))
+            {
+                var d = kit.Group("DuckCaptain", new Vector3(-2f, 4.45f, -11.6f));
+                d.rotation = Quaternion.Euler(0f, 20f, 0f);
+                var yellow = PatchworkAssets.Plain(new Color(1f, 0.85f, 0.2f), 0.75f);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.45f, 0f), new Vector3(1.4f, 1f, 1.8f), yellow, default(Vector3), d);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.5f, -0.8f), new Vector3(0.7f, 0.9f, 0.6f), yellow, new Vector3(-30f, 0f, 0f), d);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 1.25f, 0.55f), Vector3.one * 0.9f, yellow, default(Vector3), d);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 1.15f, 1.05f), new Vector3(0.45f, 0.18f, 0.45f), PatchworkAssets.Plain(new Color(1f, 0.55f, 0.15f), 0.75f), default(Vector3), d);
+                for (int s = -1; s <= 1; s += 2)
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.28f, 1.38f, 0.92f), Vector3.one * 0.13f, PatchworkAssets.Plain(UIKit.Ink, 0.7f), default(Vector3), d);
+                var navy = PatchworkAssets.Felt(new Color(0.2f, 0.24f, 0.4f));
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.68f, 0.55f), new Vector3(0.75f, 0.06f, 0.75f), navy, default(Vector3), d);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.82f, 0.55f), new Vector3(0.6f, 0.12f, 0.6f), PatchworkAssets.Felt(Color.white), default(Vector3), d);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.8f, 0.86f), new Vector3(0.18f, 0.02f, 0.18f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f), new Vector3(80f, 0f, 0f), d);
+                var rock = d.gameObject.AddComponent<Rocker>();
+                rock.Axis = Vector3.forward;
+                rock.Amount = 4f;
+                rock.Speed = 1.2f;
+            }
+            // Paper Lanterns: a string of glowing paper lanterns from the cabin flag to the rail.
+            if (Prizes.HasDecoration(1))
+            {
+                Vector3 a = CabinFlagTop + Vector3.down * 0.3f, b = new Vector3(7.7f, 2.6f, 6f);
+                var cord = PatchworkAssets.Yarn(new Color(0.95f, 0.9f, 0.8f));
+                const int segs = 12;
+                System.Func<float, Vector3> P = k => Vector3.Lerp(a, b, k) + Vector3.down * Mathf.Sin(k * Mathf.PI) * 1.4f;
+                for (int i = 0; i < segs; i++) kit.Rope(P(i / (float)segs), P((i + 1) / (float)segs), cord, 0.04f);
+                Color[] cols = { new Color(1f, 0.55f, 0.55f), new Color(1f, 0.85f, 0.45f), new Color(0.6f, 0.85f, 1f), new Color(0.75f, 0.95f, 0.6f) };
+                for (int i = 1; i < 8; i++)
+                {
+                    Vector3 p = P(i / 8f) + Vector3.down * 0.35f;
+                    kit.Deco(PrimitiveType.Sphere, p, new Vector3(0.42f, 0.55f, 0.42f), PatchworkAssets.Glow(cols[i % cols.Length], 0.8f));
+                    kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * 0.3f, new Vector3(0.24f, 0.04f, 0.24f), PatchworkAssets.Felt(new Color(0.3f, 0.25f, 0.3f)));
+                }
+            }
+            // Snow Globe: a tiny Skiff in a glass dome on the cabin roof.
+            if (Prizes.HasDecoration(2))
+            {
+                Vector3 g = new Vector3(2f, 4.45f, -11f);
+                kit.Deco(PrimitiveType.Cylinder, g + Vector3.up * 0.2f, new Vector3(1.3f, 0.2f, 1.3f), PatchworkAssets.Wood(new Color(0.5f, 0.32f, 0.22f)));
+                kit.Deco(PrimitiveType.Cylinder, g + Vector3.up * 0.42f, new Vector3(1.1f, 0.03f, 1.1f), PatchworkAssets.Felt(Color.white));
+                kit.Deco(PrimitiveType.Cube, g + Vector3.up * 0.6f, new Vector3(0.45f, 0.2f, 0.75f), PatchworkAssets.Cardboard(Kraft));
+                kit.Deco(PrimitiveType.Sphere, g + Vector3.up * 1.05f, new Vector3(0.5f, 0.35f, 0.5f), PatchworkAssets.Felt(new Color(0.95f, 0.6f, 0.65f)));
+                var glass = kit.Deco(PrimitiveType.Sphere, g + Vector3.up * 0.95f, Vector3.one * 1.15f, PatchworkAssets.Bubble(new Color(0.85f, 0.92f, 1f, 0.28f)));
+                glass.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                var snow = kit.Group("Snow", g + Vector3.up * 0.95f);
+                for (int i = 0; i < 14; i++)
+                {
+                    float a = i * 2.4f;
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 0.35f, Mathf.Sin(i * 1.7f) * 0.3f, Mathf.Sin(a) * 0.35f), Vector3.one * 0.05f, PatchworkAssets.Glow(Color.white, 0.6f), default(Vector3), snow);
+                }
+                var spin = snow.gameObject.AddComponent<Spinner>();
+                spin.Speed = 25f;
+                spin.BobHeight = 0.05f;
+            }
+            // Pinwheels on the rails, turning in the breeze.
+            if (Prizes.HasDecoration(3))
+            {
+                Vector3[] spots = { new Vector3(7.85f, 0.9f, -12f), new Vector3(7.85f, 0.9f, -2f), new Vector3(7.85f, 0.9f, 12f), new Vector3(-7.85f, 0.9f, -12f), new Vector3(-7.85f, 0.9f, 12f) };
+                Color[] cols = { LevelKit.Palette.Rose, LevelKit.Palette.Sky, LevelKit.Palette.Butter, LevelKit.Palette.Sage, LevelKit.Palette.Lavender };
+                for (int i = 0; i < spots.Length; i++)
+                {
+                    Vector3 p = spots[i];
+                    kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * 0.55f, new Vector3(0.06f, 0.55f, 0.06f), PatchworkAssets.Wood(new Color(0.85f, 0.75f, 0.6f)));
+                    float side = p.x > 0f ? 1f : -1f;
+                    var hub = kit.Group("Pinwheel", p + new Vector3(side * 0.08f, 1.15f, 0f));
+                    hub.rotation = Quaternion.Euler(0f, side * 90f, 0f);
+                    for (int k = 0; k < 4; k++)
+                    {
+                        var blade = kit.Deco(PrimitiveType.Cube, Quaternion.Euler(0f, 0f, k * 90f) * new Vector3(0.16f, 0.06f, 0f), new Vector3(0.32f, 0.16f, 0.01f),
+                            PatchworkAssets.Felt(k % 2 == 0 ? cols[i] : Color.white), new Vector3(0f, 0f, k * 90f + 20f), hub);
+                        blade.name = "Blade";
+                    }
+                    kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 0.08f, PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f), default(Vector3), hub);
+                    var turn = hub.gameObject.AddComponent<Spinner>();
+                    turn.Axis = Vector3.forward;
+                    turn.Speed = 160f + i * 25f;
+                }
+            }
         }
 
         // A patched-up felt balloon held on by yarn ropes.

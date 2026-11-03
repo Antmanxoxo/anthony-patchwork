@@ -393,6 +393,18 @@ namespace Patchwork
             if (clip != null) voice.PlayOneShot(clip, 0.3f * Sfx.Volume / 10f);
         }
 
+        // Babble: the letter picks the syllable, so the same line always "sounds" the same.
+        public override void Blip(char letter, bool questionEnd)
+        {
+            if (voice == null) return;
+            talkPulse = 1f;
+            int syllable = char.ToLowerInvariant(letter) % 6;
+            float lift = questionEnd ? 1.18f : 1f;
+            voice.pitch = VoicePitch * lift * (0.94f + (letter % 5) * 0.03f);
+            var clip = Sfx.Clip(SfxId.Babble0 + syllable);
+            if (clip != null) voice.PlayOneShot(clip, 0.32f * Sfx.Volume / 10f);
+        }
+
         public override void Greet()
         {
             if (greetCooldown > 0f || voice == null) return;

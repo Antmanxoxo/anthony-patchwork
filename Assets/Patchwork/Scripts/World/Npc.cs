@@ -14,6 +14,8 @@ namespace Patchwork
         public abstract string[] NextLines();
         // One syllable of their voice.
         public abstract void Blip();
+        // A syllable for a particular letter of what they're saying (questions go up at the end).
+        public virtual void Blip(char letter, bool questionEnd) { Blip(); }
         // When Patch walks up to them.
         public virtual void Greet() { }
         // Called when a chat with them finishes (used to start things like the wedding).

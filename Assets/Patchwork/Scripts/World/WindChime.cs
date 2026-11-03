@@ -12,7 +12,13 @@ namespace Patchwork
 
         public void Setup(Transform[] tubeVisuals) { tubes = tubeVisuals; }
 
-        protected override void OnPlayerEnter(PatchworkPlayer player) { Ring(); }
+        bool rung;
+
+        protected override void OnPlayerEnter(PatchworkPlayer player)
+        {
+            Ring();
+            if (!rung) { rung = true; ScoreKeeper.Bonus(50, transform.position); }
+        }
 
         protected override void OnPlayerStay(PatchworkPlayer player, float dt)
         {

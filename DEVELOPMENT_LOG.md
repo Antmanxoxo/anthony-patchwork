@@ -1,5 +1,31 @@
 # Development Log
 
+## More to play with
+- Grab: hold R2 (Shift) next to a crate, building block or beach ball to take hold of it,
+  then walk to push it or back away to pull it. Patch's arms reach for it and he leans in.
+  Yarn and Water can grab; Wind blows toys along with its gust instead. Running into balls
+  and blocks knocks them over.
+- Score bubbles: trails of bubbles along every route in Toybox Town. Popping them one after
+  another builds a chain (x2 after five, up to x5) with rising notes and floating "+30"s.
+  Toys, Snarlings, knots, Heartstrings and band pieces burst into bubbles too. The end of the
+  level shows your score and a bronze, silver or gold medal, and the globe shows your best.
+- Prize bubbles: 13 prizes hidden around town (under the bridge, on the spire, on the train
+  tunnel, on the block stacks...). They hold stickers, three new hats (Party Hat, Pirate Hat,
+  Propeller Cap) and decorations that appear on the Skiff (Duck Captain, Paper Lanterns, Snow
+  Globe, Pinwheels).
+- Stickers: press Triangle (F), aim with the camera and stick them on anything. They stay where
+  you put them, and the ones on crates ride along. Sticker boards around town want a
+  particular sticker, and give a prize when they get it.
+- The Toy Workshop, over the canal: push a crate onto a pressure pad to open a pen, and a
+  see-saw catapult that flings you up to a high shelf when you pull its lever.
+- The toy train's middle wagon is now an open flatbed you can ride, and the carousel floor
+  turns with you on it.
+- Trees, flower pots and barrels wobble when you bump them.
+- The townsfolk babble properly when they talk: each letter picks a little syllable, and
+  questions go up at the end.
+- Controls: D-pad left / up / right change straight to Water / Yarn / Wind. D-pad down cycles
+  Patch's face. The map moved to R3.
+
 ## Ready for a first build
 - Cleaned out code the game no longer uses: the Test Gym, portals, moving platforms, the old
   Sewing Basket props, a few unused instruments, and Unity's sample scene and readme.

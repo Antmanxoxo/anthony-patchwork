@@ -19,6 +19,7 @@ namespace Patchwork
         public static Texture2D GlyphCross { get; private set; }
         public static Texture2D GlyphCircle { get; private set; }
         public static Texture2D GlyphSquare { get; private set; }
+        public static Texture2D GlyphTriangle { get; private set; }
         public static Texture2D IconWater { get; private set; }
         public static Texture2D IconYarn { get; private set; }
         public static Texture2D IconWind { get; private set; }
@@ -46,6 +47,7 @@ namespace Patchwork
             GlyphCross = MakeGlyph(0, new Color(0.49f, 0.70f, 0.91f));
             GlyphCircle = MakeGlyph(1, new Color(1f, 0.42f, 0.45f));
             GlyphSquare = MakeGlyph(2, new Color(0.90f, 0.62f, 0.90f));
+            GlyphTriangle = MakeGlyph(3, new Color(0.45f, 0.85f, 0.7f));
             IconWater = MakeIcon(0);
             IconYarn = MakeIcon(1);
             IconWind = MakeIcon(2);
@@ -294,6 +296,41 @@ namespace Patchwork
             return m;
         }
 
+        // A sticker: its picture on a see-through, slightly glossy material (same shader set-up as
+        // the bubble, so the build already keeps it). One per picture.
+        static readonly Dictionary<Texture2D, Material> stickerMats = new Dictionary<Texture2D, Material>();
+
+        public static Material Sticker(Texture2D picture)
+        {
+            EnsureInit();
+            Material m;
+            if (picture != null && stickerMats.TryGetValue(picture, out m) && m != null) return m;
+            m = litTemplate != null ? new Material(litTemplate) : new Material(litShader);
+            m.name = "PW_sticker";
+            m.SetColor("_BaseColor", Color.white);
+            m.SetColor("_Color", Color.white);
+            m.SetTexture("_BaseMap", picture);
+            m.SetTexture("_MainTex", picture);
+            m.SetFloat("_Smoothness", 0.55f);
+            m.SetFloat("_Surface", 1f);
+            m.SetFloat("_Blend", 0f);
+            m.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            m.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            m.SetFloat("_SrcBlendAlpha", (float)UnityEngine.Rendering.BlendMode.One);
+            m.SetFloat("_DstBlendAlpha", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            m.SetFloat("_ZWrite", 0f);
+            m.SetFloat("_Cull", 0f);
+            m.SetOverrideTag("RenderType", "Transparent");
+            m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            m.DisableKeyword("_ALPHATEST_ON");
+            m.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent + 5;
+            m.SetShaderPassEnabled("ShadowCaster", false);
+            m.EnableKeyword("_EMISSION");
+            m.SetColor("_EmissionColor", new Color(0.08f, 0.08f, 0.08f));
+            if (picture != null) stickerMats[picture] = m;
+            return m;
+        }
+
         public static Material Glow(Color color, float intensity)
         {
             EnsureInit();
@@ -430,6 +467,14 @@ namespace Patchwork
                         case 1:
                             d = Mathf.Abs(r - 12f) - 3f;
                             break;
+                        case 3:
+                        {
+                            var top = new Vector2(0f, 12f);
+                            var bl = new Vector2(-12f, -9f);
+                            var br = new Vector2(12f, -9f);
+                            d = Mathf.Min(SegDist(p, top, bl), Mathf.Min(SegDist(p, bl, br), SegDist(p, br, top))) - 2.8f;
+                            break;
+                        }
                         default:
                             d = Mathf.Abs(Mathf.Max(Mathf.Abs(p.x), Mathf.Abs(p.y)) - 11f) - 2.8f;
                             break;

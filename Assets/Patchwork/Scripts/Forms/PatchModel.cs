@@ -96,6 +96,17 @@ namespace Patchwork
             tetherTarget = target;
         }
 
+        // Holding something: both arms reach for it.
+        bool gripping;
+        Vector3 gripTarget;
+        Transform armLeft, handLeft;
+
+        public void SetGrip(bool on, Vector3 target)
+        {
+            gripping = on;
+            gripTarget = target;
+        }
+
         bool Setup(GameObject model)
         {
             modelRoot = model.transform;
@@ -151,6 +162,8 @@ namespace Patchwork
             // Face forward. In Blender he faces -Y with his rope arm ("arm.R") on +X. Importing into
             // Unity mirrors the handedness, so his front is up x (arm.R - arm.L) here.
             var armL = FindDeep(modelRoot, "arm.L");
+            armLeft = armL;
+            handLeft = FindDeep(modelRoot, "hand.L");
             float yaw = 0f;
             if (armR != null && armL != null)
             {
@@ -330,6 +343,13 @@ namespace Patchwork
             Vector3 accel = dt > 0f ? (v - lastVelocity) / dt : Vector3.zero;
             lastVelocity = v;
             if (tethered || !grounded) { wantLeanPitch = 0f; wantLeanRoll = 0f; }
+            else if (gripping)
+            {
+                // Lean into a push, lean back on a pull.
+                float along = Vector3.Dot(v, transform.forward);
+                wantLeanPitch = Mathf.Clamp(along * 2.5f, -10f, 10f);
+                wantLeanRoll = 0f;
+            }
             else
             {
                 Vector3 local = transform.InverseTransformDirection(accel);
@@ -382,8 +402,25 @@ namespace Patchwork
                     armR.rotation = Quaternion.FromToRotation(cur, want) * armR.rotation;
             }
 
+            // Holding something: point both arms at it, a little apart.
+            if (gripping && !tethered)
+            {
+                Vector3 side = transform.right * 0.25f;
+                AimArm(armR, HandR, gripTarget + side);
+                AimArm(armLeft, handLeft, gripTarget - side);
+            }
+
             // The hand is in its final spot now, so anything attached to it (the rope) can follow.
             if (PoseApplied != null) PoseApplied();
+        }
+
+        static void AimArm(Transform arm, Transform hand, Vector3 target)
+        {
+            if (arm == null || hand == null) return;
+            Vector3 cur = hand.position - arm.position;
+            Vector3 want = target - arm.position;
+            if (cur.sqrMagnitude > 1e-6f && want.sqrMagnitude > 1e-6f)
+                arm.rotation = Quaternion.FromToRotation(cur, want) * arm.rotation;
         }
 
         // Called at the end of every LateUpdate, once the pose and arm aim are final.

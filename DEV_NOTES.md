@@ -136,6 +136,20 @@ Stuff I need to remember about how Patchwork is put together.
 - Save version is 2 (`GameState.Version`). Older saves drop the Level 1 completion and its
   Heartstrings when they load.
 - `PatchworkAssets.Plain` uses the gentle `PatchworkTextures.Paint` brushstroke texture.
+- Grab: `GrabHand` on the player (`Player.Hand`), `Grabbable` on physics toys (builders:
+  `Grabbable.Crate / ToyBlock / BeachBall`). `Motor.FacingOverride` and `Motor.AirCarry` are
+  per-frame / per-launch helpers. Standing on anything with a `Carrier` moves Patch with it.
+- Contraptions (`Contraptions.cs`): `Lever` (Grab to pull, `Pulled`), `PressurePad`
+  (`Changed`, MinMass; crates ~40, Patch counts 10), `Gate`, `Seesaw` (Drop, launches to
+  Target), `Jiggle`.
+- Score: `PatchworkGame.Score` (`ScoreKeeper`). `ScoreBubbles.Place` adds to
+  `LevelInfo.ScorePossible`; medals are 50% / 100% / 160% of it. `ScoreBubbles.BurstAt` for
+  rewards, `ScoreKeeper.Bonus` for points.
+- Prizes: `Prizes.All` (stickers, hats 5-7, decorations 0-3). `PrizeBubble.Place(kit, pos, id,
+  hidden)`, `Reveal()` to show a hidden one. Hub decorations are in `HubBuilder.Decorations`.
+- Stickers: `StickerSystem` (UIMode.Sticker), art in `StickerArt`, saved per level in the save
+  file. `StickerSwitch` is a spot that wants a sticker (`Done`).
+- Toybox Town's playground layer is `Level1Fun.cs` (score trails, prizes, boards, workshop).
 - `LevelAudit` (editor only) runs 1.5 s after a level loads in Play mode and writes
   `Logs/PatchworkAudit_<level>.txt`: walk-through props, flickering faces, collectibles stuck in
   solids, broken materials and counts.

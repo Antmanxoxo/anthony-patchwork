@@ -8,6 +8,7 @@ namespace Patchwork
         public Transform Body;
         public float Pitch = 1f;
         float squish;
+        bool squeaked;
         Vector3 baseScale;
 
         void Start() { if (Body != null) baseScale = Body.localScale; }
@@ -16,6 +17,7 @@ namespace Patchwork
         {
             squish = 1f;
             Sfx.PlayPitched(SfxId.Squeak, 0.5f, Pitch * Random.Range(0.95f, 1.08f));
+            if (!squeaked) { squeaked = true; ScoreBubbles.BurstAt(transform.position + Vector3.up, 2); }
         }
 
         void Update()

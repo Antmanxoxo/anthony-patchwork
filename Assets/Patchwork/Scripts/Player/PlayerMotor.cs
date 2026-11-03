@@ -40,6 +40,11 @@ namespace Patchwork
         [System.NonSerialized] public float SwimSurface;
         // Whether Patch was swimming last frame (Swimming itself resets every frame), for the camera.
         public bool WasSwimming { get; private set; }
+        // Face this way this frame instead of the way he's moving (holding a crate). Zero = unused.
+        [System.NonSerialized] public Vector3 FacingOverride;
+        // Sideways speed kept through the air after a launch (see-saw), on top of steering.
+        // Cleared on landing.
+        [System.NonSerialized] public Vector3 AirCarry;
 
         // ---- Timed overrides ----
         float dashTimer;
@@ -59,6 +64,21 @@ namespace Patchwork
         void OnControllerColliderHit(ControllerColliderHit hit)
         {
             if (hit.normal.y > 0.6f) groundHit = hit.collider;
+            // Running into a ball or a toy block knocks it along.
+            var rb = hit.rigidbody;
+            if (rb == null || rb.isKinematic || hit.moveDirection.y < -0.5f) return;
+            var toy = rb.GetComponent<Grabbable>();
+            if (toy == null || !toy.KickOnWalk || toy.Held) return;
+            Vector3 push = new Vector3(hit.moveDirection.x, 0f, hit.moveDirection.z);
+            if (push.sqrMagnitude < 0.01f) return;
+            push.Normalize();
+            float speed = Mathf.Max(2.5f, new Vector2(Velocity.x, Velocity.z).magnitude * 1.3f);
+            Vector3 v = rb.linearVelocity;
+            if (Vector3.Dot(new Vector3(v.x, 0f, v.z), push) < speed * 0.8f)
+            {
+                rb.linearVelocity = new Vector3(push.x * speed, Mathf.Max(v.y, 1.5f), push.z * speed);
+                Sfx.Step(SfxId.Boing, 0.2f);
+            }
         }
 
         // Launches straight up (bounce pads). Keeps horizontal speed.
@@ -118,6 +138,7 @@ namespace Patchwork
             transform.rotation = Quaternion.Euler(0f, yaw, 0f);
             Controller.enabled = true;
             Velocity = Vector3.zero;
+            AirCarry = Vector3.zero;
             launched = false;
             ResetTransientState();
         }
@@ -143,7 +164,7 @@ namespace Patchwork
             }
             else
             {
-                Vector3 target = moveWorld * Params.MoveSpeed * (1f + SpeedBoost);
+                Vector3 target = moveWorld * Params.MoveSpeed * (1f + SpeedBoost) + (Grounded ? Vector3.zero : AirCarry);
                 float accel = Grounded || Swimming ? Params.GroundAcceleration * (1f + SpeedBoost) : Params.AirAcceleration;
                 horizontal = Vector3.MoveTowards(horizontal, target, accel * dt);
             }
@@ -217,6 +238,7 @@ namespace Patchwork
                 if (!wasGrounded && airTime > 0.15f) JustLanded = true;
                 allowJumpCut = false;
                 launched = false;
+                AirCarry = Vector3.zero;
                 airTime = 0f;
             }
             else
@@ -227,6 +249,7 @@ namespace Patchwork
             // ---------------- Facing ----------------
             Vector3 face = new Vector3(Velocity.x, 0f, Velocity.z);
             if (moveWorld.sqrMagnitude > 0.01f) face = moveWorld;
+            if (FacingOverride.sqrMagnitude > 0.01f) face = FacingOverride;
             if (face.sqrMagnitude > 0.01f)
             {
                 Quaternion targetRot = Quaternion.LookRotation(face.normalized, Vector3.up);
@@ -250,6 +273,7 @@ namespace Patchwork
             HasLift = false;
             SpeedBoost = 0f;
             Swimming = false;
+            FacingOverride = Vector3.zero;
         }
 
         // Centre of the capsule in world space.

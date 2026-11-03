@@ -16,6 +16,7 @@ namespace Patchwork
             m.Bounce(LaunchSpeed);
             player.Visuals.PunchScale(new Vector3(1.3f, 0.7f, 1.3f));
             if (Owner != null) Owner.Pop(Owner.IndexOf(transform), true);
+            if (player.Game != null && player.Game.Score != null) player.Game.Score.AddChained(10, transform.position);
         }
     }
 }

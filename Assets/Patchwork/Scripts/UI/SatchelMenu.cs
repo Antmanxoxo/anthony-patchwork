@@ -67,7 +67,7 @@ namespace Patchwork
             float W = UIKit.Width, H = UIKit.Height;
             UIKit.Fill(new Rect(0f, 0f, W, H), new Color(0.1f, 0.07f, 0.15f, 0.62f * k));
 
-            float pw = 1040f, ph = 660f;
+            float pw = 1040f, ph = 720f;
             var panel = new Rect((W - pw) * 0.5f, (H - ph) * 0.5f + (1f - k) * 40f, pw, ph);
             UIKit.Panel(panel, new Color(0.99f, 0.95f, 0.88f, 0.97f), UIKit.Thread);
             var ink = UIKit.Ink;
@@ -100,10 +100,10 @@ namespace Patchwork
             // Right column: finds + hat.
             float rx = panel.x + 680f;
             float ry = panel.y + 135f;
-            var box = new Rect(rx, ry, 320f, 190f);
+            var box = new Rect(rx, ry, 320f, 120f);
             UIKit.Fill(box, new Color(1f, 1f, 1f, 0.5f), 18f);
-            UIKit.Label(new Rect(rx + 24f, ry + 14f, 280f, 30f), "Golden Buttons", UIKit.Style(22, true, TextAnchor.MiddleLeft, ink));
-            UIKit.Icon(new Rect(rx + 24f, ry + 60f, 90f, 90f), PatchworkAssets.IconButton, Color.white);
+            UIKit.Label(new Rect(rx + 24f, ry + 10f, 280f, 30f), "Golden Buttons", UIKit.Style(22, true, TextAnchor.MiddleLeft, ink));
+            UIKit.Icon(new Rect(rx + 24f, ry + 44f, 64f, 64f), PatchworkAssets.IconButton, Color.white);
             var level = game.Level;
             string count;
             if (level.CollectibleIds.Count > 0) count = level.CollectedCount() + " / " + level.CollectibleIds.Count;
@@ -113,19 +113,41 @@ namespace Patchwork
                 foreach (var id in Level1Builder.CollectibleIds) if (GameState.IsCollected(id)) n++;
                 count = n + " / " + Level1Builder.CollectibleIds.Length;
             }
-            UIKit.Label(new Rect(rx + 130f, ry + 62f, 180f, 50f), count, UIKit.Style(40, true, TextAnchor.MiddleLeft, ink));
-            UIKit.Label(new Rect(rx + 130f, ry + 110f, 180f, 30f), level.IsHub ? "in Level 1" : "in this level",
-                UIKit.Style(20, false, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.7f)));
+            UIKit.Label(new Rect(rx + 104f, ry + 40f, 190f, 44f), count, UIKit.Style(34, true, TextAnchor.MiddleLeft, ink));
+            UIKit.Label(new Rect(rx + 104f, ry + 80f, 190f, 26f), level.IsHub ? "in Level 1" : "in this level",
+                UIKit.Style(18, false, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.7f)));
 
-            var hatBox = new Rect(rx, ry + 210f, 320f, 190f);
+            // Prizes found in prize bubbles.
+            var prizeBox = new Rect(rx, ry + 132f, 320f, 136f);
+            UIKit.Fill(prizeBox, new Color(1f, 1f, 1f, 0.5f), 18f);
+            UIKit.Label(new Rect(rx + 24f, ry + 140f, 280f, 30f), "Prizes", UIKit.Style(22, true, TextAnchor.MiddleLeft, ink));
+            int sTotal, hTotal, dTotal;
+            int sGot = Prizes.Count(PrizeKind.Sticker, out sTotal) + StickerArt.Starters.Length;
+            int hGot = Prizes.Count(PrizeKind.Hat, out hTotal);
+            int dGot = Prizes.Count(PrizeKind.Decoration, out dTotal);
+            var small = UIKit.Style(19, false, TextAnchor.MiddleLeft, ink);
+            UIKit.Label(new Rect(rx + 24f, ry + 172f, 280f, 28f), "Stickers  " + sGot + " / " + (sTotal + StickerArt.Starters.Length), small);
+            UIKit.Label(new Rect(rx + 24f, ry + 200f, 280f, 28f), "Hats  " + hGot + " / " + hTotal, small);
+            UIKit.Label(new Rect(rx + 24f, ry + 228f, 280f, 28f), "Skiff decorations  " + dGot + " / " + dTotal, small);
+            // The sticker book, tiny.
+            int si = 0;
+            foreach (StickerId id in System.Enum.GetValues(typeof(StickerId)))
+            {
+                if (!Prizes.OwnsSticker(id)) continue;
+                if (si >= 5) break;
+                UIKit.Icon(new Rect(rx + 200f + (si % 3) * 38f, ry + 140f + (si / 3) * 38f, 34f, 34f), StickerArt.Get(id), Color.white);
+                si++;
+            }
+
+            var hatBox = new Rect(rx, ry + 280f, 320f, 190f);
             UIKit.Fill(hatBox, new Color(1f, 1f, 1f, 0.5f), 18f);
-            UIKit.Label(new Rect(rx + 24f, ry + 224f, 280f, 30f), "Cosmetic: Hat", UIKit.Style(22, true, TextAnchor.MiddleLeft, ink));
+            UIKit.Label(new Rect(rx + 24f, ry + 294f, 280f, 30f), "Cosmetic: Hat", UIKit.Style(22, true, TextAnchor.MiddleLeft, ink));
             int shown = Mathf.Clamp(viewHat, 0, FormVisuals.HatNames.Length - 1);
             bool locked = !GameState.IsHatUnlocked(shown);
             string hatName = FormVisuals.HatNames[shown];
-            UIKit.Label(new Rect(rx + 20f, ry + 266f, 280f, 50f), "<   " + hatName + "   >",
+            UIKit.Label(new Rect(rx + 20f, ry + 336f, 280f, 50f), "<   " + hatName + "   >",
                 UIKit.Style(26, true, TextAnchor.MiddleCenter, locked ? new Color(ink.r, ink.g, ink.b, 0.45f) : ink));
-            UIKit.Label(new Rect(rx + 24f, ry + 316f, 280f, 70f), locked ? "Locked. " + GameState.HatRequirement(shown) : "Hats stay on in every form.",
+            UIKit.Label(new Rect(rx + 24f, ry + 386f, 280f, 70f), locked ? "Locked. " + GameState.HatRequirement(shown) : "Hats stay on in every form.",
                 UIKit.Style(locked ? 18 : 20, locked, TextAnchor.UpperCenter, new Color(ink.r, ink.g, ink.b, locked ? 0.85f : 0.7f), true));
 
             // Prompts

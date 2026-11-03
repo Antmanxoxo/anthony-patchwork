@@ -156,6 +156,7 @@ namespace Patchwork
             col.center = new Vector3(0f, height * 0.4f, 0f);
             col.radius = 0.3f;
             col.height = height * 0.8f;
+            AddJiggle(kit, g, feet + Vector3.up * 0.8f, new Vector3(1.7f, 1.8f, 1.7f), SfxId.Rustle, 0.25f);
             ClearGrass(feet, 0.6f);
         }
 
@@ -230,6 +231,16 @@ namespace Patchwork
                 float a = i * 1.26f + feet.x;
                 kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 0.28f, 1f + (i % 2) * 0.08f, Mathf.Sin(a) * 0.28f), Vector3.one * 0.17f, PatchworkAssets.Felt(bloom), default(Vector3), g);
             }
+            AddJiggle(kit, g, feet + Vector3.up * 0.7f, new Vector3(1.6f, 1.6f, 1.6f), SfxId.Rustle, 0.2f);
+        }
+
+        // Makes a prop squish and wobble when Patch bumps into it.
+        static void AddJiggle(LevelKit kit, Transform body, Vector3 centre, Vector3 size, SfxId sound, float volume)
+        {
+            var j = kit.Volume<Jiggle>(centre, size, "Jiggle");
+            j.Body = body;
+            j.Sound = sound;
+            j.Volume = volume;
         }
 
         static void Barrel(LevelKit kit, Vector3 feet, float yaw)
@@ -245,6 +256,7 @@ namespace Patchwork
             c.center = new Vector3(0f, 0.55f, 0f);
             c.radius = 0.48f;
             c.height = 1.1f;
+            AddJiggle(kit, g, feet + Vector3.up * 0.7f, new Vector3(1.9f, 1.6f, 1.9f), SfxId.Drum, 0.15f);
         }
 
         // ---------------------------------------------------------------- The nursery outside the box
@@ -1047,6 +1059,7 @@ namespace Patchwork
             BuildEngine(kit, engine);
             engine.gameObject.AddComponent<PathMover>().Setup(trackPts, 3f, 0f);
             Bumper.Add(engine, new Vector3(1.6f, 2.2f, 3.6f), new Vector3(0f, 1.25f, 0.1f));
+            engine.gameObject.AddComponent<Carrier>();
             Color[] wagonCols = { new Color(0.35f, 0.55f, 0.85f), new Color(0.95f, 0.75f, 0.3f), new Color(0.45f, 0.7f, 0.45f) };
             for (int i = 0; i < 3; i++)
             {
@@ -1054,6 +1067,7 @@ namespace Patchwork
                 BuildWagon(kit, w, wagonCols[i], i);
                 w.gameObject.AddComponent<PathMover>().Setup(trackPts, 3f, -3.3f - i * 2.9f);
                 Bumper.Add(w, new Vector3(1.5f, 1.1f, 2.4f), new Vector3(0f, 0.75f, 0f));
+                w.gameObject.AddComponent<Carrier>();
             }
             // A station with a roof on posts, a bench, a clock and a stationmaster.
             Vector3 st = new Vector3(70f, 0f, -51.2f);
@@ -1068,6 +1082,8 @@ namespace Patchwork
             TownKit.Bench(kit, st + new Vector3(-2.5f, 0.4f, 0.6f), 180f);
             kit.Deco(PrimitiveType.Cylinder, st + new Vector3(2.3f, 2.6f, -0.4f), new Vector3(0.7f, 0.06f, 0.7f), PatchworkAssets.Felt(LevelKit.Palette.Cream), new Vector3(90f, 0f, 0f));
             kit.Deco(PrimitiveType.Cylinder, st + new Vector3(2.3f, 2.6f, -0.36f), new Vector3(0.8f, 0.05f, 0.8f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.7f), new Vector3(90f, 0f, 0f));
+            kit.Hint(st + new Vector3(0f, 1.5f, -1.4f), new Vector3(9f, 3f, 3f), "All Aboard!",
+                "Jump onto the open wagon as it goes by to ride the Toybox Express. Something's waiting on the tunnel roof...");
             var master = Toy(kit, st + new Vector3(1.2f, 0.4f, 0.2f), 0f, ToyNpc.Kind.TinSoldier, "Stationmaster Cogg", new Color(0.25f, 0.4f, 0.3f), LevelKit.Palette.Gold, ToyNpc.Instrument.None, 0.9f, new Color(0.25f, 0.4f, 0.3f));
             master.Lines = () => new[] { "All aboard the Toybox Express! Next stop... this stop. Then this stop again.", "She goes round and round, never late once in forty years.",
                                          "If you're hunting golden buttons, look high and low. One hums a tune, they say. Up on the rooftops, I'd wager." };
@@ -1137,8 +1153,14 @@ namespace Patchwork
             }
             else if (cargo == 1)
             {
-                for (int i = 0; i < 3; i++)
-                    kit.Deco(PrimitiveType.Sphere, new Vector3(-0.3f + (i % 2) * 0.6f, 1.35f + (i / 2) * 0.4f, -0.5f + i * 0.5f), Vector3.one * 0.6f, PatchworkAssets.Yarn(FlowerColors[i]), default(Vector3), w);
+                // The passenger wagon: an open flatbed with a cushion and little rails. Hop on!
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.18f, 0f), new Vector3(1.3f, 0.05f, 2.1f), PatchworkAssets.Felt(new Color(0.95f, 0.85f, 0.6f)), default(Vector3), w);
+                for (int s = -1; s <= 1; s += 2)
+                {
+                    kit.Deco(PrimitiveType.Cube, new Vector3(s * 0.66f, 1.45f, 0f), new Vector3(0.05f, 0.05f, 2.2f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f), default(Vector3), w);
+                    for (int p = -1; p <= 1; p++)
+                        kit.Deco(PrimitiveType.Cylinder, new Vector3(s * 0.66f, 1.3f, p * 1f), new Vector3(0.05f, 0.15f, 0.05f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f), default(Vector3), w);
+                }
             }
             else
             {
@@ -1333,9 +1355,12 @@ namespace Patchwork
             Vector3 start = Pt(0) - (Pt(1) - Pt(0)).normalized * 0.9f;
             var run = kit.Volume<DominoRun>(start + Vector3.up * 1.2f, new Vector3(2f, 2.4f, 1.6f), "DominoStart");
             run.Setup(pivots, bell);
+            var dominoPrize = PrizeBubble.Place(kit, end + new Vector3(0f, 1.6f, 2.4f), "prize_music", true);
             run.Finished = () =>
             {
                 foreach (var r in reward) if (r != null) r.gameObject.SetActive(true);
+                if (dominoPrize != null) dominoPrize.Reveal();
+                ScoreBubbles.BurstAt(end + Vector3.up * 2f, 20);
                 var game = PatchworkGame.Instance;
                 if (game != null) game.ShowToast("Ding! Threads tumbled out of the dominoes.");
             };
@@ -1588,6 +1613,19 @@ namespace Patchwork
                 bob.BobSpeed = 1.4f + (i % 2) * 0.3f;
             }
             Solid(kit, c + Vector3.up * 2.5f, new Vector3(0.6f, 5f, 0.6f));
+            // The turning floor: stand on it and round you go.
+            var floor = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            floor.name = "CarouselFloor";
+            Object.DestroyImmediate(floor.GetComponent<Collider>());
+            floor.GetComponent<Renderer>().enabled = false;
+            floor.transform.SetParent(spin, false);
+            floor.transform.localPosition = new Vector3(0f, 0.32f, 0f);
+            floor.transform.localScale = new Vector3(8.6f, 0.04f, 8.6f);
+            floor.AddComponent<MeshCollider>().sharedMesh = floor.GetComponent<MeshFilter>().sharedMesh;
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.33f, 0f), new Vector3(8.5f, 0.02f, 8.5f), PatchworkAssets.Planks(new Color(0.95f, 0.85f, 0.65f)), default(Vector3), spin);
+            spin.gameObject.AddComponent<Carrier>();
+            var spinBody = spin.gameObject.AddComponent<Rigidbody>();
+            spinBody.isKinematic = true;
             ClearGrass(c, 4.6f);
         }
 

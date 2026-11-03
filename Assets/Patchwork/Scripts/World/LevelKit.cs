@@ -31,6 +31,8 @@ namespace Patchwork
         public float Saturation = 14f, Contrast = 10f, Warmth = 6f, Glow = 0.45f, Vignette = 0.22f;
         public readonly List<string> CollectibleIds = new List<string>();
         public int ThreadTotal;
+        // Points of score bubbles placed in the level (medals are measured against it).
+        public int ScorePossible;
         // Heartstrings: the main things to find in a level (some open the way to the finale).
         public readonly List<string> HeartstringIds = new List<string>();
         public int HeartstringsNeeded;
@@ -896,8 +898,6 @@ namespace Patchwork
             var col = Group("SpoolTowerCollider", groundPos + Vector3.up * height * 0.5f).gameObject.AddComponent<BoxCollider>();
             col.size = new Vector3(2.6f, height, 2.6f);
         }
-
-        // ------------------------------------------------------------------ Enclosure
 
         static Transform NoShadow(Transform t)
         {

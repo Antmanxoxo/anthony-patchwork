@@ -72,7 +72,7 @@ namespace Patchwork
                 if (c - lastBlipChar >= 3 && c > 0 && c <= text.Length && text[c - 1] != ' ')
                 {
                     lastBlipChar = c;
-                    npc.Blip();
+                    npc.Blip(text[c - 1], text.TrimEnd().EndsWith("?") && c > text.Length - 8);
                 }
             }
 

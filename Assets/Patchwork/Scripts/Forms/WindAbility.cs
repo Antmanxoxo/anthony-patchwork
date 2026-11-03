@@ -41,6 +41,21 @@ namespace Patchwork
             Player.Visuals.SetGliding(false);
         }
 
+        static readonly Collider[] blown = new Collider[24];
+
+        // The gust shoves loose toys (balls, blocks, crates) in front of Wind.
+        void BlowToys(Vector3 dir)
+        {
+            int n = Physics.OverlapSphereNonAlloc(Motor.Center + dir * 2f, 3.2f, blown, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < n; i++)
+            {
+                var rb = blown[i].attachedRigidbody;
+                if (rb == null || rb.isKinematic || rb.GetComponent<Grabbable>() == null) continue;
+                float push = 14f / Mathf.Sqrt(Mathf.Max(1f, rb.mass));
+                rb.AddForce(dir * push + Vector3.up * push * 0.35f, ForceMode.VelocityChange);
+            }
+        }
+
         public override void PreMove(PlayerInputFrame input, float dt)
         {
             if (Motor.Grounded) GustReady = true;
@@ -70,6 +85,7 @@ namespace Patchwork
                     Haptics.Pulse(0f, 0.25f, 0.1f);
                     FxBurst.Spawn(FxBurst.Kind.Puff, Motor.Center - dir * 0.5f, new Color(1f, 1f, 1f), -dir);
                     Player.Visuals.PunchScale(new Vector3(1.3f, 0.8f, 1.3f));
+                    BlowToys(dir);
                 }
                 else if (failToastTimer <= 0f)
                 {

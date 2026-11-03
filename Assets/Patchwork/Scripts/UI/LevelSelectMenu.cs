@@ -180,6 +180,19 @@ namespace Patchwork
                 UIKit.Label(new Rect(card.x + 40f, y + 52f, card.width - 80f, 36f),
                     total > 0 ? "Best threads   " + best + " / " + total : "Best threads   -",
                     UIKit.Style(22, true, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.8f * a)));
+                // Best score and its medal, on the right of the threads line.
+                int possible;
+                int bestScore = GameState.BestScore(e.Scene, out possible);
+                if (bestScore > 0)
+                {
+                    var medal = ScoreKeeper.MedalFor(bestScore, possible);
+                    UIKit.Label(new Rect(card.x + 40f, y + 52f, card.width - 130f, 36f),
+                        "Best score  " + bestScore.ToString("N0", System.Globalization.CultureInfo.InvariantCulture),
+                        UIKit.Style(22, true, TextAnchor.MiddleRight, new Color(ink.r, ink.g, ink.b, 0.8f * a)));
+                    var mc = ScoreKeeper.MedalColor(medal);
+                    if (medal != ScoreKeeper.Medal.None)
+                        UIKit.Circle(new Vector2(card.xMax - 64f, y + 70f), 40f, new Color(mc.r, mc.g, mc.b, a));
+                }
                 if (GameState.IsLevelComplete(e.Scene))
                 {
                     var ribbon = new Rect(card.xMax - 210f, card.y + 18f, 180f, 40f);

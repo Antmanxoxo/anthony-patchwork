@@ -18,7 +18,8 @@ namespace Patchwork
         Talk,        // chatting with an NPC
         Cutscene,    // a scripted moment (the wedding)
         Ask,         // a little Yes / No question (like "go back to the square?")
-        Map          // the pull-up map
+        Map,         // the pull-up map
+        Sticker      // aiming and placing stickers
     }
 
     // Main game object, one per scene. Builds the level, camera, light and player,
@@ -37,6 +38,15 @@ namespace Patchwork
         public DanceParty Dance { get; private set; }
 
         public FormSelector Selector { get; private set; }
+        public ScoreKeeper Score { get; private set; }
+        public StickerSystem Stickers { get; private set; }
+        // The prize card that pops up when a prize bubble is opened.
+        public PrizeDef PrizeShown { get; private set; }
+        public float PrizeTimer { get; private set; }
+        public bool NewBestScore { get; private set; }
+        // Seconds since the level-complete card opened (the score counts up on it).
+        public float CompleteTime { get { return completeTime; } }
+        float completeTime;
         public SatchelMenu Satchel { get; private set; }
         public PauseMenu Pause { get; private set; }
         public TitleSequence Title { get; private set; }
@@ -160,6 +170,9 @@ namespace Patchwork
             Dialogue = new DialogueBox(this);
             Asker = new AskBox(this);
             Map = new MapScreen(this);
+            Score = new ScoreKeeper();
+            Stickers = new StickerSystem(this);
+            Stickers.LoadLevel(Level.Id);
 
             Mode = UIMode.Gameplay;
             // Coming from the loading screen, it's still covering everything, so skip our own fade.
@@ -281,18 +294,25 @@ namespace Patchwork
                     else if (Input.Map.WasPressedThisFrame() && MapScreen.Available(Level)) OpenMap();
                     else if (Helm != null && Input.Ability.WasPressedThisFrame() && Player.Motor.Grounded) OpenLevelSelect();
                     else if (Talker != null && Talker.Npc != null && Input.Ability.WasPressedThisFrame() && Player.Motor.Grounded) StartTalk();
-                    else if (FacePressed())
+                    else if (Input.Sticker.WasPressedThisFrame()) OpenStickers();
+                    else if (Input.QuickWater.WasPressedThisFrame()) QuickForm(FormType.Water);
+                    else if (Input.QuickYarn.WasPressedThisFrame()) QuickForm(FormType.Yarn);
+                    else if (Input.QuickWind.WasPressedThisFrame()) QuickForm(FormType.Wind);
+                    else if (Input.FaceNext.WasPressedThisFrame())
                     {
-                        SetPatchFace(pressedFace, true);
+                        CycleFace(true);
                         if (Dance.RegisterTap() && CanDance()) StartDance();
                     }
+                    break;
+                case UIMode.Sticker:
+                    if (!Stickers.Update(udt)) CloseStickers();
                     break;
                 case UIMode.Dance:
                     if (Input.Pause.WasPressedThisFrame() || Input.Cancel.WasPressedThisFrame()) EndDance();
                     else
                     {
                         // Keep tapping to keep dancing; each tap also swaps his face (quietly).
-                        if (FacePressed()) { Dance.RegisterTap(); SetPatchFace(pressedFace, false); }
+                        if (Input.FaceNext.WasPressedThisFrame()) { Dance.RegisterTap(); CycleFace(false); }
                         if (Dance.TimedOut) EndDance();
                     }
                     break;
@@ -306,7 +326,8 @@ namespace Patchwork
                     Pause.Update(udt);
                     break;
                 case UIMode.Complete:
-                    if (Input.Confirm.WasPressedThisFrame()) LoadScene(HubBuilder.SceneName);
+                    completeTime += udt;
+                    if (completeTime > 0.6f && Input.Confirm.WasPressedThisFrame()) LoadScene(HubBuilder.SceneName);
                     break;
                 case UIMode.Intro:
                     if (Title.Update(udt))
@@ -336,7 +357,7 @@ namespace Patchwork
                     break;
             }
 
-            if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel || Mode == UIMode.Dance || Mode == UIMode.Intro || Mode == UIMode.LevelSelect || Mode == UIMode.Talk || Mode == UIMode.Cutscene || Mode == UIMode.Ask)
+            if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel || Mode == UIMode.Dance || Mode == UIMode.Intro || Mode == UIMode.LevelSelect || Mode == UIMode.Talk || Mode == UIMode.Cutscene || Mode == UIMode.Ask || Mode == UIMode.Sticker)
             {
                 PlayerInputFrame frame;
                 if (Mode == UIMode.Gameplay && !modeChangedThisFrame)
@@ -371,6 +392,8 @@ namespace Patchwork
                 if (HintAge >= HintDuration) ActiveHint = null;
             }
             if (ToastTimer > 0f) ToastTimer -= udt;
+            if (PrizeTimer > 0f) PrizeTimer -= udt;
+            Score.Tick(dt);
             if (TitleTimer > 0f) TitleTimer -= udt;
             UpdateFade(udt);
             UpdateCursor();
@@ -380,7 +403,7 @@ namespace Patchwork
         {
             float udt = Mathf.Min(Time.unscaledDeltaTime, 0.1f);
             Vector2 stick = Vector2.zero, mouse = Vector2.zero;
-            if (Mode == UIMode.Gameplay)
+            if (Mode == UIMode.Gameplay || Mode == UIMode.Sticker)
             {
                 stick = Input.LookStick.ReadValue<Vector2>();
                 if (Cursor.lockState == CursorLockMode.Locked) mouse = Input.LookMouse.ReadValue<Vector2>();
@@ -418,12 +441,14 @@ namespace Patchwork
             f.JumpHeld = Input.Jump.IsPressed();
             f.AbilityPressed = Input.Ability.WasPressedThisFrame();
             f.AbilityHeld = Input.Ability.IsPressed();
+            f.GrabPressed = Input.Grab.WasPressedThisFrame();
+            f.GrabHeld = Input.Grab.IsPressed();
             return f;
         }
 
         void UpdateCursor()
         {
-            bool lockIt = (Mode == UIMode.Gameplay || Mode == UIMode.Dance) && Input.UsingKeyboard && Application.isFocused;
+            bool lockIt = (Mode == UIMode.Gameplay || Mode == UIMode.Dance || Mode == UIMode.Sticker) && Input.UsingKeyboard && Application.isFocused;
             Cursor.lockState = lockIt ? CursorLockMode.Locked : CursorLockMode.None;
             Cursor.visible = !lockIt;
         }
@@ -736,6 +761,7 @@ namespace Patchwork
         public void CollectThread()
         {
             ThreadsCollected++;
+            if (Score != null && Player != null) Score.AddChained(25, Player.Motor.Center + Vector3.up * 0.5f);
             if (Hud != null) Hud.PokeThreads();
         }
 
@@ -790,14 +816,53 @@ namespace Patchwork
             if (fell) ShowToast("Oops! Back to the last checkpoint.");
         }
 
-        PatchModel.Face pressedFace;
-
-        bool FacePressed()
+        // D-pad down: happy, sad, angry, happy...
+        void CycleFace(bool withSound)
         {
-            if (Input.FaceHappy.WasPressedThisFrame()) { pressedFace = PatchModel.Face.Happy; return true; }
-            if (Input.FaceSad.WasPressedThisFrame()) { pressedFace = PatchModel.Face.Sad; return true; }
-            if (Input.FaceAngry.WasPressedThisFrame()) { pressedFace = PatchModel.Face.Angry; return true; }
-            return false;
+            var next = (PatchModel.Face)(((int)PatchModel.CurrentFace + 1) % 3);
+            SetPatchFace(next, withSound);
+        }
+
+        // D-pad left / up / right: straight to Water / Yarn / Wind, no wheel needed.
+        void QuickForm(FormType form)
+        {
+            if (!Player.Forms.IsAvailable(form))
+            {
+                Sfx.Play(SfxId.TransformFail, 0.5f);
+                ShowToast(FormLibrary.Get(form).DisplayName + " isn't sewn yet.");
+                return;
+            }
+            if (form == Player.Forms.Current && !Player.Forms.HasPending)
+            {
+                Player.Visuals.PunchScale(new Vector3(1.06f, 0.95f, 1.06f));
+                return;
+            }
+            Player.Forms.Request(form);
+            if (Hud != null) Hud.PokeBadge();
+        }
+
+        // ------------------------------------------------------------------ Stickers and prizes
+
+        void OpenStickers()
+        {
+            Player.Hand.Release();
+            Stickers.Open();
+            SetMode(UIMode.Sticker, 1f);
+            Sfx.Play(SfxId.PageTurn, 0.5f);
+            if (ActiveHint != null) HintAge = HintDuration;
+        }
+
+        void CloseStickers()
+        {
+            Stickers.Close();
+            SetMode(UIMode.Gameplay, 1f);
+            Sfx.Play(SfxId.MenuCancel, 0.35f);
+        }
+
+        public void ShowPrize(PrizeDef prize)
+        {
+            PrizeShown = prize;
+            PrizeTimer = 3.6f;
         }
 
         // Swap Patch's face (every form has happy / sad / angry). A little pop and sound so it's obvious.
@@ -848,7 +913,9 @@ namespace Patchwork
             if (!daisy && GameState.IsHatUnlocked(3)) ShowToast("Every thread! New hat: Daisy Clip (see the Satchel).");
             else if (!topHat && GameState.IsHatUnlocked(2)) ShowToast("Half the threads! New hat: Felt Top Hat (see the Satchel).");
             else if (newBest && Level.ThreadTotal > 0) ShowToast("New best: " + ThreadsCollected + " threads!");
+            NewBestScore = GameState.RecordScore(Level.Id, Score.Total, Level.ScorePossible);
             SetMode(UIMode.Complete, 1f);
+            completeTime = 0f;
             Player.Forms.CancelAll();
             Sfx.Play(SfxId.Complete, 0.8f);
             FxBurst.Spawn(FxBurst.Kind.Scraps, Player.Motor.Center + Vector3.up, new Color(1f, 0.8f, 0.25f));

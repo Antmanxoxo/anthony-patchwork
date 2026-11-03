@@ -10,7 +10,7 @@ namespace Patchwork
     // Hats sit on their own transform so changing form never resets them.
     public class FormVisuals
     {
-        public static readonly string[] HatNames = { "No Hat", "Red Beanie", "Felt Top Hat", "Daisy Clip", "Golden Crown" };
+        public static readonly string[] HatNames = { "No Hat", "Red Beanie", "Felt Top Hat", "Daisy Clip", "Golden Crown", "Party Hat", "Pirate Hat", "Propeller Cap" };
 
         class Body
         {
@@ -25,7 +25,7 @@ namespace Patchwork
         readonly Transform root;
         readonly Body yarn = new Body(), water = new Body(), wind = new Body();
         readonly Transform accessoryRoot;
-        readonly GameObject[] hats = new GameObject[5];
+        readonly GameObject[] hats = new GameObject[8];
         static MaterialPropertyBlock mpb;
 
         // Yarn rig (the Blender model if it's there, otherwise the block-built toy)
@@ -150,6 +150,12 @@ namespace Patchwork
             tethered = on;
             tetherTarget = target;
             if (patchModel != null) patchModel.SetTether(on, target);
+        }
+
+        // Holding something (grab): his arms reach for it.
+        public void SetGrip(bool on, Vector3 target)
+        {
+            if (patchModel != null) patchModel.SetGrip(on, target);
         }
 
         // Patch's face (happy / sad / angry) on every form. Kept when he changes form.
@@ -765,6 +771,49 @@ namespace Patchwork
             }
             Prim(PrimitiveType.Sphere, crown, new Vector3(0f, 0.02f, 0.21f), new Vector3(0.08f, 0.08f, 0.04f), PatchworkAssets.Glow(new Color(1f, 0.4f, 0.6f), 0.6f));
             hats[4] = crown.gameObject;
+
+            // Party hat: a striped cone of stacked felt rings with a pompom on top.
+            var party = Pivot("Hat_Party", accessoryRoot, Vector3.zero);
+            party.localRotation = Quaternion.Euler(0f, 0f, -12f);
+            var stripeA = PatchworkAssets.Felt(new Color(0.95f, 0.4f, 0.55f));
+            var stripeB = PatchworkAssets.Felt(new Color(1f, 0.85f, 0.35f));
+            for (int i = 0; i < 7; i++)
+            {
+                float k = i / 7f;
+                float r = Mathf.Lerp(0.34f, 0.05f, k);
+                Prim(PrimitiveType.Cylinder, party, new Vector3(0f, -0.04f + i * 0.065f, 0f), new Vector3(r, 0.034f, r), i % 2 == 0 ? stripeA : stripeB);
+            }
+            Prim(PrimitiveType.Sphere, party, new Vector3(0f, 0.43f, 0f), Vector3.one * 0.13f, PatchworkAssets.Felt(new Color(0.55f, 0.8f, 1f)));
+            hats[5] = party.gameObject;
+
+            // Pirate hat: a black felt tricorn with a little white skull-and-button badge.
+            var pirate = Pivot("Hat_Pirate", accessoryRoot, Vector3.zero);
+            var black = PatchworkAssets.Felt(new Color(0.16f, 0.14f, 0.18f));
+            Prim(PrimitiveType.Sphere, pirate, new Vector3(0f, 0.02f, 0f), new Vector3(0.46f, 0.26f, 0.46f), black);
+            for (int i = 0; i < 3; i++)
+            {
+                float a = i * 120f;
+                var flap = Prim(PrimitiveType.Cube, pirate, Quaternion.Euler(0f, a, 0f) * new Vector3(0f, 0.04f, 0.24f), new Vector3(0.42f, 0.16f, 0.03f), black, new Vector3(-25f, a, 0f));
+                flap.name = "Flap";
+            }
+            Prim(PrimitiveType.Cylinder, pirate, Quaternion.Euler(0f, 0f, 0f) * new Vector3(0f, 0.07f, 0.262f), new Vector3(0.11f, 0.01f, 0.11f), PatchworkAssets.Felt(Color.white), new Vector3(65f, 0f, 0f));
+            Prim(PrimitiveType.Cube, pirate, new Vector3(0f, -0.07f, 0f), new Vector3(0.5f, 0.03f, 0.5f), PatchworkAssets.Felt(new Color(0.75f, 0.2f, 0.25f)), new Vector3(0f, 45f, 0f));
+            hats[6] = pirate.gameObject;
+
+            // Propeller cap: a quartered cap with a little brim and a spinning propeller.
+            var prop = Pivot("Hat_Propeller", accessoryRoot, Vector3.zero);
+            Color[] quarters = { new Color(0.95f, 0.35f, 0.35f), new Color(0.35f, 0.6f, 0.95f), new Color(1f, 0.85f, 0.3f), new Color(0.45f, 0.75f, 0.45f) };
+            Prim(PrimitiveType.Sphere, prop, new Vector3(0f, -0.04f, 0f), new Vector3(0.5f, 0.32f, 0.5f), PatchworkAssets.Felt(quarters[0]));
+            for (int i = 1; i < 4; i++)
+                Prim(PrimitiveType.Sphere, prop, new Vector3(0f, -0.04f, 0f), new Vector3(0.505f, 0.325f, 0.505f) - new Vector3(0f, 0f, 0.4f), PatchworkAssets.Felt(quarters[i]), new Vector3(0f, i * 45f, 0f));
+            Prim(PrimitiveType.Cylinder, prop, new Vector3(0f, -0.09f, 0.2f), new Vector3(0.3f, 0.012f, 0.2f), PatchworkAssets.Felt(quarters[1]));
+            Prim(PrimitiveType.Cylinder, prop, new Vector3(0f, 0.15f, 0f), new Vector3(0.03f, 0.05f, 0.03f), PatchworkAssets.Plain(new Color(0.6f, 0.6f, 0.65f), 0.7f));
+            var blades = Pivot("Propeller", prop, new Vector3(0f, 0.2f, 0f));
+            Prim(PrimitiveType.Cube, blades, Vector3.zero, new Vector3(0.42f, 0.015f, 0.07f), PatchworkAssets.Felt(quarters[2]), new Vector3(8f, 0f, 0f));
+            Prim(PrimitiveType.Cube, blades, Vector3.zero, new Vector3(0.07f, 0.015f, 0.42f), PatchworkAssets.Felt(quarters[0]), new Vector3(0f, 0f, 8f));
+            var spin = blades.gameObject.AddComponent<Spinner>();
+            spin.Speed = 540f;
+            hats[7] = prop.gameObject;
         }
 
         // Visual-only primitive (collider removed, player layer).

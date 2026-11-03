@@ -53,7 +53,27 @@ namespace Patchwork
         Squeak,        // a rubber duck
         Clack,         // a domino toppling
         Pop,           // a bubble popping
-        Chime          // one wind-chime tube (pitch it)
+        Chime,         // one wind-chime tube (pitch it)
+        // Score, prizes and stickers
+        ScoreBubble,   // a score bubble (pitched up the scale as a chain builds)
+        PrizeFanfare,  // a prize bubble popping open
+        StickerSlap,   // a sticker going on
+        StickerPeel,   // a sticker coming off
+        // Grabbing and contraptions
+        Grab,
+        Release,
+        PadClick,
+        GateRumble,
+        Lever,
+        Rustle,        // bumping a tree or bush
+        Whoosh,        // being flung by the see-saw
+        // Townsfolk babble: six little syllables (a, e, i, o, u, and a hum)
+        Babble0,
+        Babble1,
+        Babble2,
+        Babble3,
+        Babble4,
+        Babble5
     }
 
     // Continuous sounds that fade in while something requests them each frame.
@@ -420,6 +440,38 @@ namespace Patchwork
                 (Sine(t, Mathf.Lerp(700f, 200f, t / d)) * 0.6f + Noise(t) * 0.3f) * Mathf.Exp(-t * 35f) * 0.6f, 7000f);
             clips[SfxId.Chime] = Make("chime", 1.6f, (t, d) =>
                 (Sine(t, 1046.5f) + Sine(t, 1046.5f * 2.76f) * 0.3f * Mathf.Exp(-t * 4f)) * Mathf.Clamp01(t / 0.002f) * Mathf.Exp(-t * 2.4f) * 0.35f, 10000f);
+            clips[SfxId.ScoreBubble] = Make("scorebubble", 0.22f, (t, d) =>
+                (Sine(t, 880f) * 0.6f + Sine(t, 1760f) * 0.25f * Mathf.Exp(-t * 30f) + Bloop(t, 600f, 0.05f) * 0.3f) * Mathf.Clamp01(t / 0.002f) * Mathf.Exp(-t * 14f) * 0.45f, 9000f);
+            clips[SfxId.PrizeFanfare] = Make("prizefanfare", 1.4f, (t, d) =>
+                Bell(t, 523.25f, d) * 0.3f + Bell(t - 0.1f, 659.25f, d) * 0.3f + Bell(t - 0.2f, 783.99f, d) * 0.3f + Bell(t - 0.34f, 1046.5f, d) * 0.35f
+                + Noise(t) * Mathf.Exp(-t * 18f) * 0.08f, 8000f);
+            clips[SfxId.StickerSlap] = Make("stickerslap", 0.18f, (t, d) =>
+                (Noise(t) * 0.6f * Mathf.Exp(-t * 45f) + Sine(t, 220f) * Mathf.Exp(-t * 30f) * 0.5f) * Mathf.Clamp01(t / 0.001f) * 0.6f, 3500f);
+            clips[SfxId.StickerPeel] = Make("stickerpeel", 0.3f, (t, d) =>
+                Noise(t) * (0.5f + 0.5f * Mathf.Sin(t * 300f)) * Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / d)) * 0.35f, 5000f);
+            clips[SfxId.Grab] = Make("grab", 0.16f, (t, d) =>
+                (Noise(t) * 0.4f + Sine(t, 180f) * 0.6f) * Mathf.Exp(-t * 28f) * Mathf.Clamp01(t / 0.003f) * 0.6f, 2200f);
+            clips[SfxId.Release] = Make("release", 0.14f, (t, d) =>
+                Sine(t, Mathf.Lerp(320f, 200f, t / d)) * Mathf.Exp(-t * 25f) * 0.35f, 3000f);
+            clips[SfxId.PadClick] = Make("padclick", 0.2f, (t, d) =>
+                (Sine(t, 620f) * Mathf.Exp(-t * 40f) * 0.5f + Sine(t - 0.06f, 930f) * Mathf.Exp(-(t - 0.06f) * 40f) * 0.4f + Noise(t) * Mathf.Exp(-t * 80f) * 0.3f), 6000f);
+            clips[SfxId.GateRumble] = Make("gaterumble", 1.1f, (t, d) =>
+                (Noise(t) * 0.5f + Sine(t, 70f) * 0.5f) * Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / d)) * 0.45f, 700f);
+            clips[SfxId.Lever] = Make("lever", 0.35f, (t, d) =>
+                (Noise(t) * 0.3f * Mathf.Exp(-t * 12f) + Sine(t, 300f + Mathf.Sin(t * 90f) * 40f) * 0.3f * Mathf.Exp(-t * 10f) + Sine(t - 0.2f, 160f) * Mathf.Exp(-(t - 0.2f) * 30f) * 0.6f), 3000f);
+            clips[SfxId.Rustle] = Make("rustle", 0.4f, (t, d) =>
+                Noise(t) * (0.6f + 0.4f * Mathf.Sin(t * 70f)) * Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / d)) * 0.4f, 4200f);
+            clips[SfxId.Whoosh] = Make("whoosh", 0.6f, (t, d) =>
+                Noise(t) * Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / d)) * 0.5f, 1800f);
+            // Babble: short sung syllables with a soft consonant click at the front.
+            float[][] vowels = { new[] { 750f, 1200f }, new[] { 500f, 1800f }, new[] { 300f, 2200f }, new[] { 450f, 850f }, new[] { 320f, 750f }, new[] { 400f, 1400f } };
+            for (int i = 0; i < 6; i++)
+            {
+                float f1 = vowels[i][0], f2 = vowels[i][1];
+                float glide = i % 2 == 0 ? 1.12f : 0.92f;
+                clips[SfxId.Babble0 + i] = Make("babble" + i, 0.11f, (t, d) =>
+                    (Vowel(t, Mathf.Lerp(260f, 260f * glide, t / d), f1, f2) * Env(t, d, 0.01f) + Noise(t) * Mathf.Exp(-t * 250f) * 0.25f) * 0.55f, 5000f);
+            }
             clips[SfxId.Drum] = Make("drum", 0.45f, (t, d) =>
                 (Sine(t, Mathf.Lerp(160f, 90f, Mathf.Clamp01(t / 0.12f))) * Mathf.Exp(-t * 9f) * 0.7f + Noise(t) * Mathf.Exp(-t * 40f) * 0.25f) * Mathf.Clamp01(t / 0.003f), 3000f);
         }

@@ -73,6 +73,8 @@ namespace Patchwork
             if (taken || hidden) return;
             taken = true;
             GameState.SetCollected(Id);
+            ScoreKeeper.Bonus(1000, transform.position);
+            ScoreBubbles.BurstAt(transform.position, 15);
             Sfx.Play(SfxId.Complete, 0.75f);
             Sfx.Voice(SfxId.VoiceYay, player.Forms.Current, 0.55f);
             Haptics.Pulse(0.6f, 0.4f, 0.3f);

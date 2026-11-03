@@ -44,6 +44,8 @@ namespace Patchwork
             if (taken) return;
             taken = true;
             GameState.SetCollected(Id);
+            ScoreKeeper.Bonus(1000, transform.position);
+            ScoreBubbles.BurstAt(transform.position, 15);
             GameState.Save();
             Sfx.Play(SfxId.Complete, 0.8f);
             Sfx.Voice(SfxId.VoiceYay, player.Forms.Current, 0.55f);

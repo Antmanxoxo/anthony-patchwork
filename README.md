@@ -26,12 +26,16 @@ around town.
 | Camera | Right stick | Mouse |
 | Jump (hold in air as Wind to glide) | ✕ Cross | Space |
 | Ability (Yarn swing / Wind gust) | ▢ Square | E or Left click |
+| Quick change to Water / Yarn / Wind | D-pad Left / Up / Right | 1 / 2 / 3 |
 | Form Wheel | L1 (or R1, set in Pause) | Q |
+| Grab (hold to push and pull, or pull a lever) | R2 | Shift or right click |
+| Stickers (aim, then stick) | Triangle | F |
 | Confirm / Cancel in menus | ✕ / ◯ | Enter or Space / Esc or Backspace |
 | Satchel (forms, buttons, hats) | Touchpad (or Create) | Tab |
-| Map | D-pad Left | M |
+| Map | R3 | M |
 | Pause | Options | Esc |
-| Yarn's face (happy / sad / angry) | D-pad Up / Down / Right | 1 / 2 / 3 |
+| Patch's face (happy / sad / angry) | D-pad Down | 4 |
+| In sticker mode: choose / turn / peel off | D-pad / L1 and R1 / R2 | Arrows / Z and X / Shift |
 
 In the Form Wheel, point either stick (or the D-pad) at a form: Yarn is at the top, Water is
 lower-left, Wind is lower-right. Time slows while the wheel is open.

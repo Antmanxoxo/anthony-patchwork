@@ -78,6 +78,10 @@ namespace Patchwork
                 DrawButtons();
                 DrawControls(kb);
                 DrawHintCard();
+                DrawGrabPrompt(kb);
+                DrawScore();
+                DrawPopups();
+                DrawPrizeCard();
                 DrawToast();
                 DrawTitle();
                 DrawRaceTimer();
@@ -93,6 +97,7 @@ namespace Patchwork
                 case UIMode.Talk: Game.Dialogue.Draw(kb); break;
                 case UIMode.Ask: Game.Asker.Draw(kb); break;
                 case UIMode.Map: Game.Map.Draw(kb); break;
+                case UIMode.Sticker: DrawStickerMode(kb); break;
             }
 
             if (Game.Fade > 0.001f)
@@ -144,7 +149,7 @@ namespace Patchwork
             UIKit.Label(new Rect(0f, bar - 86f + bob, UIKit.Width, 60f), title,
                 UIKit.Style(40, true, TextAnchor.MiddleCenter, new Color(1f, 0.9f, 0.6f, e)));
             UIKit.Label(new Rect(0f, UIKit.Height - bar + 30f, UIKit.Width, 50f),
-                kb ? "Keep tapping 1 / 2 / 3 to keep dancing!" : "Keep tapping the D-pad to keep dancing!",
+                kb ? "Keep tapping 4 to keep dancing!" : "Keep tapping D-pad down to keep dancing!",
                 UIKit.Style(24, false, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, 0.85f * e * (0.75f + 0.25f * Mathf.Sin(t * 4f)))));
         }
 
@@ -287,9 +292,9 @@ namespace Patchwork
             var c = new Color(1f, 1f, 1f, 0.95f);
             // Measure right-to-left so the strip hugs the right edge.
             bool map = MapScreen.Available(Game.Level);
-            string[] labels = map ? new[] { "Form Wheel", "Map", "Satchel", "Pause" } : new[] { "Form Wheel", "Satchel", "Pause" };
-            PromptAction[] actions = map ? new[] { PromptAction.FormWheel, PromptAction.Map, PromptAction.Satchel, PromptAction.Pause }
-                                         : new[] { PromptAction.FormWheel, PromptAction.Satchel, PromptAction.Pause };
+            string[] labels = map ? new[] { "Form Wheel", "Stickers", "Map", "Satchel", "Pause" } : new[] { "Form Wheel", "Stickers", "Satchel", "Pause" };
+            PromptAction[] actions = map ? new[] { PromptAction.FormWheel, PromptAction.Sticker, PromptAction.Map, PromptAction.Satchel, PromptAction.Pause }
+                                         : new[] { PromptAction.FormWheel, PromptAction.Sticker, PromptAction.Satchel, PromptAction.Pause };
             float total = 0f;
             var style = UIKit.Style(Mathf.RoundToInt(h * 0.55f), true, TextAnchor.MiddleLeft, c);
             for (int i = 0; i < labels.Length; i++)
@@ -304,8 +309,8 @@ namespace Patchwork
         static float EstimatePromptWidth(PromptAction a, bool kb, float h)
         {
             string text;
-            if (kb) text = a == PromptAction.FormWheel ? "Q" : a == PromptAction.Satchel ? "Tab" : a == PromptAction.Map ? "M" : "Esc";
-            else text = a == PromptAction.FormWheel ? PatchworkInput.FormWheelPadLabel : a == PromptAction.Satchel ? "TOUCHPAD" : a == PromptAction.Map ? "D-PAD LEFT" : "OPTIONS";
+            if (kb) text = a == PromptAction.FormWheel ? "Q" : a == PromptAction.Satchel ? "Tab" : a == PromptAction.Map ? "M" : a == PromptAction.Sticker ? "F" : "Esc";
+            else text = a == PromptAction.FormWheel ? PatchworkInput.FormWheelPadLabel : a == PromptAction.Satchel ? "TOUCHPAD" : a == PromptAction.Map ? "R3" : a == PromptAction.Sticker ? "" : "OPTIONS";
             var s = UIKit.Style(Mathf.RoundToInt(h * 0.42f), true, TextAnchor.MiddleCenter, Color.white);
             return Mathf.Max(h, UIKit.TextWidth(text, s) + h * 0.55f);
         }
@@ -459,17 +464,17 @@ namespace Patchwork
         void DrawTalkPrompt(bool kb)
         {
             if (Game.Mode != UIMode.Gameplay || Game.Talker == null || Game.Talker.Npc == null || Game.Helm != null) return;
-            DrawWorldPrompt(Game.Talker.Npc.HeadPosition + Vector3.up * 1.3f, "Talk", kb);
+            DrawWorldPrompt(Game.Talker.Npc.HeadPosition + Vector3.up * 1.3f, "Talk", kb, PromptAction.Ability);
         }
 
         // Floating "Set course" prompt over the Skiff's helm while you're standing at it.
         void DrawHelmPrompt(bool kb)
         {
             if (Game.Mode != UIMode.Gameplay || Game.Helm == null) return;
-            DrawWorldPrompt(Game.Helm.PromptPoint, "Set course", kb);
+            DrawWorldPrompt(Game.Helm.PromptPoint, "Set course", kb, PromptAction.Ability);
         }
 
-        void DrawWorldPrompt(Vector3 world, string text, bool kb)
+        void DrawWorldPrompt(Vector3 world, string text, bool kb, PromptAction action)
         {
             var cam = Game.CameraRig.Cam;
             Vector3 sp = cam.WorldToScreenPoint(world);
@@ -481,8 +486,147 @@ namespace Patchwork
             float w = 56f + 12f + UIKit.TextWidth(text, label) + 36f;
             var r = new Rect(gx - w * 0.5f, gy - 34f + bob, w, 68f);
             UIKit.Pill(r);
-            UIKit.Prompt(r.x + 14f, r.y + 6f, 56f, PromptAction.Ability, kb);
+            UIKit.Prompt(r.x + 14f, r.y + 6f, 56f, action, kb);
             UIKit.Label(new Rect(r.x + 82f, r.y, w - 82f, r.height), text, label);
+        }
+
+        // "Grab" over a toy you can hold, "Pull" over a lever.
+        void DrawGrabPrompt(bool kb)
+        {
+            if (Game.Mode != UIMode.Gameplay) return;
+            var hand = Game.Player.Hand;
+            if (Lever.Active != null && hand.Held == null)
+            {
+                DrawWorldPrompt(Lever.Active.transform.position + Vector3.up * 1.4f, Lever.Active.Label, kb, PromptAction.Grab);
+                return;
+            }
+            if (hand.Held != null || hand.Target == null) return;
+            var b = hand.Target.Body;
+            DrawWorldPrompt(b.worldCenterOfMass + Vector3.up * 1.3f, "Grab", kb, PromptAction.Grab);
+        }
+
+        // ----- Score -----
+        static string Num(float v)
+        {
+            return Mathf.RoundToInt(v).ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        void DrawScore()
+        {
+            var s = Game.Score;
+            if (s == null) return;
+            float pop = 1f + Mathf.Sin(s.Pop * Mathf.PI) * 0.12f;
+            float w = 270f, h = 76f;
+            var r = new Rect(UIKit.Width - w - 28f, 24f, w, h);
+            UIKit.Panel(r, new Color(0.99f, 0.96f, 0.9f, 0.94f), new Color(0.35f, 0.6f, 0.9f, 0.9f), 20f);
+            UIKit.Circle(new Vector2(r.x + 40f, r.y + h * 0.5f), 44f * pop, new Color(0.6f, 0.85f, 1f));
+            UIKit.Circle(new Vector2(r.x + 34f, r.y + h * 0.5f - 7f), 12f, new Color(1f, 1f, 1f, 0.85f));
+            UIKit.Label(new Rect(r.x + 72f, r.y + 6f, w - 86f, h - 12f), Num(s.Shown),
+                UIKit.Style(Mathf.RoundToInt(34 * pop), true, TextAnchor.MiddleRight, UIKit.Ink));
+            if (s.Multiplier > 1 && s.ChainAlive)
+            {
+                var chip = new Rect(r.xMax - 118f, r.yMax + 8f, 118f, 44f);
+                float wob = Mathf.Sin(Time.unscaledTime * 10f) * 2f;
+                UIKit.Fill(new Rect(chip.x, chip.y + wob, chip.width, chip.height), new Color(1f, 0.72f, 0.25f, 0.95f), 22f);
+                UIKit.Label(new Rect(chip.x, chip.y + wob, chip.width, chip.height), "x" + s.Multiplier + " CHAIN",
+                    UIKit.Style(20, true, TextAnchor.MiddleCenter, new Color(0.4f, 0.18f, 0.05f)));
+            }
+        }
+
+        void DrawPopups()
+        {
+            var s = Game.Score;
+            if (s == null || Game.CameraRig == null) return;
+            var cam = Game.CameraRig.Cam;
+            foreach (var p in s.Popups)
+            {
+                Vector3 sp = cam.WorldToScreenPoint(p.World + Vector3.up * (0.6f + p.Age * 1.4f));
+                if (sp.z <= 0f) continue;
+                float gx = sp.x / UIKit.Scale, gy = (Screen.height - sp.y) / UIKit.Scale;
+                float a = Mathf.Clamp01((1.1f - p.Age) / 0.35f);
+                float grow = 1f + Mathf.Clamp01(1f - p.Age / 0.15f) * 0.4f;
+                var c = p.Color;
+                c.a = a;
+                UIKit.Label(new Rect(gx - 100f, gy - 24f, 200f, 48f), p.Text, UIKit.Style(Mathf.RoundToInt(28 * grow), true, TextAnchor.MiddleCenter, c), true);
+            }
+        }
+
+        // ----- Prize card -----
+        void DrawPrizeCard()
+        {
+            var prize = Game.PrizeShown;
+            float t = Game.PrizeTimer;
+            if (prize == null || t <= 0f) return;
+            float age = 3.6f - t;
+            float tin = UIKit.EaseOutBack(Mathf.Clamp01(age / 0.4f));
+            float tout = Mathf.Clamp01((0.4f - t) / 0.4f);
+            float y = 130f - (1f - tin) * 260f - tout * 260f;
+            var r = new Rect((UIKit.Width - 560f) * 0.5f, y, 560f, 150f);
+            UIKit.Panel(r, new Color(1f, 0.96f, 0.98f, 0.97f), new Color(0.85f, 0.45f, 0.75f, 0.9f), 24f);
+            var icon = new Rect(r.x + 26f, r.y + 20f, 110f, 110f);
+            UIKit.Circle(icon.center, 120f, new Color(0.95f, 0.85f, 1f));
+            if (prize.Kind == PrizeKind.Sticker)
+                UIKit.IconTransformed(icon, StickerArt.Get((StickerId)prize.Value), Color.white, Mathf.Sin(age * 3f) * 8f, 1f);
+            else
+            {
+                var box = new Rect(icon.x + 22f, icon.y + 26f, 66f, 60f);
+                UIKit.Fill(box, prize.Kind == PrizeKind.Hat ? new Color(0.45f, 0.65f, 0.95f) : new Color(0.95f, 0.45f, 0.55f), 8f);
+                UIKit.Fill(new Rect(box.center.x - 6f, box.y, 12f, box.height), new Color(1f, 0.85f, 0.35f), 3f);
+                UIKit.Fill(new Rect(box.x, box.center.y - 6f, box.width, 12f), new Color(1f, 0.85f, 0.35f), 3f);
+                UIKit.Circle(new Vector2(box.center.x - 10f, box.y - 4f), 20f, new Color(1f, 0.85f, 0.35f));
+                UIKit.Circle(new Vector2(box.center.x + 10f, box.y - 4f), 20f, new Color(1f, 0.85f, 0.35f));
+            }
+            var ink = UIKit.Ink;
+            UIKit.Label(new Rect(r.x + 160f, r.y + 18f, 380f, 34f), "PRIZE!", UIKit.Style(24, true, TextAnchor.MiddleLeft, new Color(0.8f, 0.35f, 0.6f)));
+            UIKit.Label(new Rect(r.x + 160f, r.y + 52f, 380f, 46f), prize.Name, UIKit.Style(34, true, TextAnchor.MiddleLeft, ink));
+            UIKit.Label(new Rect(r.x + 160f, r.y + 98f, 380f, 30f), prize.KindText, UIKit.Style(20, false, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.75f)));
+        }
+
+        // ----- Sticker mode -----
+        void DrawStickerMode(bool kb)
+        {
+            var st = Game.Stickers;
+            float W = UIKit.Width, H = UIKit.Height;
+            var ink = UIKit.Ink;
+            // Crosshair.
+            Vector2 c = new Vector2(W * 0.5f, H * 0.5f);
+            Color cross = st.HasAim ? new Color(1f, 1f, 1f, 0.9f) : new Color(1f, 0.6f, 0.6f, 0.8f);
+            UIKit.CircleOutline(c, 46f, new Color(0f, 0f, 0f, 0.3f), 5f);
+            UIKit.CircleOutline(c, 44f, cross, 3f);
+            UIKit.Circle(c, 8f, cross);
+            if (!st.HasAim)
+                UIKit.Label(new Rect(c.x - 200f, c.y + 34f, 400f, 36f), "Too far away", UIKit.Style(22, true, TextAnchor.MiddleCenter, cross), true);
+
+            // The sticker book along the bottom.
+            var owned = st.Owned;
+            float cell = 96f;
+            float total = owned.Count * (cell + 12f) + 40f;
+            var strip = new Rect((W - total) * 0.5f, H - 220f, total, cell + 60f);
+            UIKit.Panel(strip, new Color(0.99f, 0.96f, 0.9f, 0.95f), UIKit.Thread, 24f);
+            for (int i = 0; i < owned.Count; i++)
+            {
+                var r = new Rect(strip.x + 20f + i * (cell + 12f), strip.y + 14f, cell, cell);
+                bool sel = i == st.Selected;
+                if (sel) UIKit.Fill(new Rect(r.x - 6f, r.y - 6f, r.width + 12f, r.height + 12f), new Color(1f, 0.8f, 0.35f, 0.9f), 18f);
+                float bob = sel ? Mathf.Sin(Time.unscaledTime * 6f) * 3f : 0f;
+                UIKit.IconTransformed(new Rect(r.x, r.y + bob, r.width, r.height), StickerArt.Get(owned[i]), Color.white, sel ? -st.Spin : 0f, sel ? 1f : 0.85f);
+            }
+            if (owned.Count > 0)
+                UIKit.Label(new Rect(strip.x, strip.yMax - 44f, strip.width, 36f), StickerArt.Name(owned[Mathf.Clamp(st.Selected, 0, owned.Count - 1)]),
+                    UIKit.Style(22, true, TextAnchor.MiddleCenter, ink));
+
+            // Prompts.
+            float y = H - 64f;
+            float x = 40f;
+            var white = new Color(1f, 1f, 1f, 0.95f);
+            var bg = new Rect(20f, y - 12f, W - 40f, 60f);
+            UIKit.Fill(bg, new Color(0.13f, 0.11f, 0.19f, 0.6f), 30f);
+            x += UIKit.PromptLabel(x, y, 36f, PromptAction.Confirm, "Stick", kb, white) + 34f;
+            x += UIKit.PromptLabel(x, y, 36f, PromptAction.Navigate, "Choose", kb, white) + 34f;
+            x += UIKit.PromptLabel(x, y, 36f, PromptAction.Rotate, "Turn", kb, white) + 34f;
+            if (st.PeelTarget) x += UIKit.PromptLabel(x, y, 36f, PromptAction.Grab, "Peel off", kb, white) + 34f;
+            UIKit.PromptLabel(x, y, 36f, PromptAction.Cancel, "Done", kb, white);
+            UIKit.Label(new Rect(0f, 30f, W, 40f), "Stickers: aim with the camera", UIKit.Style(26, true, TextAnchor.MiddleCenter, white), true);
         }
 
         void DrawAnchorPrompt(bool kb)
@@ -508,7 +652,7 @@ namespace Patchwork
         {
             float W = UIKit.Width, H = UIKit.Height;
             UIKit.Fill(new Rect(0f, 0f, W, H), new Color(0.12f, 0.08f, 0.18f, 0.6f));
-            var panel = new Rect((W - 640f) * 0.5f, (H - 440f) * 0.5f, 640f, 440f);
+            var panel = new Rect((W - 640f) * 0.5f, (H - 600f) * 0.5f, 640f, 600f);
             UIKit.Panel(panel, new Color(0.99f, 0.95f, 0.88f, 0.97f), UIKit.Thread);
             var ink = UIKit.Ink;
             UIKit.Label(new Rect(panel.x, panel.y + 40f, panel.width, 60f), "Level Complete!", UIKit.Style(48, true, TextAnchor.MiddleCenter, ink));
@@ -528,8 +672,33 @@ namespace Patchwork
                 UIKit.Label(new Rect(panel.x + 305f, panel.y + 236f, 260f, 70f),
                     Game.ThreadsCollected + " / " + Game.Level.ThreadTotal + " threads", UIKit.Style(30, true, TextAnchor.MiddleLeft, ink));
             }
+            // Score: counts up, then the medal stamps on.
+            float ct = Game.CompleteTime;
+            float shown = Mathf.Lerp(0f, Game.Score.Total, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((ct - 0.3f) / 1.4f)));
+            var scoreRow = new Rect(panel.x + 40f, panel.y + 320f, panel.width - 80f, 110f);
+            UIKit.Fill(scoreRow, new Color(1f, 1f, 1f, 0.55f), 18f);
+            UIKit.Label(new Rect(scoreRow.x + 24f, scoreRow.y + 10f, 300f, 30f), "Score", UIKit.Style(22, true, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.75f)));
+            UIKit.Label(new Rect(scoreRow.x + 24f, scoreRow.y + 40f, 320f, 60f), Num(shown), UIKit.Style(46, true, TextAnchor.MiddleLeft, ink));
+            if (ct > 1.8f)
+            {
+                var medal = ScoreKeeper.MedalFor(Game.Score.Total, Game.Level.ScorePossible);
+                float stamp = UIKit.EaseOutBack(Mathf.Clamp01((ct - 1.8f) / 0.35f));
+                Vector2 mc = new Vector2(scoreRow.xMax - 90f, scoreRow.center.y);
+                if (medal != ScoreKeeper.Medal.None)
+                {
+                    UIKit.Circle(mc, 96f * stamp, ScoreKeeper.MedalColor(medal));
+                    UIKit.CircleOutline(mc, 80f * stamp, new Color(1f, 1f, 1f, 0.8f), 3f);
+                    UIKit.Label(new Rect(mc.x - 60f, mc.y - 18f, 120f, 36f), medal.ToString().ToUpperInvariant(), UIKit.Style(Mathf.RoundToInt(18 * stamp + 1), true, TextAnchor.MiddleCenter, new Color(0.3f, 0.2f, 0.1f)));
+                }
+                if (Game.NewBestScore)
+                {
+                    var tag = new Rect(scoreRow.x + 250f, scoreRow.y + 12f, 130f, 30f);
+                    UIKit.Fill(tag, new Color(0.95f, 0.45f, 0.55f), 15f);
+                    UIKit.Label(tag, "NEW BEST!", UIKit.Style(17, true, TextAnchor.MiddleCenter, Color.white));
+                }
+            }
             float x = panel.x + 150f;
-            UIKit.PromptLabel(x, panel.yMax - 90f, 44f, PromptAction.Confirm, "Back to the Skiff", kb, ink);
+            UIKit.PromptLabel(x, panel.yMax - 80f, 44f, PromptAction.Confirm, "Back to the Skiff", kb, ink);
         }
     }
 }

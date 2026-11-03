@@ -7,7 +7,9 @@ namespace Patchwork
     // Move: left stick / WASD      Camera: right stick / mouse
     // Jump: X / Space              Ability: Square / E or left click
     // Form Wheel: L1 or R1 / Q     Satchel: touchpad / Tab     Pause: Options / Esc
-    // Yarn's face: D-pad up / down / right (or 1 / 2 / 3) for happy / sad / angry
+    // Quick forms: D-pad left / up / right (or 1 / 2 / 3) for Water / Yarn / Wind
+    // Patch's face: D-pad down (or 4) cycles happy / sad / angry
+    // Grab: R2 / Shift or right click      Stickers: Triangle / F      Map: R3 / M
     // Menus: X / Enter to confirm, Circle / Esc to back out
     public class PatchworkInput
     {
@@ -33,9 +35,14 @@ namespace Patchwork
         public readonly InputAction Pick1;
         public readonly InputAction Pick2;
         public readonly InputAction Pick3;
-        public readonly InputAction FaceHappy;
-        public readonly InputAction FaceSad;
-        public readonly InputAction FaceAngry;
+        public readonly InputAction QuickWater;
+        public readonly InputAction QuickYarn;
+        public readonly InputAction QuickWind;
+        public readonly InputAction FaceNext;
+        public readonly InputAction Grab;
+        public readonly InputAction Sticker;
+        public readonly InputAction RotateLeft;
+        public readonly InputAction RotateRight;
 
         public enum PromptMode { Auto = 0, PlayStation = 1, Keyboard = 2 }
         const string PromptModeKey = "pw_prompt_mode";
@@ -83,7 +90,7 @@ namespace Patchwork
             Cancel = Button("Cancel", "<Gamepad>/buttonEast", "<Keyboard>/backspace", "<Keyboard>/escape");
             Satchel = Button("Satchel", "<DualShockGamepad>/touchpadButton", "<Gamepad>/select", "<Keyboard>/tab");
             Pause = Button("Pause", "<Gamepad>/start", "<Keyboard>/escape");
-            Map = Button("Map", "<Gamepad>/dpad/left", "<Keyboard>/m");
+            Map = Button("Map", "<Gamepad>/rightStickPress", "<Keyboard>/m");
             NavUp = Button("NavUp", "<Gamepad>/dpad/up", "<Keyboard>/upArrow");
             NavDown = Button("NavDown", "<Gamepad>/dpad/down", "<Keyboard>/downArrow");
             NavLeft = Button("NavLeft", "<Gamepad>/dpad/left", "<Keyboard>/leftArrow");
@@ -91,9 +98,14 @@ namespace Patchwork
             Pick1 = Button("Pick1", "<Keyboard>/1");
             Pick2 = Button("Pick2", "<Keyboard>/2");
             Pick3 = Button("Pick3", "<Keyboard>/3");
-            FaceHappy = Button("FaceHappy", "<Gamepad>/dpad/up", "<Keyboard>/1");
-            FaceSad = Button("FaceSad", "<Gamepad>/dpad/down", "<Keyboard>/2");
-            FaceAngry = Button("FaceAngry", "<Gamepad>/dpad/right", "<Keyboard>/3");
+            QuickWater = Button("QuickWater", "<Gamepad>/dpad/left", "<Keyboard>/1");
+            QuickYarn = Button("QuickYarn", "<Gamepad>/dpad/up", "<Keyboard>/2");
+            QuickWind = Button("QuickWind", "<Gamepad>/dpad/right", "<Keyboard>/3");
+            FaceNext = Button("FaceNext", "<Gamepad>/dpad/down", "<Keyboard>/4");
+            Grab = Button("Grab", "<Gamepad>/rightTrigger", "<Keyboard>/leftShift", "<Mouse>/rightButton");
+            Sticker = Button("Sticker", "<Gamepad>/buttonNorth", "<Keyboard>/f");
+            RotateLeft = Button("RotateLeft", "<Gamepad>/leftShoulder", "<Keyboard>/z");
+            RotateRight = Button("RotateRight", "<Gamepad>/rightShoulder", "<Keyboard>/x");
 
             map.Enable();
             detectedKeyboard = Gamepad.current == null;
@@ -149,6 +161,7 @@ namespace Patchwork
                     pad.startButton.wasPressedThisFrame || pad.selectButton.wasPressedThisFrame ||
                     pad.dpad.up.wasPressedThisFrame || pad.dpad.down.wasPressedThisFrame ||
                     pad.dpad.left.wasPressedThisFrame || pad.dpad.right.wasPressedThisFrame ||
+                    pad.leftStickButton.wasPressedThisFrame || pad.rightStickButton.wasPressedThisFrame ||
                     pad.leftStick.ReadValue().sqrMagnitude > 0.3f || pad.rightStick.ReadValue().sqrMagnitude > 0.3f)
                 {
                     detectedKeyboard = false;

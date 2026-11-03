@@ -25,7 +25,23 @@ namespace Patchwork
             public List<string> hintsSeen = new List<string>();
             public List<string> bestThreads = new List<string>();   // "Level1=23/40"
             public List<int> unlockedHats = new List<int>();         // hats found in the world
+            public List<string> prizes = new List<string>();         // prize bubbles opened
+            public List<string> bestScores = new List<string>();     // "Level1=12345"
+            public List<StickerSave> stickers = new List<StickerSave>();
         }
+
+        // A sticker stuck somewhere in a level.
+        [System.Serializable]
+        public class StickerSave
+        {
+            public string level;
+            public int id;
+            public Vector3 pos;
+            public Vector3 normal;
+            public float spin;
+        }
+
+        public const int MaxStickersPerLevel = 60;
 
         static SaveData data;
         static bool dirty;
@@ -142,6 +158,7 @@ namespace Patchwork
         public static bool IsHatUnlocked(int hat)
         {
             if (hat <= 1) return true;
+            if (hat >= 5) return Data.unlockedHats.Contains(hat);
             if (hat == 2 || hat == 3)
             {
                 int total;
@@ -159,6 +176,9 @@ namespace Patchwork
                 case 2: return "Collect half of Level 1's threads in one run.";
                 case 3: return "Collect every thread in Level 1 in one run.";
                 case 4: return "Inside the captain's cabin on the Skiff.";
+                case 5:
+                case 6:
+                case 7: return "Hidden in a prize bubble in Toybox Town.";
                 default: return "";
             }
         }
@@ -169,6 +189,75 @@ namespace Patchwork
             Data.unlockedHats.Add(hat);
             dirty = true;
             Save();
+        }
+
+        // ----- Prizes -----
+        public static bool HasPrize(string id)
+        {
+            return Data.prizes.Contains(id);
+        }
+
+        public static void AddPrize(string id)
+        {
+            if (Data.prizes.Contains(id)) return;
+            Data.prizes.Add(id);
+            dirty = true;
+            Save();
+        }
+
+        // ----- Best scores -----
+        // Best score in a level, and how many points of bubbles it had then (for its medal).
+        public static int BestScore(string levelId, out int possible)
+        {
+            possible = 0;
+            foreach (var e in Data.bestScores)
+            {
+                if (!e.StartsWith(levelId + "=")) continue;
+                var parts = e.Substring(levelId.Length + 1).Split('/');
+                int v;
+                if (parts.Length >= 1 && int.TryParse(parts[0], out v))
+                {
+                    if (parts.Length >= 2) int.TryParse(parts[1], out possible);
+                    return v;
+                }
+            }
+            return 0;
+        }
+
+        // Returns true if it's a new best.
+        public static bool RecordScore(string levelId, int score, int possible)
+        {
+            int oldPossible;
+            int best = BestScore(levelId, out oldPossible);
+            if (score <= best) return false;
+            Data.bestScores.RemoveAll(e => e.StartsWith(levelId + "="));
+            Data.bestScores.Add(levelId + "=" + score + "/" + possible);
+            dirty = true;
+            Save();
+            return true;
+        }
+
+        // ----- Stickers stuck in the world -----
+        public static List<StickerSave> StickersIn(string levelId)
+        {
+            var list = new List<StickerSave>();
+            foreach (var s in Data.stickers) if (s.level == levelId) list.Add(s);
+            return list;
+        }
+
+        public static void AddSticker(StickerSave s)
+        {
+            Data.stickers.Add(s);
+            // Keep the newest few dozen per level.
+            int count = 0;
+            for (int i = Data.stickers.Count - 1; i >= 0; i--)
+                if (Data.stickers[i].level == s.level && ++count > MaxStickersPerLevel) Data.stickers.RemoveAt(i);
+            dirty = true;
+        }
+
+        public static void RemoveSticker(StickerSave s)
+        {
+            if (Data.stickers.Remove(s)) dirty = true;
         }
 
         public static int GoldenButtonCount()
@@ -250,6 +339,9 @@ namespace Patchwork
             if (data.hintsSeen == null) data.hintsSeen = new List<string>();
             if (data.bestThreads == null) data.bestThreads = new List<string>();
             if (data.unlockedHats == null) data.unlockedHats = new List<int>();
+            if (data.prizes == null) data.prizes = new List<string>();
+            if (data.bestScores == null) data.bestScores = new List<string>();
+            if (data.stickers == null) data.stickers = new List<StickerSave>();
             if (dirty) Save();
         }
 

@@ -13,7 +13,10 @@ namespace Patchwork
         Satchel,
         Pause,
         Navigate,
-        Map
+        Map,
+        Grab,
+        Sticker,
+        Rotate
     }
 
     // Immediate-mode UI helpers. Everything is drawn in a virtual 1080p-tall space, so it scales to any
@@ -230,6 +233,9 @@ namespace Patchwork
                 case PromptAction.Satchel: return "Tab";
                 case PromptAction.Pause: return "Esc";
                 case PromptAction.Map: return "M";
+                case PromptAction.Grab: return "Shift";
+                case PromptAction.Sticker: return "F";
+                case PromptAction.Rotate: return "Z / X";
                 default: return "Arrows";
             }
         }
@@ -242,6 +248,7 @@ namespace Patchwork
                 case PromptAction.Confirm: return PatchworkAssets.GlyphCross;
                 case PromptAction.Ability: return PatchworkAssets.GlyphSquare;
                 case PromptAction.Cancel: return PatchworkAssets.GlyphCircle;
+                case PromptAction.Sticker: return PatchworkAssets.GlyphTriangle;
                 default: return null;
             }
         }
@@ -254,7 +261,10 @@ namespace Patchwork
                 case PromptAction.Satchel: return "TOUCHPAD";
                 case PromptAction.Pause: return "OPTIONS";
                 case PromptAction.Navigate: return "D-PAD";
-                case PromptAction.Map: return "D-PAD LEFT";
+                case PromptAction.Map: return "R3";
+                case PromptAction.Grab: return "R2";
+                case PromptAction.Sticker: return "TRIANGLE";
+                case PromptAction.Rotate: return "L1 / R1";
                 default: return "";
             }
         }
@@ -306,6 +316,8 @@ namespace Patchwork
                 case "Satchel": action = PromptAction.Satchel; return true;
                 case "Pause": action = PromptAction.Pause; return true;
                 case "Map": action = PromptAction.Map; return true;
+                case "Grab": action = PromptAction.Grab; return true;
+                case "Sticker": action = PromptAction.Sticker; return true;
                 default: action = PromptAction.Jump; return false;
             }
         }

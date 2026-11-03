@@ -10,6 +10,7 @@ namespace Patchwork
         public FormController Forms { get; private set; }
         public FormVisuals Visuals { get; private set; }
         public PatchworkGame Game { get; private set; }
+        public GrabHand Hand { get; private set; }
 
         public static PatchworkPlayer Create(PatchworkGame game, Vector3 feet, float yaw)
         {
@@ -32,15 +33,19 @@ namespace Patchwork
             player.Visuals = new FormVisuals(go.transform);
             player.Forms = new FormController(player);
             player.Forms.Initialise(GameState.CurrentForm);
+            player.Hand = go.AddComponent<GrabHand>();
+            player.Hand.Init(player);
             BlobShadow.Create(player);
             return player;
         }
 
         public void Tick(PlayerInputFrame input, float dt)
         {
+            RideCarrier();
             Forms.Tick(dt);
             Forms.Ability.PreMove(input, dt);
             PlayerVolume.UpdateAll(this, dt);
+            Hand.Tick(input, dt);
             Motor.Step(input.MoveWorld, input.JumpPressed, input.JumpHeld, dt);
             Forms.Ability.PostMove(dt);
 
@@ -61,6 +66,18 @@ namespace Patchwork
 
             Footsteps(dt);
             Visuals.Tick(Motor, dt);
+        }
+
+        // Standing on something that moves (the toy train, a see-saw): move along with it.
+        void RideCarrier()
+        {
+            if (!Motor.Grounded || Motor.ExternalControl || Motor.GroundCollider == null) return;
+            var c = Motor.GroundCollider.GetComponentInParent<Carrier>();
+            if (c == null || !c.HasDelta) return;
+            Vector3 p = transform.position;
+            Vector3 moved = c.CarryPoint(p) - p;
+            if (moved.sqrMagnitude > 0f) Motor.Controller.Move(moved);
+            if (Mathf.Abs(c.DeltaYaw) > 0.0001f) transform.rotation = Quaternion.Euler(0f, c.DeltaYaw, 0f) * transform.rotation;
         }
 
         // ----- Footsteps -----
@@ -103,6 +120,7 @@ namespace Patchwork
         // Safe respawn: cancels abilities, restores collision, puts the player on the checkpoint.
         public void Respawn(Vector3 feet, float yaw)
         {
+            Hand.Release();
             Forms.CancelAll();
             Motor.Teleport(feet, yaw);
             Forms.Ability.ForceCancel();

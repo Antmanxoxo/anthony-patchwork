@@ -112,6 +112,7 @@ namespace Patchwork
             Knots(kit);
             YarnBirds(kit);
             Details(kit);
+            Fun(kit);
 
             var sounds = kit.Group("LevelSounds", Vector3.zero);
             for (float z = -60f; z <= 60f; z += 30f)
@@ -122,6 +123,7 @@ namespace Patchwork
             AmbientEmitter.Create(sounds, new Vector3(0f, 21f, -72f), Sfx.Ambient(Sfx.AmbientClip.Flag), 0.35f, 2f, 14f);
 
             director.ApplySavedState();
+            ScoreTrails(kit);
             IntroProps(kit);
             GroundCover(kit);
             return info;

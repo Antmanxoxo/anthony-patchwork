@@ -7,6 +7,7 @@ namespace Patchwork
     {
         public Transform Bell;
         float swing, cooldown, t;
+        bool rungOnce;
 
         protected override void OnPlayerEnter(PatchworkPlayer player)
         {
@@ -15,6 +16,7 @@ namespace Patchwork
             swing = 1f;
             Sfx.Play(SfxId.BigBell, 0.8f);
             if (Bell != null) FxBurst.Spawn(FxBurst.Kind.Sparkle, Bell.position, new Color(1f, 0.85f, 0.5f));
+            if (!rungOnce && Bell != null) { rungOnce = true; ScoreBubbles.BurstAt(Bell.position + Vector3.down * 2f, 10); }
         }
 
         void Update()

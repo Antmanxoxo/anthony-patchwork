@@ -85,6 +85,8 @@ namespace Patchwork
             Sfx.Play(SfxId.Boing, 0.35f);
             FxBurst.Spawn(FxBurst.Kind.Threads, transform.position, FrayGrey);
             FxBurst.Spawn(FxBurst.Kind.Sparkle, transform.position, new Color(1f, 0.85f, 0.5f));
+            ScoreKeeper.Bonus(100, transform.position);
+            ScoreBubbles.BurstAt(transform.position, 5);
             gameObject.SetActive(false);
             if (Popped != null) Popped(this);
         }
