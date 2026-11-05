@@ -54,7 +54,16 @@ Stuff I need to remember about how Patchwork is put together.
   in `StaticReset`.
 - Rumble goes through `Haptics` only (never call the gamepad directly), so pausing and quitting
   always stop it.
-- Saved settings: `pw_music_volume`, `pw_sfx_volume`, `pw_rumble` (0-10).
+- Saved settings: `pw_music_volume`, `pw_sfx_volume`, `pw_rumble` (0-10), `pw_look` (0 plain,
+  1 Storybook, 2 Stitched).
+- The look is `Shaders/PatchworkLook.shader`, run by a Full Screen Pass renderer feature called
+  "PatchworkLook" that the editor setup adds to every URP renderer (material
+  `Resources/PW_Look.mat`). It reads the global `_PatchworkLook`, set by
+  `GameSettings.ApplyLook()`. If the shader ever fails to compile, the setup switches the pass
+  off and logs a warning, so the game still runs in the plain look.
+- Photo Mode is `UIMode.Photo` (`PhotoMode.cs`): time scale 0, the camera driven through the
+  showcase shot. The UI is hidden for a couple of frames around the capture so it isn't in the
+  picture.
 - Colour rule: saturated pink (`Palette.AnchorPink`) is only for yarn anchors, bright blue only for
   water things, white only for Wind/updrafts. Decoration uses the softer `Rose` / `Sky`.
 - Fonts: `UIKit.Style` uses `Resources/Fonts/Fredoka-Medium`, `Fredoka-SemiBold` (bold) and

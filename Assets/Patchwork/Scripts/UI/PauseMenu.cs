@@ -9,7 +9,8 @@ namespace Patchwork
     public class PauseMenu
     {
         enum Item { Resume, Restart, ReturnToHub, Settings, Quit,
-                    Music, Sounds, Rumble, CameraSpeed, InvertY, InvertX, SwingMode, Prompts, WheelButton, VSync, Back }
+                    Music, Sounds, Rumble, CameraSpeed, InvertY, InvertX, SwingMode, Prompts, WheelButton, VSync, Back,
+                    Look, Photo }
 
         readonly PatchworkGame game;
         readonly List<Item> items = new List<Item>();
@@ -50,6 +51,7 @@ namespace Patchwork
             settingsPage = false;
             items.Clear();
             items.Add(Item.Resume);
+            items.Add(Item.Photo);
             items.Add(Item.Restart);
             if (!game.Level.IsHub) items.Add(Item.ReturnToHub);
             items.Add(Item.Settings);
@@ -62,6 +64,7 @@ namespace Patchwork
         {
             settingsPage = true;
             items.Clear();
+            items.Add(Item.Look);
             items.Add(Item.Music);
             items.Add(Item.Sounds);
             items.Add(Item.Rumble);
@@ -94,6 +97,8 @@ namespace Patchwork
             switch (item)
             {
                 case Item.Settings: return "Settings";
+                case Item.Look: return "Look:  " + GameSettings.LookNames[GameSettings.Look];
+                case Item.Photo: return "Photo Mode";
                 case Item.CameraSpeed: return "Camera Speed";
                 case Item.InvertY: return "Invert Camera Up/Down:  " + OnOff(GameSettings.InvertY);
                 case Item.InvertX: return "Invert Camera Left/Right:  " + OnOff(GameSettings.InvertX);
@@ -123,7 +128,9 @@ namespace Patchwork
             {
                 case Item.Resume:
                 case Item.Back: return UIArt.IconPlay;
-                case Item.Settings: return UIArt.IconNeedle;
+                case Item.Settings:
+                case Item.Look: return UIArt.IconNeedle;
+                case Item.Photo: return UIArt.IconPlay;
                 case Item.CameraSpeed:
                 case Item.InvertY:
                 case Item.InvertX:
@@ -153,6 +160,8 @@ namespace Patchwork
                 case Item.Sounds: return new Color(0.85f, 0.45f, 0.65f);
                 case Item.Rumble: return new Color(0.45f, 0.6f, 0.4f);
                 case Item.Settings: return new Color(0.55f, 0.5f, 0.8f);
+                case Item.Look: return new Color(0.85f, 0.5f, 0.65f);
+                case Item.Photo: return new Color(0.3f, 0.6f, 0.85f);
                 case Item.CameraSpeed: return new Color(0.35f, 0.6f, 0.85f);
                 case Item.InvertY:
                 case Item.InvertX: return new Color(0.4f, 0.5f, 0.8f);
@@ -172,7 +181,7 @@ namespace Patchwork
         static bool IsToggle(Item item)
         {
             return item == Item.InvertY || item == Item.InvertX || item == Item.SwingMode || item == Item.VSync
-                || item == Item.Prompts || item == Item.WheelButton;
+                || item == Item.Prompts || item == Item.WheelButton || item == Item.Look;
         }
 
         void Toggle(Item item, int dir)
@@ -186,6 +195,7 @@ namespace Patchwork
                 case Item.VSync: GameSettings.VSync = !GameSettings.VSync; GameSettings.ApplyVSync(); break;
                 case Item.Prompts: input.Prompts = (PatchworkInput.PromptMode)(((int)input.Prompts + (dir < 0 ? 2 : 1)) % 3); break;
                 case Item.WheelButton: input.FormWheelOnR1 = !input.FormWheelOnR1; break;
+                case Item.Look: GameSettings.Look = (GameSettings.Look + (dir < 0 ? 2 : 1)) % 3; GameSettings.ApplyLook(); break;
             }
             PlayerPrefs.Save();
             Sfx.Play(SfxId.MenuMove, 0.5f);
@@ -291,6 +301,9 @@ namespace Patchwork
                 {
                     case Item.Resume:
                         game.ClosePause();
+                        break;
+                    case Item.Photo:
+                        game.OpenPhotoMode();
                         break;
                     case Item.Restart:
                     case Item.ReturnToHub:
@@ -458,7 +471,7 @@ namespace Patchwork
 
             // Panel drops in from above with a bounce.
             // The settings page has more rows, so they're a little tighter.
-            float rowH = settingsPage ? 58f : 66f, rowGap = settingsPage ? 8f : 10f;
+            float rowH = settingsPage ? 52f : 66f, rowGap = settingsPage ? 6f : 10f;
             float pw = 640f, ph = 150f + items.Count * (rowH + rowGap) + 64f;
             float drop = UIKit.EaseOutBack(openTime / 0.4f);
             float py0 = (H - ph) * 0.5f;
@@ -582,6 +595,10 @@ namespace Patchwork
                     shift = new Vector2(0f, -Mathf.Abs(Mathf.Sin(s * 6f)) * 9f);
                     scale = 1f + Mathf.Max(0f, -Mathf.Sin(s * 6f)) * 0.06f;
                     break;
+                case Item.Photo:        // a quick "click" squash, like a shutter
+                    scale = 1f - Mathf.Max(0f, Mathf.Sin(s * 5f)) * 0.14f;
+                    break;
+                case Item.Look:
                 case Item.Settings:     // the needle wobbles like it's sewing
                     angle = Mathf.Sin(s * 6f) * 18f;
                     shift = new Vector2(0f, Mathf.Sin(s * 12f) * 3f);

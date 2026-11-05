@@ -207,6 +207,15 @@ namespace Patchwork
                         new Vector3(0.3f, h * (1f - k * 0.2f), 0.3f), mat, new Vector3(tilt, i * 37f, tilt * 0.5f));
                     c.name = "Crystal";
                 }
+                if (up)
+                {
+                    // Floor clusters are solid, so you bump into them and can hop on top.
+                    var solid = new GameObject("CrystalSolid");
+                    solid.transform.SetParent(kit.Root, false);
+                    solid.transform.position = o + new Vector3(x, h * 0.45f, z + 0.12f);
+                    solid.transform.rotation = Quaternion.Euler(0f, i * 37f, 0f);
+                    solid.AddComponent<BoxCollider>().size = new Vector3(0.95f, h * 0.9f, 0.6f);
+                }
             }
             // Stepping-stone crystals up to a ledge, and a spring for Water to ride.
             var pillar = PatchworkAssets.Glow(new Color(0.6f, 0.85f, 1f), 0.5f);
@@ -409,7 +418,7 @@ namespace Patchwork
             hatchGo.transform.position = h;
             var lid = kit.Group("Lid", h + new Vector3(0f, 0.05f, 0.75f));
             lid.SetParent(hatchGo.transform, true);
-            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0f, -0.75f), new Vector3(1.5f, 0.08f, 1.5f), wood, default(Vector3), lid);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0f, -0.75f), new Vector3(1.36f, 0.08f, 1.36f), wood, default(Vector3), lid);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.06f, -1.3f), new Vector3(0.25f, 0.02f, 0.25f), PatchworkAssets.Plain(TownKit.Iron, 0.5f), default(Vector3), lid);
             var hatch = hatchGo.AddComponent<Hatch>();
             hatch.Lid = lid;

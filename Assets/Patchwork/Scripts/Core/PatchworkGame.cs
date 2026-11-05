@@ -19,7 +19,8 @@ namespace Patchwork
         Cutscene,    // a scripted moment (the wedding)
         Ask,         // a little Yes / No question (like "go back to the square?")
         Map,         // the pull-up map
-        Sticker      // aiming and placing stickers
+        Sticker,     // aiming and placing stickers
+        Photo        // Photo Mode: time stopped, free camera
     }
 
     // Main game object, one per scene. Builds the level, camera, light and player,
@@ -40,6 +41,7 @@ namespace Patchwork
         public FormSelector Selector { get; private set; }
         public ScoreKeeper Score { get; private set; }
         public StickerSystem Stickers { get; private set; }
+        public PhotoMode Photo { get; private set; }
         // The prize card that pops up when a prize bubble is opened.
         public PrizeDef PrizeShown { get; private set; }
         public float PrizeTimer { get; private set; }
@@ -173,6 +175,8 @@ namespace Patchwork
             Score = new ScoreKeeper();
             Stickers = new StickerSystem(this);
             Stickers.LoadLevel(Level.Id);
+            Photo = new PhotoMode(this);
+            GameSettings.ApplyLook();
 
             Mode = UIMode.Gameplay;
             // Coming from the loading screen, it's still covering everything, so skip our own fade.
@@ -306,6 +310,9 @@ namespace Patchwork
                     break;
                 case UIMode.Sticker:
                     if (!Stickers.Update(udt)) CloseStickers();
+                    break;
+                case UIMode.Photo:
+                    if (!Photo.Update(udt)) ClosePhotoMode();
                     break;
                 case UIMode.Dance:
                     if (Input.Pause.WasPressedThisFrame() || Input.Cancel.WasPressedThisFrame()) EndDance();
@@ -449,7 +456,7 @@ namespace Patchwork
 
         void UpdateCursor()
         {
-            bool lockIt = (Mode == UIMode.Gameplay || Mode == UIMode.Dance || Mode == UIMode.Sticker) && Input.UsingKeyboard && Application.isFocused;
+            bool lockIt = (Mode == UIMode.Gameplay || Mode == UIMode.Dance || Mode == UIMode.Sticker || Mode == UIMode.Photo) && Input.UsingKeyboard && Application.isFocused;
             Cursor.lockState = lockIt ? CursorLockMode.Locked : CursorLockMode.None;
             Cursor.visible = !lockIt;
         }
@@ -853,6 +860,21 @@ namespace Patchwork
             if (ActiveHint != null) HintAge = HintDuration;
         }
 
+        // From the pause menu: freeze time and let the camera roam.
+        public void OpenPhotoMode()
+        {
+            Photo.Open();
+            SetMode(UIMode.Photo, 0f);
+            Sfx.Play(SfxId.MenuConfirm, 0.5f);
+        }
+
+        void ClosePhotoMode()
+        {
+            Photo.Close();
+            SetMode(UIMode.Gameplay, 1f);
+            Sfx.Play(SfxId.MenuCancel, 0.4f);
+        }
+
         void CloseStickers()
         {
             Stickers.Close();
@@ -876,6 +898,8 @@ namespace Patchwork
         }
 
         // Swap Patch's face (every form has happy / sad / angry). A little pop and sound so it's obvious.
+        public void SetFace(PatchModel.Face face) { SetPatchFace(face, true); }
+
         void SetPatchFace(PatchModel.Face face, bool withSound)
         {
             Player.Visuals.SetFace(face);

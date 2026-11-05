@@ -11,6 +11,21 @@ namespace Patchwork
         const string InvertXKey = "pw_cam_invert_x";
         const string SwingToggleKey = "pw_swing_toggle";
         const string VSyncKey = "pw_vsync";
+        const string LookKey = "pw_look";
+
+        public static readonly string[] LookNames = { "Plain", "Storybook", "Stitched" };
+
+        // The screen look: 0 plain, 1 Storybook (soft ink outlines), 2 Stitched (dashed seams).
+        public static int Look
+        {
+            get { return Mathf.Clamp(PlayerPrefs.GetInt(LookKey, 1), 0, 2); }
+            set { PlayerPrefs.SetInt(LookKey, Mathf.Clamp(value, 0, 2)); }
+        }
+
+        public static void ApplyLook()
+        {
+            Shader.SetGlobalFloat("_PatchworkLook", Look);
+        }
 
         // 1..10, 5 is the normal speed.
         public static int CameraSpeed

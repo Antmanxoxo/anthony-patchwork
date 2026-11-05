@@ -35,7 +35,11 @@ around town.
 | Map | R3 | M |
 | Pause | Options | Esc |
 | Patch's face (happy / sad / angry) | D-pad Down | 4 |
+| Photo Mode (from Pause): snap / zoom / look and face / hide UI / done | ✕ / L1 and R1 / D-pad / ▢ / ◯ | Enter / Z and X or scroll / Arrows / E / Esc |
 | In sticker mode: choose / turn / peel off | D-pad / L1 and R1 / R2 | Arrows / Z and X / Shift |
+
+The game's look (Storybook, Stitched or Plain) is under Pause > Settings > Look. Photos from
+Photo Mode are saved in the game's data folder under `Photos`.
 
 In the Form Wheel, point either stick (or the D-pad) at a form: Yarn is at the top, Water is
 lower-left, Wind is lower-right. Time slows while the wheel is open.

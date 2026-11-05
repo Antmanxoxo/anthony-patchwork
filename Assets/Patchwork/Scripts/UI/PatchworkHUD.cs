@@ -67,6 +67,11 @@ namespace Patchwork
                 Game.Title.Draw(kb);
                 return;
             }
+            if (Game.Mode == UIMode.Photo)
+            {
+                Game.Photo.Draw(kb);
+                return;
+            }
 
             DrawLetterbox(kb);
             if (Game.Mode != UIMode.Loading && Game.Mode != UIMode.Dance && Game.Mode != UIMode.LevelSelect && Game.Mode != UIMode.Talk && Game.Mode != UIMode.Cutscene)

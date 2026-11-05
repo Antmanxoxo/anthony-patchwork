@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace Patchwork.EditorTools
 {
@@ -31,6 +33,7 @@ namespace Patchwork.EditorTools
             EnsureLitMaterial();
             EnsureVariantMaterials();
             EnsureIcon();
+            EnsureLookPass();
             PatchModelImport.EnsureImported();
 
             if (!SessionState.GetBool(OpenedHubKey, false))
@@ -140,6 +143,64 @@ namespace Patchwork.EditorTools
             if (isNew) AssetDatabase.CreateAsset(m, path);
             else EditorUtility.SetDirty(m);
             return true;
+        }
+
+        // The Patchwork look (Storybook / Stitched outlines, see Shaders/PatchworkLook.shader) is a
+        // full-screen pass on every URP renderer. This adds it once, and switches it off if the
+        // shader ever has an error (so a broken shader can never turn the screen pink).
+        const string LookShaderPath = "Assets/Patchwork/Shaders/PatchworkLook.shader";
+        const string LookMaterialPath = "Assets/Patchwork/Resources/PW_Look.mat";
+        const string LookPassName = "PatchworkLook";
+
+        static void EnsureLookPass()
+        {
+            var shader = AssetDatabase.LoadAssetAtPath<Shader>(LookShaderPath);
+            if (shader == null) return;
+            bool broken = ShaderUtil.ShaderHasError(shader);
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(LookMaterialPath);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, LookMaterialPath);
+            }
+            else if (mat.shader != shader)
+            {
+                mat.shader = shader;
+                EditorUtility.SetDirty(mat);
+            }
+
+            foreach (var guid in AssetDatabase.FindAssets("t:UniversalRendererData"))
+            {
+                var data = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(AssetDatabase.GUIDToAssetPath(guid));
+                if (data == null) continue;
+                FullScreenPassRendererFeature pass = null;
+                foreach (var f in data.rendererFeatures)
+                    if (f is FullScreenPassRendererFeature && f.name == LookPassName) pass = (FullScreenPassRendererFeature)f;
+                if (pass == null)
+                {
+                    if (broken) continue;
+                    pass = ScriptableObject.CreateInstance<FullScreenPassRendererFeature>();
+                    pass.name = LookPassName;
+                    AssetDatabase.AddObjectToAsset(pass, data);
+                    data.rendererFeatures.Add(pass);
+                    // The renderer keeps a list of its features' file ids next to the list itself.
+                    var mapField = typeof(ScriptableRendererData).GetField("m_RendererFeatureMap",
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    var map = mapField != null ? mapField.GetValue(data) as List<long> : null;
+                    string g;
+                    long localId;
+                    if (map != null && AssetDatabase.TryGetGUIDAndLocalFileIdentifier(pass, out g, out localId)) map.Add(localId);
+                }
+                pass.passMaterial = mat;
+                pass.injectionPoint = FullScreenPassRendererFeature.InjectionPoint.BeforeRenderingPostProcessing;
+                pass.requirements = ScriptableRenderPassInput.Depth | ScriptableRenderPassInput.Normal;
+                pass.fetchColorBuffer = true;
+                pass.SetActive(!broken);
+                EditorUtility.SetDirty(pass);
+                EditorUtility.SetDirty(data);
+            }
+            AssetDatabase.SaveAssets();
+            if (broken) Debug.LogWarning("Patchwork: the look shader has an error, so the Storybook/Stitched look is switched off for now.");
         }
 
         // The game's app icon (window, taskbar and the .exe).

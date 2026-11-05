@@ -1,5 +1,20 @@
 # Development Log
 
+## A look of its own, and Photo Mode
+- A new screen look (Pause > Settings > Look), drawn as one full-screen pass:
+  - Storybook (the default): soft plum ink outlines round every shape, gently banded cel
+    shading and a faint fabric weave over everything. Lines fade out into the distance.
+  - Stitched: darker seams with light dashed thread running along them, like a plush toy,
+    and a stronger weave.
+  - Plain: the old look.
+- Photo Mode (in the pause menu): time stops and the camera floats free round Patch. Orbit,
+  slide, zoom, swap the look and Patch's face, hide the controls, and snap. Photos are saved
+  as PNGs in the game's Photos folder.
+- Felt petals and dandelion fluff now drift on the breeze around Toybox Town (not inside the
+  secret rooms). They freeze in place in Photo Mode.
+- The floor crystals in the Drain Grotto are solid now (you could walk through them).
+- Fixed the barracks trapdoor lid flickering against the crate on top of it.
+
 ## Secrets and hidden places
 - Twelve secret marbles hidden around Toybox Town, each found a different way:
   - Inside the Toy Shop: its front door now opens into a shop full of toys, with Mrs Thimble
