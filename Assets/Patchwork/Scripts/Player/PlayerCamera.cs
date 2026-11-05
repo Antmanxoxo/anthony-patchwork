@@ -192,9 +192,18 @@ namespace Patchwork
                 pos = Vector3.Lerp(pos, ShowcasePosition, s);
                 rot = Quaternion.Slerp(rot, showRot, s);
             }
+            // A gentle hum and wobble, like a little craft flying (the Pod).
+            if (Rumble > 0f)
+            {
+                float tt = Time.unscaledTime;
+                pos += new Vector3(Mathf.PerlinNoise(tt * 1.7f, 0.3f) - 0.5f, Mathf.PerlinNoise(0.7f, tt * 1.9f) - 0.5f, 0f) * Rumble;
+                rot *= Quaternion.Euler((Mathf.PerlinNoise(tt * 0.9f, 5.1f) - 0.5f) * Rumble * 12f, 0f, (Mathf.PerlinNoise(9.3f, tt * 0.8f) - 0.5f) * Rumble * 20f);
+            }
             transform.position = pos;
             transform.rotation = rot;
         }
+
+        [System.NonSerialized] public float Rumble;
 
         // Jump straight to the showcase shot (no glide), e.g. when the game starts on the title screen.
         public void SnapShowcase()

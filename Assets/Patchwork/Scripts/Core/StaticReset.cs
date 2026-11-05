@@ -18,6 +18,8 @@ namespace Patchwork
             LevelSelectMenu.ResetStatics();
             UseSpot.ResetStatics();
             PodTheme.ResetStatics();
+            PodLaunch.ResetStatics();
+            TapeBall.ResetStatics();
             Level1Director.ResetStatics();
             ThreadRace.ResetStatics();
             WindChime.FirstRung = null;

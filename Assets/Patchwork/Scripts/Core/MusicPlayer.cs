@@ -104,7 +104,7 @@ namespace Patchwork
             float target = MaxVolume * Volume / 10f * duck;
             master = Mathf.MoveTowards(master, target, udt * 0.6f);
             // Level soundtracks (like Toybox Town) crossfade with the Skiff's music.
-            float skiff = UpdateLevelTrack(udt);
+            float skiff = UpdateLevelTrack(udt) * UpdatePodTrack(udt);
 
             for (int i = 0; i < StemCount; i++)
             {

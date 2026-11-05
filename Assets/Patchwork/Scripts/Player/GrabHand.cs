@@ -81,7 +81,7 @@ namespace Patchwork
             for (int i = 0; i < n; i++)
             {
                 var g = hits[i].GetComponentInParent<Grabbable>();
-                if (g == null || g.Held) continue;
+                if (g == null || g.Held || g.NoGrab) continue;
                 float d = Vector3.Distance(hits[i].ClosestPoint(c), c);
                 if (d < bestD && d < player.Motor.Controller.radius + 0.75f) { best = g; bestD = d; }
             }

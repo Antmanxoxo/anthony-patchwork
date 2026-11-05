@@ -128,6 +128,7 @@ namespace Patchwork
             IntroProps(kit);
             ScoreBubbles.Settle(kit);
             GroundCover(kit);
+            Katamari(kit);
             AmbientFluff.Create(kit.Root, 80, -6f);
             return info;
         }

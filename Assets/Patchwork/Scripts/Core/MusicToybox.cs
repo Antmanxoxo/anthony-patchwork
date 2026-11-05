@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    public enum MusicTrack { Skiff, Toybox }
+    public enum MusicTrack { Skiff, Toybox, Pod }
 
     // Toybox Town's own soundtrack: a bouncy, swung toy-town march (see the notes on
     // ComposeToybox). It's built in layers that match the town band:
@@ -29,6 +29,7 @@ namespace Patchwork
             if (instance == null) return;
             instance.track = t;
             if (t == MusicTrack.Toybox) instance.StartToybox();
+            if (t == MusicTrack.Pod) instance.StartPod();
         }
 
         // Which band layers are playing in Toybox Town.

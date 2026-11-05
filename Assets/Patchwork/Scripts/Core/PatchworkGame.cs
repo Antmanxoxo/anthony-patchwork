@@ -115,7 +115,7 @@ namespace Patchwork
         {
             Instance = this;
             currentLevel = levelId;
-            MusicPlayer.SetTrack(levelId == LevelId.Level1 ? MusicTrack.Toybox : MusicTrack.Skiff);
+            MusicPlayer.SetTrack(levelId == LevelId.Level1 ? MusicTrack.Toybox : MusicTrack.Pod);
             Time.timeScale = 1f;
             // VSync is on in Quality settings; this cap only matters if a graphics driver forces it off,
             // so the game never runs at hundreds of frames per second and heats up people's computers.
@@ -162,6 +162,7 @@ namespace Patchwork
             respawnYaw = Level.SpawnYaw;
             CameraRig.Target = Player.transform;
             CameraRig.SnapBehind(Level.SpawnYaw);
+            CameraRig.Rumble = Level.CameraRumble;
 
             Selector = new FormSelector(this);
             Satchel = new SatchelMenu(this);
@@ -292,6 +293,7 @@ namespace Patchwork
             switch (Mode)
             {
                 case UIMode.Gameplay:
+                    if (PodLaunch.Busy) { if (Input.Pause.WasPressedThisFrame()) OpenPause(); break; }
                     if (Input.Pause.WasPressedThisFrame()) OpenPause();
                     else if (Input.FormWheel.WasPressedThisFrame()) OpenWheel();
                     else if (Input.Satchel.WasPressedThisFrame()) OpenSatchel();
@@ -367,7 +369,7 @@ namespace Patchwork
             if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel || Mode == UIMode.Dance || Mode == UIMode.Intro || Mode == UIMode.LevelSelect || Mode == UIMode.Talk || Mode == UIMode.Cutscene || Mode == UIMode.Ask || Mode == UIMode.Sticker)
             {
                 PlayerInputFrame frame;
-                if (Mode == UIMode.Gameplay && !modeChangedThisFrame)
+                if (Mode == UIMode.Gameplay && !modeChangedThisFrame && !PodLaunch.Busy)
                 {
                     frame = ReadFrame();
                 }
@@ -480,7 +482,7 @@ namespace Patchwork
                 case UIMode.Paused:
                 case UIMode.Satchel:
                 case UIMode.Map:
-                    MusicPlayer.SetMuffle(900f, 0.5f);
+                    MusicPlayer.SetMuffle(900f, Level != null && Level.QuietMusic ? 0f : 0.5f);
                     Sfx.SetLoopCutoff(900f);
                     Haptics.SetSilenced(true);
                     break;
@@ -491,7 +493,7 @@ namespace Patchwork
                     Haptics.SetSilenced(false);
                     break;
                 case UIMode.FormWheel:
-                    MusicPlayer.SetMuffle(1500f, 1f);
+                    MusicPlayer.SetMuffle(1500f, Level != null && Level.QuietMusic ? 0f : 1f);
                     Sfx.SetLoopCutoff(1500f);
                     Haptics.SetSilenced(true);
                     break;
@@ -501,12 +503,12 @@ namespace Patchwork
                     Haptics.SetSilenced(true);
                     break;
                 case UIMode.Talk:
-                    MusicPlayer.SetMuffle(22000f, 0.6f);
+                    MusicPlayer.SetMuffle(22000f, Level != null && Level.QuietMusic ? 0f : 0.6f);
                     Sfx.SetLoopCutoff(22000f);
                     Haptics.SetSilenced(true);
                     break;
                 case UIMode.LevelSelect:
-                    MusicPlayer.SetMuffle(5000f, 0.85f);
+                    MusicPlayer.SetMuffle(Level != null && Level.QuietMusic ? 22000f : 5000f, 0.85f);
                     Sfx.SetLoopCutoff(3000f);
                     Haptics.SetSilenced(true);
                     break;
@@ -698,6 +700,7 @@ namespace Patchwork
         {
             Player.Forms.CancelAll();
             Player.Motor.Velocity = Vector3.zero;
+            if (Level.QuietMusic) MusicPlayer.CuePod();
             LevelSelect.Open();
             SetMode(UIMode.LevelSelect, 1f);
             ToastTimer = 0f;

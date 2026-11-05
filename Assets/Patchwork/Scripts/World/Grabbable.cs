@@ -14,6 +14,8 @@ namespace Patchwork
         public Rigidbody Body { get; private set; }
         public float SpeedFactor = 0.6f;    // how fast Patch moves while holding it
         public bool KickOnWalk;             // balls: running into it knocks it along
+        public bool Rolls;                  // pushed along smoothly instead of hopping (the Tape Ball)
+        public bool NoGrab;                 // can't be picked up
         public bool Held { get; set; }
         Vector3 home;
         Quaternion homeRot;

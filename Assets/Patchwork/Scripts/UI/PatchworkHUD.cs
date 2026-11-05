@@ -90,6 +90,7 @@ namespace Patchwork
                 DrawToast();
                 DrawTitle();
                 DrawRaceTimer();
+                DrawTapeBall();
             }
 
             switch (Game.Mode)
@@ -459,6 +460,28 @@ namespace Patchwork
         }
 
         // Thread Race countdown at the top of the screen.
+        // The Tape Ball's size, while you're near it.
+        float tapeAlpha;
+        void DrawTapeBall()
+        {
+            var ball = TapeBall.Active;
+            bool show = ball != null && TimedChallenge.Running == null && Game.Mode == UIMode.Gameplay;
+            tapeAlpha = Mathf.MoveTowards(tapeAlpha, show ? 1f : 0f, Time.unscaledDeltaTime * 4f);
+            if (tapeAlpha <= 0.001f || ball == null) return;
+            float a = tapeAlpha;
+            float W = UIKit.Width;
+            var r = new Rect((W - 420f) * 0.5f, 24f - (1f - a) * 30f, 420f, 92f);
+            UIKit.Panel(r, new Color(0.99f, 0.96f, 0.9f, 0.95f * a), new Color(1f, 0.45f, 0.6f, 0.9f * a), 20f);
+            var ink = UIKit.Ink;
+            string size = (ball.Radius * 2f).ToString("0.0") + " m";
+            UIKit.Label(new Rect(r.x + 24f, r.y + 8f, 200f, 40f), "Tape Ball", UIKit.Style(26, true, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, a)));
+            UIKit.Label(new Rect(r.xMax - 164f, r.y + 8f, 140f, 40f), size, UIKit.Style(30, true, TextAnchor.MiddleRight, new Color(0.85f, 0.3f, 0.45f, a)));
+            var bar = new Rect(r.x + 24f, r.y + 54f, r.width - 48f, 14f);
+            UIKit.Fill(bar, new Color(ink.r, ink.g, ink.b, 0.15f * a), 7f);
+            UIKit.Fill(new Rect(bar.x, bar.y, Mathf.Max(14f, bar.width * ball.Progress), bar.height), new Color(1f, 0.55f, 0.7f, a), 7f);
+            UIKit.Label(new Rect(r.x, r.yMax - 4f, r.width, 26f), ball.NextGoal, UIKit.Style(18, true, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, a)), true);
+        }
+
         void DrawRaceTimer()
         {
             var ch = TimedChallenge.Running;

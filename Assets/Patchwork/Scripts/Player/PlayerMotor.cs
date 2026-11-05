@@ -72,8 +72,16 @@ namespace Patchwork
             Vector3 push = new Vector3(hit.moveDirection.x, 0f, hit.moveDirection.z);
             if (push.sqrMagnitude < 0.01f) return;
             push.Normalize();
-            float speed = Mathf.Max(2.5f, new Vector2(Velocity.x, Velocity.z).magnitude * 1.3f);
             Vector3 v = rb.linearVelocity;
+            if (toy.Rolls)
+            {
+                // Rolling it along: a steady push at about running speed, no hop.
+                float roll = Mathf.Max(2.2f, new Vector2(Velocity.x, Velocity.z).magnitude * 1.1f);
+                if (Vector3.Dot(new Vector3(v.x, 0f, v.z), push) < roll * 0.9f)
+                    rb.linearVelocity = new Vector3(push.x * roll, v.y, push.z * roll);
+                return;
+            }
+            float speed = Mathf.Max(2.5f, new Vector2(Velocity.x, Velocity.z).magnitude * 1.3f);
             if (Vector3.Dot(new Vector3(v.x, 0f, v.z), push) < speed * 0.8f)
             {
                 rb.linearVelocity = new Vector3(push.x * speed, Mathf.Max(v.y, 1.5f), push.z * speed);

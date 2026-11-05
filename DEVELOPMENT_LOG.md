@@ -1,5 +1,30 @@
 # Development Log
 
+## The Pod in space, and a Tape Ball for Toybox Town
+- The Pod now floats in deep space: a black sky full of tiny stars drifting past the window
+  (so it feels like it's flying), felt stars, a polka-dot planet with a zigzag ring, a big
+  striped planet, a comet with a felt tail, the doughnut, toadstool, gears and moon, and
+  woolly aliens: one peeking in at the window, one on a balloon, one waving from a little red
+  planet, and one flying a saucer round the patchwork planet.
+- The pod hums along: the camera wobbles very gently, the light bulb sways, and the little
+  Skiff outside rattles as it sails round.
+- The front window is now tinted glass with a few glints on it.
+- The controller on the desk faces you.
+- You arrive the way you should: popped out of a candy-striped launch tube in the wall,
+  sailing across the pod to land on the rug.
+- It's quiet: no music on the title screen (the studio chime stays), none while you walk
+  about, pause, or chat with Captain Yarny. Pick up the controller and the Pod's own song
+  starts from the top: a new mellow, plucky tune (fingerpicked guitar, round bass, brushes,
+  music box, flute, glockenspiel and little bloops).
+- Toybox Town: about 240 bright, oversized everyday things lie around town (dice, erasers,
+  sweets, coins, thumbtacks, crayons, marbles, buttons, playing cards, batteries, dominoes,
+  strawberries, sushi, teacups, mahjong tiles, matchboxes, lollipops, rubber ducks, spinning
+  tops and toy cars), with a big rainbow arching over the toybox.
+- The Tape Ball, near the start: run into it to roll it. Small things stick to it and it
+  grows, so it can pick up bigger things. It shows its size at the top of the screen, cheers
+  at a teacup, a teddy bear and an armchair, and when it's big enough it floats up into the
+  sky as a new star (and a fresh ball appears).
+
 ## The Pod
 - The hub is now the Pod: a cosy egg-shaped cardboard pod with ribbed walls, floating in a
   bright paper-white sky. The look follows the game's box-art collage: zigzag and polka-dot

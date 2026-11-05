@@ -94,6 +94,14 @@ Stuff I need to remember about how Patchwork is put together.
   (stand in it, press Ability; the HUD floats its label). Wall panels register with
   `PodTheme.Register`. Printed felt patterns (zigzag, polka dots, gingham, stars, stripes):
   `PatchworkAssets.Print`.
+- Arriving in the Pod: `PodLaunch` holds Patch inside the launch tube (motor `ExternalControl`)
+  until the fade and any title are done, then flies him along an arc; `PodLaunch.Busy` blocks
+  input. The Pod song is `MusicPod.cs` (`MusicTrack.Pod`, cued from the top by
+  `MusicPlayer.CuePod()` when the level select opens). `LevelInfo.CameraRumble` wobbles the camera.
+- Toybox Town clutter: `Level1Katamari.cs` scatters `Clumpable` things by raycasting for clear
+  ground at y 0; ones 1.1 m and up get a box collider. `TapeBall` picks up anything up to
+  1.15x its radius (volume adds as half the item's size cubed) and becomes a star at 1.8 m.
+  `Grabbable.Rolls` gives it a smooth push (no hop); `NoGrab` keeps it out of Grab.
 - Per-level sun and title camera: `LevelInfo.SunEuler` / `SunIntensity` and `TitleCenter` /
   `TitleRadius` / `TitleHeight` / `TitleLookOffset`.
 - Yarn birds (`YarnBird`, `kit.YarnBird`) play their chirps from their own 3D AudioSource.

@@ -42,18 +42,19 @@ namespace Patchwork
             info.IsHub = true;
             info.Title = LevelCatalog.Skiff.Title;
             info.Subtitle = "Pick up the controller to choose where to go.";
-            info.Spawn = new Vector3(0f, 0.1f, -2f);
+            info.Spawn = LandPoint + Vector3.up * 0.1f;
             info.SpawnYaw = 0f;
             info.KillY = -10f;
-            // A bright paper-white sky, like the box art's background.
-            info.Sky = new Color(0.98f, 0.97f, 0.94f);
-            info.FogStart = 45f;
-            info.FogEnd = 160f;
+            // Deep space outside.
+            info.Sky = new Color(0.01f, 0.01f, 0.025f);
+            info.FogStart = 400f;
+            info.FogEnd = 900f;
+            info.CameraRumble = 0.07f;
             info.Saturation = 18f;
             info.Area.SetMinMax(new Vector3(-11f, -1f, -16f), new Vector3(11f, 14f, 11f));
             // Sunlight pours in through the window.
             info.SunEuler = new Vector3(38f, 165f, 0f);
-            info.SunIntensity = 1.35f;
+            info.SunIntensity = 1.1f;
             info.TitleCenter = new Vector3(0f, 0f, 0.5f);
             info.TitleRadius = 5.6f;
             info.TitleHeight = 3.4f;
@@ -73,6 +74,7 @@ namespace Patchwork
             Outside(kit);
             MiniSkiff(kit);
             Sounds(kit);
+            LaunchTube(kit);
             PodTheme.Apply();
 
             kit.AddCheckpoint(info.Spawn, 0f);
@@ -86,6 +88,9 @@ namespace Patchwork
             talk.Npc = yarny;
             return info;
         }
+
+        // Where Patch lands after being popped out of the launch tube.
+        static readonly Vector3 LandPoint = new Vector3(0.8f, 0f, -1.2f);
 
         // ---------------------------------------------------------------- Helpers
 
@@ -150,6 +155,8 @@ namespace Patchwork
             const float thick = 0.4f;
             var wall = PodTheme.Material(PodTheme.Current);
             var rib = PatchworkAssets.Cardboard(KraftDark);
+            var glass = PatchworkAssets.Bubble(new Color(0.75f, 0.88f, 1f, 0.1f));
+            var shine = PatchworkAssets.Bubble(new Color(1f, 1f, 1f, 0.32f));
             for (int i = 0; i < Columns; i++)
             {
                 float deg = ColumnAngle(i);
@@ -161,9 +168,21 @@ namespace Patchwork
                     var t = Panel(kit, deg, tier, thick, 0f, size, wall, true, "PodWall");
                     if (InWindow(deg, tier))
                     {
-                        // The window: an invisible pane so you can't fall out.
+                        // The window: a pane of faintly tinted glass with a few glints on it.
                         t.name = "WindowPane";
-                        t.GetComponent<Renderer>().enabled = false;
+                        var pr = t.GetComponent<Renderer>();
+                        pr.sharedMaterial = glass;
+                        pr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                        int col = Mathf.RoundToInt(Signed(deg) / (360f / Columns) - 0.5f);
+                        if (tier == 2 && (col == -3 || col == 1) || tier == 1 && col == 2)
+                        {
+                            for (int g = 0; g < 2; g++)
+                            {
+                                var glint = kit.Deco(PrimitiveType.Cube, t.position - t.forward * 0.24f + t.right * (g * 0.35f - 0.3f), new Vector3(g == 0 ? 0.16f : 0.07f, TierLength(tier) * 0.6f, 0.01f), shine);
+                                glint.rotation = t.rotation * Quaternion.Euler(0f, 0f, 28f);
+                                glint.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                            }
+                        }
                     }
                     else PodTheme.Register(t.GetComponent<Renderer>());
                 }
@@ -260,7 +279,6 @@ namespace Patchwork
         {
             Vector3 at = new Vector3(0f, DeskTop + 0.18f, 8.25f);
             var pad = kit.Group("Controller", at);
-            pad.rotation = Quaternion.Euler(0f, 180f, 0f);   // handles towards you
             var body = PatchworkAssets.Plain(new Color(0.16f, 0.15f, 0.19f), 0.55f);
             kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(1.3f, 0.3f, 0.6f), body, default(Vector3), pad);
             for (int s = -1; s <= 1; s += 2)
@@ -330,8 +348,7 @@ namespace Patchwork
             kit.Info.Globe = globe;
             if (controllerStation != null) controllerStation.Globe = globe;
 
-            // A puff of cloud under the planet, and a warm light on its front.
-            SketchCloud(kit, GlobeCenter + new Vector3(0.6f, -3.4f, 0.8f), 1.5f);
+            // A warm light on its front.
             var lightGo = new GameObject("GlobeLight");
             lightGo.transform.SetParent(kit.Root, false);
             lightGo.transform.position = GlobeCenter + new Vector3(0f, 2.5f, -5f);
@@ -438,21 +455,26 @@ namespace Patchwork
         // Things to play with and sit on.
         static void Furnishings(LevelKit kit)
         {
-            // A hanging light bulb in the middle of the pod.
+            // A hanging light bulb in the middle of the pod, swinging gently as it flies.
+            var swing = kit.Group("BulbSwing", new Vector3(0f, 13.4f, 0f));
             var cord = PatchworkAssets.Yarn(new Color(0.25f, 0.22f, 0.25f));
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 10.3f, 0f), new Vector3(0.05f, 3.1f, 0.05f), cord);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 7.35f, 0f), new Vector3(0.22f, 0.12f, 0.22f), PatchworkAssets.Plain(new Color(0.75f, 0.72f, 0.68f), 0.7f));
-            var bulb = kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 7f, 0f), new Vector3(0.5f, 0.62f, 0.5f), PatchworkAssets.Glow(new Color(1f, 0.86f, 0.5f), 2.2f));
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -3.1f, 0f), new Vector3(0.05f, 3.1f, 0.05f), cord, default(Vector3), swing);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -6.05f, 0f), new Vector3(0.22f, 0.12f, 0.22f), PatchworkAssets.Plain(new Color(0.75f, 0.72f, 0.68f), 0.7f), default(Vector3), swing);
+            var bulb = kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -6.4f, 0f), new Vector3(0.5f, 0.62f, 0.5f), PatchworkAssets.Glow(new Color(1f, 0.86f, 0.5f), 2.2f), default(Vector3), swing);
             bulb.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             var lgo = new GameObject("BulbLight");
-            lgo.transform.SetParent(kit.Root, false);
-            lgo.transform.position = new Vector3(0f, 6.6f, 0f);
+            lgo.transform.SetParent(swing, false);
+            lgo.transform.localPosition = new Vector3(0f, -6.8f, 0f);
             var l = lgo.AddComponent<Light>();
             l.type = LightType.Point;
             l.color = new Color(1f, 0.84f, 0.62f);
-            l.range = 16f;
-            l.intensity = 1.5f;
+            l.range = 18f;
+            l.intensity = 2f;
             l.shadows = LightShadows.None;
+            var sway = swing.gameObject.AddComponent<Rocker>();
+            sway.Axis = new Vector3(1f, 0f, 0.4f);
+            sway.Amount = 3f;
+            sway.Speed = 1.1f;
 
             // A polka-dot toadstool stool and a zigzag cushion.
             Vector3 st = new Vector3(6.2f, 0f, -3.4f);
@@ -575,23 +597,6 @@ namespace Patchwork
 
         // ---------------------------------------------------------------- Outside the window
 
-        // A soft white cloud (the ink outlines make it look hand-drawn).
-        static Transform SketchCloud(LevelKit kit, Vector3 pos, float size)
-        {
-            var g = kit.Group("Cloud", pos);
-            var m = PatchworkAssets.Felt(new Color(1f, 1f, 0.99f));
-            var shade = PatchworkAssets.Felt(new Color(0.86f, 0.86f, 0.88f));
-            kit.Deco(PrimitiveType.Sphere, Vector3.zero, new Vector3(2.2f, 1.1f, 1.1f) * size, m, default(Vector3), g);
-            kit.Deco(PrimitiveType.Sphere, new Vector3(0.8f, 0.45f, 0f) * size, new Vector3(1.3f, 1.2f, 1f) * size, m, default(Vector3), g);
-            kit.Deco(PrimitiveType.Sphere, new Vector3(-0.7f, 0.3f, 0.05f) * size, new Vector3(1.1f, 0.95f, 0.95f) * size, m, default(Vector3), g);
-            kit.Deco(PrimitiveType.Sphere, new Vector3(0.1f, -0.3f, 0.12f) * size, new Vector3(2f, 0.5f, 0.9f) * size, shade, default(Vector3), g);
-            var s = g.gameObject.AddComponent<Spinner>();
-            s.Speed = 0f;
-            s.BobHeight = 0.3f * size;
-            s.BobSpeed = 0.35f;
-            return g;
-        }
-
         // A puffy five-pointed felt star.
         static Transform Star(LevelKit kit, Vector3 pos, float size, Color col)
         {
@@ -611,19 +616,13 @@ namespace Patchwork
             return g;
         }
 
-        // The bright, busy world outside, after the toy-box collage on the game's box art.
+        // Outer space, after the toy-box collage on the game's box art: felt stars, bold
+        // patterned planets, a doughnut and a toadstool drifting by, and some woolly aliens.
         static void Outside(LevelKit kit)
         {
-            // Clouds above, below and to the sides.
-            SketchCloud(kit, new Vector3(-14f, -2f, 26f), 3f);
-            SketchCloud(kit, new Vector3(12f, 0.5f, 30f), 2.6f);
-            SketchCloud(kit, new Vector3(-5f, 11f, 34f), 2f);
-            SketchCloud(kit, new Vector3(15f, 10f, 23f), 1.6f);
-            SketchCloud(kit, new Vector3(2f, -7f, 26f), 3.5f);
-            SketchCloud(kit, new Vector3(-22f, 5f, 18f), 2.2f);
-            SketchCloud(kit, new Vector3(22f, -3f, 15f), 2.5f);
-            SketchCloud(kit, new Vector3(-30f, -8f, 40f), 4f);
-            SketchCloud(kit, new Vector3(28f, 14f, 44f), 4f);
+            // A field of tiny stars streaming slowly past, so the pod feels like it's flying.
+            var field = kit.Group("Starfield", Vector3.zero);
+            field.gameObject.AddComponent<Starfield>().Build(kit, 260);
 
             // A trail of felt stars sweeping down from the top left, red to yellow.
             for (int i = 0; i < 9; i++)
@@ -633,9 +632,26 @@ namespace Patchwork
                 Color c = Color.Lerp(new Color(0.95f, 0.3f, 0.3f), new Color(1f, 0.85f, 0.3f), f);
                 Star(kit, p, Mathf.Lerp(0.5f, 1.1f, f), c);
             }
+            // A few big felt stars further out.
+            Star(kit, new Vector3(16f, 13f, 34f), 2.2f, new Color(1f, 0.9f, 0.4f));
+            Star(kit, new Vector3(-20f, -6f, 30f), 1.6f, new Color(0.55f, 0.85f, 1f));
+            Star(kit, new Vector3(9f, -9f, 24f), 1.2f, new Color(1f, 0.55f, 0.75f));
+
+            // Planets: a polka-dot one with a zigzag ring, a striped giant far off, a little red one.
+            var p1 = kit.Group("RingPlanet", new Vector3(-12f, 9.5f, 30f));
+            kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 6f, PatchworkAssets.Print(PatchworkAssets.PrintKind.Polka, new Color(0.25f, 0.55f, 0.95f), new Color(1f, 0.85f, 0.35f)), default(Vector3), p1);
+            kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(12.5f, 0.05f, 12.5f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Zigzag, new Color(0.9f, 0.25f, 0.3f), new Color(1f, 0.85f, 0.35f)), new Vector3(18f, 0f, -24f), p1);
+            var p1s = p1.gameObject.AddComponent<Spinner>();
+            p1s.Speed = 4f;
+            var p2 = kit.Group("GiantPlanet", new Vector3(26f, 15f, 80f));
+            kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 24f, PatchworkAssets.Print(PatchworkAssets.PrintKind.Stripes, new Color(0.98f, 0.6f, 0.25f), new Color(0.99f, 0.93f, 0.8f)), new Vector3(0f, 0f, 75f), p2);
+            var p3 = kit.Group("RedPlanet", new Vector3(12f, -4f, 27f));
+            kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 4f, PatchworkAssets.Print(PatchworkAssets.PrintKind.Polka, new Color(0.88f, 0.22f, 0.27f), new Color(0.99f, 0.95f, 0.88f)), default(Vector3), p3);
+            // A woolly alien sitting on top of it, waving.
+            Alien(kit, p3.position + Vector3.up * 2.5f, new Color(0.7f, 0.45f, 0.9f), 1f, true);
 
             // A polka-dot toadstool floating by.
-            var shroom = kit.Group("Toadstool", new Vector3(-8.6f, 6.4f, 20f));
+            var shroom = kit.Group("Toadstool", new Vector3(-8.6f, 5.6f, 20f));
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.7f, 0f), new Vector3(0.9f, 0.8f, 0.9f), PatchworkAssets.Felt(new Color(0.99f, 0.95f, 0.86f)), default(Vector3), shroom);
             kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.2f, 0f), new Vector3(2.6f, 1.4f, 2.6f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Polka, new Color(0.9f, 0.22f, 0.25f), new Color(0.99f, 0.96f, 0.9f)), default(Vector3), shroom);
             shroom.rotation = Quaternion.Euler(0f, 0f, 14f);
@@ -663,7 +679,7 @@ namespace Patchwork
             ds.BobHeight = 0.35f;
             ds.BobSpeed = 0.45f;
 
-            // Purple clockwork gears turning beside the planet.
+            // Clockwork gears turning beside the planet.
             Gear(kit, new Vector3(5.6f, 1.2f, 21f), 1.6f, new Color(0.55f, 0.35f, 0.75f), 20f);
             Gear(kit, new Vector3(7.7f, 2.9f, 22.6f), 1.1f, new Color(0.95f, 0.65f, 0.25f), -29f);
 
@@ -680,8 +696,109 @@ namespace Patchwork
             ms.Speed = 6f;
             ms.BobHeight = 0.2f;
 
-            // A yarn bird flapping round the planet.
-            kit.YarnBird(GlobeCenter + new Vector3(0f, 4.5f, 1f), LevelKit.Palette.Butter, true, 6.5f);
+            // A flying saucer with a woolly alien at the controls, looping round the planet.
+            var ufoOrbit = kit.Group("SaucerOrbit", Vector3.zero);
+            var uo = ufoOrbit.gameObject.AddComponent<Orbiter>();
+            uo.Center = GlobeCenter + new Vector3(0f, 5.5f, 4f);
+            uo.Radius = 10f;
+            uo.RadiusZ = 6f;
+            uo.Speed = -14f;
+            uo.Angle = 200f;
+            uo.Lean = 12f;
+            uo.Shake = 0.05f;
+            var ufo = kit.Group("Saucer", Vector3.zero);
+            ufo.SetParent(ufoOrbit, false);
+            ufo.localPosition = Vector3.zero;
+            kit.Deco(PrimitiveType.Sphere, Vector3.zero, new Vector3(3.6f, 0.7f, 3.6f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Stripes, new Color(0.35f, 0.85f, 0.75f), new Color(0.99f, 0.96f, 0.9f)), default(Vector3), ufo);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -0.25f, 0f), new Vector3(1.6f, 0.5f, 1.6f), PatchworkAssets.Felt(new Color(0.95f, 0.45f, 0.55f)), default(Vector3), ufo);
+            Color[] bulbs = { new Color(1f, 0.85f, 0.3f), new Color(1f, 0.45f, 0.5f), new Color(0.5f, 0.85f, 1f) };
+            for (int k = 0; k < 12; k++)
+            {
+                float a = k * Mathf.PI * 2f / 12f;
+                kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 1.75f, 0f, Mathf.Sin(a) * 1.75f), Vector3.one * 0.22f, PatchworkAssets.Glow(bulbs[k % 3], 1.5f), default(Vector3), ufo);
+            }
+            var pilot = Alien(kit, Vector3.zero, new Color(0.45f, 0.85f, 0.4f), 0.55f, false);
+            pilot.SetParent(ufo, false);
+            pilot.localPosition = new Vector3(0f, 0.55f, 0f);
+            pilot.localRotation = Quaternion.identity;
+            var dome = kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.55f, 0f), new Vector3(1.6f, 1.4f, 1.6f), PatchworkAssets.Bubble(new Color(0.8f, 0.95f, 1f, 0.25f)), default(Vector3), ufo);
+            dome.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+
+            // More woolly aliens: one peeking in at the window, one drifting by on a balloon.
+            Alien(kit, new Vector3(5.6f, 6.6f, 12.6f), new Color(1f, 0.6f, 0.3f), 0.7f, true);
+            var floater = Alien(kit, new Vector3(-15f, 3f, 24f), new Color(1f, 0.55f, 0.75f), 0.9f, true);
+            kit.Rope(floater.position + Vector3.up * 0.9f, floater.position + new Vector3(0.6f, 3.4f, 0f), PatchworkAssets.Yarn(Color.white), 0.04f);
+            kit.Deco(PrimitiveType.Sphere, floater.position + new Vector3(0.6f, 4f, 0f), new Vector3(1.2f, 1.4f, 1.2f), PatchworkAssets.Plain(new Color(1f, 0.85f, 0.3f), 0.7f));
+
+            // A comet with a felt tail.
+            var comet = kit.Group("Comet", new Vector3(-24f, 18f, 46f));
+            comet.rotation = Quaternion.Euler(0f, 0f, -28f);
+            kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 1.6f, PatchworkAssets.Glow(new Color(1f, 0.95f, 0.75f), 1.6f), default(Vector3), comet);
+            Color[] tail = { new Color(1f, 0.85f, 0.35f), new Color(1f, 0.55f, 0.4f), new Color(0.95f, 0.4f, 0.6f), new Color(0.6f, 0.45f, 0.9f) };
+            for (int k = 0; k < 4; k++)
+                kit.Deco(PrimitiveType.Sphere, new Vector3(-1.6f - k * 1.9f, (k % 2 == 0 ? 0.15f : -0.15f), 0f), new Vector3(2.6f, 1.2f - k * 0.2f, 0.4f), PatchworkAssets.Felt(tail[k]), default(Vector3), comet);
+        }
+
+        // A little woolly alien: a knitted ball with big eyes, pom-pom antennae and stubby arms.
+        static Transform Alien(LevelKit kit, Vector3 pos, Color col, float size, bool facePod)
+        {
+            var g = kit.Group("WoolAlien", pos);
+            if (facePod)
+            {
+                Vector3 look = new Vector3(0f, 3f, 0f) - pos;
+                look.y = 0f;
+                if (look.sqrMagnitude > 0.01f) g.rotation = Quaternion.LookRotation(look.normalized, Vector3.up);
+            }
+            var body = new GameObject("Body").transform;
+            body.SetParent(g, false);
+            body.localScale = Vector3.one * size;
+            var knit = PatchworkAssets.Knit(col);
+            kit.Deco(PrimitiveType.Sphere, Vector3.zero, new Vector3(1.5f, 1.35f, 1.4f), knit, default(Vector3), body);
+            // Big eyes (three of them, for an alien).
+            var white = PatchworkAssets.Felt(Color.white);
+            var black = PatchworkAssets.Plain(new Color(0.08f, 0.07f, 0.1f), 0.8f);
+            float[] ex = { -0.3f, 0.3f, 0f };
+            float[] ey = { 0.18f, 0.18f, 0.5f };
+            float[] es = { 0.42f, 0.42f, 0.3f };
+            for (int k = 0; k < 3; k++)
+            {
+                kit.Deco(PrimitiveType.Sphere, new Vector3(ex[k], ey[k], 0.58f), Vector3.one * es[k], white, default(Vector3), body);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(ex[k], ey[k], 0.58f + es[k] * 0.38f), Vector3.one * es[k] * 0.45f, black, default(Vector3), body);
+            }
+            // A happy mouth.
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -0.2f, 0.66f), new Vector3(0.36f, 0.12f, 0.1f), PatchworkAssets.Felt(new Color(0.55f, 0.15f, 0.25f)), default(Vector3), body);
+            // Antennae with glowing pom-poms.
+            var yarn = PatchworkAssets.Yarn(Color.Lerp(col, Color.black, 0.25f));
+            for (int s = -1; s <= 1; s += 2)
+            {
+                Rod(kit, new Vector3(s * 0.25f, 0.6f, 0f), new Vector3(s * 0.45f, 1.15f, 0.05f), yarn, 0.06f, body);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.45f, 1.18f, 0.05f), Vector3.one * 0.2f, PatchworkAssets.Glow(new Color(1f, 0.9f, 0.4f), 1.2f), default(Vector3), body);
+            }
+            // Stubby arms (one waves) and three little feet.
+            for (int s = -1; s <= 1; s += 2)
+            {
+                var arm = new GameObject("Arm").transform;
+                arm.SetParent(body, false);
+                arm.localPosition = new Vector3(s * 0.68f, 0f, 0f);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.2f, 0.12f, 0f), new Vector3(0.5f, 0.24f, 0.24f), knit, new Vector3(0f, 0f, s * 30f), arm);
+                if (s > 0)
+                {
+                    var wave = arm.gameObject.AddComponent<Rocker>();
+                    wave.Axis = Vector3.forward;
+                    wave.Amount = 25f;
+                    wave.Speed = 4f;
+                }
+            }
+            for (int k = 0; k < 3; k++)
+            {
+                float a = (k * 120f + 30f) * Mathf.Deg2Rad;
+                kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 0.35f, -0.62f, Mathf.Sin(a) * 0.35f), new Vector3(0.3f, 0.2f, 0.3f), knit, default(Vector3), body);
+            }
+            var bob = body.gameObject.AddComponent<Spinner>();
+            bob.Speed = 0f;
+            bob.BobHeight = 0.12f * size;
+            bob.BobSpeed = 1.3f + size;
+            return g;
         }
 
         static void Gear(LevelKit kit, Vector3 pos, float r, Color col, float speed)
@@ -716,6 +833,7 @@ namespace Patchwork
             o.Height = 2.5f;
             o.Speed = 7f;
             o.Angle = -30f;
+            o.Shake = 0.08f;
             var ship = kit.Group("SkiffModel", Vector3.zero);
             ship.SetParent(orbit, false);
             ship.localPosition = Vector3.zero;
@@ -750,6 +868,30 @@ namespace Patchwork
                 sp.Speed = 300f * s;
             }
             foreach (var r in ship.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        }
+
+        // The launch tube Patch arrives through: a candy-striped tube poking out of the wall.
+        static void LaunchTube(LevelKit kit)
+        {
+            const float deg = 140f, y = 2.3f;
+            Vector3 d = Dir(deg);
+            var tube = kit.Group("LaunchTube", d * 8.7f + Vector3.up * y);
+            tube.rotation = Quaternion.FromToRotation(Vector3.up, -d);
+            kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1.7f, 1.2f, 1.7f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Stripes, new Color(0.9f, 0.3f, 0.35f), new Color(0.99f, 0.95f, 0.88f)), default(Vector3), tube);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.2f, 0f), new Vector3(1.95f, 0.14f, 1.95f), PatchworkAssets.Felt(LevelKit.Palette.Gold), default(Vector3), tube);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.23f, 0f), new Vector3(1.4f, 0.14f, 1.4f), PatchworkAssets.Plain(new Color(0.08f, 0.06f, 0.1f), 0.2f), default(Vector3), tube);
+            // A little brace under it.
+            kit.Deco(PrimitiveType.Cube, d * 8.2f + Vector3.up * (y * 0.5f - 0.2f), new Vector3(0.3f, y - 0.4f, 0.3f), PatchworkAssets.Cardboard(KraftDark), new Vector3(0f, deg, 0f));
+
+            var go = new GameObject("PodLaunch");
+            go.transform.SetParent(kit.Root, false);
+            var l = go.AddComponent<PodLaunch>();
+            l.Tube = tube;
+            l.Inside = d * 9.9f + Vector3.up * (y - 0.65f);
+            l.Mouth = d * 7.3f + Vector3.up * (y - 0.65f);
+            l.Land = LandPoint;
+            l.CameraFrom = new Vector3(-3.6f, 3.4f, 4.2f);
+            l.CameraAt = new Vector3(3.2f, 2.2f, -3.6f);
         }
 
         static void Sounds(LevelKit kit)

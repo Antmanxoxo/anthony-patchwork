@@ -77,7 +77,8 @@ namespace Patchwork
                 {
                     stage = Stage.Title;
                     time = 0f;
-                    MusicPlayer.SetMuffle(22000f, 1f);
+                    // No music on the title: just the quiet hum of the Pod.
+                    MusicPlayer.SetMuffle(22000f, 0f);
                 }
                 return false;
             }

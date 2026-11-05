@@ -68,6 +68,8 @@ namespace Patchwork
         public Vector3 TitleLookOffset = new Vector3(0f, 3f, 0f);
         // A quiet room: no music while you walk about, only when you pick a level.
         public bool QuietMusic;
+        // A gentle camera wobble (the Pod is always flying).
+        public float CameraRumble;
 
         public int CollectedCount()
         {
