@@ -1,7 +1,7 @@
 // The Patchwork look: a full-screen pass (drawn before bloom and colour grading).
 // _PatchworkLook (global): 0 = plain, 1 = Storybook, 2 = Stitched.
-// Storybook: soft, coloured ink outlines on every shape, slightly banded "cel" shading and a
-// faint fabric weave. Stitched: thicker dashed outlines like the seams on a plush toy, with
+// Storybook: clean, thin plum ink lines on the near side of each shape's edge and creases, with
+// very gentle shading steps. Stitched: thicker dashed outlines like the seams on a plush toy, with
 // light thread over a dark seam, and a stronger weave.
 Shader "Patchwork/Look"
 {
@@ -37,6 +37,55 @@ Shader "Patchwork/Look"
                 return frac(p.x * p.y);
             }
 
+            // Raw depth, flipped if needed so near is big and the sky is 0. Raw depth changes
+            // evenly across any flat surface on screen, so its second difference is ~0 on floors
+            // and walls at any angle, and only jumps at real silhouettes.
+            float RawDepth(float2 uv)
+            {
+                float r = SampleSceneDepth(uv);
+            #if !UNITY_REVERSED_Z
+                r = 1.0 - r;
+            #endif
+                return r;
+            }
+
+            // Storybook: clean, thin ink lines drawn only on the near side of each edge.
+            float3 Storybook(float2 uv, float3 col, float scale)
+            {
+                float r = RawDepth(uv);
+                if (r <= 1e-5) return col;   // the sky is left exactly as it is
+                // Very gentle shading steps, with wide soft transitions so textures don't speckle.
+                float lum = dot(col, float3(0.299, 0.587, 0.114));
+                float lb = lum * 4.0;
+                float stepped = (floor(lb) + smoothstep(0.15, 0.85, frac(lb))) / 4.0;
+                col *= lerp(1.0, stepped / max(lum, 0.001), 0.12);
+
+                float2 o = scale / _ScreenParams.xy;
+                float rl = RawDepth(uv - float2(o.x, 0.0));
+                float rr = RawDepth(uv + float2(o.x, 0.0));
+                float rd = RawDepth(uv - float2(0.0, o.y));
+                float ru = RawDepth(uv + float2(0.0, o.y));
+                // Only where this pixel is nearer than its neighbours (the object's own rim).
+                float lap = max(0.0, 2.0 * r - rl - rr) + max(0.0, 2.0 * r - rd - ru);
+                float depthEdge = smoothstep(0.1, 0.25, lap / max(r, 1e-5));
+
+                // Creases: compare with the right and upper neighbours only, so lines stay 1px.
+                float3 n = SampleSceneNormals(uv);
+                float3 nr = SampleSceneNormals(uv + float2(o.x, 0.0));
+                float3 nu = SampleSceneNormals(uv + float2(0.0, o.y));
+                // (A distance, not a dot product, so the empty sky, which has no normals, stays clean.)
+                float crease = max(length(n - nr), length(n - nu));
+                float normalEdge = smoothstep(0.5, 0.8, crease);
+
+                float edge = max(depthEdge, normalEdge * 0.85);
+                // Lines thin out with distance so the far nursery stays soft.
+                float eye = LinearEyeDepth(SampleSceneDepth(uv), _ZBufferParams);
+                edge *= saturate(1.0 - (eye - 35.0) / 80.0);
+
+                float3 ink = lerp(col * 0.35, float3(0.2, 0.13, 0.24), 0.4);
+                return lerp(col, ink, edge * 0.75);
+            }
+
             half4 Frag(Varyings input) : SV_Target
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
@@ -48,6 +97,8 @@ Shader "Patchwork/Look"
                 bool stitched = _PatchworkLook > 1.5;
                 float2 px = uv * _ScreenParams.xy;
                 float scale = max(1.0, _ScreenParams.y / 1080.0);
+                if (!stitched)
+                    return half4(Storybook(uv, col, scale), 1.0);
 
                 // ---- Soft cel bands: flatten the shading a little into steps.
                 float lum = dot(col, float3(0.299, 0.587, 0.114));

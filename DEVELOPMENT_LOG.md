@@ -2,8 +2,10 @@
 
 ## A look of its own, and Photo Mode
 - A new screen look (Pause > Settings > Look), drawn as one full-screen pass:
-  - Storybook (the default): soft plum ink outlines round every shape, gently banded cel
-    shading and a faint fabric weave over everything. Lines fade out into the distance.
+  - Storybook (the default): clean, thin plum ink lines on the edges and creases of every
+    shape (drawn on the near side only, so they stay one line wide and never streak across
+    floors), very gentle shading steps, and the sky left untouched. Lines fade out into the
+    distance.
   - Stitched: darker seams with light dashed thread running along them, like a plush toy,
     and a stronger weave.
   - Plain: the old look.
