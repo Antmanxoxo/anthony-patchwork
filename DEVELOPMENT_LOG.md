@@ -29,6 +29,8 @@
 - The Pod no longer ticks: it hums gently through space instead (a soft drone, a breathing
   airy wash, little star pings and the odd far-off whoosh).
 - Two more Merit Patches (20 in all): King of the Castle and Sky Glider.
+- Popping out of the Pod's launch tube now sounds like a cork pop and a springy slide-whistle
+  with a little twinkle, instead of a whoosh.
 
 ## The Big Top and Merit Patches
 - A striped circus tent now stands near the start of Toybox Town. Inside is the Big Top:

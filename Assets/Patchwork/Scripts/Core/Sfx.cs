@@ -67,6 +67,7 @@ namespace Patchwork
         Lever,
         Rustle,        // bumping a tree or bush
         Whoosh,        // being flung by the see-saw
+        PodPop,        // popping out of the Pod's launch tube: a cork pop, a springy slide-whistle and a twinkle
         // Townsfolk babble: six little syllables (a, e, i, o, u, and a hum)
         Babble0,
         Babble1,
@@ -450,6 +451,13 @@ namespace Patchwork
                 (Noise(t) * 0.6f * Mathf.Exp(-t * 45f) + Sine(t, 220f) * Mathf.Exp(-t * 30f) * 0.5f) * Mathf.Clamp01(t / 0.001f) * 0.6f, 3500f);
             clips[SfxId.StickerPeel] = Make("stickerpeel", 0.3f, (t, d) =>
                 Noise(t) * (0.5f + 0.5f * Mathf.Sin(t * 300f)) * Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / d)) * 0.35f, 5000f);
+            clips[SfxId.PodPop] = Make("podpop", 0.8f, (t, d) =>
+                // The cork: a sharp little pop.
+                (Noise(t) * Mathf.Exp(-t * 180f) * 0.5f + Sine(t, Mathf.Lerp(900f, 300f, Mathf.Clamp01(t / 0.05f))) * Mathf.Exp(-t * 40f) * 0.6f) * Mathf.Clamp01(t / 0.001f)
+                // A springy slide-whistle "fwee!" up, with a wobble.
+                + (t > 0.06f && t < 0.42f ? Sine(t, Mathf.Lerp(480f, 1150f, Mathf.SmoothStep(0f, 1f, (t - 0.06f) / 0.36f)) * (1f + 0.025f * Mathf.Sin(t * 70f))) * Mathf.Sin(Mathf.PI * (t - 0.06f) / 0.36f) * 0.3f : 0f)
+                // And a twinkle as Patch lands.
+                + Bell(t - 0.38f, 1568f, d) * 0.16f + Bell(t - 0.46f, 2093f, d) * 0.12f, 9000f);
             clips[SfxId.Grab] = Make("grab", 0.16f, (t, d) =>
                 (Noise(t) * 0.4f + Sine(t, 180f) * 0.6f) * Mathf.Exp(-t * 28f) * Mathf.Clamp01(t / 0.003f) * 0.6f, 2200f);
             clips[SfxId.Release] = Make("release", 0.14f, (t, d) =>

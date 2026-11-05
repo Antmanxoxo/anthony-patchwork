@@ -89,8 +89,8 @@ namespace Patchwork
                     }
                     else
                     {
-                        Sfx.Play(SfxId.Gust, 0.7f);
-                        Sfx.Play(SfxId.Boing, 0.5f);
+                        // A cheerful cork-pop and slide-whistle (no whoosh).
+                        Sfx.Play(SfxId.PodPop, 0.75f);
                         FxBurst.Spawn(FxBurst.Kind.Puff, Mouth + Vector3.up * 0.7f, Color.white, (Land - Mouth).normalized);
                     }
                     Haptics.Pulse(0.3f, 0.5f, 0.15f);
