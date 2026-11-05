@@ -199,11 +199,20 @@ namespace Patchwork
                 pos += new Vector3(Mathf.PerlinNoise(tt * 1.7f, 0.3f) - 0.5f, Mathf.PerlinNoise(0.7f, tt * 1.9f) - 0.5f, 0f) * Rumble;
                 rot *= Quaternion.Euler((Mathf.PerlinNoise(tt * 0.9f, 5.1f) - 0.5f) * Rumble * 12f, 0f, (Mathf.PerlinNoise(9.3f, tt * 0.8f) - 0.5f) * Rumble * 20f);
             }
+            // A quick shake from a big hit (stomps, crashes, getting nipped).
+            kick = Mathf.MoveTowards(kick, 0f, Time.unscaledDeltaTime * 1.6f);
+            if (kick > 0f)
+            {
+                float tt = Time.unscaledTime * 30f;
+                pos += new Vector3(Mathf.PerlinNoise(tt, 2.2f) - 0.5f, Mathf.PerlinNoise(6.6f, tt) - 0.5f, 0f) * kick * 0.9f;
+            }
             transform.position = pos;
             transform.rotation = rot;
         }
 
         [System.NonSerialized] public float Rumble;
+        float kick;
+        public void Kick(float amount) { kick = Mathf.Max(kick, amount); }
 
         // Jump straight to the showcase shot (no glide), e.g. when the game starts on the title screen.
         public void SnapShowcase()

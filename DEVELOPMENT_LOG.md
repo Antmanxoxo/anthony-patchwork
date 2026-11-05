@@ -1,5 +1,27 @@
 # Development Log
 
+## The Big Top and Merit Patches
+- A striped circus tent now stands near the start of Toybox Town. Inside is the Big Top:
+  - The Grumblewool, the game's first boss: a huge grumpy ball of Fray yarn with
+    knitting-needle horns, asleep in the ring until you ring the bell. It paws the ground and
+    charges; dodge so it crashes into the ring wall, then jump on its head while it sees stars.
+    Three hits. After the first it also leaps at you (jump the dust shockwave), and after the
+    second it spits fuzzballs. Unravel mid-fight and it resets for another go. Beat it for the
+    Grumblewool Plush, a new decoration for the Pod.
+  - Whack-a-Snarl: step on the red button and jump on the Snarl heads popping out of nine holes.
+    15 in 30 seconds wins a secret marble.
+  - The cannon fires you up to the trapeze; swing across three yarn buttons as Yarn to a
+    secret marble on the far platform.
+  - A felt crowd on the bleachers who bob along and leap up cheering at every good moment,
+    bunting under a starry roof, coloured lights, and Ringmaster Rufus to explain it all.
+- Merit Patches: 18 felt badges for trying everything (stomping creatures, combos, the band,
+  the marbles, the Tape Ball, the Big Top, stickers, Photo Mode, wallpaper, dancing, all three
+  forms, a big score). Earning one pops up a card; they're all on a board in the pause menu,
+  and earned ones are stitched onto the back-right wall of the Pod.
+- Stomps land with a thump: a tiny freeze-frame and a camera shake. Getting nipped shakes too.
+- Two more secret marbles (14 in all).
+- Fixed the nursery window frame flickering far behind the toybox.
+
 ## Hearts, creatures and a calmer start
 - Patch has three hearts. The Fray's creatures nip (lose a heart, get knocked back, flash for
   a moment); falling off the world costs a heart too. Out of hearts, Patch unravels and comes

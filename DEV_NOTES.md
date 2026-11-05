@@ -109,6 +109,14 @@ Stuff I need to remember about how Patchwork is put together.
   creatures and hearts are placed in `Level1Monsters.cs` with `FindSpot` (clear ground near a
   point) and `PatrolEnd`.
 - The HUD slides its panels in and out (`PatchworkHUD.UpdateVisibility` / `Shifted`).
+- The Big Top (`Level1BigTop.cs`) is a room at (250, 0, -350) reached by a `Warp` at the town
+  tent (placed with `FindSpot`). Its parts live in `BigTop.cs`: `Grumblewool` (boss state machine,
+  `Active` drives the HUD boss bar, resets when Patch unravels), `Shockwave`, `WhackASnarl` (a
+  `TimedChallenge`), `Crowd` (`Crowd.Cheer()`), `ScriptedHop` (the cannon's flight; blocks input
+  like `PodLaunch`) and `TouchZone`. Beating the boss saves `L1_bigtop_boss`.
+- Merit Patches: `Merits.cs`. Earned ones are saved as hint ids `merit_<Id>`; running counts in
+  PlayerPrefs (`pw_mc_*`). `Merits.Earn(id)` from events, `Merits.Tick` polls the rest.
+- Juice: `PatchworkGame.HitStop(seconds)` and `PlayerCamera.Kick(amount)`.
 - Per-level sun and title camera: `LevelInfo.SunEuler` / `SunIntensity` and `TitleCenter` /
   `TitleRadius` / `TitleHeight` / `TitleLookOffset`.
 - Yarn birds (`YarnBird`, `kit.YarnBird`) play their chirps from their own 3D AudioSource.

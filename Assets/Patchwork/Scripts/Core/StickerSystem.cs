@@ -166,6 +166,7 @@ namespace Patchwork
                 p.Save = new GameState.StickerSave { level = game.Level.Id, id = (int)id, pos = AimPoint, normal = aimNormal, spin = Spin };
                 GameState.AddSticker(p.Save);
             }
+            Merits.Add("stickers");
             placed.Add(p);
             // The save keeps the newest few dozen; drop the oldest one we're showing to match.
             int saved = 0;

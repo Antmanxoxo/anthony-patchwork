@@ -11,7 +11,8 @@ namespace Patchwork
         public static readonly string[] MarbleIds =
         {
             "L1_marble_shop", "L1_marble_grotto", "L1_marble_tune", "L1_marble_hill", "L1_marble_ravine", "L1_marble_peekaboo",
-            "L1_marble_rush", "L1_marble_goal", "L1_marble_hatch", "L1_marble_chimes", "L1_marble_clock", "L1_marble_duckling"
+            "L1_marble_rush", "L1_marble_goal", "L1_marble_hatch", "L1_marble_chimes", "L1_marble_clock", "L1_marble_duckling",
+            "L1_marble_whack", "L1_marble_trapeze"
         };
 
         static readonly Vector3 ShopRoom = new Vector3(250f, 0f, -200f);
@@ -93,7 +94,7 @@ namespace Patchwork
             {
                 string[][] hints =
                 {
-                    new[] { "Welcome, welcome! Mind the shelves, everything's for sale. Except the marble on the top shelf. That's a secret.", "There are twelve secret marbles hidden in Toybox Town, you know. Hardly anyone finds them all." },
+                    new[] { "Welcome, welcome! Mind the shelves, everything's for sale. Except the marble on the top shelf. That's a secret.", "There are fourteen secret marbles hidden in Toybox Town, you know. Hardly anyone finds them all." },
                     new[] { "Ever played the music box? Lovely little tune. I hear someone wrote it on a sign by the xylophone bridge..." },
                     new[] { "A little jack-in-the-box keeps hiding round town. Listen for giggling!" },
                     new[] { "Things sparkle in the grass sometimes. Have a dig with your hands!" },

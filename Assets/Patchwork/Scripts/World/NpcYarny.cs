@@ -266,6 +266,8 @@ namespace Patchwork
             lines.Add(new[] { "Water slips through drains, Wind rides the breeze...", "...and Yarn? Yarn swings from the rigging, like any proper pirate! Arr!" });
             lines.Add(new[] { "Me old Skiff's held together with tape and stubbornness.", "And a wee bit o' glue. Don't tell the parrot." });
             lines.Add(new[] { "Fine pod ye've got here. Quiet, mind. A sailor likes a bit o' music.", "Pick up that controller and ye'll hear it start up, sure as the tide." });
+            lines.Add(new[] { "There's a circus in Toybox Town now, they say. A Big Top right by the square!", "Some great grumpy beast in the ring. Mind its charge, and aim for its head." });
+            lines.Add(new[] { "Every clever trick ye pull earns a Merit Patch. Check the pause menu.", "Earn 'em and they get stitched right there on that wall. Proper sailor's badges!" });
             lines.Add(new[] { "Ye can make this place yer own, ye know.", "Flip that pattern book by the window for new wallpaper, and slap yer stickers wherever ye like." });
             lines.Add(new[] { "Tap them face buttons fast enough and ye might break into a jig.", "Not that I'd know anythin' about that. Ahem." });
             lines.Add(new[] { "Every hat ye find stays on through every form.", "A pirate's hat is his pride! Mine's older than the ship." });

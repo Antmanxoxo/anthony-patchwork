@@ -142,6 +142,7 @@ namespace Patchwork
                 Directory.CreateDirectory(Folder);
                 savedName = "Patchwork_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".png";
                 ScreenCapture.CaptureScreenshot(Path.Combine(Folder, savedName));
+                Merits.Earn(Merits.Id.Shutterbug);
             }
             catch (System.Exception e)
             {

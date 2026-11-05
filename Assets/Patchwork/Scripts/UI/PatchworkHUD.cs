@@ -147,7 +147,9 @@ namespace Patchwork
                 DrawTitle();
                 DrawRaceTimer();
                 DrawTapeBall();
+                DrawBossBar();
             }
+            if (Game.Mode != UIMode.Loading) Merits.DrawToast();
 
             switch (Game.Mode)
             {
@@ -516,12 +518,37 @@ namespace Patchwork
         }
 
         // Thread Race countdown at the top of the screen.
+        // The Grumblewool's health, while you're fighting it.
+        float bossA;
+        void DrawBossBar()
+        {
+            var boss = Grumblewool.Active;
+            bossA = Mathf.MoveTowards(bossA, boss != null ? 1f : 0f, Time.unscaledDeltaTime * 3f);
+            if (bossA <= 0.001f || boss == null) return;
+            float a = bossA;
+            float W = UIKit.Width;
+            var r = new Rect((W - 520f) * 0.5f, 24f - (1f - a) * 40f, 520f, 96f);
+            UIKit.Panel(r, new Color(0.22f, 0.2f, 0.26f, 0.95f * a), new Color(0.95f, 0.4f, 0.45f, 0.95f * a), 22f);
+            UIKit.Label(new Rect(r.x, r.y + 8f, r.width, 38f), boss.Name, UIKit.Style(28, true, TextAnchor.MiddleCenter, new Color(1f, 0.95f, 0.9f, a)));
+            for (int i = 0; i < Grumblewool.MaxHp; i++)
+            {
+                bool full = i < boss.Hp;
+                var c = new Vector2(r.x + r.width * 0.5f + (i - 1) * 64f, r.y + 66f);
+                UIKit.Circle(c, 46f, full ? new Color(0.62f, 0.6f, 0.7f, a) : new Color(0.35f, 0.33f, 0.4f, 0.6f * a));
+                if (full)
+                {
+                    UIKit.CircleOutline(c, 34f, new Color(0.85f, 0.85f, 0.92f, a), 3f);
+                    UIKit.Circle(c + new Vector2(-6f, -6f), 10f, new Color(1f, 1f, 1f, 0.5f * a));
+                }
+            }
+        }
+
         // The Tape Ball's size, while you're near it.
         float tapeAlpha;
         void DrawTapeBall()
         {
             var ball = TapeBall.Active;
-            bool show = ball != null && TimedChallenge.Running == null && Game.Mode == UIMode.Gameplay;
+            bool show = ball != null && TimedChallenge.Running == null && Grumblewool.Active == null && Game.Mode == UIMode.Gameplay;
             tapeAlpha = Mathf.MoveTowards(tapeAlpha, show ? 1f : 0f, Time.unscaledDeltaTime * 4f);
             if (tapeAlpha <= 0.001f || ball == null) return;
             float a = tapeAlpha;

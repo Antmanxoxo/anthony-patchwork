@@ -129,6 +129,7 @@ namespace Patchwork
             ScoreBubbles.Settle(kit);
             GroundCover(kit);
             Katamari(kit);
+            BigTop(kit);
             Creatures(kit);
             AmbientFluff.Create(kit.Root, 45, -6f);
             return info;

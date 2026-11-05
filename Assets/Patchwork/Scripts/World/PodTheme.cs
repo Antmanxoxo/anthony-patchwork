@@ -49,6 +49,7 @@ namespace Patchwork
         {
             Current = Current + 1;
             Apply();
+            Merits.Earn(Merits.Id.HomeMaker);
         }
     }
 }

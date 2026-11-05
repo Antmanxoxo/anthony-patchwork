@@ -301,7 +301,7 @@ namespace Patchwork
             switch (Mode)
             {
                 case UIMode.Gameplay:
-                    if (PodLaunch.Busy) { if (Input.Pause.WasPressedThisFrame()) OpenPause(); break; }
+                    if (PodLaunch.Busy || ScriptedHop.Busy) { if (Input.Pause.WasPressedThisFrame()) OpenPause(); break; }
                     if (Input.Pause.WasPressedThisFrame()) OpenPause();
                     else if (Input.FormWheel.WasPressedThisFrame()) OpenWheel();
                     else if (Input.Satchel.WasPressedThisFrame()) OpenSatchel();
@@ -377,7 +377,7 @@ namespace Patchwork
             if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel || Mode == UIMode.Dance || Mode == UIMode.Intro || Mode == UIMode.LevelSelect || Mode == UIMode.Talk || Mode == UIMode.Cutscene || Mode == UIMode.Ask || Mode == UIMode.Sticker)
             {
                 PlayerInputFrame frame;
-                if (Mode == UIMode.Gameplay && !modeChangedThisFrame && !PodLaunch.Busy && !Unravelling)
+                if (Mode == UIMode.Gameplay && !modeChangedThisFrame && !PodLaunch.Busy && !ScriptedHop.Busy && !Unravelling)
                 {
                     frame = ReadFrame();
                 }
@@ -410,6 +410,8 @@ namespace Patchwork
             }
             if (ToastTimer > 0f) ToastTimer -= udt;
             UpdateHearts(dt, udt);
+            Merits.Tick(this, udt);
+            UpdateHitStop(udt);
             if (PrizeTimer > 0f) PrizeTimer -= udt;
             if (SecretTimer > 0f) SecretTimer -= udt;
             Score.Tick(dt);
@@ -821,12 +823,29 @@ namespace Patchwork
         }
 
         // A creature of the Fray caught Patch: lose a heart, get knocked back, flash for a moment.
+        // A tiny freeze-frame on a big hit, so stomps land with a thump.
+        float hitStop;
+        public void HitStop(float seconds)
+        {
+            if (Mode != UIMode.Gameplay) return;
+            hitStop = Mathf.Max(hitStop, seconds);
+            Time.timeScale = 0.05f;
+        }
+
+        void UpdateHitStop(float udt)
+        {
+            if (hitStop <= 0f) return;
+            hitStop -= udt;
+            if (hitStop <= 0f && Mode == UIMode.Gameplay) Time.timeScale = 1f;
+        }
+
         public void Hurt(Vector3 from)
         {
             if (Level == null || Level.IsHub || HurtTimer > 0f || Unravelling || Mode != UIMode.Gameplay || PodLaunch.Busy) return;
             Hearts = Mathf.Max(0, Hearts - 1);
             HurtTimer = 1.6f;
             HeartsShake = 1f;
+            CameraRig.Kick(0.35f);
             SnarlKnot.Bump(Player, from);
             Sfx.Voice(SfxId.VoiceAww, Player.Forms.Current, 0.5f);
             Haptics.Pulse(0.6f, 0.45f, 0.2f);
@@ -1020,6 +1039,7 @@ namespace Patchwork
             Player.Visuals.SetDancing(true);
             CameraRig.Cutscene = true;
             ToastTimer = 0f;
+            Merits.Earn(Merits.Id.DanceFloor);
             if (ActiveHint != null) HintAge = HintDuration;
             FxBurst.Spawn(FxBurst.Kind.Sparkle, Player.Motor.Center + Vector3.up * 0.5f, new Color(1f, 0.85f, 0.4f));
         }
@@ -1036,6 +1056,7 @@ namespace Patchwork
         {
             if (Mode != UIMode.Gameplay && Mode != UIMode.FormWheel) return;
             GameState.SetLevelComplete(Level.Id);
+            if (Level.Id == Level1Builder.SceneName) Merits.Earn(Merits.Id.WeddingBells);
             // Best thread count unlocks hats.
             bool topHat = GameState.IsHatUnlocked(2), daisy = GameState.IsHatUnlocked(3);
             bool newBest = GameState.RecordThreads(Level.Id, ThreadsCollected, Level.ThreadTotal);

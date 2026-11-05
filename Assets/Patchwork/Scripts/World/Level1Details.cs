@@ -324,11 +324,12 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 170f, 418.5f), new Vector3(260f, 200f, 1f), PatchworkAssets.Glow(new Color(0.75f, 0.88f, 1f), 0.6f));
             var sash = PatchworkAssets.Wood(new Color(0.97f, 0.95f, 0.9f));
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 170f, 417.5f), new Vector3(276f, 12f, 3f), sash);
-            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 170f, 417.5f), new Vector3(10f, 216f, 3f), sash);
+            // (The upright bars are a touch deeper than the cross bar so their faces don't flicker.)
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 170f, 417.5f), new Vector3(10f, 216f, 3.4f), sash);
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 68f, 416f), new Vector3(290f, 8f, 8f), sash);
             for (int s = -1; s <= 1; s += 2)
             {
-                kit.Deco(PrimitiveType.Cube, new Vector3(s * 133f, 170f, 417.5f), new Vector3(10f, 216f, 3f), sash);
+                kit.Deco(PrimitiveType.Cube, new Vector3(s * 133f, 170f, 417.5f), new Vector3(10f, 216f, 3.4f), sash);
                 var curtain = Tiled(PatchworkAssets.Fabric(new Color(0.95f, 0.75f, 0.8f)), 6f, 12f);
                 kit.Deco(PrimitiveType.Cube, new Vector3(s * 160f, 160f, 412f), new Vector3(50f, 250f, 4f), curtain, new Vector3(0f, 0f, s * 2f));
             }

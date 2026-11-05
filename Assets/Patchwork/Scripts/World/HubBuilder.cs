@@ -71,6 +71,7 @@ namespace Patchwork
             ButtonBox(kit);
             Furnishings(kit);
             Decorations(kit);
+            MeritWall(kit);
             Outside(kit);
             MiniSkiff(kit);
             Sounds(kit);
@@ -570,6 +571,27 @@ namespace Patchwork
                 spin.Speed = 25f;
                 spin.BobHeight = 0.04f;
             }
+            // The Grumblewool Plush: a soft, friendly copy of the Big Top's boss, on the lower shelf.
+            if (Prizes.HasDecoration(4))
+            {
+                float deg = -95f;
+                Vector3 at = Dir(deg) * (RadiusAt(2.4f) - 0.7f) + Vector3.up * 2.4f;
+                var plush = kit.Group("GrumblewoolPlush", at);
+                plush.rotation = Quaternion.Euler(0f, deg + 180f, 0f);
+                var grey = PatchworkAssets.Knit(new Color(0.62f, 0.6f, 0.68f));
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.5f, 0f), new Vector3(1.1f, 0.95f, 1f), grey, default(Vector3), plush);
+                for (int s = -1; s <= 1; s += 2)
+                {
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.2f, 0.62f, 0.44f), new Vector3(0.24f, 0.28f, 0.12f), PatchworkAssets.Felt(Color.white), default(Vector3), plush);
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.2f, 0.6f, 0.5f), Vector3.one * 0.11f, PatchworkAssets.Plain(UIKit.Ink, 0.7f), default(Vector3), plush);
+                    kit.Deco(PrimitiveType.Cylinder, new Vector3(s * 0.32f, 1.05f, 0f), new Vector3(0.06f, 0.2f, 0.06f), PatchworkAssets.Plain(new Color(0.85f, 0.86f, 0.9f), 0.8f), new Vector3(0f, 0f, -s * 25f), plush);
+                }
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.36f, 0.5f), new Vector3(0.36f, 0.12f, 0.08f), PatchworkAssets.Felt(new Color(0.95f, 0.5f, 0.6f)), default(Vector3), plush);
+                var wob = plush.gameObject.AddComponent<Rocker>();
+                wob.Axis = Vector3.forward;
+                wob.Amount = 5f;
+                wob.Speed = 1.6f;
+            }
             // Pinwheels in two flowerpots either side of the Button Box doorway.
             if (Prizes.HasDecoration(3))
             {
@@ -592,6 +614,28 @@ namespace Patchwork
                         turn.Speed = 140f + k * 40f;
                     }
                 }
+            }
+        }
+
+        // Every Merit Patch you've earned, stitched onto the back-right wall of the pod.
+        static void MeritWall(LevelKit kit)
+        {
+            const int cols = 6;
+            for (int i = 0; i < Merits.All.Length; i++)
+            {
+                if (!Merits.Has((Merits.Id)i)) continue;
+                int cx = i % cols, cy = i / cols;
+                float deg = 108f + cx * 9f;
+                float y = 6.2f - cy * 1.0f;
+                Vector3 d = Dir(deg);
+                Vector3 p = d * (RadiusAt(y) - 0.25f) + Vector3.up * y;
+                var g = kit.Group("MeritPatch", p);
+                g.rotation = Quaternion.LookRotation(-d, Vector3.up);
+                var def = Merits.All[i];
+                kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.9f, 0.03f, 0.9f), PatchworkAssets.Felt(def.Col), new Vector3(90f, 0f, 0f), g);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, -0.02f), new Vector3(0.98f, 0.02f, 0.98f), PatchworkAssets.Felt(Color.white), new Vector3(90f, 0f, 0f), g);
+                var q = kit.Deco(PrimitiveType.Quad, new Vector3(0f, 0f, 0.045f), Vector3.one * 0.6f, PatchworkAssets.Sticker(StickerArt.Get(def.Icon)), new Vector3(0f, 180f, 0f), g);
+                q.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
         }
 

@@ -144,6 +144,7 @@ namespace Patchwork
             var g = GetComponent<Grabbable>();
             if (g != null) g.enabled = false;
             StarsMade++;
+            Merits.Earn(Merits.Id.RollingStar);
             ScoreKeeper.Bonus(1500, starStart + Vector3.up * Radius);
             Sfx.Play(SfxId.PrizeFanfare, 0.7f);
             FxBurst.Spawn(FxBurst.Kind.Sparkle, starStart, new Color(1f, 0.9f, 0.5f));

@@ -29,6 +29,13 @@ namespace Patchwork
             if (player != null && !player.Motor.Grounded && Time.time - comboAge < 3f) combo++;
             else combo = 1;
             comboAge = Time.time;
+            Merits.Add("pops");
+            if (game != null)
+            {
+                game.HitStop(0.06f);
+                if (game.CameraRig != null) game.CameraRig.Kick(0.18f);
+            }
+            if (combo >= 3) Merits.Earn(Merits.Id.ComboCrafter);
             if (combo >= 2)
             {
                 int bonus = 100 * (1 << Mathf.Min(combo - 1, 5));

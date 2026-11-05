@@ -10,7 +10,7 @@ namespace Patchwork
     {
         enum Item { Resume, Restart, ReturnToHub, Settings, Quit,
                     Music, Sounds, Rumble, CameraSpeed, InvertY, InvertX, SwingMode, Prompts, WheelButton, VSync, Back,
-                    Look, Photo }
+                    Look, Photo, Merits }
 
         readonly PatchworkGame game;
         readonly List<Item> items = new List<Item>();
@@ -22,6 +22,9 @@ namespace Patchwork
         float confirmFlash;
         float sideCooldown;
         bool settingsPage;
+        bool meritsOpen;
+        int meritSel;
+        float meritTime;
 
         // "Are you sure?" card for options that lose progress. Starts on No.
         bool confirming;
@@ -37,6 +40,7 @@ namespace Patchwork
         public void Open()
         {
             ShowMainPage(0);
+            meritsOpen = false;
             highlightPos = 0f;
             selectTime = 0f;
             openTime = 0f;
@@ -52,6 +56,7 @@ namespace Patchwork
             items.Clear();
             items.Add(Item.Resume);
             items.Add(Item.Photo);
+            items.Add(Item.Merits);
             items.Add(Item.Restart);
             if (!game.Level.IsHub) items.Add(Item.ReturnToHub);
             items.Add(Item.Settings);
@@ -99,6 +104,7 @@ namespace Patchwork
                 case Item.Settings: return "Settings";
                 case Item.Look: return "Look:  " + GameSettings.LookNames[GameSettings.Look];
                 case Item.Photo: return "Photo Mode";
+                case Item.Merits: return "Merit Patches:  " + Patchwork.Merits.Count() + " / " + Patchwork.Merits.All.Length;
                 case Item.CameraSpeed: return "Camera Speed";
                 case Item.InvertY: return "Invert Camera Up/Down:  " + OnOff(GameSettings.InvertY);
                 case Item.InvertX: return "Invert Camera Left/Right:  " + OnOff(GameSettings.InvertX);
@@ -131,6 +137,7 @@ namespace Patchwork
                 case Item.Settings:
                 case Item.Look: return UIArt.IconNeedle;
                 case Item.Photo: return UIArt.IconPlay;
+                case Item.Merits: return StickerArt.Get(StickerId.Star);
                 case Item.CameraSpeed:
                 case Item.InvertY:
                 case Item.InvertX:
@@ -162,6 +169,7 @@ namespace Patchwork
                 case Item.Settings: return new Color(0.55f, 0.5f, 0.8f);
                 case Item.Look: return new Color(0.85f, 0.5f, 0.65f);
                 case Item.Photo: return new Color(0.3f, 0.6f, 0.85f);
+                case Item.Merits: return new Color(0.95f, 0.65f, 0.25f);
                 case Item.CameraSpeed: return new Color(0.35f, 0.6f, 0.85f);
                 case Item.InvertY:
                 case Item.InvertX: return new Color(0.4f, 0.5f, 0.8f);
@@ -246,6 +254,27 @@ namespace Patchwork
                 UpdateConfirm(udt);
                 return;
             }
+            if (meritsOpen)
+            {
+                meritTime += udt;
+                int n = Patchwork.Merits.All.Length;
+                int step = 0;
+                if (input.NavLeft.WasPressedThisFrame()) step = -1;
+                if (input.NavRight.WasPressedThisFrame()) step = 1;
+                if (input.NavUp.WasPressedThisFrame()) step = -6;
+                if (input.NavDown.WasPressedThisFrame()) step = 6;
+                if (step != 0)
+                {
+                    meritSel = Mathf.Clamp(meritSel + step, 0, n - 1);
+                    Sfx.Play(SfxId.MenuMove, 0.45f);
+                }
+                if (meritTime > 0.15f && (input.Cancel.WasPressedThisFrame() || input.Confirm.WasPressedThisFrame() || input.Pause.WasPressedThisFrame()))
+                {
+                    meritsOpen = false;
+                    Sfx.Play(SfxId.MenuCancel, 0.4f);
+                }
+                return;
+            }
 
             if (openTime > 0.05f && settingsPage && input.Cancel.WasPressedThisFrame())
             {
@@ -304,6 +333,11 @@ namespace Patchwork
                         break;
                     case Item.Photo:
                         game.OpenPhotoMode();
+                        break;
+                    case Item.Merits:
+                        meritsOpen = true;
+                        meritTime = 0f;
+                        meritSel = 0;
                         break;
                     case Item.Restart:
                     case Item.ReturnToHub:
@@ -556,6 +590,7 @@ namespace Patchwork
             UIKit.PromptLabel(px, py, 38f, PromptAction.Cancel, settingsPage ? "Back" : "Back to game", kb, ink, fade);
 
             if (confirming) DrawConfirm(kb, ink);
+            if (meritsOpen) Patchwork.Merits.DrawBoard(meritSel, meritTime);
         }
 
         // Ten little stitched pills, filled up to the current value.

@@ -28,7 +28,7 @@ namespace Patchwork
             var sb = new StringBuilder();
             var player = game.Player != null ? game.Player.transform : null;
             var renderers = new List<MeshRenderer>();
-            foreach (var r in Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
+            foreach (var r in Object.FindObjectsByType<MeshRenderer>())
             {
                 if (!r.enabled || !r.gameObject.activeInHierarchy) continue;
                 if (player != null && r.transform.IsChildOf(player)) continue;
@@ -61,8 +61,8 @@ namespace Patchwork
                 if (mf != null && mf.sharedMesh != null && mf.sharedMesh.isReadable)
                     tris += mf.sharedMesh.triangles.Length / 3;
             }
-            int colliders = Object.FindObjectsByType<Collider>(FindObjectsSortMode.None).Length;
-            int lights = Object.FindObjectsByType<Light>(FindObjectsSortMode.None).Length;
+            int colliders = Object.FindObjectsByType<Collider>().Length;
+            int lights = Object.FindObjectsByType<Light>().Length;
             sb.AppendLine("== Stats");
             sb.AppendLine("renderers " + renderers.Count + ", materials " + mats.Count + ", triangles " + tris
                 + ", colliders " + colliders + ", lights " + lights);
@@ -89,11 +89,11 @@ namespace Patchwork
             if (Solid(Physics.OverlapCapsule(s + Vector3.up * 0.5f, s + Vector3.up * 1.2f, 0.4f, ~0, QueryTriggerInteraction.Ignore)))
                 sb.AppendLine("spawn " + V(s) + " is inside something solid");
             var things = new List<Component>();
-            things.AddRange(Object.FindObjectsByType<ThreadSpool>(FindObjectsSortMode.None));
-            things.AddRange(Object.FindObjectsByType<Heartstring>(FindObjectsSortMode.None));
-            things.AddRange(Object.FindObjectsByType<BandPiece>(FindObjectsSortMode.None));
-            things.AddRange(Object.FindObjectsByType<Collectible>(FindObjectsSortMode.None));
-            things.AddRange(Object.FindObjectsByType<Checkpoint>(FindObjectsSortMode.None));
+            things.AddRange(Object.FindObjectsByType<ThreadSpool>());
+            things.AddRange(Object.FindObjectsByType<Heartstring>());
+            things.AddRange(Object.FindObjectsByType<BandPiece>());
+            things.AddRange(Object.FindObjectsByType<Collectible>());
+            things.AddRange(Object.FindObjectsByType<Checkpoint>());
             foreach (var t in things)
             {
                 Vector3 p = t.transform.position;
