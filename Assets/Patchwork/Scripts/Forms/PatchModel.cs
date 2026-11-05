@@ -50,6 +50,7 @@ namespace Patchwork
         // Lean into speeding up, slowing down and turning (springy, visual only).
         Quaternion modelBaseRotation;
         bool haveBaseRotation;
+        Quaternion headRest = Quaternion.identity;   // the head's rest rotation, relative to Patch
         Vector3 lastVelocity;
         float leanPitch, leanRoll, leanPitchVel, leanRollVel;
         float wantLeanPitch, wantLeanRoll;
@@ -81,6 +82,22 @@ namespace Patchwork
             if (head == null) return TargetHeadTop - 0.05f;
             Vector3 top = head.position + transform.up * (BlenderHeadBoneToTop * worldPerBlenderMetre * transform.lossyScale.y);
             return space.InverseTransformPoint(top).y - 0.05f;
+        }
+
+        // Where a hat should sit, in `space`'s coordinates: on the crown of the head, tilted with
+        // it (including the body lean), and how much to scale a hat so it fits his head.
+        // Call it after the pose is final (PoseApplied), or it'll be a frame behind.
+        public bool HatPose(Transform space, out Vector3 pos, out Quaternion rot, out float fit)
+        {
+            float headSize = BlenderHeadBoneToTop * worldPerBlenderMetre * transform.lossyScale.y;
+            fit = Mathf.Clamp(headSize / 0.52f, 1f, 1.3f);
+            if (head == null) { pos = Vector3.up * (TargetHeadTop - 0.08f); rot = Quaternion.identity; return false; }
+            Quaternion tilt = transform.rotation * (Quaternion.Inverse(transform.rotation) * head.rotation) * Quaternion.Inverse(headRest);
+            Vector3 up = tilt * Vector3.up;
+            Vector3 top = head.position + up * (headSize - 0.075f * fit);
+            pos = space.InverseTransformPoint(top);
+            rot = Quaternion.Inverse(space.rotation) * tilt;
+            return true;
         }
 
         public void SetFace(Face f)
@@ -186,6 +203,9 @@ namespace Patchwork
             // Feet on the floor.
             float minY = transform.InverseTransformPoint(body.bounds.min).y;
             modelRoot.localPosition += new Vector3(0f, -minY, 0f);
+
+            // Remember how the head sits at rest, so a hat can follow every tilt and nod from there.
+            if (head != null) headRest = Quaternion.Inverse(transform.rotation) * head.rotation;
 
             SetFace(CurrentFace);
             BuildGraph(model);

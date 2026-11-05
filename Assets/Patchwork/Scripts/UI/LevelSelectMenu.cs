@@ -114,6 +114,8 @@ namespace Patchwork
                     sailTime = 0f;
                     Sfx.Play(SfxId.MenuConfirm, 0.6f);
                     Sfx.Play(SfxId.PodRocket, 0.7f);
+                    game.CameraRig.Kick(0.25f);
+                    Haptics.Pulse(0.25f, 0.15f, 0.5f);
                 }
                 else
                 {

@@ -28,11 +28,13 @@ namespace Patchwork
             for (int i = 0; i < Prizes.DecorationNames.Length; i++)
                 if (PodDecor.Exists("deco" + i)) { decoKeys.Add("deco" + i); decoNames.Add(Prizes.DecorationNames[i]); }
             var cam = game.CameraRig;
-            cam.ShowcasePosition = new Vector3(-2.2f, 6.4f, -5.4f);
+            cam.ShowcasePosition = CamSpot;
             cam.ShowcaseLookAt = new Vector3(1.2f, 1.6f, 2.4f);
             cam.ShowcaseBlendSpeed = 2.5f;
             cam.Showcase = true;
         }
+
+        static readonly Vector3 CamSpot = new Vector3(-2.2f, 6.4f, -5.4f);
 
         public void Close()
         {
@@ -84,6 +86,8 @@ namespace Patchwork
             var input = game.Input;
             open += udt;
             flash = Mathf.MoveTowards(flash, 0f, udt * 3f);
+            // A slow, gentle drift so the room feels alive while you choose.
+            game.CameraRig.ShowcasePosition = CamSpot + new Vector3(Mathf.Sin(open * 0.35f) * 0.5f, Mathf.Sin(open * 0.5f) * 0.12f, Mathf.Cos(open * 0.35f) * 0.25f);
             if (open < 0.2f) return true;
             if (input.Cancel.WasPressedThisFrame() || input.Pause.WasPressedThisFrame()) return false;
 
@@ -119,8 +123,11 @@ namespace Patchwork
                     string key = tab == 4 ? decoKeys[row] : PodDecor.Furniture[row].Key;
                     bool def = tab == 4 || PodDecor.Furniture[row].DefaultOn;
                     bool on = !PodDecor.IsOn(key, def);
-                    PodDecor.Set(key, on);
+                    if (on) PodDecor.Set(key, true);
+                    var spot = PodDecor.Find(key);   // measured while it's showing
+                    if (!on) PodDecor.Set(key, false);
                     Merits.Earn(Merits.Id.HomeMaker);
+                    if (spot != null) FxBurst.Spawn(on ? FxBurst.Kind.Sparkle : FxBurst.Kind.Puff, spot.Value, on ? new Color(1f, 0.85f, 0.5f) : Color.white);
                     Sfx.Play(on ? SfxId.Pop : SfxId.MenuCancel, 0.5f);
                 }
                 flash = 1f;

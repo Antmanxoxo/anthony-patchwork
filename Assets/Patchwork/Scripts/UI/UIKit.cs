@@ -298,7 +298,7 @@ namespace Patchwork
             return w;
         }
 
-        static float PromptWidth(PromptAction action, float h, bool keyboard)
+        public static float PromptWidth(PromptAction action, float h, bool keyboard)
         {
             if (!keyboard && PadGlyph(action) != null) return h;
             string text = keyboard ? KeyName(action) : PadLabel(action);

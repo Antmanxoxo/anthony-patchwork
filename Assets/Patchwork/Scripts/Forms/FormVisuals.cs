@@ -71,6 +71,8 @@ namespace Patchwork
             accessoryRoot.SetParent(root, false);
             BuildHats();
             SetHat(GameState.HatIndex);
+            // The hat is placed after the final pose each frame, so it never trails behind his head.
+            if (patchModel != null) patchModel.PoseApplied += PlaceHatOnHead;
             ShowFace(PatchModel.CurrentFace);
         }
 
@@ -177,6 +179,12 @@ namespace Patchwork
 
         public void PunchScale(Vector3 s) { punch = s; }
 
+        // Put on a different hat with a springy little pop.
+        public void ChangeHat(int index) { SetHat(index); hatPop = 1f; }
+        public Vector3 HatPosition { get { return accessoryRoot.position; } }
+        float hatPop;
+        float HatPopScale { get { return 1f + Mathf.Sin(hatPop * Mathf.PI * 3f) * 0.22f * hatPop; } }
+
         // Hides Patch (flickering after a hit, or while he unravels). Remembers which parts were
         // already switched off so they stay off afterwards.
         Renderer[] hideCache;
@@ -229,14 +237,29 @@ namespace Patchwork
             if (transitioning) TickTransition(dt);
 
             // Hat follows the head of the current body (the cloud floats, so its head moves).
+            // Patch's Blender model places it after his pose instead (PlaceHatOnHead).
+            hatPop = Mathf.MoveTowards(hatPop, 0f, dt * 2.2f);
+            if (form == FormType.Yarn && patchModel != null) return;
             float hatY = FormLibrary.Get(form).HeadHeight;
-            if (form == FormType.Wind && cloud != null) hatY += cloud.localPosition.y;
-            if (form == FormType.Yarn && yarnHead != null) hatY += yarnTorso.localPosition.y;
-            if (form == FormType.Yarn && patchModel != null) hatY = patchModel.HatHeight(root);
+            Quaternion hatTilt = Quaternion.identity;
+            if (form == FormType.Wind && cloud != null) { hatY += cloud.localPosition.y; hatTilt = cloud.localRotation; }
+            if (form == FormType.Yarn && yarnHead != null) { hatY += yarnTorso.localPosition.y; hatTilt = yarnHead.localRotation; }
             if (form == FormType.Water && bubble != null) hatY *= bubble.localScale.y;
-            Vector3 ap = accessoryRoot.localPosition;
-            ap.y = Mathf.Lerp(ap.y, hatY, 1f - Mathf.Exp(-14f * dt));
-            accessoryRoot.localPosition = ap;
+            accessoryRoot.localPosition = new Vector3(0f, hatY, 0f);
+            accessoryRoot.localRotation = hatTilt;
+            accessoryRoot.localScale = Vector3.one * HatPopScale;
+        }
+
+        void PlaceHatOnHead()
+        {
+            if (form != FormType.Yarn || patchModel == null) return;
+            Vector3 pos;
+            Quaternion rot;
+            float fit;
+            patchModel.HatPose(root, out pos, out rot, out fit);
+            accessoryRoot.localPosition = pos;
+            accessoryRoot.localRotation = rot;
+            accessoryRoot.localScale = Vector3.one * (fit * HatPopScale);
         }
 
         void AnimateYarn(PlayerMotor motor, float speed, Vector3 localVel, float dt)

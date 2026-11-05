@@ -46,6 +46,18 @@ namespace Patchwork
         public static void RegisterBulb(Light l, Renderer r) { bulbLight = l; bulb = r; }
         public static bool Exists(string key) { return items.ContainsKey(key) && items[key] != null; }
 
+        // The middle of an item (for a sparkle when it's switched), or null if it isn't there.
+        public static Vector3? Find(string key)
+        {
+            GameObject go;
+            if (!items.TryGetValue(key, out go) || go == null) return null;
+            var rs = go.GetComponentsInChildren<Renderer>(true);
+            if (rs.Length == 0) return go.transform.position;
+            var b = rs[0].bounds;
+            for (int i = 1; i < rs.Length; i++) b.Encapsulate(rs[i].bounds);
+            return b.center;
+        }
+
         public static bool IsOn(string key, bool def) { return PlayerPrefs.GetInt("pw_pod_item_" + key, def ? 1 : 0) == 1; }
 
         public static void Set(string key, bool on)

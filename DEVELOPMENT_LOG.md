@@ -1,5 +1,16 @@
 # Development Log
 
+## Hats that stay on
+- On keyboard, "Enter to start" on the title screen no longer draws the key on top of the
+  words; the key cap is measured first. The same fix went into the floating "Talk" / "Grab" /
+  "Pull" prompts and the "HOLD" swing prompt, which had the same overlap.
+- Hats are placed after Patch's final pose every frame, so they no longer trail behind him.
+  They follow every head tilt, nod and lean, sit a little lower on his head and are scaled to
+  fit it. In the other forms the hat follows the cloud's and bubble's tilt too.
+- Polish: putting on a new hat gives it a springy pop with a sparkle and a little sound;
+  switching Pod items on sparkles (off makes a puff); the decorating camera drifts gently;
+  launching for a level gives a soft camera bump and controller rumble with the rocket.
+
 ## A dreamier Pod
 - The decorating camera now sits inside the Pod, up near the ceiling, looking down over the
   floor, rug and furniture (it was outside the wall before, so you couldn't see anything).

@@ -695,11 +695,12 @@ namespace Patchwork
             float gy = (Screen.height - sp.y) / UIKit.Scale;
             float bob = Mathf.Sin(Time.unscaledTime * 4f) * 5f;
             var label = UIKit.Style(26, true, TextAnchor.MiddleLeft, Color.white);
-            float w = 56f + 12f + UIKit.TextWidth(text, label) + 36f;
+            float iw = UIKit.PromptWidth(action, 56f, kb);
+            float w = iw + 12f + UIKit.TextWidth(text, label) + 36f;
             var r = new Rect(gx - w * 0.5f, gy - 34f + bob, w, 68f);
             UIKit.Pill(r);
             UIKit.Prompt(r.x + 14f, r.y + 6f, 56f, action, kb);
-            UIKit.Label(new Rect(r.x + 82f, r.y, w - 82f, r.height), text, label);
+            UIKit.Label(new Rect(r.x + 26f + iw, r.y, w - 26f - iw, r.height), text, label);
         }
 
         // "Grab" over a toy you can hold, "Pull" over a lever.
@@ -898,7 +899,8 @@ namespace Patchwork
             float bob = Mathf.Sin(Time.unscaledTime * 6f) * 6f;
             float s = 64f;
             UIKit.Circle(new Vector2(gx, gy + bob), s + 18f, new Color(1f, 0.55f, 0.7f, 0.45f));
-            UIKit.Prompt(gx - s * 0.5f, gy - s * 0.5f + bob, s, PromptAction.Ability, kb);
+            float sw = UIKit.PromptWidth(PromptAction.Ability, s, kb);
+            UIKit.Prompt(gx - sw * 0.5f, gy - s * 0.5f + bob, s, PromptAction.Ability, kb);
             var holdRect = new Rect(gx - 42f, gy + s * 0.5f + bob + 6f, 84f, 30f);
             UIKit.Pill(holdRect);
             UIKit.Label(holdRect, "HOLD", UIKit.Style(20, true, TextAnchor.MiddleCenter, Color.white));

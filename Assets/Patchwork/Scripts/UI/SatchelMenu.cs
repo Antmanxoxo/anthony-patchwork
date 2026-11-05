@@ -53,8 +53,10 @@ namespace Patchwork
                 {
                     GameState.HatIndex = viewHat;
                     GameState.Save();
-                    game.Player.Visuals.SetHat(viewHat);
+                    game.Player.Visuals.ChangeHat(viewHat);
                     Sfx.Play(SfxId.MenuMove, 0.5f);
+                    Sfx.PlayPitched(SfxId.Pop, 0.35f, 1.15f);
+                    if (viewHat != 0) FxBurst.Spawn(FxBurst.Kind.Sparkle, game.Player.Visuals.HatPosition, new Color(1f, 0.9f, 0.55f));
                 }
                 else Sfx.Play(SfxId.TransformFail, 0.3f);
             }

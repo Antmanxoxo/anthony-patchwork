@@ -127,6 +127,12 @@ Stuff I need to remember about how Patchwork is put together.
   built inside `HubBuilder.Collect(kit, key, build)`, which groups whatever the build made.
   The editor camera is a `PlayerCamera` showcase shot set in `PodEditor.Open` and must stay
   inside the shell (`ProfileY`/`ProfileR`: about 8.8 m radius at 6.5 m up).
+- Hats: `FormVisuals.accessoryRoot`. For Patch's Blender model it's set in `PlaceHatOnHead`
+  (subscribed to `PatchModel.PoseApplied`, which runs at the end of its LateUpdate) from
+  `PatchModel.HatPose`: the head bone's rotation relative to its rest pose (captured at load)
+  and a fit scale from the head size. Don't move it in Update for that model, or it lags a frame.
+- Button prompts: use `UIKit.PromptWidth` to lay out text next to `UIKit.Prompt`; keyboard key
+  caps are wider than pad glyphs.
 - Pod sounds: `PodWhimsy` (on the PodSounds group) plays a random soft one-shot every 6-12 s in
   Gameplay / PodEdit (`SfxId.Beeper`, `AlienCoo`, `Twinkle`, `Warble`, plus pitched chimes).
   `Sfx.SoftRocket` makes `PodPop` (launch tube) and `PodRocket` (level select launch).

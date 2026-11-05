@@ -197,11 +197,13 @@ namespace Patchwork
             {
                 var label = UIKit.Style(30, true, TextAnchor.MiddleLeft, new Color(1f, 1f, 1f, a * pulse));
                 const string text = "to start";
-                float pw = 60f + 14f + UIKit.TextWidth(text, label);
+                // The key cap ("Enter") is wider than a pad glyph, so measure it first.
+                float iw = UIKit.PromptWidth(PromptAction.Confirm, 60f, kb);
+                float pw = iw + 16f + UIKit.TextWidth(text, label);
                 float px = (W - pw) * 0.5f, py = H * 0.78f;
                 UIKit.Pill(new Rect(px - 26f, py - 10f, pw + 52f, 80f), a * 0.8f);
                 UIKit.Prompt(px, py, 60f, PromptAction.Confirm, kb, a * pulse);
-                UIKit.Label(new Rect(px + 74f, py, pw, 60f), text, label);
+                UIKit.Label(new Rect(px + iw + 16f, py, pw, 60f), text, label);
             }
 
             UIKit.Label(new Rect(30f, H - 60f, 600f, 40f), "© Little Colossus",
