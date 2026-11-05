@@ -72,7 +72,7 @@ namespace Patchwork
                 wait += dt;
                 if (Door != null && wait > 0.2f)
                 {
-                    if (doorT == 0f) Sfx.Play(SfxId.Creak, 0.5f);
+                    if (doorT == 0f) Sfx.Play(SfxId.Lever, 0.5f);
                     doorT = Mathf.MoveTowards(doorT, 1f, dt * 2.5f);
                     float e = 1f - (1f - doorT) * (1f - doorT);
                     Door.localRotation = Quaternion.Euler(0f, DoorAngle * e, 0f);

@@ -125,6 +125,11 @@ Stuff I need to remember about how Patchwork is put together.
 - The Pod's decorating menu: `PodEditor` (`UIMode.PodEdit`) over `PodDecor` (floor, rug, light,
   items on/off; PlayerPrefs `pw_pod_*`) and `PodTheme` (walls). Things that can be switched are
   built inside `HubBuilder.Collect(kit, key, build)`, which groups whatever the build made.
+- `RenderOptimizer.Run` (called in `PatchworkGame` after the level is built): swaps built-in
+  sphere/capsule meshes under 2.6 m / 3.2 m for lighter generated ones, turns off shadows for
+  things under 0.5 m, and moves plain collider-less decorations to layer 8 (small, culled at
+  80 m) or 9 (medium, 180 m) via `Camera.layerCullDistances`. It logs what it did. Objects made
+  after the level is built (effects, dropped hearts) aren't touched.
 - Per-level sun and title camera: `LevelInfo.SunEuler` / `SunIntensity` and `TitleCenter` /
   `TitleRadius` / `TitleHeight` / `TitleLookOffset`.
 - Yarn birds (`YarnBird`, `kit.YarnBird`) play their chirps from their own 3D AudioSource.

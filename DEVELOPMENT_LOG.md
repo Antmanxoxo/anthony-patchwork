@@ -1,5 +1,17 @@
 # Development Log
 
+## Running faster
+- Fixed a compile error from the last batch (a sound name that didn't exist).
+- A tidy-up pass runs right after a level is built, so it draws much less without losing
+  anything you can see:
+  - Small round things (eyes, buttons, pom-poms, petals, beads...) use lighter sphere and
+    capsule meshes sized to how big they are. Unity's built-in ones are 768 and 832
+    triangles each no matter how small; big round things keep full detail.
+  - Things under half a metre no longer cast shadows (their shadows were a few pixels).
+  - In Toybox Town, small decorations are only drawn out to 80 m and medium ones to 180 m
+    (past where the haze softens them anyway). Nothing you can touch is affected, and the Pod
+    keeps every star.
+
 ## A bigger Toybox Town, arriving by Pod, and decorating the Pod
 - Toybox Town is bigger: the toybox walls moved out from 90 to 115 metres, with new ground
   all round the edge of town.
