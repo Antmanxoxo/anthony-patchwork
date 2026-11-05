@@ -128,7 +128,7 @@ namespace Patchwork
             var small = UIKit.Style(19, false, TextAnchor.MiddleLeft, ink);
             UIKit.Label(new Rect(rx + 24f, ry + 172f, 280f, 28f), "Stickers  " + sGot + " / " + (sTotal + StickerArt.Starters.Length), small);
             UIKit.Label(new Rect(rx + 24f, ry + 200f, 280f, 28f), "Hats  " + hGot + " / " + hTotal, small);
-            UIKit.Label(new Rect(rx + 24f, ry + 228f, 280f, 28f), "Skiff decorations  " + dGot + " / " + dTotal, small);
+            UIKit.Label(new Rect(rx + 24f, ry + 228f, 280f, 28f), "Pod decorations  " + dGot + " / " + dTotal, small);
             // The sticker book, tiny.
             int si = 0;
             foreach (StickerId id in System.Enum.GetValues(typeof(StickerId)))

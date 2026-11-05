@@ -9,7 +9,8 @@ You play **Patch**, a little yarn creature who can switch between three forms:
 | 🧶 **Yarn** | A knitted toy with a yarn-ball head, button eyes and a stitched suit. Throws his yarn arm at pink anchors and swings across big gaps. |
 | 🌬️ **Wind** | A happy cloud that glides, falls slowly, and gets one gust per jump. |
 
-Right now there's a hub (**The Cardboard Skiff**, a little pirate ship you steer with a globe) and
+Right now there's a hub (**The Pod**, a cosy cardboard pod floating in a paper sky; pick up the
+giant controller under its window to turn the patchwork planet outside and choose a level) and
 one level (**Toybox Town**), where the Fray has spoiled the band on the Mayor's wedding day.
 Find the three missing band pieces, collect threads and Heartstrings, and play with the toys
 around town.

@@ -8,6 +8,7 @@ namespace Patchwork
         public LevelGlobe Globe;
         // Where the "Set course" prompt floats.
         public Vector3 PromptPoint;
+        public string Label = "Set course";
 
         protected override void OnPlayerEnter(PatchworkPlayer player)
         {

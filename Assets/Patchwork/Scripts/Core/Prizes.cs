@@ -18,12 +18,12 @@ namespace Patchwork
 
         public string KindText
         {
-            get { return Kind == PrizeKind.Sticker ? "New sticker" : Kind == PrizeKind.Hat ? "New hat" : "New Skiff decoration"; }
+            get { return Kind == PrizeKind.Sticker ? "New sticker" : Kind == PrizeKind.Hat ? "New hat" : "New Pod decoration"; }
         }
     }
 
     // Everything a prize bubble can hold. Stickers go in the sticker book, hats in the Satchel,
-    // and decorations appear on the Skiff.
+    // and decorations appear in the Pod.
     public static class Prizes
     {
         public static readonly string[] DecorationNames = { "Duck Captain", "Paper Lanterns", "Snow Globe", "Pinwheels" };

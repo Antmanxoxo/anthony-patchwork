@@ -9,6 +9,8 @@ namespace Patchwork
     {
         public Transform Spin;     // the part that turns (globe + pins)
         public float Radius = 2.4f;
+        // Where the level-select camera sits, from the globe's centre.
+        public Vector3 ViewOffset = new Vector3(0.4f, 0.9f, -6.4f);
         readonly List<Transform> pins = new List<Transform>();
         readonly List<Vector3> pinScales = new List<Vector3>();
         float yaw;

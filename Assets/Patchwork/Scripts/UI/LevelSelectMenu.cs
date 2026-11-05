@@ -32,7 +32,7 @@ namespace Patchwork
             {
                 var g = Globe;
                 Vector3 c = g != null ? g.transform.position : Vector3.zero;
-                return c + new Vector3(0.4f, 0.9f, -6.4f);
+                return c + (g != null ? g.ViewOffset : new Vector3(0.4f, 0.9f, -6.4f));
             }
         }
 

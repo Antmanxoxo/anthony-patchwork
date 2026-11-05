@@ -496,11 +496,11 @@ namespace Patchwork
             DrawWorldPrompt(Game.Talker.Npc.HeadPosition + Vector3.up * 1.3f, "Talk", kb, PromptAction.Ability);
         }
 
-        // Floating "Set course" prompt over the Skiff's helm while you're standing at it.
+        // Floating prompt over the level-select station (the Pod's controller) while you're at it.
         void DrawHelmPrompt(bool kb)
         {
             if (Game.Mode != UIMode.Gameplay || Game.Helm == null) return;
-            DrawWorldPrompt(Game.Helm.PromptPoint, "Set course", kb, PromptAction.Ability);
+            DrawWorldPrompt(Game.Helm.PromptPoint, Game.Helm.Label, kb, PromptAction.Ability);
         }
 
         void DrawWorldPrompt(Vector3 world, string text, bool kb, PromptAction action)
@@ -526,6 +526,11 @@ namespace Patchwork
             if (Warp.Active != null)
             {
                 DrawWorldPrompt(Warp.Active.transform.position + Vector3.up * 1.6f, Warp.Active.Label, kb, PromptAction.Ability);
+                return;
+            }
+            if (UseSpot.Active != null)
+            {
+                DrawWorldPrompt(UseSpot.Active.PromptPoint, UseSpot.Active.Label, kb, PromptAction.Ability);
                 return;
             }
             if (DigSpot.Active != null)
@@ -772,7 +777,7 @@ namespace Patchwork
                 }
             }
             float x = panel.x + 150f;
-            UIKit.PromptLabel(x, panel.yMax - 80f, 44f, PromptAction.Confirm, "Back to the Skiff", kb, ink);
+            UIKit.PromptLabel(x, panel.yMax - 80f, 44f, PromptAction.Confirm, "Back to the Pod", kb, ink);
         }
     }
 }

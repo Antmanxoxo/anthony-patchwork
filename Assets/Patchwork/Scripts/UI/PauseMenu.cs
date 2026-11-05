@@ -107,7 +107,7 @@ namespace Patchwork
                 case Item.Back: return "Back";
                 case Item.Resume: return "Resume";
                 case Item.Restart: return "Restart from Checkpoint";
-                case Item.ReturnToHub: return "Return to the Skiff";
+                case Item.ReturnToHub: return "Return to the Pod";
                 case Item.Prompts:
                 {
                     var mode = game.Input.Prompts;
@@ -403,7 +403,7 @@ namespace Patchwork
                     body = "You'll start again from the last pin you touched.";
                     break;
                 case Item.ReturnToHub:
-                    title = "Head back to the Skiff?";
+                    title = "Head back to the Pod?";
                     body = "Golden buttons are saved, but thread spools from this visit will be lost.";
                     break;
                 default:

@@ -59,6 +59,15 @@ namespace Patchwork
         public float MapCameraHeight = 34f;
         // The Skiff's level-select globe (hub only).
         public LevelGlobe Globe;
+        // Sun direction and strength (the pod lets it in through its window).
+        public Vector3 SunEuler = new Vector3(52f, -35f, 0f);
+        public float SunIntensity = 1.5f;
+        // The title screen's slow camera circle.
+        public Vector3 TitleCenter = new Vector3(0f, 5f, 2f);
+        public float TitleRadius = 36f, TitleHeight = 9f;
+        public Vector3 TitleLookOffset = new Vector3(0f, 3f, 0f);
+        // A quiet room: no music while you walk about, only when you pick a level.
+        public bool QuietMusic;
 
         public int CollectedCount()
         {

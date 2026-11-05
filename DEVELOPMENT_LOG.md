@@ -1,5 +1,24 @@
 # Development Log
 
+## The Pod
+- The hub is now the Pod: a cosy egg-shaped cardboard pod with ribbed walls, floating in a
+  bright paper-white sky. The look follows the game's box-art collage: zigzag and polka-dot
+  felt, a trail of felt stars, a toadstool, a frosted doughnut, clockwork gears and a felt
+  moon drifting past the big front window, with sketchy white clouds.
+- It's quiet inside (just a ticking clock). Walk to the giant controller on the desk under the
+  window and pick it up: the music comes in and the camera turns to the patchwork planet
+  outside, where you choose a level.
+- Make it yours: stickers stick to the walls (and the window), the pattern book by the window
+  changes the wallpaper (Cardboard, Zigzag, Polka Dots, Denim, Cosy Knit, Gingham, Starry
+  Night, Candy Stripes), and decorations you win turn up on the shelves, the desk, across the
+  ceiling and by the back door.
+- The Cardboard Skiff sails round and round outside, and Captain Yarny has come aboard. The
+  Button Box is a little room through a stitched-shut doorway at the back.
+- Inside to play with: two shelves to climb, a bouncy pin-cushion, a beach ball, building
+  blocks, a polka-dot toadstool stool and a hanging light bulb.
+- The title screen now circles slowly inside the pod.
+- The ship's practice spots (fountain, lifeboat swing, air vent) are gone with the Skiff's deck.
+
 ## A look of its own, and Photo Mode
 - A new screen look (Pause > Settings > Look), drawn as one full-screen pass:
   - Storybook (the default): clean, thin plum ink lines on the edges and creases of every

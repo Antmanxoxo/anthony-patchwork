@@ -101,9 +101,11 @@ namespace Patchwork
         {
             orbit += udt * 7f;
             float a = orbit * Mathf.Deg2Rad;
-            Vector3 center = new Vector3(0f, 5f, 2f);
-            game.CameraRig.ShowcasePosition = center + new Vector3(Mathf.Sin(a) * 36f, 9f + Mathf.Sin(orbit * 0.02f) * 2f, Mathf.Cos(a) * 36f);
-            game.CameraRig.ShowcaseLookAt = center + Vector3.up * 3f;
+            var level = game.Level;
+            Vector3 center = level.TitleCenter;
+            float r = level.TitleRadius, h = level.TitleHeight;
+            game.CameraRig.ShowcasePosition = center + new Vector3(Mathf.Sin(a) * r, h + Mathf.Sin(orbit * 0.02f) * h * 0.2f, Mathf.Cos(a) * r);
+            game.CameraRig.ShowcaseLookAt = center + level.TitleLookOffset;
         }
 
         // ------------------------------------------------------------------ Drawing

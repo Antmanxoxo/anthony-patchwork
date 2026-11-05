@@ -337,6 +337,90 @@ namespace Patchwork
             return Get("glow" + intensity.ToString("0.0"), color, PatchworkTextures.Felt.Albedo, 0.2f, color * intensity);
         }
 
+        // Bold two-colour printed felt, like the patterns on the toys on the game's box art.
+        public enum PrintKind { Zigzag, Polka, Gingham, Stars, Stripes }
+
+        static readonly Dictionary<string, Texture2D> prints = new Dictionary<string, Texture2D>();
+
+        public static Material Print(PrintKind kind, Color a, Color b)
+        {
+            EnsureInit();
+            string key = kind + ColorUtility.ToHtmlStringRGB(a) + ColorUtility.ToHtmlStringRGB(b);
+            Texture2D tex;
+            if (!prints.TryGetValue(key, out tex) || tex == null)
+            {
+                tex = MakePrint(kind, a, b, 256);
+                prints[key] = tex;
+            }
+            var felt = PatchworkTextures.Felt;
+            return Get("print" + key, Color.white, tex, 0.03f, Color.black, felt.Normal, 0.6f);
+        }
+
+        static Texture2D MakePrint(PrintKind kind, Color a, Color b, int size)
+        {
+            var t = new Texture2D(size, size, TextureFormat.RGBA32, true);
+            t.wrapMode = TextureWrapMode.Repeat;
+            t.filterMode = FilterMode.Trilinear;
+            t.anisoLevel = 8;
+            var px = new Color[size * size];
+            float aa = 1.5f / size;
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float u = x / (float)size, v = y / (float)size;
+                    float k = 0f;   // 0 = colour a, 1 = colour b
+                    switch (kind)
+                    {
+                        case PrintKind.Zigzag:
+                        {
+                            // Four zigzag bands, like the trunk on the cover's felt elephant.
+                            float tri = Mathf.Abs(Mathf.Repeat(u * 4f, 1f) - 0.5f) * 2f;   // 0..1..0
+                            float band = Mathf.Repeat(v * 4f + tri * 0.6f, 1f);
+                            k = Mathf.Clamp01((Mathf.Min(band, 1f - band) * 2f - 0.5f) / (aa * 16f) + 0.5f);
+                            break;
+                        }
+                        case PrintKind.Polka:
+                        {
+                            // Staggered dots, four across.
+                            float gu = u * 4f, gv = v * 4f;
+                            if (Mathf.FloorToInt(gv) % 2 == 1) gu += 0.5f;
+                            float du = Mathf.Repeat(gu, 1f) - 0.5f, dv = Mathf.Repeat(gv, 1f) - 0.5f;
+                            float d = Mathf.Sqrt(du * du + dv * dv);
+                            k = Mathf.Clamp01((0.28f - d) / (aa * 4f) + 0.5f);
+                            break;
+                        }
+                        case PrintKind.Gingham:
+                        {
+                            float su = Mathf.Repeat(u * 6f, 1f) < 0.5f ? 1f : 0f;
+                            float sv = Mathf.Repeat(v * 6f, 1f) < 0.5f ? 1f : 0f;
+                            k = (su + sv) * 0.5f;
+                            break;
+                        }
+                        case PrintKind.Stripes:
+                        {
+                            float s = Mathf.Repeat(u * 6f, 1f);
+                            k = s < 0.5f ? 1f : 0f;
+                            break;
+                        }
+                        case PrintKind.Stars:
+                        {
+                            float gu = u * 3f, gv = v * 3f;
+                            if (Mathf.FloorToInt(gv) % 2 == 1) gu += 0.5f;
+                            float du = Mathf.Repeat(gu, 1f) - 0.5f, dv = Mathf.Repeat(gv, 1f) - 0.5f;
+                            float r = Mathf.Sqrt(du * du + dv * dv);
+                            float ang = Mathf.Atan2(du, dv);
+                            float edge = 0.12f + 0.09f * Mathf.Cos(ang * 5f);
+                            k = Mathf.Clamp01((edge - r) / (aa * 3f) + 0.5f);
+                            break;
+                        }
+                    }
+                    px[y * size + x] = Color.Lerp(a, b, k);
+                }
+            t.SetPixels(px);
+            t.Apply(true);
+            return t;
+        }
+
         public static Material Plain(Color color, float smoothness)
         {
             EnsureInit();

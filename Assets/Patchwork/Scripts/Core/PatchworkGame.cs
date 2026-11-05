@@ -213,10 +213,10 @@ namespace Patchwork
             var sun = sunGo.AddComponent<Light>();
             sun.type = LightType.Directional;
             sun.color = new Color(1f, 0.95f, 0.86f);
-            sun.intensity = 1.5f;
+            sun.intensity = Level.SunIntensity;
             sun.shadows = LightShadows.Soft;
             sun.shadowStrength = 0.75f;
-            sunGo.transform.rotation = Quaternion.Euler(52f, -35f, 0f);
+            sunGo.transform.rotation = Quaternion.Euler(Level.SunEuler);
             RenderSettings.sun = sun;
 
             RenderSettings.ambientMode = AmbientMode.Trilight;
@@ -511,7 +511,7 @@ namespace Patchwork
                     Haptics.SetSilenced(true);
                     break;
                 default:
-                    MusicPlayer.SetMuffle(22000f, 1f);
+                    MusicPlayer.SetMuffle(22000f, Level != null && Level.QuietMusic ? 0f : 1f);
                     Sfx.SetLoopCutoff(22000f);
                     Haptics.SetSilenced(false);
                     break;

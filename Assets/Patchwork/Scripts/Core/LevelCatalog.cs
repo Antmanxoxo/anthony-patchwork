@@ -24,8 +24,8 @@ namespace Patchwork
         {
             Scene = HubBuilder.SceneName,
             Number = "Home",
-            Title = "The Cardboard Skiff",
-            Blurb = "Your little cardboard ship, sailing over the patchwork world.",
+            Title = "The Pod",
+            Blurb = "Your cosy cardboard pod, floating high above the patchwork world.",
             Tint = new Color(0.78f, 0.6f, 0.42f),
             Playable = true
         };
@@ -84,7 +84,7 @@ namespace Patchwork
             "Let go of a swing near the top of the arc to fly the furthest.",
             "Water Form can still slip through drains after riding a fountain. Don't switch too soon!",
             "Spam the D-pad faces and see what happens...",
-            "Hats stay on in every form. Find them all to show off on the Skiff.",
+            "Hats stay on in every form. Find them all to show off in your Pod.",
             "Threads come in rows. Follow them and they'll usually show you the way.",
             "Fell off? Checkpoint pins stitch your progress as you pass them."
         };

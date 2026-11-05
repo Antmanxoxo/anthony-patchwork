@@ -175,7 +175,7 @@ namespace Patchwork
             {
                 case 2: return "Collect half of Level 1's threads in one run.";
                 case 3: return "Collect every thread in Level 1 in one run.";
-                case 4: return "Inside the captain's cabin on the Skiff.";
+                case 4: return "Inside the Button Box, through the back of your Pod.";
                 case 5:
                 case 6:
                 case 7: return "Hidden in a prize bubble in Toybox Town.";

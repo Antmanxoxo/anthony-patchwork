@@ -83,8 +83,19 @@ Stuff I need to remember about how Patchwork is put together.
   drawn placeholder badge.
 - All scene changes go through `PatchworkGame.LoadScene` -> `LoadingScreen` (async load, min 3.2 s,
   1.2 s for a restart). Level names, blurbs, colours and globe pins live in `LevelCatalog`.
-- The hub's level select: `HelmStation` (stand there, press Ability) -> `LevelSelectMenu`, which
-  turns the `LevelGlobe` and uses the camera's Showcase mode (`PlayerCamera.Showcase`).
+- The hub is the Pod (`HubBuilder`): an egg-shaped shell of curved cardboard panels (28 columns,
+  rings from `ProfileY` / `ProfileR`), a window at +z with invisible panes, and the Button Box
+  room through a doorway at the back. `LevelInfo.QuietMusic` keeps the music silent while you
+  walk about; it comes in when the level select opens.
+- The hub's level select: `HelmStation` (the controller on the desk; stand there, press Ability)
+  -> `LevelSelectMenu`, which turns the `LevelGlobe` floating outside the window and uses the
+  camera's Showcase mode (`PlayerCamera.Showcase`). The camera spot is `LevelGlobe.ViewOffset`.
+- Pod wallpaper: `PodTheme` (saved as `pw_pod_theme`), flipped by the pattern book, a `UseSpot`
+  (stand in it, press Ability; the HUD floats its label). Wall panels register with
+  `PodTheme.Register`. Printed felt patterns (zigzag, polka dots, gingham, stars, stripes):
+  `PatchworkAssets.Print`.
+- Per-level sun and title camera: `LevelInfo.SunEuler` / `SunIntensity` and `TitleCenter` /
+  `TitleRadius` / `TitleHeight` / `TitleLookOffset`.
 - Yarn birds (`YarnBird`, `kit.YarnBird`) play their chirps from their own 3D AudioSource.
 - `PaintLake` scrolls a marbled texture (`PatchworkTextures.PaintMarble`).
 - NPCs: `NpcYarny` (looks, lines, 3D voice blips) + `TalkZone` (stand in it, press Ability) ->

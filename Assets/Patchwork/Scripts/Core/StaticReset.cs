@@ -16,6 +16,8 @@ namespace Patchwork
             LoadingScreen.ResetStatics();
             TitleSequence.ResetStatics();
             LevelSelectMenu.ResetStatics();
+            UseSpot.ResetStatics();
+            PodTheme.ResetStatics();
             Level1Director.ResetStatics();
             ThreadRace.ResetStatics();
             WindChime.FirstRung = null;

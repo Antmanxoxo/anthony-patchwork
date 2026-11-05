@@ -228,12 +228,12 @@ namespace Patchwork
                 GameState.Save();
                 return new[]
                 {
-                    "Arr! A new deckhand aboard! Name's Captain Yarny, master o' the Cardboard Skiff.",
+                    "Arr! So this be yer pod! Name's Captain Yarny, master o' the Cardboard Skiff. That's her sailin' round outside.",
                     "I've been sailin' these patchwork skies since I were a single loose thread.",
                     "But there be trouble below. A grey static's creepin' over the world. We sailors call it the Fray.",
                     "It slipped in through a tear in the sky, and it unravels whatever it touches. Towns, rivers, whole kingdoms o' cloth.",
                     "Every place has golden Heartstrings holdin' it together. Find 'em, thread 'em back where they belong, and the Fray lets go.",
-                    "See that globe at the bow? Step up to the helm and give it a turn. Toybox Town's where it struck first. And on the Mayor's weddin' day, no less!",
+                    "See that planet out the window? Pick up the controller on the desk and give it a turn. Toybox Town's where it struck first. And on the Mayor's weddin' day, no less!",
                     "Now off ye go. And mind ye don't unravel!"
                 };
             }
@@ -261,10 +261,12 @@ namespace Patchwork
                 lines.Add(new[] { "Word on the wind is there be " + (needed - found) + " golden button" + (needed - found == 1 ? "" : "s") + " still hidin' in Toybox Town.",
                                   "One of 'em hums a little tune, they say. Keep yer ears open, matey." });
             else
-                lines.Add(new[] { "Ye found every golden button! Me cabin door's come unstitched.", "Go on in. There be somethin' shiny in there for a captain-in-trainin'." });
+                lines.Add(new[] { "Ye found every golden button! The Button Box door's come unstitched.", "Go on in, through the back. There be somethin' shiny in there for a captain-in-trainin'." });
             lines.Add(new[] { "Lost me eye to a runaway sewin' needle, I did.", "Watch yer step 'round the pins, deckhand." });
             lines.Add(new[] { "Water slips through drains, Wind rides the breeze...", "...and Yarn? Yarn swings from the rigging, like any proper pirate! Arr!" });
-            lines.Add(new[] { "This old Skiff's held together with tape and stubbornness.", "And a wee bit o' glue. Don't tell the parrot." });
+            lines.Add(new[] { "Me old Skiff's held together with tape and stubbornness.", "And a wee bit o' glue. Don't tell the parrot." });
+            lines.Add(new[] { "Fine pod ye've got here. Quiet, mind. A sailor likes a bit o' music.", "Pick up that controller and ye'll hear it start up, sure as the tide." });
+            lines.Add(new[] { "Ye can make this place yer own, ye know.", "Flip that pattern book by the window for new wallpaper, and slap yer stickers wherever ye like." });
             lines.Add(new[] { "Tap them face buttons fast enough and ye might break into a jig.", "Not that I'd know anythin' about that. Ahem." });
             lines.Add(new[] { "Every hat ye find stays on through every form.", "A pirate's hat is his pride! Mine's older than the ship." });
 
