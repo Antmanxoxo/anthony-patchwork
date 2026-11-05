@@ -15,10 +15,65 @@ namespace Patchwork
         FormType lastForm;
         bool firstFrame = true;
 
+        // The HUD keeps out of the way: the counters slide in when something changes, or when
+        // Patch stands still for a moment, then tuck away again.
+        float stackA, scoreA, controlsA, heartsA;
+        float stackTimer, scoreTimer, heartsTimer, idleTime;
+        int lastSig = int.MinValue, lastScore = int.MinValue, lastHearts = -1;
+
+        void UpdateVisibility(float dt)
+        {
+            var level = Game.Level;
+            int sig = level.CollectedCount() * 131 + level.HeartstringCount() * 31 + level.SecretCount() * 1031 + Game.ThreadsCollected * 7919
+                      + (level.Id == Level1Builder.SceneName ? Level1Director.BandCount() * 7 : 0);
+            if (sig != lastSig) { if (lastSig != int.MinValue) stackTimer = 4f; lastSig = sig; }
+            int score = Game.Score != null ? Game.Score.Total : 0;
+            if (score != lastScore) { if (lastScore != int.MinValue) scoreTimer = 3f; lastScore = score; }
+            if (Game.Hearts != lastHearts) { if (lastHearts >= 0) heartsTimer = 3.5f; lastHearts = Game.Hearts; }
+            var m = Game.Player.Motor;
+            bool still = new Vector2(m.Velocity.x, m.Velocity.z).sqrMagnitude < 0.09f && m.Grounded && Game.Mode == UIMode.Gameplay;
+            idleTime = still ? idleTime + dt : 0f;
+            bool idle = idleTime > 1.5f;
+            bool menu = Game.Mode == UIMode.Paused || Game.Mode == UIMode.Satchel || Game.Mode == UIMode.Complete;
+            stackTimer -= dt; scoreTimer -= dt; heartsTimer -= dt;
+            stackA = Mathf.MoveTowards(stackA, stackTimer > 0f || idle || menu ? 1f : 0f, dt * 3f);
+            scoreA = Mathf.MoveTowards(scoreA, scoreTimer > 0f || idle || menu || (Game.Score != null && Game.Score.ChainAlive && Game.Score.Multiplier > 1) ? 1f : 0f, dt * 3f);
+            controlsA = Mathf.MoveTowards(controlsA, idleTime > 2.5f ? 1f : 0f, dt * 3f);
+            bool hurt = Game.Hearts < PatchworkGame.MaxHearts;
+            heartsA = Mathf.MoveTowards(heartsA, !level.IsHub && (hurt || heartsTimer > 0f || idle || menu) ? 1f : 0f, dt * 4f);
+        }
+
+        // Draws with everything shifted (to slide a panel on and off screen).
+        void Shifted(float dx, float dy, System.Action draw)
+        {
+            var m = GUI.matrix;
+            GUI.matrix = m * Matrix4x4.Translate(new Vector3(dx, dy, 0f));
+            draw();
+            GUI.matrix = m;
+        }
+
+        void DrawHearts()
+        {
+            if (heartsA <= 0.001f) return;
+            float shake = Game.HeartsShake;
+            var r = new Rect(28f, 24f, 214f, 70f);
+            UIKit.Panel(r, new Color(1f, 0.95f, 0.93f, 0.95f), new Color(0.9f, 0.35f, 0.45f, 0.9f), 20f);
+            for (int i = 0; i < PatchworkGame.MaxHearts; i++)
+            {
+                bool full = i < Game.Hearts;
+                float wob = shake > 0f ? Mathf.Sin(Time.unscaledTime * 40f + i) * shake * 4f : 0f;
+                var c = new Vector2(r.x + 46f + i * 62f + wob, r.y + 37f);
+                UIKit.Heart(c + new Vector2(0f, 3f), 50f, new Color(0f, 0f, 0f, 0.15f));
+                UIKit.Heart(c, 50f, full ? new Color(0.95f, 0.3f, 0.42f) : new Color(0.8f, 0.76f, 0.8f, 0.7f));
+                if (full) UIKit.Circle(c + new Vector2(-8f, -9f), 9f, new Color(1f, 1f, 1f, 0.6f));
+            }
+        }
+
         void Update()
         {
             if (Game == null || Game.Player == null) return;
             float dt = Time.unscaledDeltaTime;
+            UpdateVisibility(dt);
             var forms = Game.Player.Forms;
             if (firstFrame) { lastForm = forms.Current; firstFrame = false; }
             if (forms.Current != lastForm) { lastForm = forms.Current; badgeTimer = BadgeShowTime; }
@@ -80,11 +135,12 @@ namespace Patchwork
                 DrawTalkPrompt(kb);
                 DrawAnchorPrompt(kb);
                 DrawFormBadge(kb);
-                DrawButtons();
-                DrawControls(kb);
+                if (heartsA > 0.001f) Shifted(-(1f - UIKit.EaseOutCubic(heartsA)) * 280f, 0f, DrawHearts);
+                if (stackA > 0.001f) Shifted(-(1f - UIKit.EaseOutCubic(stackA)) * 420f, 0f, DrawButtons);
+                if (controlsA > 0.001f) Shifted(0f, (1f - UIKit.EaseOutCubic(controlsA)) * 120f, () => DrawControls(kb));
                 DrawHintCard();
                 DrawGrabPrompt(kb);
-                DrawScore();
+                if (scoreA > 0.001f) Shifted((1f - UIKit.EaseOutCubic(scoreA)) * 340f, 0f, DrawScore);
                 DrawPopups();
                 DrawPrizeCard();
                 DrawToast();
@@ -238,7 +294,7 @@ namespace Patchwork
         {
             var level = Game.Level;
             int total = level.CollectibleIds.Count;
-            float y = 24f;
+            float y = level.IsHub ? 24f : 106f;   // below the hearts
             if (level.Id == Level1Builder.SceneName)
             {
                 // Toybox Town: the town band is the goal.

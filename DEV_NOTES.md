@@ -102,6 +102,13 @@ Stuff I need to remember about how Patchwork is put together.
   ground at y 0; ones 1.1 m and up get a box collider. `TapeBall` picks up anything up to
   1.15x its radius (volume adds as half the item's size cubed) and becomes a star at 1.8 m.
   `Grabbable.Rolls` gives it a smooth push (no hop); `NoGrab` keeps it out of Grab.
+- Hearts: `PatchworkGame.Hearts` / `MaxHearts` (3), `Hurt(from)` (knockback + 1.6 s of
+  flicker via `FormVisuals.SetHidden`), `Heal(n)`, and the unravel-and-respawn when they run out.
+  No damage in the hub, or outside gameplay. Creatures share `Monsters` (`Touch`, `Popped` for
+  combos and heart drops, `Gust` for Wind) and tag themselves with `FrayCreature`. Toybox Town's
+  creatures and hearts are placed in `Level1Monsters.cs` with `FindSpot` (clear ground near a
+  point) and `PatrolEnd`.
+- The HUD slides its panels in and out (`PatchworkHUD.UpdateVisibility` / `Shifted`).
 - Per-level sun and title camera: `LevelInfo.SunEuler` / `SunIntensity` and `TitleCenter` /
   `TitleRadius` / `TitleHeight` / `TitleLookOffset`.
 - Yarn birds (`YarnBird`, `kit.YarnBird`) play their chirps from their own 3D AudioSource.

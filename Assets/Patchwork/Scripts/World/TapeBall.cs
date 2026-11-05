@@ -72,7 +72,7 @@ namespace Patchwork
             var g = go.AddComponent<Grabbable>();
             g.KickOnWalk = true;
             g.Rolls = true;
-            g.NoGrab = true;
+            g.SpeedFactor = 0.85f;
             return b;
         }
 

@@ -177,6 +177,32 @@ namespace Patchwork
 
         public void PunchScale(Vector3 s) { punch = s; }
 
+        // Hides Patch (flickering after a hit, or while he unravels). Remembers which parts were
+        // already switched off so they stay off afterwards.
+        Renderer[] hideCache;
+        bool[] hideWas;
+        bool hidden;
+        public void SetHidden(bool h)
+        {
+            if (h == hidden) return;
+            hidden = h;
+            if (h)
+            {
+                hideCache = root.GetComponentsInChildren<Renderer>(true);
+                hideWas = new bool[hideCache.Length];
+                for (int i = 0; i < hideCache.Length; i++)
+                {
+                    hideWas[i] = hideCache[i].enabled;
+                    hideCache[i].enabled = false;
+                }
+            }
+            else if (hideCache != null)
+            {
+                for (int i = 0; i < hideCache.Length; i++)
+                    if (hideCache[i] != null) hideCache[i].enabled = hideWas[i];
+            }
+        }
+
         // ------------------------------------------------------------------ Animation
 
         public void Tick(PlayerMotor motor, float dt)

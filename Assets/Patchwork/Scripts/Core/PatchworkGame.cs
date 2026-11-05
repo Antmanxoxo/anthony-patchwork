@@ -42,6 +42,14 @@ namespace Patchwork
         public ScoreKeeper Score { get; private set; }
         public StickerSystem Stickers { get; private set; }
         public PhotoMode Photo { get; private set; }
+
+        // ---- Hearts: three hits from the Fray's creatures and Patch unravels (back to the checkpoint).
+        public const int MaxHearts = 3;
+        public int Hearts { get; private set; } = MaxHearts;
+        public float HurtTimer { get; private set; }      // can't be hurt again while this runs
+        public float HeartsShake { get; private set; }    // the HUD hearts wobble when they change
+        float unravelTimer = -1f;
+        public bool Unravelling { get { return unravelTimer >= 0f; } }
         // The prize card that pops up when a prize bubble is opened.
         public PrizeDef PrizeShown { get; private set; }
         public float PrizeTimer { get; private set; }
@@ -369,7 +377,7 @@ namespace Patchwork
             if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel || Mode == UIMode.Dance || Mode == UIMode.Intro || Mode == UIMode.LevelSelect || Mode == UIMode.Talk || Mode == UIMode.Cutscene || Mode == UIMode.Ask || Mode == UIMode.Sticker)
             {
                 PlayerInputFrame frame;
-                if (Mode == UIMode.Gameplay && !modeChangedThisFrame && !PodLaunch.Busy)
+                if (Mode == UIMode.Gameplay && !modeChangedThisFrame && !PodLaunch.Busy && !Unravelling)
                 {
                     frame = ReadFrame();
                 }
@@ -388,8 +396,8 @@ namespace Patchwork
             if (Dance.Update(udt) && Mode == UIMode.Dance) Haptics.Pulse(0.15f, 0.05f, 0.08f);
             Player.Visuals.DanceBeat = Dance.Beat;
             // Background ambience for the level (muffled with everything else while paused).
-            if (currentLevel == LevelId.Hub) Sfx.RequestLoop(LoopId.Skiff);
-            else Sfx.RequestLoop(LoopId.Meadow);
+            // (The Pod is quiet: no ambience loop there.)
+            if (currentLevel != LevelId.Hub) Sfx.RequestLoop(LoopId.Meadow);
             Sfx.TickLoops(udt);
             MusicPlayer.SetForm(Player.Forms.Current);
             Haptics.Tick(udt);
@@ -401,6 +409,7 @@ namespace Patchwork
                 if (HintAge >= HintDuration) ActiveHint = null;
             }
             if (ToastTimer > 0f) ToastTimer -= udt;
+            UpdateHearts(dt, udt);
             if (PrizeTimer > 0f) PrizeTimer -= udt;
             if (SecretTimer > 0f) SecretTimer -= udt;
             Score.Tick(dt);
@@ -788,7 +797,7 @@ namespace Patchwork
             if (!first)
             {
                 Sfx.Play(SfxId.Checkpoint, 0.6f);
-                ShowToast("Checkpoint stitched!");
+                ShowToast(Heal(MaxHearts) ? "Checkpoint stitched! Hearts patched up." : "Checkpoint stitched!");
             }
         }
 
@@ -811,8 +820,91 @@ namespace Patchwork
             FxBurst.Spawn(FxBurst.Kind.Sparkle, feet + Vector3.up, new Color(0.85f, 0.7f, 1f));
         }
 
+        // A creature of the Fray caught Patch: lose a heart, get knocked back, flash for a moment.
+        public void Hurt(Vector3 from)
+        {
+            if (Level == null || Level.IsHub || HurtTimer > 0f || Unravelling || Mode != UIMode.Gameplay || PodLaunch.Busy) return;
+            Hearts = Mathf.Max(0, Hearts - 1);
+            HurtTimer = 1.6f;
+            HeartsShake = 1f;
+            SnarlKnot.Bump(Player, from);
+            Sfx.Voice(SfxId.VoiceAww, Player.Forms.Current, 0.5f);
+            Haptics.Pulse(0.6f, 0.45f, 0.2f);
+            if (Hearts <= 0) StartUnravel();
+            else if (Hearts == 1) ShowToast("One heart left! Look for felt hearts to patch up.");
+        }
+
+        public bool Heal(int amount)
+        {
+            if (Hearts >= MaxHearts) return false;
+            Hearts = Mathf.Min(MaxHearts, Hearts + amount);
+            HeartsShake = 1f;
+            return true;
+        }
+
+        void StartUnravel()
+        {
+            unravelTimer = 0f;
+            Player.Hand.Release();
+            Player.Forms.CancelAll();
+            Player.Motor.ExternalControl = true;
+            Player.Motor.Velocity = Vector3.zero;
+            FxBurst.Spawn(FxBurst.Kind.Threads, Player.Motor.Center, FormLibrary.Get(Player.Forms.Current).PrimaryColor);
+            FxBurst.Spawn(FxBurst.Kind.Scraps, Player.Motor.Center, FormLibrary.Get(Player.Forms.Current).PrimaryColor);
+            Sfx.Play(SfxId.Unravel, 0.8f);
+            Player.Visuals.SetHidden(true);
+            ShowToast("Unravelled! Back to the last checkpoint...");
+        }
+
+        void UpdateHearts(float dt, float udt)
+        {
+            HeartsShake = Mathf.MoveTowards(HeartsShake, 0f, udt * 2f);
+            if (Unravelling)
+            {
+                unravelTimer += udt;
+                if (unravelTimer > 0.7f)
+                {
+                    FadeColor = DefaultFadeColor;
+                    Fade = Mathf.Max(Fade, Mathf.Clamp01((unravelTimer - 0.7f) / 0.4f));
+                }
+                if (unravelTimer > 1.3f)
+                {
+                    unravelTimer = -1f;
+                    Player.Motor.ExternalControl = false;
+                    Player.Visuals.SetHidden(false);
+                    Hearts = MaxHearts;
+                    HeartsShake = 1f;
+                    HurtTimer = 1.2f;
+                    Fade = 1f;
+                    Respawn(false);
+                }
+                return;
+            }
+            if (HurtTimer > 0f)
+            {
+                HurtTimer -= dt;
+                // Flicker while hurt.
+                Player.Visuals.SetHidden(HurtTimer > 0f && Mathf.Repeat(HurtTimer * 12f, 1f) < 0.35f);
+            }
+        }
+
         public void Respawn(bool fell)
         {
+            if (fell && Level != null && !Level.IsHub && !Unravelling)
+            {
+                // A fall costs a heart; out of hearts, Patch unravels (and comes back with all three).
+                Hearts = Mathf.Max(0, Hearts - 1);
+                HeartsShake = 1f;
+                if (Hearts <= 0)
+                {
+                    Hearts = MaxHearts;
+                    ShowToast("Unravelled! Back to the last checkpoint.");
+                    fell = false;
+                    FadeColor = DefaultFadeColor;
+                    Fade = 1f;
+                    Sfx.Play(SfxId.Unravel, 0.6f);
+                }
+            }
             if (fell)
             {
                 // Quick dip to dark so the jump back to the checkpoint isn't a jarring cut.

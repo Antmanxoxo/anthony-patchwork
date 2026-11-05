@@ -20,6 +20,7 @@ namespace Patchwork
             PodTheme.ResetStatics();
             PodLaunch.ResetStatics();
             TapeBall.ResetStatics();
+            Monsters.ResetStatics();
             Level1Director.ResetStatics();
             ThreadRace.ResetStatics();
             WindChime.FirstRung = null;

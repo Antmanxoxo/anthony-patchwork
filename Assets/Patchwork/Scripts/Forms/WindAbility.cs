@@ -86,6 +86,7 @@ namespace Patchwork
                     FxBurst.Spawn(FxBurst.Kind.Puff, Motor.Center - dir * 0.5f, new Color(1f, 1f, 1f), -dir);
                     Player.Visuals.PunchScale(new Vector3(1.3f, 0.8f, 1.3f));
                     BlowToys(dir);
+                    Monsters.Gust(Player, Motor.Center, dir);
                 }
                 else if (failToastTimer <= 0f)
                 {

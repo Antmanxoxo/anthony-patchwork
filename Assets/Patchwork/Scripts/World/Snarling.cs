@@ -34,6 +34,9 @@ namespace Patchwork
             s.pos = from;
             s.phase = Random.value;
             s.Build();
+            var fc = go.AddComponent<FrayCreature>();
+            fc.Center = () => s.Center;
+            fc.Pop = p => s.Pop(p);
             go.transform.position = from;
             return s;
         }
@@ -121,8 +124,9 @@ namespace Patchwork
                 if (SnarlKnot.HitHard(player, Center)) Pop(player);
                 else if (bumpCooldown <= 0f)
                 {
+                    // A nip: Patch loses a heart (and gets knocked back).
                     bumpCooldown = 0.7f;
-                    SnarlKnot.Bump(player, Center);
+                    if (game != null) game.Hurt(Center);
                 }
             }
         }
@@ -139,6 +143,7 @@ namespace Patchwork
             FxBurst.Spawn(FxBurst.Kind.Sparkle, Center, new Color(1f, 0.85f, 0.5f));
             ScoreKeeper.Bonus(150, Center);
             ScoreBubbles.BurstAt(Center, 6);
+            Monsters.Popped(Center);
             gameObject.SetActive(false);
             if (Popped != null) Popped(this);
         }

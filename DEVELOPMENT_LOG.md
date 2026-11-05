@@ -1,5 +1,26 @@
 # Development Log
 
+## Hearts, creatures and a calmer start
+- Patch has three hearts. The Fray's creatures nip (lose a heart, get knocked back, flash for
+  a moment); falling off the world costs a heart too. Out of hearts, Patch unravels and comes
+  back at the last checkpoint with all three. Checkpoints patch you back up to full, and felt
+  hearts are dotted round town (creatures sometimes drop one too).
+- New creatures roaming Toybox Town (none near where you start):
+  - Tangle Hoppers: springy yarn balls that bounce after you.
+  - Static Moths: flutter overhead and swoop down at you.
+  - Static Spitters: sit still and lob crackly fuzzballs; dodge them, then stomp.
+  - More Snarlings out on patrol, and they bite now.
+- Ways to fight back: stomp them, swing into them as Yarn, or blow them apart with Wind's
+  gust. Stomp several in a row without landing for a growing combo bonus.
+- A calmer start: the counters (band, Heartstrings, buttons, marbles, threads), the score and
+  the controls strip now stay tucked away, sliding in when something changes or when you stand
+  still for a moment. The hearts show when you're hurt or when they change.
+- The Tape Ball and all the clutter have moved out of town to a little secret in the far
+  north-west corner, past Spindle Hill: the Lost & Found, marked by a polka-dot sign. You can
+  now hold Grab to push it along (it rolls as you go).
+- Fewer drifting petals in town.
+- The level select now says "Let's go!" instead of "Set sail".
+
 ## The Pod in space, and a Tape Ball for Toybox Town
 - The Pod now floats in deep space: a black sky full of tiny stars drifting past the window
   (so it feels like it's flying), felt stars, a polka-dot planet with a zigzag ring, a big

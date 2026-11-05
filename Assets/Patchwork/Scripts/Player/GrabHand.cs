@@ -119,13 +119,23 @@ namespace Patchwork
         {
             if (Held == null || Held.Body == null) return;
             var rb = Held.Body;
+            float rollRadius = 0f;
+            if (Held.Rolls)
+            {
+                // A rolling ball (the Tape Ball): keep it just in front as it grows.
+                var tb = Held.GetComponent<TapeBall>();
+                rollRadius = tb != null ? tb.Radius : 0.5f;
+                Vector3 dir = offset.sqrMagnitude > 0.01f ? offset.normalized : transform.forward;
+                offset = dir * (rollRadius + player.Motor.Controller.radius + 0.2f);
+            }
             Vector3 want = transform.position + offset;
             Vector3 d = want - rb.position;
             d.y = 0f;
             Vector3 v = d / Time.fixedDeltaTime;
             if (v.magnitude > 9f) v = v.normalized * 9f;
             rb.linearVelocity = new Vector3(v.x, rb.linearVelocity.y, v.z);
-            rb.angularVelocity = new Vector3(0f, rb.angularVelocity.y * 0.5f, 0f);
+            if (rollRadius > 0f) rb.angularVelocity = Vector3.Cross(Vector3.up, new Vector3(v.x, 0f, v.z)) / Mathf.Max(0.2f, rollRadius);
+            else rb.angularVelocity = new Vector3(0f, rb.angularVelocity.y * 0.5f, 0f);
         }
     }
 }

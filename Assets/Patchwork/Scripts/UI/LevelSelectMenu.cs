@@ -222,7 +222,7 @@ namespace Patchwork
             // Prompts.
             float py = card.yMax - 76f;
             float px = card.x + 40f;
-            px += UIKit.PromptLabel(px, py, 44f, PromptAction.Confirm, e.Playable ? "Set sail" : "Locked", kb, ink, a) + 36f;
+            px += UIKit.PromptLabel(px, py, 44f, PromptAction.Confirm, e.Playable ? "Let's go!" : "Locked", kb, ink, a) + 36f;
             UIKit.PromptLabel(px, py, 44f, PromptAction.Cancel, "Back", kb, ink, a);
 
             // Header across the top.

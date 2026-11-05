@@ -256,7 +256,7 @@ namespace Patchwork
             if (hearts < Level1Builder.HeartstringIds.Length)
                 lines.Add(new[] { "There be " + (Level1Builder.HeartstringIds.Length - hearts) + " Heartstrings still loose in Toybox Town.",
                                   "Some only show up when ye beat a challenge. Knots to pop, races to run, Snarlings to sort out." });
-            lines.Add(new[] { "Snarlings, they call the Fray's little critters. All grumble, no bite.", "Hop on their heads and they come right undone!" });
+            lines.Add(new[] { "Snarlings, they call the Fray's little critters. And they bite! Three nips and ye'll come unravelled.", "Hop on their heads and they come right undone. Felt hearts'll patch ye up." });
             if (found < needed)
                 lines.Add(new[] { "Word on the wind is there be " + (needed - found) + " golden button" + (needed - found == 1 ? "" : "s") + " still hidin' in Toybox Town.",
                                   "One of 'em hums a little tune, they say. Keep yer ears open, matey." });

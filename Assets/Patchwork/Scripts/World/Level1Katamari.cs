@@ -3,9 +3,10 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    // Toybox Town, with a dash of the roll-everything-up games: hundreds of bright, oversized
-    // everyday things scattered round town (dice, erasers, sweets, coins, crayons, dominoes,
-    // sushi, teacups, toy cars...), a Tape Ball to roll them up with, and a rainbow over the box.
+    // Toybox Town, with a dash of the roll-everything-up games. Tucked away in the far north-west
+    // corner, past Spindle Hill, is the Lost & Found: a heap of bright, oversized everyday things
+    // (dice, erasers, sweets, coins, crayons, dominoes, sushi, teacups, toy cars...) and a Tape
+    // Ball to roll them up with. And a rainbow over the box.
     public static partial class Level1Builder
     {
         static readonly Color[] Bright =
@@ -22,8 +23,8 @@ namespace Patchwork
             Physics.SyncTransforms();
             Rainbow(kit);
 
-            // The Tape Ball, near where you start.
-            Vector3[] homes = { new Vector3(-5f, 0f, -18f), new Vector3(5.5f, 0f, -18.5f), new Vector3(-7f, 0f, -11f), new Vector3(7f, 0f, -10f), new Vector3(0f, 0f, -20f) };
+            // The Tape Ball, in the Lost & Found corner (a little secret).
+            Vector3[] homes = { new Vector3(-72f, 0f, 64f), new Vector3(-74f, 0f, 60f), new Vector3(-70f, 0f, 58f), new Vector3(-78f, 0f, 66f), new Vector3(-68f, 0f, 62f) };
             Vector3 home = homes[0];
             foreach (var h in homes)
             {
@@ -35,13 +36,30 @@ namespace Patchwork
                 break;
             }
             TapeBall.Create(kit, home);
-            kit.Hint(home + Vector3.up * 1.5f, new Vector3(7f, 4f, 7f), "The Tape Ball",
-                "Run into the Tape Ball to roll it along. Small things stick to it and it grows, so it can pick up bigger things. Make it big enough and it becomes a star!");
+            kit.Hint(home + Vector3.up * 1.5f, new Vector3(7f, 4f, 7f), "The Lost & Found",
+                "A Tape Ball! Run into it, or hold {Grab} to push it. Small things stick to it and it grows, so it can pick up bigger things. Make it big enough and it becomes a star!");
+            LostAndFoundSign(kit, new Vector3(-58f, 0f, 47f));
 
-            Scatter(kit, home);
+            Scatter(kit, home, new Vector2(-87f, 46f), new Vector2(-54f, 87f), 95);
         }
 
-        static void Scatter(LevelKit kit, Vector3 avoid)
+        // A little felt pennant on two crayon posts marking the corner.
+        static void LostAndFoundSign(LevelKit kit, Vector3 feet)
+        {
+            var g = kit.Group("LostAndFoundSign", feet);
+            g.rotation = Quaternion.Euler(0f, 220f, 0f);
+            for (int s = -1; s <= 1; s += 2)
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(s * 1.4f, 1.3f, 0f), new Vector3(0.18f, 1.3f, 0.18f), PatchworkAssets.Plain(s < 0 ? Bright[0] : Bright[2], 0.4f), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 2.3f, 0f), new Vector3(3.2f, 0.9f, 0.08f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Polka, Bright[3], Ivory), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.82f, 0f), new Vector3(3.2f, 0.12f, 0.1f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Zigzag, Bright[6], Ivory), default(Vector3), g);
+            // A few things spilling out by the sign, so it's clear what's down here.
+            var die = kit.Group("SignDie", feet + new Vector3(1.8f, 0f, -1.2f));
+            Die(kit, die, 0.6f, new System.Random(3));
+            var cup = kit.Group("SignCup", feet + new Vector3(-2f, 0f, -0.8f));
+            Teacup(kit, cup, 0.6f, new System.Random(4));
+        }
+
+        static void Scatter(LevelKit kit, Vector3 avoid, Vector2 min, Vector2 max, int target)
         {
             var rng = new System.Random(77);
             ItemFn[] small = { Die, Eraser, Candy, Coin, Thumbtack, CrayonItem, Marble, SewButton, Card, Battery };
@@ -50,10 +68,11 @@ namespace Patchwork
             var placed = new List<Vector4>();
             int count = 0;
             int mask = ~(1 << 2);
-            for (int attempt = 0; attempt < 1600 && count < 240; attempt++)
+            for (int attempt = 0; attempt < target * 8 && count < target; attempt++)
             {
-                float x = (float)(rng.NextDouble() * 2.0 - 1.0) * (Half - 3f);
-                float z = (float)(rng.NextDouble() * 2.0 - 1.0) * (Half - 3f);
+                float x = Mathf.Lerp(min.x, max.x, (float)rng.NextDouble());
+                float z = Mathf.Lerp(min.y, max.y, (float)rng.NextDouble());
+                if (new Vector2(x + 62f, z - 74f).sqrMagnitude < 64f) continue;   // the rocking horse
                 double roll = rng.NextDouble();
                 float s;
                 ItemFn fn;
@@ -67,7 +86,6 @@ namespace Patchwork
                 if (hit.normal.y < 0.95f || hit.point.y > 0.35f || hit.point.y < -0.15f || hit.rigidbody != null) continue;
                 Vector3 p = hit.point;
                 if (new Vector2(p.x - avoid.x, p.z - avoid.z).sqrMagnitude < 9f) continue;
-                if (new Vector2(p.x - SpawnPoint.x, p.z - SpawnPoint.z).sqrMagnitude < 6f) continue;
                 float clear = solid ? s * 0.5f + 1.6f : s * 0.5f + 0.1f;
                 if (Physics.CheckSphere(p + Vector3.up * (clear + 0.08f), clear, mask, QueryTriggerInteraction.Ignore)) continue;
                 bool crowded = false;

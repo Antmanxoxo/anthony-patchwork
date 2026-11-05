@@ -129,7 +129,8 @@ namespace Patchwork
             ScoreBubbles.Settle(kit);
             GroundCover(kit);
             Katamari(kit);
-            AmbientFluff.Create(kit.Root, 80, -6f);
+            Creatures(kit);
+            AmbientFluff.Create(kit.Root, 45, -6f);
             return info;
         }
 
@@ -481,7 +482,7 @@ namespace Patchwork
             };
             Challenge(foes, MakeHeartstring(kit, "L1_hs_tangle", "Tin Tangle", new Vector3(0f, 1.7f, 46f), true));
             kit.Hint(new Vector3(0f, 1.5f, 34.5f), new Vector3(8f, 4f, 3f), "Snarlings!",
-                "The Fray's little creatures have taken over the barracks. Jump on their heads to unravel them!");
+                "The Fray's little creatures have taken over the barracks. Jump on their heads to unravel them, but don't let them nip you: three nips and you unravel!");
             kit.AddCheckpoint(new Vector3(0f, 0.06f, 35.5f), 0f);
         }
 
