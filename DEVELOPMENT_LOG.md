@@ -1,5 +1,14 @@
 # Development Log
 
+## Builds look the same as the editor
+- Built games were running with no post-processing at all (no bloom, colour grading, warm and
+  cool tint or vignette), so they looked flat compared with Play mode. The Player.log showed
+  why: URP stripped some post-processing shaders it thought were unused (depth of field,
+  Panini projection), and a build missing any of them turns post-processing off entirely. The
+  look is made from Volume profiles built in code, so URP can't see what's used. Turned off
+  "strip unused post-processing" in the URP global settings, and added a pre-build check
+  (`PatchworkBuildChecks`) that turns it back off before every build if it ever gets reset.
+
 ## Taller trees, a findable willow, new corners and a quilted map
 - Trees in the Whispering Wood are much taller with slimmer crowns, and each one claims room
   for its crown before it's planted, so they no longer clip into each other: pines 11-19 m

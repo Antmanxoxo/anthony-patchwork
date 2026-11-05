@@ -159,6 +159,9 @@ Stuff I need to remember about how Patchwork is put together.
   LateUpdate while grounded. It knocks you off when swimming, warping or under external control.
 - `LayoutSurvey.Run` (editor only) writes Logs/patchwork_layout_<level>.txt: a 4 m grid of
   how much is drawn per cell, and of solid heights.
+- Builds: keep URP's "strip unused post-processing variants" OFF (Project Settings > Graphics >
+  URP). `PatchworkBuildChecks` (IPreprocessBuildWithReport) enforces it. The built game's log is
+  %USERPROFILE%/AppData/LocalLow/Little Colossus/Patchwork/Player.log.
 - Pod sounds: `PodWhimsy` (on the PodSounds group) plays a random soft one-shot every 6-12 s in
   Gameplay / PodEdit (`SfxId.Beeper`, `AlienCoo`, `Twinkle`, `Warble`, plus pitched chimes).
   `Sfx.SoftRocket` makes `PodPop` (launch tube) and `PodRocket` (level select launch).
