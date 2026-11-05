@@ -34,12 +34,15 @@ namespace Patchwork
             ForestExpansion(kit);
             WhisperingWood(kit);
             Physics.SyncTransforms();
+            ForestUndergrowth(kit);
             Biomes(kit);
             ButtonOrchard(kit);
             PatchworkFarm(kit);
             ToadstoolDell(kit);
             WildflowerMeadow(kit);
             Vignettes(kit);
+            Physics.SyncTransforms();
+            Corners(kit);
             Trails(kit);
             Physics.SyncTransforms();
             Wildlife(kit);
@@ -47,6 +50,7 @@ namespace Patchwork
             var P = kit.Info.MapPins;
             P.Add(new MapPin("Whispering Wood", new Vector3(-80f, 0f, -30f)));
             P.Add(new MapPin("Moonglow Glade", MoonGladeCenter));
+            P.Add(new MapPin("Wishing Willow", WillowSpot));
             P.Add(new MapPin("Deep Wood", new Vector3(-95f, 0f, -95f)));
             P.Add(new MapPin("Button Orchard", new Vector3(-6f, 0f, -100f)));
             P.Add(new MapPin("Patchwork Farm", new Vector3(100f, 0f, 98f)));
@@ -165,19 +169,20 @@ namespace Patchwork
             // giant oaks whose dark crowns shade the whole wood.
             Vector3[] oaks = { new Vector3(-108f, 0f, -96f), new Vector3(-88f, 0f, -106f), new Vector3(-104f, 0f, -86f), new Vector3(-84f, 0f, -96f), new Vector3(-96f, 0f, -80f), new Vector3(-110f, 0f, -110f) };
             foreach (var o in oaks)
-                if (Spot(o, 2.2f, out Vector3 p)) GiantOak(kit, p, 13f + (o.x * 7f % 3f), rng);
-            int trees = 0;
-            for (float x = -112f; x <= -72f; x += 4.6f)
-                for (float z = -112f; z <= -72f; z += 4.6f)
+                if (Spot(o, OakSpread, out Vector3 p)) GiantOak(kit, p, 19f + (float)rng.NextDouble() * 4f, rng);
+            for (float x = -112f; x <= -72f; x += 5f)
+                for (float z = -112f; z <= -72f; z += 5f)
                 {
                     Vector3 near = new Vector3(x + (float)(rng.NextDouble() - 0.5) * 3f, 0f, z + (float)(rng.NextDouble() - 0.5) * 3f);
                     // Thin out towards the gate so the edge feels like a treeline, not a wall.
                     float edge = Mathf.Max(near.x + 72f, near.z + 72f);
                     if (edge > -2f && rng.NextDouble() < 0.6) continue;
-                    if (!Spot(near, 1.6f, out Vector3 p)) continue;
-                    trees++;
-                    if (rng.NextDouble() < 0.7) SpookyPine(kit, p, 7f + (float)rng.NextDouble() * 5f, rng);
-                    else GnarledTree(kit, p, 5.5f + (float)rng.NextDouble() * 3f, rng, rng.NextDouble() < 0.4);
+                    if (rng.NextDouble() < 0.7)
+                    {
+                        float h = 13f + (float)rng.NextDouble() * 6f;
+                        if (Spot(near, PineSpread(h), out Vector3 p)) SpookyPine(kit, p, h, rng);
+                    }
+                    else if (Spot(near, GnarlSpread, out Vector3 q)) GnarledTree(kit, q, 8.5f + (float)rng.NextDouble() * 3.5f, rng, rng.NextDouble() < 0.4);
                 }
 
             // Glowing mushrooms in clumps, and a fairy ring round the hollow tree's clearing.
@@ -290,24 +295,38 @@ namespace Patchwork
         }
 
         // A tall dark felt pine: stacked felt tiers with a lighter blanket-stitch edge.
+        // How much room each kind of tree needs (its crown's radius), so crowns don't overlap.
+        const float GnarlSpread = 2.6f, BirchSpread = 2.3f, OakSpread = 5.6f, BrambleSpread = 1.4f;
+        static float PineBase(float h) { return Mathf.Clamp(h * 0.15f, 1.7f, 2.7f); }
+        static float PineSpread(float h) { return PineBase(h) + 0.3f; }
+
+        // A tall dark felt pine: a bare lower trunk, then stacked felt tiers with a lighter
+        // blanket-stitch edge, narrowing to a point.
         static void SpookyPine(LevelKit kit, Vector3 feet, float h, System.Random rng)
         {
             var g = kit.Group("SpookyPine", feet);
             g.rotation = Quaternion.Euler((float)(rng.NextDouble() - 0.5) * 6f, (float)rng.NextDouble() * 360f, (float)(rng.NextDouble() - 0.5) * 6f);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, h * 0.2f, 0f), new Vector3(0.45f, h * 0.2f, 0.45f), PatchworkAssets.Felt(new Color(0.3f, 0.22f, 0.2f)), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, h * 0.3f, 0f), new Vector3(0.55f, h * 0.3f, 0.55f), PatchworkAssets.Felt(new Color(0.3f, 0.22f, 0.2f)), default(Vector3), g);
+            // Bark stitches and a few stubby old branches on the bare trunk.
+            var barkStitch = PatchworkAssets.Felt(new Color(0.42f, 0.32f, 0.28f));
+            for (int s = 0; s < 4; s++)
+                kit.Deco(PrimitiveType.Cube, Quaternion.Euler(0f, s * 97f, 0f) * new Vector3(0f, 1f + s * h * 0.07f, 0.27f), new Vector3(0.05f, 0.5f, 0.03f), barkStitch, new Vector3(0f, s * 97f, 0f), g);
+            for (int s = 0; s < 2; s++)
+                Rod(kit, new Vector3(0f, h * (0.2f + s * 0.1f), 0f), Quaternion.Euler(0f, s * 150f + 40f, 0f) * new Vector3(0f, h * (0.24f + s * 0.1f), 0.8f), PatchworkAssets.Felt(new Color(0.3f, 0.22f, 0.2f)), 0.1f, g);
             Color[] tiers = { new Color(0.16f, 0.3f, 0.32f), new Color(0.13f, 0.24f, 0.3f), new Color(0.18f, 0.27f, 0.36f) };
             var stitch = PatchworkAssets.Felt(new Color(0.42f, 0.55f, 0.55f));
-            const int count = 5;
+            float rb = PineBase(h);
+            const int count = 6;
             for (int t = 0; t < count; t++)
             {
                 float k = t / (float)(count - 1);
-                float y = h * Mathf.Lerp(0.28f, 0.86f, k);
-                float r = h * Mathf.Lerp(0.36f, 0.1f, k);
-                var tier = kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, y, 0f), new Vector3(r * 2f, h * 0.06f, r * 2f), PatchworkAssets.Felt(tiers[t % tiers.Length]), new Vector3(0f, t * 23f, (t % 2 == 0 ? 3f : -3f)), g);
-                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, y - h * 0.055f, 0f), new Vector3(r * 2f + 0.12f, 0.03f, r * 2f + 0.12f), stitch, new Vector3(0f, t * 23f, (t % 2 == 0 ? 3f : -3f)), g);
+                float y = h * Mathf.Lerp(0.4f, 0.9f, k);
+                float r = Mathf.Lerp(rb, 0.4f, k);
+                var tier = kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, y, 0f), new Vector3(r * 2f, h * 0.045f, r * 2f), PatchworkAssets.Felt(tiers[t % tiers.Length]), new Vector3(0f, t * 23f, (t % 2 == 0 ? 3f : -3f)), g);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, y - h * 0.042f, 0f), new Vector3(r * 2f + 0.12f, 0.03f, r * 2f + 0.12f), stitch, new Vector3(0f, t * 23f, (t % 2 == 0 ? 3f : -3f)), g);
                 tier.name = "Tier";
             }
-            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, h * 0.95f, 0f), new Vector3(0.5f, 0.8f, 0.5f), PatchworkAssets.Felt(tiers[1]), default(Vector3), g);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, h * 0.97f, 0f), new Vector3(0.45f, 0.9f, 0.45f), PatchworkAssets.Felt(tiers[1]), default(Vector3), g);
             Trunk(g, 0.35f, h);
         }
 
@@ -367,16 +386,16 @@ namespace Patchwork
             {
                 float ang = k * 72f;
                 Rod(kit, new Vector3(0f, 0.8f, 0f), Quaternion.Euler(0f, ang, 0f) * new Vector3(0f, 0f, 1.8f), bark, 0.55f, g);
-                Rod(kit, new Vector3(0f, h * 0.6f, 0f), Quaternion.Euler(0f, ang + 20f, 0f) * new Vector3(0f, h * 0.78f, 3.8f), bark, 0.4f, g);
+                Rod(kit, new Vector3(0f, h * 0.62f, 0f), Quaternion.Euler(0f, ang + 20f, 0f) * new Vector3(0f, h * 0.8f, 3.2f), bark, 0.4f, g);
             }
             Color[] crown = { new Color(0.12f, 0.2f, 0.22f), new Color(0.15f, 0.22f, 0.28f), new Color(0.1f, 0.17f, 0.2f) };
             for (int k = 0; k < 4; k++)
             {
                 float ang = k * 90f + 45f;
-                Vector3 p = new Vector3(0f, h * 0.85f + (k % 2) * 0.8f, 0f) + Quaternion.Euler(0f, ang, 0f) * new Vector3(0f, 0f, 3.2f);
-                kit.Deco(PrimitiveType.Sphere, p, new Vector3(8f, 3.6f, 7f), PatchworkAssets.Felt(crown[k % crown.Length]), new Vector3(0f, ang, 0f), g);
+                Vector3 p = new Vector3(0f, h * 0.86f + (k % 2) * 0.8f, 0f) + Quaternion.Euler(0f, ang, 0f) * new Vector3(0f, 0f, 2.6f);
+                kit.Deco(PrimitiveType.Sphere, p, new Vector3(6f, 3.2f, 5.4f), PatchworkAssets.Felt(crown[k % crown.Length]), new Vector3(0f, ang, 0f), g);
             }
-            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, h * 0.95f, 0f), new Vector3(9f, 4f, 9f), PatchworkAssets.Felt(crown[0]), default(Vector3), g);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, h * 0.95f, 0f), new Vector3(7f, 3.6f, 7f), PatchworkAssets.Felt(crown[0]), default(Vector3), g);
             Trunk(g, 0.85f, h);
         }
 

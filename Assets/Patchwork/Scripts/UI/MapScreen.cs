@@ -122,40 +122,45 @@ namespace Patchwork
             capRT = null;
         }
 
-        // Turns the snapshot into a soft watercolour on cream paper with brown ink outlines.
+        // Turns the snapshot into felt appliqué: flat, bright patches of fabric with darker
+        // stitched seams where one thing meets another, a cream running stitch along the seams,
+        // and a woven texture over everything.
         static Texture2D Stylize(Texture2D src)
         {
             int w = src.width, h = src.height;
             var px = src.GetPixels();
             var lum = new float[w * h];
             for (int i = 0; i < px.Length; i++) lum[i] = px[i].r * 0.3f + px[i].g * 0.59f + px[i].b * 0.11f;
-            var paper = new Color(0.96f, 0.91f, 0.78f);
-            var ink = new Color(0.36f, 0.22f, 0.16f);
+            var cream = new Color(0.98f, 0.94f, 0.84f);
             var outPx = new Color[w * h];
+            System.Func<int, int, float> edgeAt = (x, y) =>
+            {
+                x = Mathf.Clamp(x, 1, w - 2);
+                y = Mathf.Clamp(y, 1, h - 2);
+                float gx = (lum[(y - 1) * w + x + 1] + 2f * lum[y * w + x + 1] + lum[(y + 1) * w + x + 1]) - (lum[(y - 1) * w + x - 1] + 2f * lum[y * w + x - 1] + lum[(y + 1) * w + x - 1]);
+                float gy = (lum[(y + 1) * w + x - 1] + 2f * lum[(y + 1) * w + x] + lum[(y + 1) * w + x + 1]) - (lum[(y - 1) * w + x - 1] + 2f * lum[(y - 1) * w + x] + lum[(y - 1) * w + x + 1]);
+                return Mathf.Clamp01((Mathf.Sqrt(gx * gx + gy * gy) - 0.16f) * 2.4f);
+            };
             for (int y = 0; y < h; y++)
                 for (int x = 0; x < w; x++)
                 {
                     int i = y * w + x;
                     Color c = px[i];
-                    // Brighter, a touch more saturated, then washed toward the paper colour.
                     float l = lum[i];
-                    c = Color.LerpUnclamped(new Color(l, l, l), c, 1.25f);
-                    c = Color.Lerp(c, paper * (0.6f + l * 0.6f), 0.28f);
-                    // Gentle posterise, like flat watercolour washes.
-                    for (int k = 0; k < 3; k++)
-                    {
-                        float v = c[k];
-                        c[k] = Mathf.Lerp(v, Mathf.Round(v * 7f) / 7f, 0.45f);
-                    }
-                    // Ink lines where the picture changes sharply (Sobel on brightness).
-                    int xl = Mathf.Max(0, x - 1), xr = Mathf.Min(w - 1, x + 1), yd = Mathf.Max(0, y - 1), yu = Mathf.Min(h - 1, y + 1);
-                    float gx = (lum[yd * w + xr] + 2f * lum[y * w + xr] + lum[yu * w + xr]) - (lum[yd * w + xl] + 2f * lum[y * w + xl] + lum[yu * w + xl]);
-                    float gy = (lum[yu * w + xl] + 2f * lum[yu * w + x] + lum[yu * w + xr]) - (lum[yd * w + xl] + 2f * lum[yd * w + x] + lum[yd * w + xr]);
-                    float edge = Mathf.Clamp01((Mathf.Sqrt(gx * gx + gy * gy) - 0.18f) * 2.2f);
-                    c = Color.Lerp(c, ink, edge * 0.75f);
-                    // Paper grain.
-                    float grain = (Hash(x, y) - 0.5f) * 0.05f;
-                    c.r += grain; c.g += grain; c.b += grain;
+                    // Richer, brighter colour, then flattened into a few fabric tones.
+                    c = Color.LerpUnclamped(new Color(l, l, l), c, 1.4f);
+                    c = Color.Lerp(c, cream * (0.55f + l * 0.6f), 0.18f);
+                    for (int k = 0; k < 3; k++) c[k] = Mathf.Lerp(c[k], Mathf.Round(c[k] * 6f) / 6f, 0.75f);
+                    // Seams: a dark fold where things meet, a light edge just beside it (like the
+                    // raised edge of a felt patch), and a dashed cream running stitch along it.
+                    float seam = edgeAt(x, y);
+                    float lift = edgeAt(x - 2, y + 2) - seam;
+                    c = Color.Lerp(c, c * 0.5f, seam * 0.75f);
+                    if (lift > 0.2f) c = Color.Lerp(c, Color.Lerp(c, Color.white, 0.35f), lift);
+                    if (seam > 0.55f && ((x + y) / 4) % 3 == 0) c = Color.Lerp(c, cream, 0.7f);
+                    // Woven fabric texture and a little fuzz.
+                    float weave = Mathf.Sin(x * 1.5708f) * Mathf.Sin(y * 1.5708f) * 0.025f + (Hash(x, y) - 0.5f) * 0.06f;
+                    c.r += weave; c.g += weave; c.b += weave;
                     c.a = 1f;
                     outPx[i] = c;
                 }
@@ -221,6 +226,36 @@ namespace Patchwork
             return new Vector2(m.x + u * m.width, m.yMax - v * m.height);
         }
 
+        // A dashed running stitch along a rectangle's edge (for small things the panel helper
+        // is too big for).
+        static void RunningStitch(Rect r, Color c, float dash = 7f, float gap = 5f, float thick = 2f)
+        {
+            for (float x = r.x + 2f; x < r.xMax - dash * 0.5f; x += dash + gap)
+            {
+                float w = Mathf.Min(dash, r.xMax - x);
+                UIKit.Fill(new Rect(x, r.y, w, thick), c, 1f);
+                UIKit.Fill(new Rect(x, r.yMax - thick, w, thick), c, 1f);
+            }
+            for (float y = r.y + 2f; y < r.yMax - dash * 0.5f; y += dash + gap)
+            {
+                float hh = Mathf.Min(dash, r.yMax - y);
+                UIKit.Fill(new Rect(r.x, y, thick, hh), c, 1f);
+                UIKit.Fill(new Rect(r.xMax - thick, y, thick, hh), c, 1f);
+            }
+        }
+
+        // A sewing button: a round disc with a rim and four thread holes.
+        static void Button(Vector2 c, float d, Color col, float k)
+        {
+            UIKit.Circle(c + new Vector2(1.5f, 2.5f), d, new Color(0f, 0f, 0f, 0.28f * k));
+            UIKit.Circle(c, d, new Color(col.r, col.g, col.b, k));
+            UIKit.CircleOutline(c, d * 0.78f, new Color(col.r * 0.7f, col.g * 0.7f, col.b * 0.7f, k), Mathf.Max(1.5f, d * 0.05f));
+            float o = d * 0.12f, hd = d * 0.13f;
+            for (int sx = -1; sx <= 1; sx += 2)
+                for (int sy = -1; sy <= 1; sy += 2)
+                    UIKit.Circle(c + new Vector2(sx * o, sy * o), hd, new Color(0.2f, 0.12f, 0.1f, 0.8f * k));
+        }
+
         public void Draw(bool kb)
         {
             MakeIcons();
@@ -229,56 +264,71 @@ namespace Patchwork
             float pop = UIKit.EaseOutBack(Mathf.Clamp01(openTime / 0.35f));
             UIKit.Fill(new Rect(0f, 0f, W, H), new Color(0.12f, 0.08f, 0.14f, 0.55f * k));
             var level = game.Level;
-            var inkC = new Color(0.36f, 0.22f, 0.16f, k);
+            var thread = new Color(0.99f, 0.95f, 0.85f, 0.9f * k);
+            var brown = new Color(0.36f, 0.22f, 0.16f, k);
             var red = new Color(0.86f, 0.22f, 0.2f, k);
 
-            // The paper: cream with a faint grid, a torn-ish dark edge and a drop shadow.
+            // The quilt: a backing of patchwork squares, each stitched round, with a binding.
             float pw = 1560f, ph = 960f;
-            var paperR = new Rect((W - pw) * 0.5f, (H - ph) * 0.5f + (1f - pop) * 60f, pw, ph);
-            UIKit.Fill(new Rect(paperR.x + 8f, paperR.y + 12f, pw, ph), new Color(0f, 0f, 0f, 0.3f * k), 18f);
-            UIKit.Fill(paperR, new Color(0.97f, 0.93f, 0.82f, k), 18f);
-            for (float gx = paperR.x + 40f; gx < paperR.xMax - 10f; gx += 40f)
-                UIKit.Fill(new Rect(gx, paperR.y + 10f, 1.5f, ph - 20f), new Color(0.6f, 0.68f, 0.72f, 0.25f * k));
-            for (float gy = paperR.y + 40f; gy < paperR.yMax - 10f; gy += 40f)
-                UIKit.Fill(new Rect(paperR.x + 10f, gy, pw - 20f, 1.5f), new Color(0.6f, 0.68f, 0.72f, 0.25f * k));
-            UIKit.Outline(paperR, new Color(0.6f, 0.45f, 0.3f, 0.8f * k), 4f, 18f);
+            var quilt = new Rect((W - pw) * 0.5f, (H - ph) * 0.5f + (1f - pop) * 60f, pw, ph);
+            UIKit.Fill(new Rect(quilt.x + 8f, quilt.y + 12f, pw, ph), new Color(0f, 0f, 0f, 0.3f * k), 26f);
+            UIKit.Fill(quilt, new Color(0.62f, 0.32f, 0.36f, k), 26f);
+            Color[] squares = { new Color(0.96f, 0.86f, 0.74f), new Color(0.78f, 0.86f, 0.92f), new Color(0.98f, 0.8f, 0.82f), new Color(0.84f, 0.9f, 0.76f), new Color(0.98f, 0.9f, 0.68f), new Color(0.86f, 0.8f, 0.94f) };
+            Texture[] prints = { UIArt.PatternDots, UIArt.PatternKnit, UIArt.PatternSwirl, UIArt.PatternWaves };
+            int cols = 8, rows = 5;
+            float sw = (pw - 36f) / cols, sh = (ph - 36f) / rows;
+            for (int cx = 0; cx < cols; cx++)
+                for (int cy = 0; cy < rows; cy++)
+                {
+                    var sq = new Rect(quilt.x + 18f + cx * sw + 2f, quilt.y + 18f + cy * sh + 2f, sw - 4f, sh - 4f);
+                    Color sc = squares[(cx + cy * 3) % squares.Length];
+                    UIKit.Fill(sq, new Color(sc.r, sc.g, sc.b, k), 8f);
+                    var pr = prints[(cx * 2 + cy) % prints.Length];
+                    if (pr != null) UIKit.PatternFill(sq, pr, new Color(sc.r * 0.75f, sc.g * 0.75f, sc.b * 0.75f, 0.35f * k), 34f, new Vector2(cx * 13f, cy * 7f));
+                    RunningStitch(new Rect(sq.x + 6f, sq.y + 6f, sq.width - 12f, sq.height - 12f), new Color(1f, 1f, 1f, 0.55f * k));
+                }
+            RunningStitch(new Rect(quilt.x + 8f, quilt.y + 8f, pw - 16f, ph - 16f), thread, 12f, 8f, 3f);
 
-            // The painting, framed with a wobbly double ink line.
-            float ms = ph - 120f;
-            var mapR = new Rect(paperR.x + 60f, paperR.y + 80f, ms, ms);
-            UIKit.Fill(new Rect(mapR.x - 10f, mapR.y - 10f, mapR.width + 20f, mapR.height + 20f), new Color(0.9f, 0.84f, 0.68f, k), 14f);
-            if (painting != null) GUI.DrawTexture(mapR, painting, ScaleMode.StretchToFill, false, 0f, new Color(1f, 1f, 1f, k), 0f, 10f);
-            else UIKit.Label(mapR, "Painting the map...", UIKit.Style(30, true, TextAnchor.MiddleCenter, new Color(0.36f, 0.22f, 0.16f, 0.6f * k)));
-            UIKit.Outline(new Rect(mapR.x - 6f, mapR.y - 6f, mapR.width + 12f, mapR.height + 12f), inkC, 3f, 12f);
-            UIKit.Outline(new Rect(mapR.x - 13f, mapR.y - 13f, mapR.width + 26f, mapR.height + 26f), new Color(inkC.r, inkC.g, inkC.b, 0.5f * k), 2f, 16f);
-
-            // Title banner, top left, with a doodled sun.
-            var titleStyle = UIKit.Style(54, true, TextAnchor.MiddleLeft, new Color(0.85f, 0.3f, 0.3f, k));
-            UIKit.Label(new Rect(mapR.x + 10f, paperR.y + 12f, 700f, 66f), level.MapTitle, titleStyle);
-            Vector2 sun = new Vector2(paperR.xMax - 90f, paperR.y + 80f);
-            for (int i = 0; i < 12; i++)
+            // The map: a linen panel appliquéd onto the quilt, the felt picture inside it.
+            float ms = ph - 140f;
+            var mapR = new Rect(quilt.x + 70f, quilt.y + 100f, ms, ms);
+            var linen = new Rect(mapR.x - 22f, mapR.y - 22f, mapR.width + 44f, mapR.height + 44f);
+            UIKit.Fill(new Rect(linen.x + 5f, linen.y + 7f, linen.width, linen.height), new Color(0f, 0f, 0f, 0.25f * k), 16f);
+            UIKit.Fill(linen, new Color(0.97f, 0.93f, 0.84f, k), 16f);
+            RunningStitch(new Rect(linen.x + 8f, linen.y + 8f, linen.width - 16f, linen.height - 16f), new Color(0.85f, 0.35f, 0.4f, 0.9f * k), 10f, 6f, 2.5f);
+            if (painting != null) GUI.DrawTexture(mapR, painting, ScaleMode.StretchToFill, false, 0f, new Color(1f, 1f, 1f, k), 0f, 8f);
+            else UIKit.Label(mapR, "Stitching the map...", UIKit.Style(30, true, TextAnchor.MiddleCenter, new Color(0.36f, 0.22f, 0.16f, 0.6f * k)));
+            UIKit.Outline(mapR, new Color(0.45f, 0.3f, 0.25f, 0.8f * k), 3f, 8f);
+            // A tape measure along the bottom of the map.
+            var tape = new Rect(mapR.x, linen.yMax + 4f, mapR.width, 22f);
+            UIKit.Fill(tape, new Color(1f, 0.84f, 0.35f, k), 4f);
+            for (float tx = tape.x + 6f; tx < tape.xMax - 4f; tx += 10f)
             {
-                float a = i / 12f * 360f + Time.unscaledTime * 10f;
+                bool big = Mathf.RoundToInt((tx - tape.x) / 10f) % 5 == 0;
+                UIKit.Fill(new Rect(tx, tape.y, 2f, big ? 12f : 6f), new Color(0.3f, 0.2f, 0.12f, 0.8f * k));
+            }
+
+            // The title on a felt ribbon with notched ends.
+            var titleStyle = UIKit.Style(50, true, TextAnchor.MiddleCenter, new Color(1f, 0.97f, 0.9f, k));
+            float tw = UIKit.TextWidth(level.MapTitle, titleStyle) + 90f;
+            var ribbon = new Rect(mapR.x + (mapR.width - tw) * 0.5f, quilt.y + 22f, tw, 64f);
+            for (int s = -1; s <= 1; s += 2)
+            {
+                var tail = new Rect(s < 0 ? ribbon.x - 34f : ribbon.xMax - 16f, ribbon.y + 12f, 50f, 50f);
+                UIKit.Fill(tail, new Color(0.62f, 0.16f, 0.2f, k), 6f);
+                Vector2 notch = new Vector2(s < 0 ? tail.x : tail.xMax, tail.center.y);
                 Matrix4x4 saved = GUI.matrix;
-                GUIUtility.RotateAroundPivot(a, sun);
-                UIKit.Fill(new Rect(sun.x - 4f, sun.y - 58f, 8f, 22f), new Color(1f, 0.6f, 0.2f, k), 4f);
+                GUIUtility.RotateAroundPivot(45f, notch);
+                UIKit.Fill(new Rect(notch.x - 18f, notch.y - 18f, 36f, 36f), new Color(0.62f, 0.32f, 0.36f, k));
                 GUI.matrix = saved;
             }
-            UIKit.Circle(sun, 64f, new Color(1f, 0.78f, 0.25f, k));
-            UIKit.Circle(sun + new Vector2(-10f, -6f), 8f, new Color(0.36f, 0.22f, 0.16f, k));
-            UIKit.Circle(sun + new Vector2(10f, -6f), 8f, new Color(0.36f, 0.22f, 0.16f, k));
-            UIKit.Fill(new Rect(sun.x - 10f, sun.y + 8f, 20f, 5f), new Color(0.36f, 0.22f, 0.16f, k), 2.5f);
+            UIKit.Fill(new Rect(ribbon.x + 3f, ribbon.y + 5f, ribbon.width, ribbon.height), new Color(0f, 0f, 0f, 0.25f * k), 10f);
+            UIKit.Fill(ribbon, new Color(0.86f, 0.26f, 0.3f, k), 10f);
+            RunningStitch(new Rect(ribbon.x + 8f, ribbon.y + 7f, ribbon.width - 16f, ribbon.height - 14f), thread);
+            UIKit.Label(ribbon, level.MapTitle, titleStyle, true);
 
-            // Lollipop-tree doodles in the bottom corner.
-            for (int i = 0; i < 3; i++)
-            {
-                Vector2 b = new Vector2(paperR.xMax - 300f + i * 60f, paperR.yMax - 40f);
-                UIKit.Fill(new Rect(b.x - 3f, b.y - 50f, 6f, 50f), new Color(0.55f, 0.38f, 0.26f, k));
-                UIKit.Circle(b + new Vector2(0f, -62f), 46f, i == 1 ? new Color(0.98f, 0.65f, 0.72f, k) : new Color(0.5f, 0.75f, 0.45f, k));
-            }
-
-            // Pins: red dots with names; band pieces as stars (gold if found).
-            var labelStyle = UIKit.Style(22, true, TextAnchor.MiddleLeft, new Color(0.3f, 0.18f, 0.12f, k));
+            // Pins: sewing pins stuck in the map (red), buttons for shops, star buttons for the band.
+            var labelStyle = UIKit.Style(21, true, TextAnchor.MiddleLeft, new Color(0.3f, 0.18f, 0.12f, k));
             foreach (var pin in level.MapPins)
             {
                 Vector2 p = ToMap(mapR, pin.Position);
@@ -286,77 +336,129 @@ namespace Patchwork
                 {
                     bool got = !string.IsNullOrEmpty(pin.Id) && GameState.IsCollected(pin.Id);
                     float bob = Mathf.Sin(Time.unscaledTime * 3f + p.x) * 3f;
-                    var r = new Rect(p.x - 22f, p.y - 22f + bob, 44f, 44f);
-                    UIKit.IconTransformed(new Rect(r.x + 2f, r.y + 3f, r.width, r.height), starTex, new Color(0f, 0f, 0f, 0.35f * k), 0f, 1f);
-                    UIKit.IconTransformed(r, starTex, got ? new Color(1f, 0.8f, 0.25f, k) : new Color(0.62f, 0.58f, 0.7f, k), 0f, 1f);
+                    Button(new Vector2(p.x, p.y + bob), 40f, got ? new Color(1f, 0.8f, 0.25f) : new Color(0.62f, 0.58f, 0.7f), k);
+                    UIKit.IconTransformed(new Rect(p.x - 13f, p.y - 13f + bob, 26f, 26f), starTex, new Color(1f, 1f, 1f, 0.9f * k), 0f, 1f);
                     UIKit.Label(new Rect(p.x + 24f, p.y - 16f + bob, 240f, 32f), got ? pin.Name : "???", UIKit.Style(20, true, TextAnchor.MiddleLeft, new Color(1f, 1f, 1f, k)), true);
                     continue;
                 }
-                UIKit.Circle(p + new Vector2(1f, 2f), 20f, new Color(0f, 0f, 0f, 0.3f * k));
-                UIKit.Circle(p, 20f, pin.Type == MapPin.Kind.Shop ? new Color(0.25f, 0.5f, 0.85f, k) : red);
-                UIKit.CircleOutline(p, 20f, new Color(1f, 1f, 1f, 0.9f * k), 3f);
-                float tw = UIKit.TextWidth(pin.Name, labelStyle) + 18f;
-                var lr = new Rect(p.x + 14f, p.y - 15f, tw, 30f);
-                UIKit.Fill(lr, new Color(0.99f, 0.96f, 0.88f, 0.88f * k), 8f);
-                UIKit.Label(new Rect(lr.x + 9f, lr.y, tw, 30f), pin.Name, labelStyle);
+                if (pin.Type == MapPin.Kind.Shop) Button(p, 30f, new Color(0.35f, 0.6f, 0.95f), k);
+                else
+                {
+                    // The pin's needle, slanting in, and its round glass head.
+                    Matrix4x4 saved = GUI.matrix;
+                    GUIUtility.RotateAroundPivot(-30f, p);
+                    UIKit.Fill(new Rect(p.x - 1.5f, p.y - 2f, 3f, 20f), new Color(0.75f, 0.76f, 0.8f, k), 1.5f);
+                    GUI.matrix = saved;
+                    Vector2 pinHead = p + new Vector2(-9f, -14f);
+                    UIKit.Circle(pinHead + new Vector2(1.5f, 2.5f), 22f, new Color(0f, 0f, 0f, 0.3f * k));
+                    UIKit.Circle(pinHead, 22f, red);
+                    UIKit.Circle(pinHead + new Vector2(-3.5f, -3.5f), 7f, new Color(1f, 1f, 1f, 0.75f * k));
+                }
+                // A little fabric name tag with a stitched edge.
+                float lw2 = UIKit.TextWidth(pin.Name, labelStyle) + 20f;
+                var lr = new Rect(p.x + 12f, p.y - 30f, lw2, 30f);
+                UIKit.Fill(new Rect(lr.x + 2f, lr.y + 3f, lr.width, lr.height), new Color(0f, 0f, 0f, 0.2f * k), 6f);
+                UIKit.Fill(lr, new Color(0.99f, 0.96f, 0.88f, 0.94f * k), 6f);
+                RunningStitch(new Rect(lr.x + 3f, lr.y + 3f, lr.width - 6f, lr.height - 6f), new Color(0.86f, 0.4f, 0.45f, 0.6f * k), 4f, 3f, 1.5f);
+                UIKit.Label(new Rect(lr.x + 10f, lr.y, lw2, 30f), pin.Name, labelStyle);
             }
 
-            // Patch: a bobbing arrow pointing the way he's facing.
+            // Patch: a little ball of pink yarn with an arrow showing which way he's facing.
             if (game.Player != null)
             {
                 Vector2 p = ToMap(mapR, game.Player.transform.position);
                 float yaw = game.Player.transform.eulerAngles.y;
                 float pulse = 1f + Mathf.Sin(Time.unscaledTime * 6f) * 0.12f;
-                UIKit.Circle(p, 54f * pulse, new Color(1f, 1f, 1f, 0.35f * k));
-                UIKit.IconTransformed(new Rect(p.x - 22f, p.y - 22f, 44f, 44f), arrowTex, new Color(0.15f, 0.1f, 0.2f, k), yaw, 1.15f);
-                UIKit.IconTransformed(new Rect(p.x - 22f, p.y - 22f, 44f, 44f), arrowTex, new Color(1f, 0.55f, 0.65f, k), yaw, 0.9f);
+                UIKit.Circle(p, 58f * pulse, new Color(1f, 1f, 1f, 0.3f * k));
+                UIKit.IconTransformed(new Rect(p.x - 26f, p.y - 26f, 52f, 52f), arrowTex, new Color(0.15f, 0.1f, 0.2f, k), yaw, 1.2f);
+                UIKit.Circle(p, 30f, new Color(1f, 0.55f, 0.68f, k));
+                for (int i = 0; i < 3; i++)
+                {
+                    Matrix4x4 saved = GUI.matrix;
+                    GUIUtility.RotateAroundPivot(i * 60f + 20f, p);
+                    UIKit.Fill(new Rect(p.x - 13f, p.y - 1.5f + (i - 1) * 6f, 26f, 2.5f), new Color(0.85f, 0.35f, 0.5f, k), 1.2f);
+                    GUI.matrix = saved;
+                }
                 UIKit.Label(new Rect(p.x - 40f, p.y + 22f, 80f, 26f), "You", UIKit.Style(18, true, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, k)), true);
             }
 
-            // The legend: what's left to find here.
-            float lx = mapR.xMax + 50f, ly = mapR.y + 10f, lw = paperR.xMax - lx - 40f;
+            // The legend, on a felt pocket stitched to the quilt.
+            float lx = linen.xMax + 40f, lw = quilt.xMax - lx - 36f;
+            var pocket = new Rect(lx - 14f, mapR.y - 10f, lw + 28f, 520f);
+            UIKit.Panel(pocket, new Color(0.99f, 0.95f, 0.88f, 0.97f * k), new Color(0.85f, 0.35f, 0.4f, 0.8f * k), 20f);
+            float ly = pocket.y + 30f;
+            lx += 12f;
+            lw -= 24f;
             var head = UIKit.Style(30, true, TextAnchor.MiddleLeft, new Color(0.85f, 0.3f, 0.3f, k));
-            var body = UIKit.Style(24, true, TextAnchor.MiddleLeft, new Color(0.3f, 0.18f, 0.12f, k));
+            var body = UIKit.Style(23, true, TextAnchor.MiddleLeft, new Color(0.3f, 0.18f, 0.12f, k));
             int bands = 0;
             foreach (var pin in level.MapPins) if (pin.Type == MapPin.Kind.Band) bands++;
             if (bands > 0)
             {
                 UIKit.Label(new Rect(lx, ly, lw, 40f), "Town Band", head);
-                ly += 48f;
+                ly += 46f;
                 foreach (var pin in level.MapPins)
                 {
                     if (pin.Type != MapPin.Kind.Band) continue;
                     bool got = GameState.IsCollected(pin.Id);
-                    UIKit.IconTransformed(new Rect(lx, ly + 2f, 30f, 30f), starTex, got ? new Color(1f, 0.8f, 0.25f, k) : new Color(0.62f, 0.58f, 0.7f, k), 0f, 1f);
+                    Button(new Vector2(lx + 15f, ly + 17f), 28f, got ? new Color(1f, 0.8f, 0.25f) : new Color(0.62f, 0.58f, 0.7f), k);
                     UIKit.Label(new Rect(lx + 40f, ly, lw - 40f, 34f), got ? pin.Name + "  - found!" : pin.Name, body);
                     ly += 40f;
                 }
-                ly += 20f;
+                ly += 14f;
             }
             if (level.HeartstringIds.Count > 0)
             {
                 UIKit.Heart(new Vector2(lx + 15f, ly + 18f), 30f, new Color(1f, 0.72f, 0.3f, k));
                 UIKit.Label(new Rect(lx + 40f, ly, lw - 40f, 36f), "Heartstrings  " + level.HeartstringCount() + " / " + level.HeartstringIds.Count, body);
-                ly += 44f;
+                ly += 42f;
             }
             if (level.CollectibleIds.Count > 0)
             {
                 UIKit.Icon(new Rect(lx, ly + 2f, 30f, 30f), PatchworkAssets.IconButton, new Color(1f, 1f, 1f, k));
                 UIKit.Label(new Rect(lx + 40f, ly, lw - 40f, 36f), "Golden Buttons  " + level.CollectedCount() + " / " + level.CollectibleIds.Count, body);
-                ly += 44f;
+                ly += 42f;
             }
-            ly += 16f;
-            var note = UIKit.Style(20, false, TextAnchor.UpperLeft, new Color(0.3f, 0.18f, 0.12f, 0.85f * k), true);
-            UIKit.Label(new Rect(lx, ly, lw, 160f), level.MapNote, note);
-            // A little compass rose.
-            Vector2 cp = new Vector2(lx + 70f, paperR.yMax - 150f);
-            UIKit.CircleOutline(cp, 110f, inkC, 3f);
-            UIKit.Fill(new Rect(cp.x - 2f, cp.y - 50f, 4f, 100f), inkC);
-            UIKit.Fill(new Rect(cp.x - 50f, cp.y - 2f, 100f, 4f), inkC);
-            UIKit.IconTransformed(new Rect(cp.x - 14f, cp.y - 52f, 28f, 28f), arrowTex, red, 0f, 1f);
-            UIKit.Label(new Rect(cp.x - 20f, cp.y - 92f, 40f, 34f), "N", UIKit.Style(28, true, TextAnchor.MiddleCenter, new Color(0.85f, 0.3f, 0.3f, k)));
+            if (level.SecretIds.Count > 0)
+            {
+                UIKit.Circle(new Vector2(lx + 15f, ly + 18f), 28f, new Color(0.55f, 0.75f, 1f, k));
+                UIKit.Circle(new Vector2(lx + 11f, ly + 14f), 9f, new Color(1f, 1f, 1f, 0.8f * k));
+                UIKit.Label(new Rect(lx + 40f, ly, lw - 40f, 36f), "Secret Marbles  " + level.SecretCount() + " / " + level.SecretIds.Count, body);
+                ly += 42f;
+            }
+            ly += 10f;
+            var note = UIKit.Style(19, false, TextAnchor.UpperLeft, new Color(0.3f, 0.18f, 0.12f, 0.85f * k), true);
+            UIKit.Label(new Rect(lx, ly, lw, pocket.yMax - ly - 16f), level.MapNote, note);
 
-            UIKit.PromptLabel(paperR.xMax - 260f, paperR.yMax - 62f, 40f, PromptAction.Map, "Close", kb, new Color(0.3f, 0.18f, 0.12f), k);
+            // The compass: a big button with the directions cross-stitched on it.
+            Vector2 cp = new Vector2(lx + lw * 0.5f - 60f, quilt.yMax - 150f);
+            Button(cp, 150f, new Color(0.95f, 0.85f, 0.65f), k);
+            for (int i = 0; i < 4; i++)
+            {
+                Matrix4x4 saved = GUI.matrix;
+                GUIUtility.RotateAroundPivot(i * 90f, cp);
+                for (int s = 0; s < 4; s++)
+                    UIKit.Fill(new Rect(cp.x - 2f, cp.y - 62f + s * 11f, 4f, 7f), i == 0 ? red : brown, 2f);
+                GUI.matrix = saved;
+            }
+            UIKit.Label(new Rect(cp.x - 20f, cp.y - 112f, 40f, 34f), "N", UIKit.Style(28, true, TextAnchor.MiddleCenter, new Color(0.85f, 0.3f, 0.3f, k)), true);
+            // A spool of thread and a pincushion, sitting on the quilt.
+            Vector2 spool = new Vector2(cp.x + 140f, cp.y + 10f);
+            UIKit.Fill(new Rect(spool.x - 30f, spool.y - 46f, 60f, 12f), new Color(0.85f, 0.7f, 0.5f, k), 5f);
+            UIKit.Fill(new Rect(spool.x - 24f, spool.y - 36f, 48f, 72f), new Color(0.45f, 0.6f, 0.95f, k), 4f);
+            for (int i = 0; i < 6; i++) UIKit.Fill(new Rect(spool.x - 24f, spool.y - 30f + i * 11f, 48f, 2f), new Color(0.35f, 0.48f, 0.8f, k));
+            UIKit.Fill(new Rect(spool.x - 30f, spool.y + 34f, 60f, 12f), new Color(0.85f, 0.7f, 0.5f, k), 5f);
+            Vector2 cush = new Vector2(spool.x + 74f, spool.y + 14f);
+            UIKit.Circle(cush, 70f, new Color(0.9f, 0.28f, 0.32f, k));
+            Color[] heads = { new Color(1f, 0.85f, 0.3f), new Color(0.5f, 0.75f, 1f), Color.white, new Color(0.6f, 0.9f, 0.5f) };
+            for (int i = 0; i < 4; i++)
+            {
+                Vector2 hp = cush + new Vector2(-18f + i * 12f, -26f - (i % 2) * 8f);
+                UIKit.Fill(new Rect(hp.x - 1f, hp.y, 2f, 18f), new Color(0.75f, 0.76f, 0.8f, k));
+                UIKit.Circle(hp, 12f, new Color(heads[i].r, heads[i].g, heads[i].b, k));
+            }
+
+            UIKit.PromptLabel(quilt.xMax - 260f, quilt.yMax - 62f, 40f, PromptAction.Map, "Close", kb, new Color(0.99f, 0.95f, 0.85f), k);
         }
     }
 }

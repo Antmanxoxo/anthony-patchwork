@@ -1,5 +1,27 @@
 # Development Log
 
+## Taller trees, a findable willow, new corners and a quilted map
+- Trees in the Whispering Wood are much taller with slimmer crowns, and each one claims room
+  for its crown before it's planted, so they no longer clip into each other: pines 11-19 m
+  (with a bare, stitched lower trunk and stubby old branches), birches 10-15 m, twisted trees
+  8-12 m and giant oaks 19-23 m.
+- The Wishing Willow (west of the Moonglow Glade) is now the biggest tree in the wood, ringed
+  with glowing toadstools and fireflies, has its own map pin, and a signpost in the glade
+  points to it.
+- Under the taller trees: ferns, fallen hollow logs with shelf mushrooms, old stumps, mossy
+  rocks, and lanterns hung along every path in the wood.
+- New areas in the patches the layout survey showed were still bare grass: Pinwheel Hill (a
+  field of giant spinning pinwheel flowers and a tethered balloon), Paper Boat Pond (paper boats
+  sailing round a thread-spool lighthouse, rubber ducks, a jetty), the Giant's Picnic (climb a
+  biscuit, sandwich and cupcake to the teapot lid; marching toy ants) and Pom-Pom Grove (pastel
+  pom-pom trees, a rope swing, a hammock and a toy tea party). Each has a map pin.
+- The map is redrawn as a patchwork quilt: patchwork squares stitched round, the level picture
+  turned into felt appliqué (flat fabric patches with stitched seams and a woven texture) on a
+  linen panel, the title on a notched felt ribbon, sewing pins and buttons for places, fabric
+  name tags, Patch as a ball of pink yarn, the legend in a stitched felt pocket (now with secret
+  marbles), a button compass, a tape measure, a spool and a pincushion. The map's camera is
+  higher so the tall trees fit.
+
 ## A magical wood, wild horses and biomes
 - The Whispering Wood now fills the whole south-west of the toybox (everything west of the
   ravine and south of Spindle Hill), in three bands:

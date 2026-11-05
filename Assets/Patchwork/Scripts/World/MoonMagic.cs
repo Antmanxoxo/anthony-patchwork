@@ -49,7 +49,7 @@ namespace Patchwork
             if (solved || t >= 0f) return;
             if (!GameState.IsCollected(NeedleId))
             {
-                if (game != null) game.ShowToast("The Gloom is too thick here... Maybe the Moonlit Needle could help. It's said to rest beneath the wishing willow.");
+                if (game != null) game.ShowToast("The Gloom is too thick here... Maybe the Moonlit Needle could help. It's said to rest beneath the Wishing Willow, just west of here.");
                 Sfx.Play(SfxId.TransformFail, 0.35f);
                 return;
             }

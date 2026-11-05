@@ -74,6 +74,7 @@ namespace Patchwork
             info.FogStart = 90f;
             info.FogEnd = 720f;
             info.FarClip = 900f;
+            info.MapCameraHeight = 70f;   // above the tallest trees in the wood
             info.Saturation = 18f;
             info.Warmth = 9f;
             info.Glow = 0.55f;

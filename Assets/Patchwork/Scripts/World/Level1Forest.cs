@@ -84,7 +84,7 @@ namespace Patchwork
             var rng = new System.Random(404);
             // Keep room for the clearings and the old toys that already live here.
             Take(MoonGladeCenter, 12.5f);
-            Take(WillowSpot, 5.5f);
+            Take(WillowSpot, 8.5f);
             Take(CampSpot, 6f);
             Vector3[] toys = { new Vector3(-66f, 0f, -52f), new Vector3(-74f, 0f, -60f), new Vector3(-58f, 0f, -66f), new Vector3(-70f, 0f, -63f), new Vector3(-79.5f, 0f, -72f), new Vector3(-77f, 0f, -68.5f) };
             float[] toyR = { 3.5f, 2.5f, 2.5f, 2.5f, 4.5f, 2.5f };
@@ -135,8 +135,8 @@ namespace Patchwork
             WishingWillow(kit);
 
             // Trees, band by band.
-            for (float x = -113f; x <= -53f; x += 4.4f)
-                for (float z = -112f; z <= -11f; z += 4.4f)
+            for (float x = -113f; x <= -53f; x += 5f)
+                for (float z = -112f; z <= -11f; z += 5f)
                 {
                     if (x < -72f && z < -72f) continue;   // the deep corner has its own trees
                     Vector3 near = new Vector3(x + (float)(rng.NextDouble() - 0.5) * 3f, 0f, z + (float)(rng.NextDouble() - 0.5) * 3f);
@@ -145,20 +145,22 @@ namespace Patchwork
                     if (near.z > -16f && rng.NextDouble() < 0.5) continue;
                     if (near.x > -57f && rng.NextDouble() < 0.4) continue;
                     if (NearLane(near, 1.6f)) continue;
-                    if (!Spot(near, 1.6f, out Vector3 p)) continue;
+                    // Pick the tree first, then find it a spot with room for its crown.
                     double roll = rng.NextDouble();
+                    float h = (float)rng.NextDouble();
+                    Vector3 p;
                     if (edge)
                     {
-                        if (roll < 0.55) Birch(kit, p, 6f + (float)rng.NextDouble() * 4f, rng);
-                        else if (roll < 0.8) Bramble(kit, p, rng);
-                        else SpookyPine(kit, p, 6f + (float)rng.NextDouble() * 3f, rng);
+                        if (roll < 0.55) { if (Spot(near, BirchSpread, out p)) Birch(kit, p, 10f + h * 5f, rng); }
+                        else if (roll < 0.8) { if (Spot(near, BrambleSpread, out p)) Bramble(kit, p, rng); }
+                        else { float ph = 11f + h * 4f; if (Spot(near, PineSpread(ph), out p)) SpookyPine(kit, p, ph, rng); }
                     }
                     else
                     {
-                        if (roll < 0.55) SpookyPine(kit, p, 7.5f + (float)rng.NextDouble() * 5f, rng);
-                        else if (roll < 0.8) GnarledTree(kit, p, 5.5f + (float)rng.NextDouble() * 3f, rng, rng.NextDouble() < 0.3);
-                        else if (roll < 0.9) Birch(kit, p, 7f + (float)rng.NextDouble() * 3f, rng);
-                        else GiantOak(kit, p, 12f + (float)rng.NextDouble() * 3f, rng);
+                        if (roll < 0.55) { float ph = 13f + h * 6f; if (Spot(near, PineSpread(ph), out p)) SpookyPine(kit, p, ph, rng); }
+                        else if (roll < 0.8) { if (Spot(near, GnarlSpread, out p)) GnarledTree(kit, p, 8.5f + h * 3.5f, rng, rng.NextDouble() < 0.3); }
+                        else if (roll < 0.9) { if (Spot(near, BirchSpread, out p)) Birch(kit, p, 11f + h * 4f, rng); }
+                        else { if (Spot(near, OakSpread, out p)) GiantOak(kit, p, 19f + h * 4f, rng); }
                     }
                 }
 
@@ -210,7 +212,7 @@ namespace Patchwork
             g.rotation = Quaternion.Euler((float)(rng.NextDouble() - 0.5) * 6f, (float)rng.NextDouble() * 360f, (float)(rng.NextDouble() - 0.5) * 6f);
             var bark = PatchworkAssets.Felt(new Color(0.95f, 0.93f, 0.88f));
             var mark = PatchworkAssets.Felt(new Color(0.18f, 0.16f, 0.18f));
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, h * 0.4f, 0f), new Vector3(0.36f, h * 0.4f, 0.36f), bark, default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, h * 0.4f, 0f), new Vector3(0.46f, h * 0.4f, 0.46f), bark, default(Vector3), g);
             for (int k = 0; k < 8; k++)
             {
                 float y = 0.5f + k * h * 0.09f;
@@ -263,6 +265,125 @@ namespace Patchwork
             }
             kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.05f, 0f), new Vector3(1.1f, 0.2f, 1.1f), PatchworkAssets.Felt(new Color(0.4f, 0.4f, 0.45f)), default(Vector3), g);
             Trunk(g, 0.5f, 1f);
+        }
+
+        // ---------------------------------------------------------------- Undergrowth
+
+        // Now the trees are tall there's room underneath: ferns, fallen hollow logs, old stumps,
+        // mossy rocks, and lanterns hung along the paths.
+        static void ForestUndergrowth(LevelKit kit)
+        {
+            var rng = new System.Random(515);
+            int mask = ~(1 << 2);
+            System.Func<float, float, Vector3> random = (zMin, zMax) => new Vector3(-113.5f + (float)rng.NextDouble() * 61f, 0f, zMin + (float)rng.NextDouble() * (zMax - zMin));
+            System.Func<Vector3, float, bool> free = (p, r) =>
+                !Taken(p, r) && !NearLane(p, 0.3f) && !Physics.CheckSphere(p + Vector3.up * (r * 0.6f + 0.3f), r * 0.6f, mask, QueryTriggerInteraction.Ignore);
+            var fern = new[] { PatchworkAssets.Felt(new Color(0.28f, 0.5f, 0.32f)), PatchworkAssets.Felt(new Color(0.34f, 0.56f, 0.34f)), PatchworkAssets.Felt(new Color(0.24f, 0.42f, 0.34f)) };
+            for (int i = 0; i < 140; i++)
+            {
+                Vector3 p = random(-113.5f, -10f);
+                if (!free(p, 0.7f)) continue;
+                Take(p, 0.7f);
+                Fern(kit, p, 0.8f + (float)rng.NextDouble() * 0.6f, fern[i % fern.Length], i);
+            }
+            for (int i = 0; i < 16; i++)
+            {
+                Vector3 p = random(-112f, -14f);
+                if (!free(p, 2.4f)) continue;
+                Take(p, 2.4f);
+                FallenLog(kit, p, (float)rng.NextDouble() * 180f, 3.5f + (float)rng.NextDouble() * 1.5f, i);
+            }
+            for (int i = 0; i < 22; i++)
+            {
+                Vector3 p = random(-112f, -14f);
+                if (!free(p, 1f)) continue;
+                Take(p, 1f);
+                Stump(kit, p, 0.6f + (float)rng.NextDouble() * 0.4f, i);
+            }
+            var rock = PatchworkAssets.Cobble(new Color(0.55f, 0.56f, 0.58f));
+            var mossTop = PatchworkAssets.Felt(new Color(0.38f, 0.55f, 0.36f));
+            for (int i = 0; i < 34; i++)
+            {
+                Vector3 p = random(-112f, -12f);
+                float s = 0.5f + (float)rng.NextDouble() * 1.1f;
+                if (!free(p, s)) continue;
+                Take(p, s);
+                var g = kit.Group("MossyRock", p);
+                g.rotation = Quaternion.Euler(0f, i * 61f, 0f);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, s * 0.3f, 0f), new Vector3(s * 1.6f, s * 0.9f, s * 1.3f), rock, default(Vector3), g);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0.1f, s * 0.62f, 0f), new Vector3(s * 1.2f, s * 0.3f, s * 1f), mossTop, default(Vector3), g);
+                if (s > 1f) Trunk(g, s * 0.6f, s * 0.8f);
+            }
+            // Lanterns hung along the paths every so often, alternating sides.
+            int n = 0;
+            foreach (var line in ForestPaths)
+                for (int s = 0; s < line.Length - 1; s++)
+                {
+                    Vector3 a = line[s], b = line[s + 1];
+                    Vector3 side = Vector3.Cross(Vector3.up, (b - a).normalized);
+                    float len = Vector3.Distance(a, b);
+                    for (float u = 6f; u < len; u += 13f)
+                    {
+                        Vector3 p = Vector3.Lerp(a, b, u / len) + side * ((n++ % 2 == 0) ? 1.9f : -1.9f);
+                        if (Taken(p, 0.5f) || Physics.CheckSphere(p + Vector3.up, 0.4f, mask, QueryTriggerInteraction.Ignore)) continue;
+                        Take(p, 0.6f);
+                        LanternPost(kit, p);
+                    }
+                }
+        }
+
+        static void Fern(LevelKit kit, Vector3 feet, float size, Material mat, int seed)
+        {
+            var g = kit.Group("Fern", feet);
+            g.localScale = Vector3.one * size;
+            g.rotation = Quaternion.Euler(0f, seed * 47f, 0f);
+            var rib = PatchworkAssets.Felt(new Color(0.5f, 0.68f, 0.42f));
+            for (int k = 0; k < 5; k++)
+            {
+                float a = k * 72f + (seed % 3) * 10f;
+                var frond = kit.Group("Frond", Vector3.zero);
+                frond.SetParent(g, false);
+                frond.localRotation = Quaternion.Euler(0f, a, 0f) * Quaternion.Euler(55f - (k % 2) * 15f, 0f, 0f);
+                // A wide leafy frond with a paler stitched midrib.
+                kit.Deco(PrimitiveType.Capsule, new Vector3(0f, 0.45f, 0f), new Vector3(0.3f, 0.45f, 0.04f), mat, default(Vector3), frond);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.42f, 0.022f), new Vector3(0.03f, 0.7f, 0.01f), rib, default(Vector3), frond);
+            }
+        }
+
+        static void FallenLog(LevelKit kit, Vector3 c, float yaw, float len, int seed)
+        {
+            var g = kit.Group("FallenLog", c);
+            g.rotation = Quaternion.Euler(0f, yaw, 0f);
+            var bark = PatchworkAssets.Knit(new Color(0.42f, 0.32f, 0.25f));
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.55f, 0f), new Vector3(1.1f, len * 0.5f, 1.1f), bark, new Vector3(0f, 0f, 90f), g);
+            // The hollow end and the rings on the other.
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(len * 0.5f + 0.01f, 0.55f, 0f), new Vector3(0.8f, 0.02f, 0.8f), PatchworkAssets.Plain(new Color(0.08f, 0.06f, 0.07f), 0.1f), new Vector3(0f, 0f, 90f), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(-len * 0.5f - 0.01f, 0.55f, 0f), new Vector3(1f, 0.02f, 1f), PatchworkAssets.Wood(new Color(0.85f, 0.7f, 0.5f)), new Vector3(0f, 0f, 90f), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(-len * 0.5f - 0.02f, 0.55f, 0f), new Vector3(0.55f, 0.02f, 0.55f), PatchworkAssets.Wood(new Color(0.7f, 0.55f, 0.38f)), new Vector3(0f, 0f, 90f), g);
+            // Moss along the top and shelf mushrooms on the side.
+            kit.Deco(PrimitiveType.Capsule, new Vector3(0f, 1.05f, 0.1f), new Vector3(0.6f, len * 0.35f, 0.3f), PatchworkAssets.Felt(new Color(0.38f, 0.55f, 0.36f)), new Vector3(0f, 0f, 90f), g);
+            for (int k = 0; k < 3; k++)
+                kit.Deco(PrimitiveType.Sphere, new Vector3(-len * 0.3f + k * 0.45f, 0.6f + k * 0.08f, 0.56f), new Vector3(0.4f, 0.08f, 0.3f), PatchworkAssets.Felt(seed % 2 == 0 ? new Color(0.95f, 0.75f, 0.45f) : new Color(0.85f, 0.85f, 0.8f)), default(Vector3), g);
+            var col = g.gameObject.AddComponent<BoxCollider>();
+            col.center = new Vector3(0f, 0.55f, 0f);
+            col.size = new Vector3(len, 1.1f, 1.1f);
+        }
+
+        static void Stump(LevelKit kit, Vector3 feet, float r, int seed)
+        {
+            var g = kit.Group("Stump", feet);
+            g.rotation = Quaternion.Euler(0f, seed * 53f, 0f);
+            var bark = PatchworkAssets.Knit(new Color(0.4f, 0.31f, 0.25f));
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.35f, 0f), new Vector3(r * 2f, 0.35f, r * 2f), bark, default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.71f, 0f), new Vector3(r * 1.8f, 0.02f, r * 1.8f), PatchworkAssets.Wood(new Color(0.85f, 0.7f, 0.5f)), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.72f, 0f), new Vector3(r * 1f, 0.02f, r * 1f), PatchworkAssets.Wood(new Color(0.72f, 0.56f, 0.4f)), default(Vector3), g);
+            for (int k = 0; k < 3; k++)
+            {
+                float a = k * 120f + 30f;
+                Rod(kit, new Vector3(0f, 0.3f, 0f), Quaternion.Euler(0f, a, 0f) * new Vector3(0f, 0.02f, r + 0.5f), bark, 0.22f, g);
+            }
+            if (seed % 3 == 0) Mushroom(kit, feet + new Vector3(r * 0.7f, 0f, r * 0.5f), 0.3f, new Color(0.9f, 0.3f, 0.32f), false);
+            Trunk(g, r, 0.75f);
         }
 
         // ---------------------------------------------------------------- The Moonglow Glade
@@ -376,6 +497,7 @@ namespace Patchwork
             spot.Label = "Raise the Moonlit Needle";
             spot.PromptPoint = c + Vector3.up * 2.6f;
             glade.Spot = spot;
+            Signpost(kit, c + new Vector3(-6.5f, 0f, -3.5f), new[] { 255f, 160f, 45f }, new[] { SignWood, SignWood, SignTown });
             kit.Hint(c + new Vector3(4.5f, 1.5f, 5f), new Vector3(5f, 3f, 5f), "Moonglow Glade",
                 "The Gloom has smothered the moon pool. Only a guardian of moonlight can chase it away... and that needs the Moonlit Needle.");
             glade.Marble = SecretMarble.Place(kit, c + Vector3.up * 1.6f, MarbleIds[15], MarbleColor(15), true);
@@ -418,6 +540,7 @@ namespace Patchwork
         {
             Vector3 w = WillowSpot;
             var g = kit.Group("WishingWillow", w);
+            g.localScale = Vector3.one * 1.55f;   // the biggest tree in the wood, so you can spot it
             var bark = PatchworkAssets.Knit(new Color(0.4f, 0.32f, 0.26f));
             Rod(kit, new Vector3(0f, 0f, 0f), new Vector3(0.4f, 3.5f, -0.3f), bark, 1.3f, g);
             Rod(kit, new Vector3(0.4f, 3.5f, -0.3f), new Vector3(0f, 6.2f, 0f), bark, 1f, g);
@@ -444,11 +567,27 @@ namespace Patchwork
                 kit.Deco(PrimitiveType.Sphere, top + Vector3.down * len, new Vector3(0.14f, 0.2f, 0.14f), strand, default(Vector3), g);
             }
             Trunk(g, 0.75f, 6f);
+            ClearGrass(w, 6f);
+            // Glowing toadstools round its roots and fireflies drifting in its curtain.
+            for (int k = 0; k < 12; k++)
+            {
+                float a = k * Mathf.PI * 2f / 12f + 0.2f;
+                Mushroom(kit, w + new Vector3(Mathf.Cos(a) * 3.2f, 0f, Mathf.Sin(a) * 3.2f), 0.4f + (k % 3) * 0.1f, k % 2 == 0 ? new Color(0.55f, 1f, 0.75f) : new Color(0.75f, 0.85f, 1f), true);
+            }
+            var flies = kit.Group("WillowFireflies", Vector3.zero);
+            var flyMat = PatchworkAssets.Glow(new Color(0.75f, 1f, 0.8f), 3f);
+            for (int k = 0; k < 16; k++)
+            {
+                float a = k * 2.4f;
+                var m = kit.Deco(PrimitiveType.Sphere, w + new Vector3(Mathf.Cos(a) * (2f + k % 4), 1.5f + (k % 5) * 1.6f, Mathf.Sin(a) * (2f + k % 4)), Vector3.one * 0.12f, flyMat, default(Vector3), flies);
+                m.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            flies.gameObject.AddComponent<FireflySwarm>();
             // The needle, floating over a mossy stump in front of the trunk, towards the glade.
             Vector3 toGlade = (MoonGladeCenter - w);
             toGlade.y = 0f;
             toGlade.Normalize();
-            Vector3 stump = w + toGlade * 1.9f;
+            Vector3 stump = w + toGlade * 3.4f;
             kit.Deco(PrimitiveType.Cylinder, stump + Vector3.up * 0.25f, new Vector3(0.9f, 0.25f, 0.9f), PatchworkAssets.Wood(new Color(0.45f, 0.34f, 0.26f)), default(Vector3));
             kit.Deco(PrimitiveType.Sphere, stump + Vector3.up * 0.52f, new Vector3(0.85f, 0.12f, 0.85f), PatchworkAssets.Felt(new Color(0.4f, 0.6f, 0.4f)), default(Vector3));
             var needle = kit.Volume<MoonNeedle>(stump + Vector3.up * 1.3f, new Vector3(1.6f, 2f, 1.6f), "MoonNeedle");
