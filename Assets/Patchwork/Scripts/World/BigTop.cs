@@ -174,7 +174,7 @@ namespace Patchwork
     public class Grumblewool : MonoBehaviour
     {
         public static Grumblewool Active { get; private set; }
-        public const int MaxHp = 3;
+        public const int MaxHp = 5;
         public int Hp { get; private set; } = MaxHp;
         public string Name = "The Grumblewool";
         public Vector3 Center;
@@ -189,8 +189,11 @@ namespace Patchwork
         Transform body, stars;
         Renderer[] eyes;
         Material eyeCalm, eyeAngry;
-        int volley;
+        int volley, rebounds;
+        float steer;
         readonly List<Shockwave> waves = new List<Shockwave>();
+        readonly List<GameObject> minions = new List<GameObject>();
+        float secondWave = -1f;
         Vector3 home;
 
         public static void ResetStatics() { Active = null; }
@@ -297,6 +300,7 @@ namespace Patchwork
                 Hp = MaxHp;
                 foreach (var w in waves) if (w != null) Destroy(w.gameObject);
                 waves.Clear();
+                ClearMinions();
                 stars.gameObject.SetActive(false);
                 body.localScale = Vector3.one;
                 if (ResetFight != null) ResetFight();
@@ -322,10 +326,11 @@ namespace Patchwork
                 case S.Idle:
                     Face(toPlayer, dt, 6f);
                     pos = Vector3.MoveTowards(pos, Center, dt * 2f);
-                    if (st > (Hp == MaxHp ? 1.0f : 0.6f))
+                    if (st > (Hp == MaxHp ? 0.8f : 0.4f))
                     {
-                        if (Hp <= 1 && volley < 1) { volley = 3; Go(S.Spit); }
-                        else if (Hp <= 2 && Random.value < 0.5f && toPlayer.magnitude > 4f) LeapAt(player);
+                        rebounds = Hp <= 3 ? 1 : 0;
+                        if (Hp <= 3 && volley < 1) { volley = Hp <= 1 ? 6 : 4; Go(S.Spit); }
+                        else if (Hp <= 4 && Random.value < 0.55f && toPlayer.magnitude > 4f) LeapAt(player);
                         else Go(S.Telegraph);
                     }
                     break;
@@ -337,7 +342,7 @@ namespace Patchwork
                         FuzzBall.Launch(pos + Vector3.up * 2.2f + facing * 2f, player.transform.position + player.Motor.Velocity * 0.4f + Random.insideUnitSphere * 1.2f);
                         Sfx.Play(SfxId.Steam, 0.45f);
                         volley--;
-                        st = 0.2f;
+                        st = 0.35f;
                         if (volley <= 0) { volley = -1; Go(S.Telegraph); }
                     }
                     break;
@@ -347,9 +352,10 @@ namespace Patchwork
                     angryEyes = Mathf.Repeat(st * 6f, 1f) < 0.6f;
                     squashY = 1f - Mathf.Abs(Mathf.Sin(st * 14f)) * 0.08f;
                     if (Mathf.Repeat(st, 0.3f) < dt) Sfx.Step(SfxId.StepWood, 0.4f);
-                    if (st > (Hp == 1 ? 0.6f : 0.85f))
+                    if (st > Mathf.Lerp(0.45f, 0.75f, (Hp - 1f) / (MaxHp - 1f)))
                     {
                         chargeDir = facing;
+                        steer = 0.6f;
                         Go(S.Charge);
                         Sfx.Play(SfxId.Gust, 0.6f);
                     }
@@ -357,12 +363,28 @@ namespace Patchwork
                 case S.Charge:
                 {
                     angryEyes = true;
-                    float speed = Hp == 1 ? 15f : 13f;
+                    float speed = Mathf.Lerp(19f, 14f, (Hp - 1f) / (MaxHp - 1f));
+                    // It steers towards Patch for the first moment of the charge.
+                    steer -= dt;
+                    if (steer > 0f && toPlayer.sqrMagnitude > 1f)
+                        chargeDir = Vector3.RotateTowards(chargeDir, toPlayer.normalized, 80f * Mathf.Deg2Rad * dt, 0f);
+                    facing = chargeDir;
                     pos += chargeDir * speed * dt;
                     squashY = 1f + Mathf.Sin(st * 30f) * 0.05f;
                     if (Mathf.Repeat(st, 0.18f) < dt) FxBurst.Spawn(FxBurst.Kind.Puff, pos + Vector3.up * 0.3f, new Color(0.85f, 0.75f, 0.6f), -chargeDir);
                     Vector3 off = pos - Center;
                     off.y = 0f;
+                    if (off.magnitude > Radius - 2.2f && rebounds > 0)
+                    {
+                        // Bounces off the wall and comes straight back round for another go.
+                        rebounds--;
+                        pos = Center + off.normalized * (Radius - 2.25f);
+                        Sfx.Play(SfxId.PlatformThunk, 0.7f);
+                        if (game != null) game.CameraRig.Kick(0.3f);
+                        Go(S.Telegraph);
+                        st = 0.2f;
+                        break;
+                    }
                     if (off.magnitude > Radius - 2.2f)
                     {
                         pos = Center + off.normalized * (Radius - 2.2f);
@@ -377,7 +399,7 @@ namespace Patchwork
                 }
                 case S.Dizzy:
                 {
-                    float dizzyTime = Hp == 1 ? 2.4f : 3f;
+                    float dizzyTime = Mathf.Lerp(1.5f, 2.4f, (Hp - 1f) / (MaxHp - 1f));
                     squashY = Mathf.Lerp(1f, 0.55f, Mathf.Clamp01(st / 0.25f));
                     stars.gameObject.SetActive(true);
                     stars.localPosition = Vector3.up * (3.8f * squashY + 0.3f);
@@ -401,6 +423,7 @@ namespace Patchwork
                         pos = leapTo;
                         var w = Shockwave.Spawn(new Vector3(pos.x, Center.y, pos.z), Radius + 1f);
                         waves.Add(w);
+                        if (Hp <= 2) secondWave = 0.55f;
                         Sfx.Play(SfxId.PlatformThunk, 1f);
                         if (game != null) { game.CameraRig.Kick(0.6f); Haptics.Pulse(0.7f, 0.6f, 0.25f); }
                         FxBurst.Spawn(FxBurst.Kind.Puff, pos + Vector3.up * 0.3f, new Color(0.85f, 0.75f, 0.6f));
@@ -413,6 +436,12 @@ namespace Patchwork
                     break;
             }
 
+            if (secondWave > 0f)
+            {
+                secondWave -= dt;
+                if (secondWave <= 0f && s != S.Asleep && s != S.Dead) waves.Add(Shockwave.Spawn(new Vector3(pos.x, Center.y, pos.z), Radius + 1f));
+            }
+            waves.RemoveAll(w => w == null);
             if (s == S.Dead) return;
             transform.position = pos;
             transform.rotation = Quaternion.LookRotation(new Vector3(facing.x, 0f, facing.z).normalized, Vector3.up);
@@ -432,7 +461,7 @@ namespace Patchwork
                 else if (flat < 1.9f && d.y < top - 0.8f) Shove(player);
                 return;
             }
-            if (flat < 2.3f && d.y < top) game.Hurt(pos + Vector3.up * 1.5f);
+            if (flat < 2.5f && d.y < top) game.Hurt(pos + Vector3.up * 1.5f);
         }
 
         void Face(Vector3 dir, float dt, float speed)
@@ -478,7 +507,22 @@ namespace Patchwork
             FxBurst.Spawn(FxBurst.Kind.Sparkle, pos + Vector3.up * 3f, new Color(1f, 0.85f, 0.5f));
             ScoreKeeper.Bonus(500, pos + Vector3.up * 4f);
             Crowd.Cheer(2.5f);
-            if (game != null && Hp > 0) game.ShowToast(Hp == 2 ? "It's furious! Watch out for its big jump!" : "One more! Now it's spitting fuzzballs!");
+            if (game != null && Hp > 0)
+            {
+                string[] taunts = { "", "One more! It's nearly undone!", "It's calling for help! Watch out for the Hoppers!", "Now it's spitting fuzzballs, and charging twice!", "It's furious! Watch out for its big jump!" };
+                game.ShowToast(taunts[Mathf.Clamp(Hp, 0, taunts.Length - 1)]);
+            }
+            // Later on it calls a couple of Tangle Hoppers into the ring.
+            if (Hp > 0 && Hp <= 2)
+            {
+                for (int k = 0; k < 2; k++)
+                {
+                    Vector3 off = Quaternion.Euler(0f, k * 180f + 90f, 0f) * Vector3.forward * (Radius - 3.5f);
+                    var hopper = TangleHopper.Create(transform.parent, new Vector3(Center.x + off.x, Center.y, Center.z + off.z));
+                    minions.Add(hopper.gameObject);
+                    FxBurst.Spawn(FxBurst.Kind.Poof, hopper.transform.position + Vector3.up * 0.6f, SnarlKnot.FrayGrey);
+                }
+            }
         }
 
         void Die()
@@ -487,6 +531,7 @@ namespace Patchwork
             Active = null;
             foreach (var w in waves) if (w != null) Destroy(w.gameObject);
             waves.Clear();
+            ClearMinions();
             Vector3 c = pos + Vector3.up * 2f;
             for (int i = 0; i < 4; i++) FxBurst.Spawn(FxBurst.Kind.Threads, c + Random.insideUnitSphere * 1.5f, SnarlKnot.FrayGrey);
             FxBurst.Spawn(FxBurst.Kind.Scraps, c, new Color(1f, 0.6f, 0.7f));
@@ -502,7 +547,31 @@ namespace Patchwork
             gameObject.SetActive(false);
         }
 
+        void ClearMinions()
+        {
+            foreach (var m in minions)
+                if (m != null)
+                {
+                    if (m.activeSelf) FxBurst.Spawn(FxBurst.Kind.Threads, m.transform.position + Vector3.up * 0.6f, SnarlKnot.FrayGrey);
+                    Destroy(m);
+                }
+            minions.Clear();
+        }
+
         void OnDisable() { if (Active == this) Active = null; }
+    }
+
+    // A gate in the colosseum wall that slides up and down.
+    public class GateBar : MonoBehaviour
+    {
+        public Vector3 Open, Closed;
+        public bool Shut;
+        void Update()
+        {
+            Vector3 want = Shut ? Closed : Open;
+            if ((transform.position - want).sqrMagnitude > 0.0001f)
+                transform.position = Vector3.MoveTowards(transform.position, want, Time.deltaTime * 6f);
+        }
     }
 
     // A ring of dust that spreads out across the floor from the Grumblewool's big jump. Jump

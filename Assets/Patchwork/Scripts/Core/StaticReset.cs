@@ -19,6 +19,7 @@ namespace Patchwork
             UseSpot.ResetStatics();
             PodTheme.ResetStatics();
             PodLaunch.ResetStatics();
+            PodDecor.ResetStatics();
             TapeBall.ResetStatics();
             Monsters.ResetStatics();
             Merits.ResetStatics();

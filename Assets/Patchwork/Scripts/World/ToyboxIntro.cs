@@ -25,7 +25,7 @@ namespace Patchwork
         bool snapped, wispGone, knotTied;
         float skipHold;
 
-        static readonly Vector3 CrackPos = new Vector3(0f, 40.8f, 89.85f);
+        static readonly Vector3 CrackPos = new Vector3(0f, 40.8f, Level1Builder.BoxHalf - 0.15f);
 
         void Start()
         {

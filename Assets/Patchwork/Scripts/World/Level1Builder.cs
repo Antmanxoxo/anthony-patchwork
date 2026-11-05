@@ -34,11 +34,17 @@ namespace Patchwork
         public static readonly string[] HeartstringIds = { "L1_hs_knots", "L1_hs_race", "L1_hs_tangle", "L1_hs_belfry", "L1_hs_cloud", "L1_hs_bubbles" };
         public const int HeartstringsNeeded = 0;   // all optional in Toybox Town; the band is the goal
 
-        static readonly Vector3 SpawnPoint = new Vector3(0f, 0f, -14f);
+        // You arrive by Pod, which lands in Landing Meadow (the south-east, past the canal), and
+        // walk into town from there. The square's own checkpoint is where the old start was.
+        static readonly Vector3 SpawnPoint = new Vector3(50f, 0f, -98f);
+        static readonly Vector3 PodLanding = new Vector3(50f, 0f, -103f);
+        static readonly Vector3 SquareSpot = new Vector3(0f, 0f, -14f);
         static readonly Vector3 Bandstand = new Vector3(0f, 0f, 7f);
         static readonly Vector3 Tower = new Vector3(0f, 0f, 27f);
         static readonly Vector3 Mill = new Vector3(64f, 0f, 8f);
-        const float RavineEast = -37f, RavineWest = -51f, CanalWest = 32f, CanalEast = 40f, Half = 90f;
+        const float RavineEast = -37f, RavineWest = -51f, CanalWest = 32f, CanalEast = 40f, Half = BoxHalf;
+        // Half the width of the giant toybox (it was 90 before the town grew).
+        public const float BoxHalf = 115f;
         const float StreamWest = -46f, StreamEast = -42f, StreamSurface = -5.35f, CanalSurface = -0.6f;
 
         static readonly Color GrassCol = new Color(0.52f, 0.72f, 0.42f);
@@ -89,6 +95,9 @@ namespace Patchwork
             P.Add(new MapPin("Toybox Express", new Vector3(70f, 0f, -51f)));
             P.Add(new MapPin("Chimney Lane", new Vector3(0f, 0f, -46f)));
             P.Add(new MapPin("Weathervane", new Vector3(0f, 0f, -72f)));
+            P.Add(new MapPin("Landing Meadow", PodLanding));
+            P.Add(new MapPin("Bouncy Castle", new Vector3(20f, 0f, 102f)));
+            P.Add(new MapPin("Sky Hoops", new Vector3(100f, 0f, -20f)));
             P.Add(new MapPin("Lute String", new Vector3(-67f, 0f, 31f), MapPin.Kind.Band, Level1Director.LuteId));
             P.Add(new MapPin("Valve Dew", Mill + new Vector3(2.6f, 0f, 0.6f), MapPin.Kind.Band, Level1Director.TrumpetId));
             P.Add(new MapPin("Wisp the Piper", new Vector3(1.4f, 0f, -71.2f), MapPin.Kind.Band, Level1Director.PiperId));
@@ -108,6 +117,9 @@ namespace Patchwork
             Canal(kit);
             DyeWorks(kit);
             Rooftops(kit);
+            LandingMeadow(kit);
+            BouncyCastle(kit);
+            SkyHoops(kit);
             Townsfolk(kit);
             Knots(kit);
             YarnBirds(kit);
@@ -251,8 +263,8 @@ namespace Patchwork
             kit.Block(new Vector3(0f, -0.1f, -30f), new Vector3(10f, 0.3f, 22f), CobbleCol, "SouthStreet", cobble);
             kit.Block(new Vector3(-28f, -0.1f, 0f), new Vector3(18f, 0.3f, 10f), CobbleCol, "WestStreet", cobble);
             kit.Block(new Vector3(25.5f, -0.1f, 0f), new Vector3(13f, 0.3f, 10f), CobbleCol, "EastStreet", cobble);
-            kit.AddCheckpoint(SpawnPoint, 0f);
-            kit.Hint(SpawnPoint + new Vector3(0f, 1.5f, 0f), new Vector3(10f, 4f, 6f), "Toybox Town",
+            kit.AddCheckpoint(SquareSpot, 0f);
+            kit.Hint(SquareSpot + new Vector3(0f, 1.5f, 0f), new Vector3(10f, 4f, 6f), "Toybox Town",
                 "It's the Mayor's wedding day, but the Fray has spoiled the town band's instruments! Press {Ability} to talk to the toys, and {Map} to open the town map.");
 
             // ----- The bandstand -----
@@ -1118,7 +1130,7 @@ namespace Patchwork
             // An ink hole: a glossy pool of ink with a violet swirl turning in it, droplets bobbing
             // above, a tipped-over inkwell spilling into it and a quill stuck in the edge.
             var hoop = kit.Volume<HomeHoop>(feet + Vector3.up * 0.8f, new Vector3(2f, 1.6f, 2f), "InkHole");
-            hoop.Target = SpawnPoint + new Vector3(0f, 0.1f, 2.5f);
+            hoop.Target = SquareSpot + new Vector3(0f, 0.1f, 2.5f);
             hoop.TargetYaw = 0f;
             var ink = PatchworkAssets.Plain(new Color(0.07f, 0.05f, 0.16f), 0.95f);
             var rim = PatchworkAssets.Plain(new Color(0.14f, 0.1f, 0.3f), 0.9f);

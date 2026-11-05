@@ -117,6 +117,14 @@ Stuff I need to remember about how Patchwork is put together.
 - Merit Patches: `Merits.cs`. Earned ones are saved as hint ids `merit_<Id>`; running counts in
   PlayerPrefs (`pw_mc_*`). `Merits.Earn(id)` from events, `Merits.Tick` polls the rest.
 - Juice: `PatchworkGame.HitStop(seconds)` and `PlayerCamera.Kick(amount)`.
+- Toybox Town's size is `Level1Builder.BoxHalf` (115). Everything along the walls is placed
+  relative to it. The start is `SpawnPoint` in Landing Meadow; `SquareSpot` is the old start
+  (the square's checkpoint and the ink hole's target). New areas are in `Level1Expansion.cs`.
+- Arriving by Pod: `LandedPod.Build` (the exterior model) and `PodLaunch` with `Door` and
+  `Gentle` set (the door swings open, then Patch hops out).
+- The Pod's decorating menu: `PodEditor` (`UIMode.PodEdit`) over `PodDecor` (floor, rug, light,
+  items on/off; PlayerPrefs `pw_pod_*`) and `PodTheme` (walls). Things that can be switched are
+  built inside `HubBuilder.Collect(kit, key, build)`, which groups whatever the build made.
 - Per-level sun and title camera: `LevelInfo.SunEuler` / `SunIntensity` and `TitleCenter` /
   `TitleRadius` / `TitleHeight` / `TitleLookOffset`.
 - Yarn birds (`YarnBird`, `kit.YarnBird`) play their chirps from their own 3D AudioSource.

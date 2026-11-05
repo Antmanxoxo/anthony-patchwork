@@ -37,6 +37,7 @@ namespace Patchwork
         public static LevelInfo Build(LevelKit kit)
         {
             PodTheme.ResetStatics();
+            PodDecor.ResetStatics();
             var info = kit.Info;
             info.Id = SceneName;
             info.IsHub = true;
@@ -72,6 +73,7 @@ namespace Patchwork
             Furnishings(kit);
             Decorations(kit);
             MeritWall(kit);
+            PodDecor.ApplyAll();
             Outside(kit);
             MiniSkiff(kit);
             Sounds(kit);
@@ -92,6 +94,129 @@ namespace Patchwork
 
         // Where Patch lands after being popped out of the launch tube.
         static readonly Vector3 LandPoint = new Vector3(0.8f, 0f, -1.2f);
+
+        // Builds something and gathers everything it made under one group, registered with the
+        // decorating menu so it can be switched on and off.
+        static void Collect(LevelKit kit, string key, System.Action build)
+        {
+            int before = kit.Root.childCount;
+            build();
+            var g = new GameObject("Item_" + key).transform;
+            g.SetParent(kit.Root, false);
+            var made = new System.Collections.Generic.List<Transform>();
+            for (int i = before; i < kit.Root.childCount; i++)
+            {
+                var c = kit.Root.GetChild(i);
+                if (c != g) made.Add(c);
+            }
+            foreach (var c in made) c.SetParent(g, true);
+            PodDecor.Register(key, g.gameObject);
+        }
+
+        // The furniture you can switch on and off in the decorating menu.
+        static void BaseItems(LevelKit kit)
+        {
+            Collect(kit, "stool", () =>
+            {
+                Vector3 st = new Vector3(6.2f, 0f, -3.4f);
+                kit.Block(st + Vector3.up * 0.45f, new Vector3(1.4f, 0.9f, 1.4f), Color.white, "Stool").GetComponent<Renderer>().enabled = false;
+                kit.Deco(PrimitiveType.Cylinder, st + Vector3.up * 0.35f, new Vector3(0.7f, 0.35f, 0.7f), PatchworkAssets.Felt(new Color(0.98f, 0.94f, 0.85f)));
+                kit.Deco(PrimitiveType.Sphere, st + Vector3.up * 0.82f, new Vector3(1.7f, 0.6f, 1.7f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Polka, new Color(0.9f, 0.25f, 0.25f), new Color(0.99f, 0.96f, 0.9f)));
+            });
+            Collect(kit, "cushion", () => kit.Deco(PrimitiveType.Sphere, new Vector3(-6.4f, 0.3f, -2.4f), new Vector3(1.9f, 0.6f, 1.9f),
+                PatchworkAssets.Print(PatchworkAssets.PrintKind.Zigzag, new Color(0.2f, 0.25f, 0.55f), new Color(1f, 0.8f, 0.28f))));
+            Collect(kit, "bouncer", () => kit.AddBouncePad(new Vector3(-4.6f, 0f, -5.2f)));
+            Collect(kit, "ball", () => Grabbable.BeachBall(kit, new Vector3(3f, 0.05f, -4.5f), 0.6f));
+            Collect(kit, "blocks", () =>
+            {
+                Grabbable.ToyBlock(kit, new Vector3(-2.6f, 0.05f, -5.6f), 0.8f, new Color(0.95f, 0.45f, 0.45f), 15f);
+                Grabbable.ToyBlock(kit, new Vector3(-1.6f, 0.05f, -6.2f), 0.8f, new Color(0.45f, 0.65f, 0.95f), -20f);
+                Grabbable.ToyBlock(kit, new Vector3(-2.1f, 0.85f, -5.9f), 0.8f, new Color(1f, 0.85f, 0.35f), 40f);
+            });
+            // A squashy bean bag by the window.
+            Collect(kit, "beanbag", () =>
+            {
+                Vector3 b = new Vector3(4.2f, 0f, 5.2f);
+                kit.Block(b + Vector3.up * 0.35f, new Vector3(1.6f, 0.7f, 1.6f), Color.white, "BeanBag").GetComponent<Renderer>().enabled = false;
+                kit.Deco(PrimitiveType.Sphere, b + Vector3.up * 0.42f, new Vector3(2f, 0.9f, 1.9f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Stars, new Color(0.55f, 0.35f, 0.75f), new Color(1f, 0.85f, 0.4f)));
+                kit.Deco(PrimitiveType.Sphere, b + new Vector3(0f, 0.9f, 0.55f), new Vector3(1.5f, 0.8f, 0.7f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Stars, new Color(0.55f, 0.35f, 0.75f), new Color(1f, 0.85f, 0.4f)), new Vector3(-20f, 0f, 0f));
+            });
+            // A striped toy chest under the shelves.
+            Collect(kit, "chest", () =>
+            {
+                Vector3 c = new Vector3(-7.4f, 0f, 1.2f);
+                var g = kit.Group("ToyChest", c);
+                g.rotation = Quaternion.Euler(0f, 90f, 0f);
+                kit.Block(c + Vector3.up * 0.55f, new Vector3(1.2f, 1.1f, 2f), Color.white, "ToyChestSolid").GetComponent<Renderer>().enabled = false;
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.5f, 0f), new Vector3(2f, 1f, 1.2f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Stripes, new Color(0.4f, 0.7f, 1f), new Color(0.99f, 0.96f, 0.9f)), default(Vector3), g);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.08f, -0.25f), new Vector3(2.05f, 0.16f, 1.25f), PatchworkAssets.Felt(new Color(1f, 0.8f, 0.3f)), new Vector3(-25f, 0f, 0f), g);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0.5f, 1.15f, 0.1f), new Vector3(0.5f, 0.5f, 0.5f), PatchworkAssets.Plain(new Color(1f, 0.4f, 0.5f), 0.7f), default(Vector3), g);
+                kit.Deco(PrimitiveType.Cube, new Vector3(-0.4f, 1.2f, 0.1f), new Vector3(0.45f, 0.45f, 0.45f), PatchworkAssets.Felt(new Color(0.55f, 0.85f, 0.45f)), new Vector3(10f, 30f, 0f), g);
+            });
+            // A potted felt plant.
+            Collect(kit, "plant", () =>
+            {
+                Vector3 p = new Vector3(-6.9f, 0f, 5.6f);
+                kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * 0.4f, new Vector3(0.9f, 0.4f, 0.9f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Polka, new Color(0.95f, 0.55f, 0.3f), new Color(0.99f, 0.96f, 0.9f)));
+                var leaf = PatchworkAssets.Felt(new Color(0.4f, 0.75f, 0.4f));
+                for (int k = 0; k < 7; k++)
+                {
+                    float a = k * 51f;
+                    kit.Deco(PrimitiveType.Sphere, p + Quaternion.Euler(0f, a, 0f) * new Vector3(0f, 1.25f + (k % 3) * 0.25f, 0.3f), new Vector3(0.35f, 1f, 0.12f), leaf, new Vector3(25f, a, 0f));
+                }
+            });
+            // A lava lamp on the desk, its blobs drifting up and down.
+            Collect(kit, "lavalamp", () =>
+            {
+                Vector3 p = new Vector3(2.8f, DeskTop, 8.2f);
+                kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * 0.12f, new Vector3(0.45f, 0.12f, 0.45f), PatchworkAssets.Plain(new Color(0.85f, 0.86f, 0.9f), 0.8f));
+                var glass = kit.Deco(PrimitiveType.Capsule, p + Vector3.up * 0.75f, new Vector3(0.38f, 0.5f, 0.38f), PatchworkAssets.Bubble(new Color(1f, 0.5f, 0.75f, 0.4f)));
+                glass.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                for (int k = 0; k < 3; k++)
+                {
+                    var blob = kit.Deco(PrimitiveType.Sphere, p + Vector3.up * (0.5f + k * 0.25f), Vector3.one * (0.14f + k * 0.03f), PatchworkAssets.Glow(new Color(1f, 0.6f, 0.3f), 1.4f));
+                    var s = blob.gameObject.AddComponent<Spinner>();
+                    s.Speed = 0f;
+                    s.BobHeight = 0.18f;
+                    s.BobSpeed = 0.6f + k * 0.25f;
+                }
+                kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * 1.28f, new Vector3(0.3f, 0.06f, 0.3f), PatchworkAssets.Plain(new Color(0.85f, 0.86f, 0.9f), 0.8f));
+            });
+            // A felt mobile of stars and moons turning under the roof.
+            Collect(kit, "mobile", () =>
+            {
+                var m = kit.Group("StarMobile", new Vector3(0f, 11f, -4f));
+                var cord = PatchworkAssets.Yarn(new Color(0.95f, 0.9f, 0.8f));
+                kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(4f, 0.04f, 0.06f), cord, new Vector3(0f, 0f, 90f), m);
+                kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(4f, 0.04f, 0.06f), cord, new Vector3(90f, 0f, 90f), m);
+                Color[] cols = { new Color(1f, 0.85f, 0.35f), new Color(1f, 0.55f, 0.72f), new Color(0.5f, 0.8f, 1f), new Color(0.7f, 0.55f, 0.95f) };
+                for (int k = 0; k < 4; k++)
+                {
+                    Vector3 end = Quaternion.Euler(0f, k * 90f, 0f) * new Vector3(0f, 0f, 2f);
+                    kit.Deco(PrimitiveType.Cylinder, end + Vector3.down * 0.6f, new Vector3(0.03f, 0.6f, 0.03f), cord, default(Vector3), m);
+                    for (int pnt = 0; pnt < 5; pnt++)
+                        kit.Deco(PrimitiveType.Sphere, end + Vector3.down * 1.4f + Quaternion.Euler(0f, k * 90f, pnt * 72f) * new Vector3(0f, 0.22f, 0f), new Vector3(0.18f, 0.48f, 0.1f), PatchworkAssets.Felt(cols[k]), new Vector3(0f, k * 90f, pnt * 72f), m);
+                }
+                var spin = m.gameObject.AddComponent<Spinner>();
+                spin.Speed = 12f;
+            });
+            // Fairy lights looped round the walls.
+            Collect(kit, "fairylights", () =>
+            {
+                var cord = PatchworkAssets.Yarn(new Color(0.3f, 0.5f, 0.3f));
+                Color[] bulbs = { new Color(1f, 0.85f, 0.4f), new Color(1f, 0.5f, 0.6f), new Color(0.5f, 0.8f, 1f), new Color(0.6f, 0.95f, 0.5f) };
+                const int n = 40;
+                for (int k = 0; k < n; k++)
+                {
+                    float a0 = 45f + k * 270f / n, a1 = 45f + (k + 1) * 270f / n;
+                    float y0 = 8.2f - Mathf.Abs(Mathf.Sin(k * 0.8f)) * 0.5f, y1 = 8.2f - Mathf.Abs(Mathf.Sin((k + 1) * 0.8f)) * 0.5f;
+                    Vector3 p0 = Dir(a0) * (RadiusAt(y0) - 0.3f) + Vector3.up * y0, p1 = Dir(a1) * (RadiusAt(y1) - 0.3f) + Vector3.up * y1;
+                    kit.Rope(p0, p1, cord, 0.03f);
+                    var b = kit.Deco(PrimitiveType.Sphere, p0 + Vector3.down * 0.12f, new Vector3(0.14f, 0.2f, 0.14f), PatchworkAssets.Glow(bulbs[k % bulbs.Length], 1.8f));
+                    b.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
+            });
+        }
 
         // ---------------------------------------------------------------- Helpers
 
@@ -247,11 +372,12 @@ namespace Patchwork
         {
             var floor = kit.Block(new Vector3(0f, -0.5f, 0f), new Vector3(22f, 1f, 22f), Color.white, "Floor");
             floor.GetComponent<Renderer>().enabled = false;
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.06f, 0f), new Vector3(19.2f, 0.05f, 19.2f), PatchworkAssets.Planks(new Color(0.84f, 0.66f, 0.48f)));
-            // A round rug: zigzag felt with a rose felt border.
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, 0.5f), new Vector3(9.4f, 0.01f, 9.4f), PatchworkAssets.Felt(new Color(0.92f, 0.45f, 0.5f)));
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.01f, 0.5f), new Vector3(8.6f, 0.01f, 8.6f),
+            var boards = kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.06f, 0f), new Vector3(19.2f, 0.05f, 19.2f), PatchworkAssets.Planks(new Color(0.84f, 0.66f, 0.48f)));
+            // A round rug: patterned felt with a rose felt border (both picked in the decorating menu).
+            var border = kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, 0.5f), new Vector3(9.4f, 0.01f, 9.4f), PatchworkAssets.Felt(new Color(0.92f, 0.45f, 0.5f)));
+            var rug = kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.01f, 0.5f), new Vector3(8.6f, 0.01f, 8.6f),
                 PatchworkAssets.Print(PatchworkAssets.PrintKind.Zigzag, new Color(0.45f, 0.75f, 0.95f), new Color(1f, 0.9f, 0.55f)));
+            PodDecor.RegisterFloor(boards.GetComponent<Renderer>(), rug.GetComponent<Renderer>(), border.GetComponent<Renderer>());
         }
 
         // Two curved shelves round the back-left wall: hop up them; prizes sit on them.
@@ -377,7 +503,7 @@ namespace Patchwork
             var pageL = kit.Deco(PrimitiveType.Cube, new Vector3(-0.36f, 0f, -0.06f), new Vector3(0.66f, 0.92f, 0.03f), PodTheme.Material(1), new Vector3(0f, 6f, 0f), book);
             var pageR = kit.Deco(PrimitiveType.Cube, new Vector3(0.36f, 0f, -0.06f), new Vector3(0.66f, 0.92f, 0.03f), PodTheme.Material(2), new Vector3(0f, -6f, 0f), book);
             var spot = kit.Volume<UseSpot>(new Vector3(-4.8f, 1.2f, 3.1f), new Vector3(2.8f, 3f, 2.8f), "PatternBook");
-            spot.Label = "Change the wallpaper";
+            spot.Label = "Decorate the Pod";
             spot.PromptPoint = p + Vector3.up * 2.3f;
             var left = pageL.GetComponent<Renderer>();
             var right = pageR.GetComponent<Renderer>();
@@ -388,13 +514,11 @@ namespace Patchwork
                 right.sharedMaterial = PodTheme.Material((PodTheme.Current + 2) % n);
             };
             showPages();
+            PodTheme.Changed = showPages;
             spot.Used = player =>
             {
-                PodTheme.Next();
-                showPages();
                 Sfx.Play(SfxId.PageTurn, 0.6f);
-                FxBurst.Spawn(FxBurst.Kind.Scraps, p + Vector3.up * 1.4f, new Color(1f, 0.85f, 0.6f));
-                if (player.Game != null) player.Game.ShowToast("Wallpaper: " + PodTheme.Names[PodTheme.Current]);
+                if (player.Game != null) player.Game.OpenPodEditor();
             };
         }
 
@@ -477,20 +601,8 @@ namespace Patchwork
             sway.Amount = 3f;
             sway.Speed = 1.1f;
 
-            // A polka-dot toadstool stool and a zigzag cushion.
-            Vector3 st = new Vector3(6.2f, 0f, -3.4f);
-            kit.Block(st + Vector3.up * 0.45f, new Vector3(1.4f, 0.9f, 1.4f), Color.white, "Stool").GetComponent<Renderer>().enabled = false;
-            kit.Deco(PrimitiveType.Cylinder, st + Vector3.up * 0.35f, new Vector3(0.7f, 0.35f, 0.7f), PatchworkAssets.Felt(new Color(0.98f, 0.94f, 0.85f)));
-            kit.Deco(PrimitiveType.Sphere, st + Vector3.up * 0.82f, new Vector3(1.7f, 0.6f, 1.7f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Polka, new Color(0.9f, 0.25f, 0.25f), new Color(0.99f, 0.96f, 0.9f)));
-            kit.Deco(PrimitiveType.Sphere, new Vector3(-6.4f, 0.3f, -2.4f), new Vector3(1.9f, 0.6f, 1.9f),
-                PatchworkAssets.Print(PatchworkAssets.PrintKind.Zigzag, new Color(0.2f, 0.25f, 0.55f), new Color(1f, 0.8f, 0.28f)));
-
-            // A bouncy pin-cushion, a beach ball and some building blocks.
-            kit.AddBouncePad(new Vector3(-4.6f, 0f, -5.2f));
-            Grabbable.BeachBall(kit, new Vector3(3f, 0.05f, -4.5f), 0.6f);
-            Grabbable.ToyBlock(kit, new Vector3(-2.6f, 0.05f, -5.6f), 0.8f, new Color(0.95f, 0.45f, 0.45f), 15f);
-            Grabbable.ToyBlock(kit, new Vector3(-1.6f, 0.05f, -6.2f), 0.8f, new Color(0.45f, 0.65f, 0.95f), -20f);
-            Grabbable.ToyBlock(kit, new Vector3(-2.1f, 0.85f, -5.9f), 0.8f, new Color(1f, 0.85f, 0.35f), 40f);
+            PodDecor.RegisterBulb(l, bulb.GetComponent<Renderer>());
+            BaseItems(kit);
 
             // A felt clock on the right wall (you can hear it tick).
             Vector3 d = Dir(90f);
@@ -513,7 +625,7 @@ namespace Patchwork
         static void Decorations(LevelKit kit)
         {
             // Duck Captain: a big rubber duck in a captain's hat, on the top shelf.
-            if (Prizes.HasDecoration(0))
+            if (Prizes.HasDecoration(0)) Collect(kit, "deco0", () =>
             {
                 float deg = -105f;
                 Vector3 at = Dir(deg) * (RadiusAt(4.4f) - 0.7f) + Vector3.up * 4.4f;
@@ -534,9 +646,9 @@ namespace Patchwork
                 rock.Axis = Vector3.forward;
                 rock.Amount = 4f;
                 rock.Speed = 1.2f;
-            }
+            });
             // Paper Lanterns strung across the pod.
-            if (Prizes.HasDecoration(1))
+            if (Prizes.HasDecoration(1)) Collect(kit, "deco1", () =>
             {
                 Vector3 a = Dir(-70f) * (RadiusAt(7.5f) - 0.3f) + Vector3.up * 7.5f;
                 Vector3 b = Dir(70f) * (RadiusAt(7.5f) - 0.3f) + Vector3.up * 7.5f;
@@ -551,9 +663,9 @@ namespace Patchwork
                     kit.Deco(PrimitiveType.Sphere, p, new Vector3(0.42f, 0.55f, 0.42f), PatchworkAssets.Glow(cols[i % cols.Length], 0.8f));
                     kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * 0.3f, new Vector3(0.24f, 0.04f, 0.24f), PatchworkAssets.Felt(new Color(0.3f, 0.25f, 0.3f)));
                 }
-            }
+            });
             // Snow Globe: a tiny Skiff in a glass dome, on the desk.
-            if (Prizes.HasDecoration(2))
+            if (Prizes.HasDecoration(2)) Collect(kit, "deco2", () =>
             {
                 Vector3 g = new Vector3(-2.6f, DeskTop, 8.2f);
                 kit.Deco(PrimitiveType.Cylinder, g + Vector3.up * 0.15f, new Vector3(0.9f, 0.15f, 0.9f), PatchworkAssets.Wood(new Color(0.5f, 0.32f, 0.22f)));
@@ -570,9 +682,9 @@ namespace Patchwork
                 var spin = snow.gameObject.AddComponent<Spinner>();
                 spin.Speed = 25f;
                 spin.BobHeight = 0.04f;
-            }
+            });
             // The Grumblewool Plush: a soft, friendly copy of the Big Top's boss, on the lower shelf.
-            if (Prizes.HasDecoration(4))
+            if (Prizes.HasDecoration(4)) Collect(kit, "deco4", () =>
             {
                 float deg = -95f;
                 Vector3 at = Dir(deg) * (RadiusAt(2.4f) - 0.7f) + Vector3.up * 2.4f;
@@ -591,9 +703,9 @@ namespace Patchwork
                 wob.Axis = Vector3.forward;
                 wob.Amount = 5f;
                 wob.Speed = 1.6f;
-            }
+            });
             // Pinwheels in two flowerpots either side of the Button Box doorway.
-            if (Prizes.HasDecoration(3))
+            if (Prizes.HasDecoration(3)) Collect(kit, "deco3", () =>
             {
                 Color[] cols = { LevelKit.Palette.Rose, LevelKit.Palette.Sky, LevelKit.Palette.Butter, LevelKit.Palette.Sage };
                 for (int s = -1; s <= 1; s += 2)
@@ -614,13 +726,13 @@ namespace Patchwork
                         turn.Speed = 140f + k * 40f;
                     }
                 }
-            }
+            });
         }
 
         // Every Merit Patch you've earned, stitched onto the back-right wall of the pod.
         static void MeritWall(LevelKit kit)
         {
-            const int cols = 6;
+            const int cols = 7;
             for (int i = 0; i < Merits.All.Length; i++)
             {
                 if (!Merits.Has((Merits.Id)i)) continue;
@@ -941,8 +1053,8 @@ namespace Patchwork
         static void Sounds(LevelKit kit)
         {
             var root = kit.Group("PodSounds", Vector3.zero);
-            AmbientEmitter.Create(root, Dir(90f) * 8.5f + Vector3.up * 3.6f, Sfx.Ambient(Sfx.AmbientClip.Clock), 0.35f, 1.5f, 12f);
-            AmbientEmitter.Create(root, new Vector3(0f, 4f, 11f), Sfx.Ambient(Sfx.AmbientClip.Balloon), 0.18f, 3f, 14f);
+            // The hum of the pod drifting through space (no ticking clock any more).
+            AmbientEmitter.Create(root, new Vector3(0f, 5f, 0f), Sfx.Ambient(Sfx.AmbientClip.Space), 0.55f, 30f, 60f);
         }
     }
 }

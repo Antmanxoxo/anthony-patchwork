@@ -19,14 +19,30 @@ namespace Patchwork
         // Patch stands still for a moment, then tuck away again.
         float stackA, scoreA, controlsA, heartsA;
         float stackTimer, scoreTimer, heartsTimer, idleTime;
-        int lastSig = int.MinValue, lastScore = int.MinValue, lastHearts = -1;
+        int lastScore = int.MinValue, lastHearts = -1;
+        int[] lastCounts;
+        int chipKind = -1;
+        float chipTimer, chipPop;
 
         void UpdateVisibility(float dt)
         {
             var level = Game.Level;
-            int sig = level.CollectedCount() * 131 + level.HeartstringCount() * 31 + level.SecretCount() * 1031 + Game.ThreadsCollected * 7919
-                      + (level.Id == Level1Builder.SceneName ? Level1Director.BandCount() * 7 : 0);
-            if (sig != lastSig) { if (lastSig != int.MinValue) stackTimer = 4f; lastSig = sig; }
+            // When a count changes, a little chip pops up over Patch's head showing it (instead of
+            // the whole list sliding in on the left).
+            int[] now =
+            {
+                level.Id == Level1Builder.SceneName ? Level1Director.BandCount() : 0,
+                level.HeartstringCount(), level.CollectedCount(), level.SecretCount(), Game.ThreadsCollected,
+            };
+            if (lastCounts == null) lastCounts = now;
+            for (int i = 0; i < now.Length; i++)
+                if (now[i] != lastCounts[i])
+                {
+                    if (now[i] > lastCounts[i]) { chipKind = i; chipTimer = 2.4f; chipPop = 1f; }
+                    lastCounts[i] = now[i];
+                }
+            chipTimer -= dt;
+            chipPop = Mathf.MoveTowards(chipPop, 0f, dt * 3f);
             int score = Game.Score != null ? Game.Score.Total : 0;
             if (score != lastScore) { if (lastScore != int.MinValue) scoreTimer = 3f; lastScore = score; }
             if (Game.Hearts != lastHearts) { if (lastHearts >= 0) heartsTimer = 3.5f; lastHearts = Game.Hearts; }
@@ -36,7 +52,7 @@ namespace Patchwork
             bool idle = idleTime > 1.5f;
             bool menu = Game.Mode == UIMode.Paused || Game.Mode == UIMode.Satchel || Game.Mode == UIMode.Complete;
             stackTimer -= dt; scoreTimer -= dt; heartsTimer -= dt;
-            stackA = Mathf.MoveTowards(stackA, stackTimer > 0f || idle || menu ? 1f : 0f, dt * 3f);
+            stackA = Mathf.MoveTowards(stackA, idle || menu ? 1f : 0f, dt * 3f);
             scoreA = Mathf.MoveTowards(scoreA, scoreTimer > 0f || idle || menu || (Game.Score != null && Game.Score.ChainAlive && Game.Score.Multiplier > 1) ? 1f : 0f, dt * 3f);
             controlsA = Mathf.MoveTowards(controlsA, idleTime > 2.5f ? 1f : 0f, dt * 3f);
             bool hurt = Game.Hearts < PatchworkGame.MaxHearts;
@@ -52,21 +68,76 @@ namespace Patchwork
             GUI.matrix = m;
         }
 
+        // Where over Patch's head the hearts and count chips float (in GUI units).
+        bool OverHead(out Vector2 p)
+        {
+            p = Vector2.zero;
+            var cam = Game.CameraRig != null ? Game.CameraRig.Cam : null;
+            if (cam == null || Game.Player == null) return false;
+            Vector3 sp = cam.WorldToScreenPoint(Game.Player.Motor.Center + Vector3.up * 1.35f);
+            if (sp.z <= 0f) return false;
+            p = new Vector2(sp.x / UIKit.Scale, (Screen.height - sp.y) / UIKit.Scale);
+            p.y = Mathf.Max(p.y, 130f);
+            return true;
+        }
+
+        // Patch's hearts, floating just above his head.
         void DrawHearts()
         {
             if (heartsA <= 0.001f) return;
+            Vector2 head;
+            if (!OverHead(out head)) return;
+            float a = UIKit.EaseOutCubic(heartsA);
             float shake = Game.HeartsShake;
-            var r = new Rect(28f, 24f, 214f, 70f);
-            UIKit.Panel(r, new Color(1f, 0.95f, 0.93f, 0.95f), new Color(0.9f, 0.35f, 0.45f, 0.9f), 20f);
+            const float hs = 34f, gap = 40f;
+            float w = gap * PatchworkGame.MaxHearts + 18f;
+            var r = new Rect(head.x - w * 0.5f, head.y - 54f - (1f - a) * 14f, w, 44f);
+            UIKit.Fill(r, new Color(0.18f, 0.14f, 0.22f, 0.45f * a), 22f);
             for (int i = 0; i < PatchworkGame.MaxHearts; i++)
             {
                 bool full = i < Game.Hearts;
-                float wob = shake > 0f ? Mathf.Sin(Time.unscaledTime * 40f + i) * shake * 4f : 0f;
-                var c = new Vector2(r.x + 46f + i * 62f + wob, r.y + 37f);
-                UIKit.Heart(c + new Vector2(0f, 3f), 50f, new Color(0f, 0f, 0f, 0.15f));
-                UIKit.Heart(c, 50f, full ? new Color(0.95f, 0.3f, 0.42f) : new Color(0.8f, 0.76f, 0.8f, 0.7f));
-                if (full) UIKit.Circle(c + new Vector2(-8f, -9f), 9f, new Color(1f, 1f, 1f, 0.6f));
+                float wob = shake > 0f ? Mathf.Sin(Time.unscaledTime * 40f + i) * shake * 3f : 0f;
+                var c = new Vector2(r.x + 9f + gap * (i + 0.5f) + wob, r.y + 22f);
+                UIKit.Heart(c, hs, full ? new Color(0.98f, 0.32f, 0.45f, a) : new Color(0.85f, 0.8f, 0.86f, 0.55f * a));
+                if (full) UIKit.Circle(c + new Vector2(-6f, -6f), 6f, new Color(1f, 1f, 1f, 0.6f * a));
             }
+        }
+
+        // A count that just went up (a thread, a marble, a band member...), over Patch's head.
+        void DrawCountChip()
+        {
+            if (chipTimer <= 0f || chipKind < 0) return;
+            Vector2 head;
+            if (!OverHead(out head)) return;
+            var level = Game.Level;
+            float a = Mathf.Clamp01(chipTimer / 0.4f);
+            float pop = 1f + Mathf.Sin(chipPop * Mathf.PI) * 0.2f;
+            float y = head.y - (heartsA > 0.01f ? 104f : 60f);
+            string text;
+            switch (chipKind)
+            {
+                case 0: text = "Band  " + Level1Director.BandCount() + " / 3"; break;
+                case 1: text = level.HeartstringCount() + " / " + level.HeartstringIds.Count; break;
+                case 2: text = level.CollectedCount() + " / " + level.CollectibleIds.Count; break;
+                case 3: text = level.SecretCount() + " / " + level.SecretIds.Count; break;
+                default: text = Game.ThreadsCollected + " / " + level.ThreadTotal; break;
+            }
+            var style = UIKit.Style(Mathf.RoundToInt(24 * pop), true, TextAnchor.MiddleLeft, new Color(UIKit.Ink.r, UIKit.Ink.g, UIKit.Ink.b, a));
+            float w = 60f + UIKit.TextWidth(text, style) + 20f;
+            var r = new Rect(head.x - w * 0.5f, y - 22f, w, 44f);
+            Color[] tint = { new Color(1f, 0.78f, 0.3f), new Color(1f, 0.72f, 0.3f), new Color(0.9f, 0.8f, 0.55f), new Color(0.45f, 0.7f, 0.95f), new Color(0.9f, 0.45f, 0.6f) };
+            Color t = tint[Mathf.Clamp(chipKind, 0, tint.Length - 1)];
+            UIKit.Panel(r, new Color(1f, 0.97f, 0.92f, 0.95f * a), new Color(t.r, t.g, t.b, 0.95f * a), 22f);
+            var ic = new Vector2(r.x + 28f, r.y + 22f);
+            switch (chipKind)
+            {
+                case 1: UIKit.Heart(ic, 30f, new Color(1f, 0.72f, 0.3f, a)); break;
+                case 2: UIKit.Icon(new Rect(ic.x - 16f, ic.y - 16f, 32f, 32f), PatchworkAssets.IconButton, new Color(1f, 1f, 1f, a)); break;
+                case 3: DrawMarbleIcon(ic, 30f, Time.unscaledTime * 0.3f); break;
+                case 4: UIKit.Icon(new Rect(ic.x - 15f, ic.y - 15f, 30f, 30f), PatchworkAssets.IconYarn, new Color(1f, 1f, 1f, a)); break;
+                default: UIKit.Icon(new Rect(ic.x - 15f, ic.y - 15f, 30f, 30f), UIArt.IconNote, new Color(0.75f, 0.35f, 0.3f, a)); break;
+            }
+            UIKit.Label(new Rect(r.x + 50f, r.y, w - 50f, r.height), text, style);
         }
 
         void Update()
@@ -127,6 +198,11 @@ namespace Patchwork
                 Game.Photo.Draw(kb);
                 return;
             }
+            if (Game.Mode == UIMode.PodEdit)
+            {
+                Game.PodEdit.Draw(kb);
+                return;
+            }
 
             DrawLetterbox(kb);
             if (Game.Mode != UIMode.Loading && Game.Mode != UIMode.Dance && Game.Mode != UIMode.LevelSelect && Game.Mode != UIMode.Talk && Game.Mode != UIMode.Cutscene)
@@ -135,7 +211,8 @@ namespace Patchwork
                 DrawTalkPrompt(kb);
                 DrawAnchorPrompt(kb);
                 DrawFormBadge(kb);
-                if (heartsA > 0.001f) Shifted(-(1f - UIKit.EaseOutCubic(heartsA)) * 280f, 0f, DrawHearts);
+                DrawHearts();
+                DrawCountChip();
                 if (stackA > 0.001f) Shifted(-(1f - UIKit.EaseOutCubic(stackA)) * 420f, 0f, DrawButtons);
                 if (controlsA > 0.001f) Shifted(0f, (1f - UIKit.EaseOutCubic(controlsA)) * 120f, () => DrawControls(kb));
                 DrawHintCard();
@@ -296,7 +373,7 @@ namespace Patchwork
         {
             var level = Game.Level;
             int total = level.CollectibleIds.Count;
-            float y = level.IsHub ? 24f : 106f;   // below the hearts
+            float y = 24f;
             if (level.Id == Level1Builder.SceneName)
             {
                 // Toybox Town: the town band is the goal.
@@ -533,7 +610,7 @@ namespace Patchwork
             for (int i = 0; i < Grumblewool.MaxHp; i++)
             {
                 bool full = i < boss.Hp;
-                var c = new Vector2(r.x + r.width * 0.5f + (i - 1) * 64f, r.y + 66f);
+                var c = new Vector2(r.x + r.width * 0.5f + (i - (Grumblewool.MaxHp - 1) * 0.5f) * 64f, r.y + 66f);
                 UIKit.Circle(c, 46f, full ? new Color(0.62f, 0.6f, 0.7f, a) : new Color(0.35f, 0.33f, 0.4f, 0.6f * a));
                 if (full)
                 {

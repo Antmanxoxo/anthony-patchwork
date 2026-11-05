@@ -18,7 +18,8 @@ namespace Patchwork
             set { PlayerPrefs.SetInt(Key, ((value % Names.Length) + Names.Length) % Names.Length); PlayerPrefs.Save(); }
         }
 
-        public static void ResetStatics() { walls.Clear(); }
+        public static System.Action Changed;
+        public static void ResetStatics() { walls.Clear(); Changed = null; }
 
         public static void Register(Renderer r) { if (r != null) walls.Add(r); }
 
@@ -43,6 +44,7 @@ namespace Patchwork
             var m = Material(Current);
             walls.RemoveAll(r => r == null);
             foreach (var r in walls) r.sharedMaterial = m;
+            if (Changed != null) Changed();
         }
 
         public static void Next()

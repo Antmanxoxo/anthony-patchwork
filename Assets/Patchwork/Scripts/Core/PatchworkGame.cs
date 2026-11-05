@@ -20,7 +20,8 @@ namespace Patchwork
         Ask,         // a little Yes / No question (like "go back to the square?")
         Map,         // the pull-up map
         Sticker,     // aiming and placing stickers
-        Photo        // Photo Mode: time stopped, free camera
+        Photo,       // Photo Mode: time stopped, free camera
+        PodEdit      // the Pod's decorating menu
     }
 
     // Main game object, one per scene. Builds the level, camera, light and player,
@@ -42,6 +43,7 @@ namespace Patchwork
         public ScoreKeeper Score { get; private set; }
         public StickerSystem Stickers { get; private set; }
         public PhotoMode Photo { get; private set; }
+        public PodEditor PodEdit { get; private set; }
 
         // ---- Hearts: three hits from the Fray's creatures and Patch unravels (back to the checkpoint).
         public const int MaxHearts = 3;
@@ -185,6 +187,7 @@ namespace Patchwork
             Stickers = new StickerSystem(this);
             Stickers.LoadLevel(Level.Id);
             Photo = new PhotoMode(this);
+            PodEdit = new PodEditor(this);
             GameSettings.ApplyLook();
 
             Mode = UIMode.Gameplay;
@@ -323,6 +326,9 @@ namespace Patchwork
                     break;
                 case UIMode.Photo:
                     if (!Photo.Update(udt)) ClosePhotoMode();
+                    break;
+                case UIMode.PodEdit:
+                    if (!PodEdit.Update(udt)) ClosePodEditor();
                     break;
                 case UIMode.Dance:
                     if (Input.Pause.WasPressedThisFrame() || Input.Cancel.WasPressedThisFrame()) EndDance();
@@ -972,6 +978,24 @@ namespace Patchwork
             SetMode(UIMode.Sticker, 1f);
             Sfx.Play(SfxId.PageTurn, 0.5f);
             if (ActiveHint != null) HintAge = HintDuration;
+        }
+
+        // The Pod's decorating menu (from the pattern book).
+        public void OpenPodEditor()
+        {
+            if (Mode != UIMode.Gameplay) return;
+            Player.Hand.Release();
+            Player.Motor.Velocity = Vector3.zero;
+            PodEdit.Open();
+            SetMode(UIMode.PodEdit, 1f);
+            Sfx.Play(SfxId.MenuOpen, 0.5f);
+        }
+
+        void ClosePodEditor()
+        {
+            PodEdit.Close();
+            SetMode(UIMode.Gameplay, 1f);
+            Sfx.Play(SfxId.MenuCancel, 0.4f);
         }
 
         // From the pause menu: freeze time and let the camera roam.

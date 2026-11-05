@@ -225,7 +225,7 @@ namespace Patchwork
         public static float LoopCutoff { get { return loopCutoff; } }
 
         // Clips for sounds that play from a spot in the world (AmbientEmitter, NPC voices).
-        public enum AmbientClip { Propeller, Flag, Creak, Balloon, Clock, Fountain, Vent }
+        public enum AmbientClip { Propeller, Flag, Creak, Balloon, Clock, Fountain, Vent, Space }
         static readonly Dictionary<AmbientClip, AudioClip> ambient = new Dictionary<AmbientClip, AudioClip>();
 
         public static AudioClip Ambient(AmbientClip which)
@@ -239,6 +239,7 @@ namespace Patchwork
                 case AmbientClip.Creak: c = CreakLoop(); break;
                 case AmbientClip.Balloon: c = BalloonLoop(); break;
                 case AmbientClip.Clock: c = ClockLoop(); break;
+                case AmbientClip.Space: c = SpaceLoop(); break;
                 case AmbientClip.Fountain: c = bubbleClip != null ? bubbleClip : (bubbleClip = BubbleLoop()); break;
                 default: c = airClip != null ? airClip : (airClip = AirLoop()); break;
             }
@@ -867,6 +868,67 @@ namespace Patchwork
                 data[i] = tickT < 0.04f ? Mathf.Sin(2f * Mathf.PI * (tock ? 1500f : 1900f) * tickT) * Mathf.Exp(-tickT * 140f) * 0.6f : 0f;
             }
             return ToClip("clock", data);
+        }
+
+        // Drifting through space: a warm low hum (the pod's engine), a soft airy wash that breathes
+        // slowly, the odd twinkling star-ping and a gentle "whoo" sweep. Loops seamlessly (12 s).
+        static AudioClip SpaceLoop()
+        {
+            const float duration = 12f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var data = new float[n];
+            var rng = new System.Random(5);
+            float lp = 0f, lp2 = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                // Hum: whole numbers of cycles in 12 s so it loops cleanly.
+                float swell = 0.75f + 0.25f * Mathf.Sin(2f * Mathf.PI * t / 6f);
+                float hum = (Mathf.Sin(2f * Mathf.PI * 55f * t) * 0.5f + Mathf.Sin(2f * Mathf.PI * 82.5f * t) * 0.25f + Mathf.Sin(2f * Mathf.PI * 110.25f * t) * 0.08f) * swell;
+                // Air: soft filtered noise, breathing in and out.
+                float white = (float)(rng.NextDouble() * 2.0 - 1.0);
+                lp += (white - lp) * 0.02f;
+                lp2 += (lp - lp2) * 0.05f;
+                float air = lp2 * 3f * (0.6f + 0.4f * Mathf.Sin(2f * Mathf.PI * t / 4f + 1f));
+                data[i] = hum * 0.16f + air * 0.35f;
+            }
+            // Star pings: little bell tones from a pentatonic scale, high and soft.
+            float[] notes = { 1318.5f, 1568f, 1760f, 2093f, 2349.3f, 2637f };
+            float[] when = { 0.6f, 2.3f, 3.1f, 5.4f, 7.2f, 8.0f, 9.9f, 11.0f };
+            for (int k = 0; k < when.Length; k++)
+            {
+                float f = notes[(k * 3 + 1) % notes.Length];
+                int start = Mathf.RoundToInt(when[k] * Rate);
+                int len = Mathf.RoundToInt(1.4f * Rate);
+                for (int j = 0; j < len; j++)
+                {
+                    float tt = j / (float)Rate;
+                    float env = Mathf.Exp(-tt * 3.2f) * Mathf.Clamp01(tt * 200f);
+                    float s = (Mathf.Sin(2f * Mathf.PI * f * tt) + 0.3f * Mathf.Sin(2f * Mathf.PI * f * 2.01f * tt)) * env * 0.05f;
+                    data[(start + j) % n] += s;
+                }
+            }
+            // A slow "whoo" sweep, like something passing far away.
+            {
+                int start = Mathf.RoundToInt(4.5f * Rate), len = Mathf.RoundToInt(3.5f * Rate);
+                float ph = 0f;
+                for (int j = 0; j < len; j++)
+                {
+                    float k = j / (float)len;
+                    float f = Mathf.Lerp(260f, 420f, k * k);
+                    ph += 2f * Mathf.PI * f / Rate;
+                    float env = Mathf.Sin(k * Mathf.PI);
+                    data[(start + j) % n] += Mathf.Sin(ph) * env * env * 0.035f;
+                }
+            }
+            // Smooth the seam.
+            int fade = Rate / 20;
+            for (int j = 0; j < fade; j++)
+            {
+                float k = j / (float)fade;
+                data[j] = Mathf.Lerp(data[n - fade + j], data[j], k);
+            }
+            return ToClip("space", data);
         }
 
         // A short two-note "tweedle" chirp.

@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    // Toybox Town, with a dash of the roll-everything-up games. Tucked away in the far north-west
-    // corner, past Spindle Hill, is the Lost & Found: a heap of bright, oversized everyday things
+    // Toybox Town, with a dash of the roll-everything-up games. Tucked away along the far west
+    // wall, past Spindle Hill and the rocking horse, is the Lost & Found: a heap of bright, oversized everyday things
     // (dice, erasers, sweets, coins, crayons, dominoes, sushi, teacups, toy cars...) and a Tape
     // Ball to roll them up with. And a rainbow over the box.
     public static partial class Level1Builder
@@ -24,7 +24,7 @@ namespace Patchwork
             Rainbow(kit);
 
             // The Tape Ball, in the Lost & Found corner (a little secret).
-            Vector3[] homes = { new Vector3(-72f, 0f, 64f), new Vector3(-74f, 0f, 60f), new Vector3(-70f, 0f, 58f), new Vector3(-78f, 0f, 66f), new Vector3(-68f, 0f, 62f) };
+            Vector3[] homes = { new Vector3(-103f, 0f, 80f), new Vector3(-100f, 0f, 76f), new Vector3(-106f, 0f, 84f), new Vector3(-98f, 0f, 88f), new Vector3(-104f, 0f, 70f) };
             Vector3 home = homes[0];
             foreach (var h in homes)
             {
@@ -38,9 +38,9 @@ namespace Patchwork
             TapeBall.Create(kit, home);
             kit.Hint(home + Vector3.up * 1.5f, new Vector3(7f, 4f, 7f), "The Lost & Found",
                 "A Tape Ball! Run into it, or hold {Grab} to push it. Small things stick to it and it grows, so it can pick up bigger things. Make it big enough and it becomes a star!");
-            LostAndFoundSign(kit, new Vector3(-58f, 0f, 47f));
+            LostAndFoundSign(kit, new Vector3(-90f, 0f, 62f));
 
-            Scatter(kit, home, new Vector2(-87f, 46f), new Vector2(-54f, 87f), 95);
+            Scatter(kit, home, new Vector2(-113f, 52f), new Vector2(-92f, 113f), 95);
         }
 
         // A little felt pennant on two crayon posts marking the corner.

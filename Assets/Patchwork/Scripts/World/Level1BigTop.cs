@@ -34,7 +34,7 @@ namespace Patchwork
             foreach (var s in spots)
                 if (FindSpot(s, 3.2f, out tent)) { found = true; break; }
             if (!found) tent = new Vector3(-12f, 0f, -20f);
-            Vector3 toward = SpawnPoint - tent;
+            Vector3 toward = SquareSpot - tent;
             toward.y = 0f;
             Vector3 face = toward.sqrMagnitude > 0.01f ? toward.normalized : Vector3.back;
             float faceYaw = Mathf.Atan2(face.x, face.z) * Mathf.Rad2Deg;
@@ -140,20 +140,85 @@ namespace Patchwork
             solid.GetComponent<Renderer>().enabled = false;
         }
 
-        // The ring: a sawdust floor inside a low zigzag-painted wall you can hop over.
+        static readonly System.Collections.Generic.List<GateBar> ringGates = new System.Collections.Generic.List<GateBar>();
+
+        // The ring: a sawdust arena inside a tall colosseum wall, with arched niches, pennants
+        // on top, and two gates (south and north) that drop shut when the fight starts.
         static void CircusRing(LevelKit kit, Vector3 c, float r)
         {
+            ringGates.Clear();
             kit.Deco(PrimitiveType.Cylinder, c + Vector3.up * 0.01f, new Vector3(r * 2f, 0.01f, r * 2f), PatchworkAssets.Felt(new Color(0.93f, 0.8f, 0.58f)));
             kit.Deco(PrimitiveType.Cylinder, c + Vector3.up * 0.02f, new Vector3(r * 0.5f, 0.01f, r * 0.5f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Stars, CircusRed, CircusGold));
-            var wall = PatchworkAssets.Print(PatchworkAssets.PrintKind.Zigzag, CircusRed, CircusGold);
-            const int segs = 36;
+            var wall = PatchworkAssets.Print(PatchworkAssets.PrintKind.Stripes, CircusCream, new Color(0.95f, 0.85f, 0.7f));
+            var band = PatchworkAssets.Print(PatchworkAssets.PrintKind.Zigzag, CircusRed, CircusGold);
+            var niche = PatchworkAssets.Plain(new Color(0.2f, 0.12f, 0.22f), 0.2f);
+            var rim = PatchworkAssets.Plain(CircusGold, 0.7f);
+            const int segs = 40;
+            const float h = 3.6f;
+            float wseg = 2f * Mathf.PI * (r + 0.4f) / segs;
             for (int i = 0; i < segs; i++)
             {
-                float a = i * 360f / segs;
+                float a = (i + 0.5f) * 360f / segs;
                 Vector3 d = Quaternion.Euler(0f, a, 0f) * Vector3.forward;
-                var t = kit.Block(c + d * (r + 0.3f) + Vector3.up * 0.35f, new Vector3(2f * Mathf.PI * (r + 0.3f) / segs * 1.02f, 0.7f, 0.6f), Color.white, "RingWall", wall);
-                t.rotation = Quaternion.Euler(0f, a, 0f);
+                var rot = Quaternion.Euler(0f, a, 0f);
+                // Gate gaps to the south and north.
+                bool gateS = Mathf.Abs(Mathf.DeltaAngle(a, 180f)) < 20f, gateN = Mathf.Abs(Mathf.DeltaAngle(a, 0f)) < 20f;
+                if (gateS || gateN) continue;
+                Vector3 p = c + d * (r + 0.4f);
+                var t = kit.Block(p + Vector3.up * h * 0.5f, new Vector3(wseg * 1.03f, h, 0.8f), Color.white, "ColosseumWall", wall);
+                t.rotation = rot;
+                kit.Deco(PrimitiveType.Cube, p + Vector3.up * 0.45f, new Vector3(wseg * 1.04f, 0.9f, 0.86f), band, new Vector3(0f, a, 0f));
+                kit.Deco(PrimitiveType.Cube, p + Vector3.up * (h + 0.1f), new Vector3(wseg * 1.05f, 0.2f, 1f), rim, new Vector3(0f, a, 0f));
+                // An arched niche on the inside face, every other section.
+                if (i % 2 == 0)
+                {
+                    kit.Deco(PrimitiveType.Cube, p - d * 0.41f + Vector3.up * 2.1f, new Vector3(wseg * 0.5f, 1.4f, 0.04f), niche, new Vector3(0f, a, 0f));
+                    kit.Deco(PrimitiveType.Cylinder, p - d * 0.41f + Vector3.up * 2.8f, new Vector3(wseg * 0.5f, 0.02f, wseg * 0.5f), niche, new Vector3(90f, a, 0f));
+                }
+                // Pennant poles along the top.
+                if (i % 4 == 1)
+                {
+                    kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * (h + 1.1f), new Vector3(0.1f, 1f, 0.1f), rim);
+                    var flag = kit.Group("RingPennant", p + Vector3.up * (h + 1.8f));
+                    flag.rotation = rot;
+                    kit.Deco(PrimitiveType.Cube, new Vector3(0.45f, 0f, 0f), new Vector3(0.9f, 0.45f, 0.03f), PatchworkAssets.Felt(Bright[i % Bright.Length]), default(Vector3), flag);
+                    flag.gameObject.AddComponent<FlagWave>();
+                }
             }
+            // The two gates: striped portcullis bars that drop when the bell rings.
+            foreach (float a in new[] { 180f, 0f })
+            {
+                Vector3 d = Quaternion.Euler(0f, a, 0f) * Vector3.forward;
+                Vector3 p = c + d * (r + 0.4f);
+                float gw = wseg * 4f - 0.1f;
+                // Gateposts and an arch over the top.
+                Vector3 side = Quaternion.Euler(0f, 90f, 0f) * d;
+                for (int s = -1; s <= 1; s += 2)
+                {
+                    kit.Block(p + side * s * (gw * 0.5f + 0.35f) + Vector3.up * (h + 0.6f) * 0.5f, new Vector3(0.8f, h + 0.6f, 1.1f), Color.white, "GatePost", band).rotation = Quaternion.Euler(0f, a, 0f);
+                    kit.Deco(PrimitiveType.Sphere, p + side * s * (gw * 0.5f + 0.35f) + Vector3.up * (h + 0.9f), Vector3.one * 0.7f, rim);
+                }
+                kit.Deco(PrimitiveType.Cube, p + Vector3.up * (h + 0.35f), new Vector3(gw + 1.4f, 0.5f, 1.1f), band, new Vector3(0f, a, 0f));
+                var bars = kit.Group("Gate", p + Vector3.up * (h + 2.2f));
+                bars.rotation = Quaternion.Euler(0f, a, 0f);
+                var barMat = PatchworkAssets.Print(PatchworkAssets.PrintKind.Stripes, CircusRed, CircusCream);
+                for (int k = 0; k < 7; k++)
+                    kit.Deco(PrimitiveType.Cylinder, new Vector3(-gw * 0.5f + 0.3f + k * (gw - 0.6f) / 6f, 0f, 0f), new Vector3(0.22f, h * 0.5f, 0.22f), barMat, default(Vector3), bars);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, -h * 0.25f, 0f), new Vector3(gw, 0.25f, 0.25f), rim, default(Vector3), bars);
+                var col = bars.gameObject.AddComponent<BoxCollider>();
+                col.size = new Vector3(gw, h, 0.5f);
+                var gate = bars.gameObject.AddComponent<GateBar>();
+                gate.Closed = p + Vector3.up * h * 0.5f;
+                gate.Open = p + Vector3.up * (h + 2.2f);
+                ringGates.Add(gate);
+            }
+        }
+
+        static void ShutGates(bool shut)
+        {
+            foreach (var g in ringGates)
+                if (g != null) g.Shut = shut;
+            Sfx.Play(SfxId.PlatformThunk, 0.6f);
         }
 
         // Three rows of benches along the back with a cheering felt crowd on them.
@@ -223,11 +288,11 @@ namespace Patchwork
         {
             bool beaten = GameState.IsCollected(BossBeatenId);
             var prize = PrizeBubble.Place(kit, rc + Vector3.up * 2.2f, "deco_plush", !beaten);
-            kit.Hint(rc + new Vector3(0f, 1.5f, -11.8f), new Vector3(6f, 3f, 2.5f), "The Grumblewool",
+            kit.Hint(rc + new Vector3(0f, 1.5f, -8f), new Vector3(6f, 3f, 3f), "The Grumblewool",
                 beaten ? "You beat the Grumblewool! The crowd still talks about it."
                        : "Ring the bell to wake it. Dodge its charge so it crashes into the ring wall, then jump on its head while it's dizzy!");
 
-            Vector3 bell = o + new Vector3(3f, 0f, -10.5f);
+            Vector3 bell = rc + new Vector3(4f, 0f, -6f);
             kit.Deco(PrimitiveType.Cylinder, bell + Vector3.up * 1.1f, new Vector3(0.18f, 1.1f, 0.18f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Stripes, CircusRed, CircusCream));
             kit.Deco(PrimitiveType.Cube, bell + Vector3.up * 2.25f, new Vector3(1f, 0.12f, 0.12f), PatchworkAssets.Wood(new Color(0.6f, 0.4f, 0.25f)));
             var swing = kit.Group("Bell", bell + Vector3.up * 2.2f);
@@ -250,10 +315,11 @@ namespace Patchwork
                 rock.Speed = 9f;
                 boss.Begin();
             };
-            boss.Started = () => spot.gameObject.SetActive(false);
-            boss.ResetFight = () => spot.gameObject.SetActive(true);
+            boss.Started = () => { spot.gameObject.SetActive(false); ShutGates(true); };
+            boss.ResetFight = () => { spot.gameObject.SetActive(true); ShutGates(false); };
             boss.Defeated = () =>
             {
+                ShutGates(false);
                 GameState.SetCollected(BossBeatenId);
                 GameState.Save();
                 prize.Reveal();

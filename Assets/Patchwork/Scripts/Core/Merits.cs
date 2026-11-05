@@ -19,7 +19,8 @@ namespace Patchwork
         public enum Id
         {
             FirstStitch, SnarlStomper, ComboCrafter, BandTogether, WeddingBells, Heartstrung, MarbleHunter, MarbleMaster,
-            RollingStar, Ringmaster, WhackChampion, TrapezeArtist, StickerArtist, Shutterbug, HomeMaker, DanceFloor, ShapeShifter, BigScore
+            RollingStar, Ringmaster, WhackChampion, TrapezeArtist, StickerArtist, Shutterbug, HomeMaker, DanceFloor, ShapeShifter, BigScore,
+            KingOfTheCastle, SkyGlider
         }
 
         public static readonly Def[] All =
@@ -42,6 +43,8 @@ namespace Patchwork
             new Def("Dance Floor", "Tap Patch's faces fast enough to dance.", StickerId.Music, new Color(0.75f, 0.5f, 0.95f)),
             new Def("Shape Shifter", "Try all three forms.", StickerId.Fish, new Color(0.45f, 0.85f, 0.8f)),
             new Def("Big Score", "Score 20,000 in one trip to Toybox Town.", StickerId.Crown, new Color(1f, 0.8f, 0.25f)),
+            new Def("King of the Castle", "Bounce to the top of the Bouncy Castle's keep.", StickerId.Crown, new Color(1f, 0.55f, 0.72f)),
+            new Def("Sky Glider", "Glide through all eight Sky Hoops in time.", StickerId.Rainbow, new Color(0.4f, 0.7f, 1f)),
         };
 
         const string Prefix = "merit_";
@@ -169,18 +172,18 @@ namespace Patchwork
             UIKit.PatternFill(new Rect(p.x + 20f, p.y + 20f, p.width - 40f, p.height - 40f), UIArt.PatternDots, new Color(0.85f, 0.6f, 0.4f, 0.08f), 48f, Vector2.zero);
             var ink = UIKit.Ink;
             UIKit.Label(new Rect(p.x, p.y + 26f, pw, 56f), "Merit Patches  " + Count() + " / " + All.Length, UIKit.Style(42, true, TextAnchor.MiddleCenter, ink));
-            const int cols = 6;
-            float cell = 172f, top = p.y + 110f, left = p.x + (pw - cols * cell) * 0.5f;
+            const int cols = 7;
+            float cell = 156f, top = p.y + 110f, left = p.x + (pw - cols * cell) * 0.5f;
             for (int i = 0; i < All.Length; i++)
             {
                 int cx = i % cols, cy = i / cols;
                 var c = new Vector2(left + cx * cell + cell * 0.5f, top + cy * 150f + 56f);
                 bool sel = i == selected;
-                float s = sel ? 104f + Mathf.Sin(Time.unscaledTime * 6f) * 4f : 92f;
+                float s = sel ? 96f + Mathf.Sin(Time.unscaledTime * 6f) * 4f : 86f;
                 if (sel) UIKit.Circle(c, s + 16f, new Color(1f, 1f, 1f, 0.9f));
                 DrawPatch(c, s, i, Has((Id)i));
                 bool earned = Has((Id)i);
-                UIKit.Label(new Rect(c.x - cell * 0.5f, c.y + 54f, cell, 30f), earned ? All[i].Name : "???", UIKit.Style(17, true, TextAnchor.MiddleCenter, new Color(ink.r, ink.g, ink.b, earned ? 1f : 0.5f)));
+                UIKit.Label(new Rect(c.x - cell * 0.5f, c.y + 50f, cell, 30f), earned ? All[i].Name : "???", UIKit.Style(16, true, TextAnchor.MiddleCenter, new Color(ink.r, ink.g, ink.b, earned ? 1f : 0.5f)));
             }
             // What the highlighted one is for.
             var info = new Rect(p.x + 60f, p.yMax - 110f, pw - 120f, 50f);

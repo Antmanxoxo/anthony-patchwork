@@ -1,5 +1,35 @@
 # Development Log
 
+## A bigger Toybox Town, arriving by Pod, and decorating the Pod
+- Toybox Town is bigger: the toybox walls moved out from 90 to 115 metres, with new ground
+  all round the edge of town.
+  - Landing Meadow (south-east): your Pod lands here. The door swings open, Patch hops out,
+    and a stepping-stone path (with a trail of bubbles and a flower arch) leads north to the
+    bridge into town. There's a picnic blanket, felt trees, flowers, and a Snarling on the way.
+  - The Bouncy Castle (north): the whole floor bounces; bounce onto a corner tower, then from
+    its bouncy top up to the keep for the crown (and a Merit Patch).
+  - Sky Hoops (east): step on the button, ride a tall updraft up as Wind and glide through
+    eight felt hoops before the clock runs out.
+  - The Lost & Found and its Tape Ball moved out to the new west strip.
+  - A few more creatures and hearts out in the new ground.
+- The landed Pod: the same egg-shaped cardboard pod on three legs, with a zigzag band, a
+  glowing round window, a polka-dot hatch door and a blinking antenna.
+- The Big Top's ring is now a colosseum: tall striped walls with arched niches, pennants on
+  top, and portcullis gates that drop shut when you ring the bell (the bell is inside now).
+- The Grumblewool is much tougher: five hits, faster charges that steer towards you, shorter
+  dizzy spells, it bounces off the wall and charges again, leaps with double shockwaves,
+  spits bigger volleys, and calls in Tangle Hoppers near the end.
+- Hearts now float over Patch's head (when you're hurt, when they change, or when you stand
+  still). When you pick something up, a little chip pops up over Patch showing the new count,
+  so the left side of the screen stays clear (the full list still shows when you stand still).
+- Decorating the Pod: the pattern book opens a menu with tabs for Walls, Floor, Rug, Light,
+  Decorations and Furniture. Patterns preview as you scroll; decorations and furniture switch
+  on and off. New furniture: a starry bean bag, a toy chest, a felt plant, a lava lamp, a star
+  mobile and fairy lights. New lights: candy pink, moonlight, mint and disco.
+- The Pod no longer ticks: it hums gently through space instead (a soft drone, a breathing
+  airy wash, little star pings and the odd far-off whoosh).
+- Two more Merit Patches (20 in all): King of the Castle and Sky Glider.
+
 ## The Big Top and Merit Patches
 - A striped circus tent now stands near the start of Toybox Town. Inside is the Big Top:
   - The Grumblewool, the game's first boss: a huge grumpy ball of Fray yarn with

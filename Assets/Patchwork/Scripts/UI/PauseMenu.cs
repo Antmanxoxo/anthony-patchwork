@@ -261,8 +261,8 @@ namespace Patchwork
                 int step = 0;
                 if (input.NavLeft.WasPressedThisFrame()) step = -1;
                 if (input.NavRight.WasPressedThisFrame()) step = 1;
-                if (input.NavUp.WasPressedThisFrame()) step = -6;
-                if (input.NavDown.WasPressedThisFrame()) step = 6;
+                if (input.NavUp.WasPressedThisFrame()) step = -7;
+                if (input.NavDown.WasPressedThisFrame()) step = 7;
                 if (step != 0)
                 {
                     meritSel = Mathf.Clamp(meritSel + step, 0, n - 1);
