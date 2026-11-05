@@ -1,5 +1,31 @@
 # Development Log
 
+## Secrets and hidden places
+- Twelve secret marbles hidden around Toybox Town, each found a different way:
+  - Inside the Toy Shop: its front door now opens into a shop full of toys, with Mrs Thimble
+    behind the counter (she drops hints about the other secrets), a music box you can play by
+    standing on it, and a shelf climb to a marble.
+  - The Drain Grotto: a pipe half under the water in the canal wall. Only Water can squeeze in.
+    Inside is a cave of glowing sugar crystals with a climb (or a spring) up to a ledge.
+  - A tune: play the music box's song on the xylophone bridge (a song sheet by the bridge
+    shows the notes).
+  - Two glinting spots to dig up with Grab (on Spindle Hill and in the ravine).
+  - Hide and seek: a giggling jack-in-the-box hides in three places round town.
+  - A bubble rush in the meadow under the lantern gate: catch ten purple bubbles in time.
+  - Toy football in the far east corner: kick, push or blow the ball into the net.
+  - A trapdoor under a crate in the barracks yard.
+  - Ring all six sets of wind chimes.
+  - A button by the square makes stitched steps appear up the side of the clock tower for a
+    little while.
+  - A lost duckling in the ravine follows you once you find it. Take it home to Mama Duck on
+    the duck pond.
+- The HUD counts marbles found, there's a "Secret!" card when you find one, and challenges show
+  a countdown.
+- Fixed bubbles clipping into things: once the level's built, every score bubble, prize bubble
+  and marble checks it isn't inside anything and moves itself clear (or is removed). The
+  editor's level check lists what moved.
+- Fixed the Toy Workshop pen walls flickering at the corners.
+
 ## More to play with
 - Grab: hold R2 (Shift) next to a crate, building block or beach ball to take hold of it,
   then walk to push it or back away to pull it. Patch's arms reach for it and he leans in.

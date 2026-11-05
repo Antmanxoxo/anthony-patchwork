@@ -36,6 +36,8 @@ namespace Patchwork
             }
 
             Stats(sb, renderers);
+            sb.AppendLine("== Bubbles settled: moved " + ScoreBubbles.Moved + ", dropped " + ScoreBubbles.Dropped);
+            foreach (var line in ScoreBubbles.Report) sb.AppendLine("   " + line);
             Broken(sb, renderers);
             Blocked(sb, game);
             WalkThrough(sb, renderers);

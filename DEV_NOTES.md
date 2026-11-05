@@ -150,6 +150,13 @@ Stuff I need to remember about how Patchwork is put together.
 - Stickers: `StickerSystem` (UIMode.Sticker), art in `StickerArt`, saved per level in the save
   file. `StickerSwitch` is a spot that wants a sticker (`Done`).
 - Toybox Town's playground layer is `Level1Fun.cs` (score trails, prizes, boards, workshop).
+- Secrets: `Level1Secrets.cs` places them; the pieces are in `Secrets.cs` (`SecretMarble`,
+  `Warp`, `DigSpot`, `Peekaboo`, `TimedChallenge` / `BubbleRush` / `StitchPath`, `GoalNet`,
+  `Hatch`, `Duckling`, `MusicBox`). Marble ids are `Level1Builder.MarbleIds`, listed in
+  `LevelInfo.SecretIds`. The hidden rooms are built out in the nursery (around x 250,
+  z -200 and -262) where the box walls hide them.
+- `ScoreBubbles.Settle(kit)` runs after the level is built and moves bubbles, prize bubbles
+  and marbles out of anything they overlap. Place things after it and they won't be checked.
 - `LevelAudit` (editor only) runs 1.5 s after a level loads in Play mode and writes
   `Logs/PatchworkAudit_<level>.txt`: walk-through props, flickering faces, collectibles stuck in
   solids, broken materials and counts.

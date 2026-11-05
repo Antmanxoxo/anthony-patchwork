@@ -18,6 +18,8 @@ namespace Patchwork
             LevelSelectMenu.ResetStatics();
             Level1Director.ResetStatics();
             ThreadRace.ResetStatics();
+            WindChime.FirstRung = null;
+            XyloKey.AnyStruck = null;
             PatchModel.CurrentFace = PatchModel.Face.Happy;
         }
     }

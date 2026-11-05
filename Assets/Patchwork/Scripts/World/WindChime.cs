@@ -13,11 +13,18 @@ namespace Patchwork
         public void Setup(Transform[] tubeVisuals) { tubes = tubeVisuals; }
 
         bool rung;
+        // Fired the first time each set of chimes rings in a visit.
+        public static System.Action<WindChime> FirstRung;
 
         protected override void OnPlayerEnter(PatchworkPlayer player)
         {
             Ring();
-            if (!rung) { rung = true; ScoreKeeper.Bonus(50, transform.position); }
+            if (!rung)
+            {
+                rung = true;
+                ScoreKeeper.Bonus(50, transform.position);
+                if (FirstRung != null) FirstRung(this);
+            }
         }
 
         protected override void OnPlayerStay(PatchworkPlayer player, float dt)

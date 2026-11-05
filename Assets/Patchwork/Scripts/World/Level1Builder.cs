@@ -113,6 +113,7 @@ namespace Patchwork
             YarnBirds(kit);
             Details(kit);
             Fun(kit);
+            Secrets(kit);
 
             var sounds = kit.Group("LevelSounds", Vector3.zero);
             for (float z = -60f; z <= 60f; z += 30f)
@@ -125,6 +126,7 @@ namespace Patchwork
             director.ApplySavedState();
             ScoreTrails(kit);
             IntroProps(kit);
+            ScoreBubbles.Settle(kit);
             GroundCover(kit);
             return info;
         }

@@ -203,6 +203,115 @@ namespace Patchwork
             }
         }
 
+        // ----- Settling: nothing may sit inside a wall, a roof or a prop -----
+
+        // How many bubbles/prizes had to move, and how many were dropped (for the editor's level check).
+        public static int Moved { get; private set; }
+        public static int Dropped { get; private set; }
+        public static readonly List<string> Report = new List<string>();
+
+        // Checks every score bubble, prize bubble and marble against everything solid and every
+        // prop's bounds, and nudges it up or sideways until it's clear. Bubbles that can't be
+        // freed are removed. Run once the whole level is built.
+        public static void Settle(LevelKit kit)
+        {
+            Physics.SyncTransforms();
+            Moved = 0;
+            Dropped = 0;
+            Report.Clear();
+            var props = new List<Bounds>();
+            foreach (var r in kit.Root.GetComponentsInChildren<MeshRenderer>(true))
+            {
+                if (!r.enabled || !r.gameObject.activeInHierarchy) continue;
+                if (r.GetComponentInParent<ScoreBubble>() != null || r.GetComponentInParent<PrizeBubble>() != null
+                    || r.GetComponentInParent<SecretMarble>() != null || r.GetComponentInParent<ScoreBubbles>() != null) continue;
+                var b = r.bounds;
+                if (b.size.x > 9f || b.size.z > 9f || b.size.y > 12f) continue;     // ground, walls, merged batches: their colliders count instead
+                var m = r.sharedMaterial;
+                if (m != null && m.renderQueue >= 3000) continue;                     // see-through things (water, glass)
+                props.Add(b);
+            }
+            if (Instance != null)
+            {
+                foreach (var s in Instance.all)
+                {
+                    if (s == null) continue;
+                    float rad = s.Value >= 50 ? 0.5f : 0.33f;
+                    Vector3 p;
+                    if (FindClear(s.Home, rad, props, true, out p))
+                    {
+                        if ((p - s.Home).sqrMagnitude > 0.0001f) { Moved++; Note("bubble", s.Home, p); }
+                        s.Home = p;
+                        s.transform.position = p;
+                    }
+                    else
+                    {
+                        Dropped++;
+                        Note("bubble dropped", s.Home, s.Home);
+                        kit.Info.ScorePossible -= s.Value;
+                        s.gameObject.SetActive(false);
+                    }
+                }
+            }
+            foreach (var pb in kit.Root.GetComponentsInChildren<PrizeBubble>(true))
+            {
+                Vector3 p;
+                if (FindClear(pb.transform.position, 0.9f, props, false, out p) && (p - pb.transform.position).sqrMagnitude > 0.0001f)
+                {
+                    Moved++;
+                    Note("prize " + pb.PrizeId, pb.transform.position, p);
+                    pb.MoveHome(p);
+                }
+            }
+            foreach (var mb in kit.Root.GetComponentsInChildren<SecretMarble>(true))
+            {
+                Vector3 p;
+                if (FindClear(mb.transform.position, 0.45f, props, false, out p) && (p - mb.transform.position).sqrMagnitude > 0.0001f)
+                {
+                    Moved++;
+                    Note("marble " + mb.Id, mb.transform.position, p);
+                    mb.MoveHome(p);
+                }
+            }
+        }
+
+        static void Note(string what, Vector3 from, Vector3 to)
+        {
+            if (Report.Count < 80)
+                Report.Add(what + " " + from.ToString("F1") + " -> " + to.ToString("F1"));
+        }
+
+        static readonly Vector3[] Nudges =
+        {
+            Vector3.zero, Vector3.up * 0.4f, Vector3.up * 0.8f, Vector3.up * 1.2f, Vector3.up * 1.6f, Vector3.up * 2f,
+            Vector3.right, Vector3.left, Vector3.forward, Vector3.back,
+            new Vector3(1.5f, 0.4f, 0f), new Vector3(-1.5f, 0.4f, 0f), new Vector3(0f, 0.4f, 1.5f), new Vector3(0f, 0.4f, -1.5f),
+            Vector3.up * 2.8f, Vector3.up * 3.6f
+        };
+
+        static bool FindClear(Vector3 start, float rad, List<Bounds> props, bool allowSide, out Vector3 result)
+        {
+            for (int i = 0; i < Nudges.Length; i++)
+            {
+                Vector3 n = Nudges[i];
+                if (!allowSide && (n.x != 0f || n.z != 0f)) continue;
+                Vector3 q = start + n;
+                if (Clear(q, rad, props)) { result = q; return true; }
+            }
+            result = start;
+            return false;
+        }
+
+        static bool Clear(Vector3 p, float rad, List<Bounds> props)
+        {
+            float r = rad + 0.05f;
+            if (Physics.CheckSphere(p, r, ~0, QueryTriggerInteraction.Ignore)) return false;
+            float r2 = r * r;
+            for (int i = 0; i < props.Count; i++)
+                if (props[i].SqrDistance(p) < r2) return false;
+            return true;
+        }
+
         static void Wobble(ScoreBubble b, float t)
         {
             float w = Mathf.Sin(t * 5f + b.Phase) * 0.06f;

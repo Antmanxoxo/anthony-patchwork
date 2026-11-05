@@ -273,6 +273,15 @@ namespace Patchwork
                     UIKit.Style(34, true, TextAnchor.MiddleLeft, UIKit.Ink));
                 y += 96f;
             }
+            if (level.SecretIds.Count > 0)
+            {
+                var mr = new Rect(28f, y, 230f, 70f);
+                UIKit.Panel(mr, new Color(0.93f, 0.97f, 1f, 0.94f), new Color(0.4f, 0.65f, 0.95f, 0.9f), 20f);
+                DrawMarbleIcon(new Vector2(mr.x + 42f, mr.y + 35f), 48f, Time.unscaledTime * 0.3f);
+                UIKit.Label(new Rect(mr.x + 80f, mr.y + 10f, 140f, 50f), level.SecretCount() + " / " + level.SecretIds.Count,
+                    UIKit.Style(28, true, TextAnchor.MiddleLeft, new Color(0.2f, 0.3f, 0.55f)));
+                y += 82f;
+            }
             if (level.ThreadTotal > 0)
             {
                 float pop = 1f + Mathf.Sin(threadPop * Mathf.PI) * 0.15f;
@@ -447,6 +456,21 @@ namespace Patchwork
         // Thread Race countdown at the top of the screen.
         void DrawRaceTimer()
         {
+            var ch = TimedChallenge.Running;
+            if (ch != null)
+            {
+                float W2 = UIKit.Width;
+                var cr = new Rect((W2 - 380f) * 0.5f, 24f, 380f, 86f);
+                bool hurry2 = ch.TimeLeft < 5f;
+                UIKit.Panel(cr, new Color(0.96f, 0.92f, 1f, 0.95f), hurry2 ? new Color(0.95f, 0.4f, 0.4f, 0.9f) : new Color(0.65f, 0.45f, 0.9f, 0.9f), 20f);
+                float pulse2 = hurry2 ? 1f + Mathf.Abs(Mathf.Sin(Time.unscaledTime * 8f)) * 0.08f : 1f;
+                UIKit.Label(new Rect(cr.x, cr.y + 6f, cr.width, 48f), Mathf.CeilToInt(Mathf.Max(0f, ch.TimeLeft)).ToString(),
+                    UIKit.Style(Mathf.RoundToInt(40 * pulse2), true, TextAnchor.MiddleCenter, hurry2 ? new Color(0.8f, 0.2f, 0.25f) : UIKit.Ink));
+                string sub = ch.Total > 1 ? ch.Title + "  " + ch.Got + " / " + ch.Total : ch.Title;
+                UIKit.Label(new Rect(cr.x, cr.y + 50f, cr.width, 30f), sub,
+                    UIKit.Style(20, true, TextAnchor.MiddleCenter, new Color(UIKit.Ink.r, UIKit.Ink.g, UIKit.Ink.b, 0.8f)));
+                return;
+            }
             var race = ThreadRace.Running;
             if (race == null) return;
             float W = UIKit.Width;
@@ -494,6 +518,16 @@ namespace Patchwork
         void DrawGrabPrompt(bool kb)
         {
             if (Game.Mode != UIMode.Gameplay) return;
+            if (Warp.Active != null)
+            {
+                DrawWorldPrompt(Warp.Active.transform.position + Vector3.up * 1.6f, Warp.Active.Label, kb, PromptAction.Ability);
+                return;
+            }
+            if (DigSpot.Active != null)
+            {
+                DrawWorldPrompt(DigSpot.Active.transform.position + Vector3.up * 1.2f, "Dig", kb, PromptAction.Grab);
+                return;
+            }
             var hand = Game.Player.Hand;
             if (Lever.Active != null && hand.Held == null)
             {
@@ -552,8 +586,37 @@ namespace Patchwork
         }
 
         // ----- Prize card -----
+        void DrawSecretCard()
+        {
+            float t = Game.SecretTimer;
+            if (t <= 0f) return;
+            float age = 3.6f - t;
+            float tin = UIKit.EaseOutBack(Mathf.Clamp01(age / 0.4f));
+            float tout = Mathf.Clamp01((0.4f - t) / 0.4f);
+            float y = 130f - (1f - tin) * 260f - tout * 260f;
+            var r = new Rect((UIKit.Width - 560f) * 0.5f, y, 560f, 150f);
+            UIKit.Panel(r, new Color(0.93f, 0.97f, 1f, 0.97f), new Color(0.4f, 0.65f, 0.95f, 0.9f), 24f);
+            DrawMarbleIcon(new Vector2(r.x + 80f, r.y + 75f), 104f, age);
+            var ink = UIKit.Ink;
+            UIKit.Label(new Rect(r.x + 160f, r.y + 18f, 380f, 34f), "SECRET!", UIKit.Style(24, true, TextAnchor.MiddleLeft, new Color(0.3f, 0.5f, 0.85f)));
+            UIKit.Label(new Rect(r.x + 160f, r.y + 52f, 380f, 46f), "Secret Marble", UIKit.Style(34, true, TextAnchor.MiddleLeft, ink));
+            UIKit.Label(new Rect(r.x + 160f, r.y + 98f, 380f, 30f), Game.Level.SecretCount() + " of " + Game.Level.SecretIds.Count + " found",
+                UIKit.Style(20, false, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.75f)));
+        }
+
+        // A glass marble with a swirl, drawn flat.
+        static void DrawMarbleIcon(Vector2 c, float d, float spin)
+        {
+            UIKit.Circle(c, d, new Color(0.75f, 0.88f, 1f));
+            UIKit.Circle(c + new Vector2(Mathf.Cos(spin * 3f) * d * 0.12f, Mathf.Sin(spin * 3f) * d * 0.12f), d * 0.55f, new Color(1f, 0.55f, 0.7f, 0.9f));
+            UIKit.Circle(c - new Vector2(Mathf.Cos(spin * 3f) * d * 0.14f, Mathf.Sin(spin * 3f) * d * 0.14f), d * 0.35f, new Color(0.45f, 0.8f, 1f, 0.9f));
+            UIKit.Circle(c + new Vector2(-d * 0.2f, -d * 0.22f), d * 0.2f, new Color(1f, 1f, 1f, 0.85f));
+            UIKit.CircleOutline(c, d, new Color(1f, 1f, 1f, 0.7f), 3f);
+        }
+
         void DrawPrizeCard()
         {
+            DrawSecretCard();
             var prize = Game.PrizeShown;
             float t = Game.PrizeTimer;
             if (prize == null || t <= 0f) return;
@@ -671,6 +734,12 @@ namespace Patchwork
                 UIKit.Icon(new Rect(panel.x + 210f, panel.y + 236f, 70f, 70f), PatchworkAssets.IconYarn, Color.white);
                 UIKit.Label(new Rect(panel.x + 305f, panel.y + 236f, 260f, 70f),
                     Game.ThreadsCollected + " / " + Game.Level.ThreadTotal + " threads", UIKit.Style(30, true, TextAnchor.MiddleLeft, ink));
+            }
+            if (Game.Level.SecretIds.Count > 0)
+            {
+                DrawMarbleIcon(new Vector2(panel.xMax - 110f, panel.y + 195f), 70f, Time.unscaledTime * 0.3f);
+                UIKit.Label(new Rect(panel.xMax - 170f, panel.y + 240f, 120f, 40f), Game.Level.SecretCount() + "/" + Game.Level.SecretIds.Count,
+                    UIKit.Style(28, true, TextAnchor.MiddleCenter, ink));
             }
             // Score: counts up, then the medal stamps on.
             float ct = Game.CompleteTime;

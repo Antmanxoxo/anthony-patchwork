@@ -62,6 +62,8 @@ namespace Patchwork
             return b;
         }
 
+        public void MoveHome(Vector3 p) { home = p; transform.position = p; }
+
         // Shows a hidden bubble with a little puff (a reward appearing).
         public void Reveal()
         {

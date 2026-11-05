@@ -8,6 +8,8 @@ namespace Patchwork
     {
         public int Semitones;           // above C5
         public System.Action<XyloKey> Struck;
+        // Every key of every xylophone reports here too (for tunes).
+        public static System.Action<int> AnyStruck;
         public int Index;
         Transform key;
         Vector3 rest;
@@ -33,6 +35,7 @@ namespace Patchwork
             Sfx.PlayPitched(SfxId.Xylo, 0.5f, Mathf.Pow(2f, Semitones / 12f));
             FxBurst.Spawn(FxBurst.Kind.Sparkle, transform.position + Vector3.up * 0.2f, Color.Lerp(new Color(1f, 0.5f, 0.6f), new Color(0.5f, 0.7f, 1f), Index / 8f));
             if (Struck != null) Struck(this);
+            if (AnyStruck != null) AnyStruck(Index);
         }
     }
 }

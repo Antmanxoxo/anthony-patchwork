@@ -35,6 +35,14 @@ namespace Patchwork
         public int ScorePossible;
         // Heartstrings: the main things to find in a level (some open the way to the finale).
         public readonly List<string> HeartstringIds = new List<string>();
+        // Secret marbles hidden in the level.
+        public readonly List<string> SecretIds = new List<string>();
+        public int SecretCount()
+        {
+            int n = 0;
+            foreach (var id in SecretIds) if (GameState.IsCollected(id)) n++;
+            return n;
+        }
         public int HeartstringsNeeded;
         public int HeartstringCount()
         {

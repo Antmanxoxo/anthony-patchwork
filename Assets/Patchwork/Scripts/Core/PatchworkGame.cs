@@ -393,6 +393,7 @@ namespace Patchwork
             }
             if (ToastTimer > 0f) ToastTimer -= udt;
             if (PrizeTimer > 0f) PrizeTimer -= udt;
+            if (SecretTimer > 0f) SecretTimer -= udt;
             Score.Tick(dt);
             if (TitleTimer > 0f) TitleTimer -= udt;
             UpdateFade(udt);
@@ -863,6 +864,15 @@ namespace Patchwork
         {
             PrizeShown = prize;
             PrizeTimer = 3.6f;
+            SecretTimer = 0f;
+        }
+
+        // The "Secret marble!" card.
+        public float SecretTimer { get; private set; }
+        public void ShowSecret()
+        {
+            SecretTimer = 3.6f;
+            PrizeTimer = 0f;
         }
 
         // Swap Patch's face (every form has happy / sad / angry). A little pop and sound so it's obvious.

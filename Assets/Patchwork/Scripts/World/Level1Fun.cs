@@ -136,12 +136,14 @@ namespace Patchwork
             // 1) The crate pen: a crate on the pad opens the gate.
             float x0 = c.x - 6f, x1 = c.x + 2f, z0 = c.z + 4f, z1 = c.z + 12f;
             const float wallH = 2.6f;
-            kit.Cardboard(new Vector3(x0, wallH * 0.5f, (z0 + z1) * 0.5f), new Vector3(0.4f, wallH, z1 - z0), card, "PenWall");
-            kit.Cardboard(new Vector3(x1, wallH * 0.5f, (z0 + z1) * 0.5f), new Vector3(0.4f, wallH, z1 - z0), card, "PenWall");
-            kit.Cardboard(new Vector3((x0 + x1) * 0.5f, wallH * 0.5f, z1), new Vector3(x1 - x0 + 0.4f, wallH, 0.4f), card, "PenWall");
+            // The side walls run the full depth; the back and front fit between them, a touch
+            // lower, so no two faces sit exactly on top of each other.
+            kit.Cardboard(new Vector3(x0, wallH * 0.5f, (z0 + z1) * 0.5f), new Vector3(0.4f, wallH, z1 - z0 + 0.4f), card, "PenWall");
+            kit.Cardboard(new Vector3(x1, wallH * 0.5f, (z0 + z1) * 0.5f), new Vector3(0.4f, wallH, z1 - z0 + 0.4f), card, "PenWall");
+            kit.Cardboard(new Vector3((x0 + x1) * 0.5f, (wallH - 0.04f) * 0.5f, z1), new Vector3(x1 - x0 - 0.4f, wallH - 0.04f, 0.38f), card, "PenWall");
             float gx = (x0 + x1) * 0.5f;
-            kit.Cardboard(new Vector3((x0 + gx - 1.2f) * 0.5f, wallH * 0.5f, z0), new Vector3(gx - 1.2f - x0, wallH, 0.4f), card, "PenWall");
-            kit.Cardboard(new Vector3((gx + 1.2f + x1) * 0.5f, wallH * 0.5f, z0), new Vector3(x1 - gx - 1.2f, wallH, 0.4f), card, "PenWall");
+            kit.Cardboard(new Vector3((x0 + 0.2f + gx - 1.2f) * 0.5f, (wallH - 0.04f) * 0.5f, z0), new Vector3(gx - 1.2f - x0 - 0.2f, wallH - 0.04f, 0.38f), card, "PenWall");
+            kit.Cardboard(new Vector3((gx + 1.2f + x1 - 0.2f) * 0.5f, (wallH - 0.04f) * 0.5f, z0), new Vector3(x1 - 0.2f - gx - 1.2f, wallH - 0.04f, 0.38f), card, "PenWall");
             kit.Tape(new Vector3((x0 + x1) * 0.5f, wallH + 0.02f, z1), new Vector3(x1 - x0, 0.04f, 0.5f));
             var gateGo = new GameObject("PenGate");
             gateGo.transform.SetParent(kit.Root, false);
