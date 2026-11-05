@@ -354,6 +354,13 @@ namespace Patchwork
                 case UIMode.Complete:
                     completeTime += udt;
                     if (completeTime > 0.6f && Input.Confirm.WasPressedThisFrame()) LoadScene(HubBuilder.SceneName);
+                    else if (completeTime > 0.6f && Input.Cancel.WasPressedThisFrame())
+                    {
+                        // Stay and keep exploring the mended town (head home from the Pod later).
+                        SetMode(UIMode.Gameplay, 1f);
+                        Sfx.Play(SfxId.MenuConfirm, 0.5f);
+                        ShowToast("Enjoy the party! Walk back to your Pod whenever you're ready to go home.");
+                    }
                     break;
                 case UIMode.Intro:
                     if (Title.Update(udt))

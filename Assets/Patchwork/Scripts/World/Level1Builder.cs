@@ -24,6 +24,8 @@ namespace Patchwork
     //   West   - across the ravine (clothesline swing) to Spindle Hill
     //   East   - over the bridge to the canal promenade and the Dye Works mill
     //   South  - the rooftop lane: steam and chimney smoke up to the weathervane spire
+    //   Outskirts (Level1Outskirts.cs) - the Whispering Wood, Button Orchard, Patchwork Farm,
+    //            Toadstool Dell, Wildflower Meadow, and toy wildlife all round the edges
     // Extras: 5 Heartstrings (knots to pop, a thread race, Snarlings, the belfry, a cloud patch)
     // and 3 golden buttons (one per region, off the main path).
     public static partial class Level1Builder
@@ -136,6 +138,7 @@ namespace Patchwork
             AmbientEmitter.Create(sounds, new Vector3(0f, 21f, -72f), Sfx.Ambient(Sfx.AmbientClip.Flag), 0.35f, 2f, 14f);
 
             director.ApplySavedState();
+            Outskirts(kit);
             ScoreTrails(kit);
             IntroProps(kit);
             ScoreBubbles.Settle(kit);

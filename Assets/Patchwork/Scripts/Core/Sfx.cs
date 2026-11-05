@@ -81,6 +81,9 @@ namespace Patchwork
         AlienCoo,      // a friendly alien cooing
         Twinkle,       // a rising sparkle of tiny bells
         Warble,        // a wobbly sci-fi "wee-oo"
+        // The outskirts
+        Hoot,          // an owl's soft "hoo-hoo"
+        Critter,       // a toy animal's little squeak-chirp
     }
 
     // Continuous sounds that fade in while something requests them each frame.
@@ -232,7 +235,7 @@ namespace Patchwork
         public static float LoopCutoff { get { return loopCutoff; } }
 
         // Clips for sounds that play from a spot in the world (AmbientEmitter, NPC voices).
-        public enum AmbientClip { Propeller, Flag, Creak, Balloon, Clock, Fountain, Vent, Space }
+        public enum AmbientClip { Propeller, Flag, Creak, Balloon, Clock, Fountain, Vent, Space, Woods }
         static readonly Dictionary<AmbientClip, AudioClip> ambient = new Dictionary<AmbientClip, AudioClip>();
 
         public static AudioClip Ambient(AmbientClip which)
@@ -247,6 +250,7 @@ namespace Patchwork
                 case AmbientClip.Balloon: c = BalloonLoop(); break;
                 case AmbientClip.Clock: c = ClockLoop(); break;
                 case AmbientClip.Space: c = SpaceLoop(); break;
+                case AmbientClip.Woods: c = WoodsLoop(); break;
                 case AmbientClip.Fountain: c = bubbleClip != null ? bubbleClip : (bubbleClip = BubbleLoop()); break;
                 default: c = airClip != null ? airClip : (airClip = AirLoop()); break;
             }
@@ -469,6 +473,11 @@ namespace Patchwork
             clips[SfxId.Twinkle] = Make("twinkle", 1.3f, (t, d) =>
                 Bell(t, 1568f, d) * 0.12f + Bell(t - 0.07f, 1760f, d) * 0.12f + Bell(t - 0.14f, 2093f, d) * 0.12f
                 + Bell(t - 0.21f, 2349.3f, d) * 0.11f + Bell(t - 0.28f, 2637f, d) * 0.1f + Bell(t - 0.35f, 3136f, d) * 0.08f, 11000f);
+            clips[SfxId.Hoot] = Make("hoot", 1.1f, (t, d) =>
+                Hoo(t, 0.32f) * 0.5f + Hoo(t - 0.48f, 0.5f) * 0.42f, 2500f);
+            clips[SfxId.Critter] = Make("critter", 0.26f, (t, d) =>
+                (Sine(t, Mathf.Lerp(1500f, 2300f, Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / 0.12f)))) * Env(t, 0.13f, 0.005f)
+                + Sine(t - 0.14f, Mathf.Lerp(1900f, 2600f, Mathf.Clamp01((t - 0.14f) / 0.1f))) * Env(t - 0.14f, 0.1f, 0.005f) * 0.7f) * 0.3f, 7000f);
             clips[SfxId.Warble] = Make("warble", 0.9f, (t, d) =>
                 Sine(t, Mathf.Lerp(700f, 420f, t / d) * (1f + 0.12f * Mathf.Sin(t * 2f * Mathf.PI * 7f))) * Env(t, d, 0.04f) * 0.25f, 6000f);
             clips[SfxId.Grab] = Make("grab", 0.16f, (t, d) =>
@@ -1017,6 +1026,72 @@ namespace Patchwork
                 data[j] = Mathf.Lerp(data[n - fade + j], data[j], k);
             }
             return ToClip("space", data);
+        }
+
+        // An owl's "hoo": a soft, breathy low tone that bends down a little.
+        static float Hoo(float t, float len)
+        {
+            if (t < 0f || t > len) return 0f;
+            float k = t / len;
+            float f = Mathf.Lerp(410f, 370f, k);
+            float env = Mathf.Sin(Mathf.PI * k);
+            return (Mathf.Sin(2f * Mathf.PI * f * t) + 0.25f * Mathf.Sin(2f * Mathf.PI * f * 2f * t) + Noise(t) * 0.08f) * env * env;
+        }
+
+        // The Whispering Wood: a low wind that moans and breathes, branches creaking, crickets far
+        // off, and an owl calling twice. Loops seamlessly (12 s).
+        static AudioClip WoodsLoop()
+        {
+            const float duration = 12f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var data = new float[n];
+            var rng = new System.Random(13);
+            float lp = 0f, lp2 = 0f, ph = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                float white = (float)(rng.NextDouble() * 2.0 - 1.0);
+                float gust = 0.55f + 0.45f * Mathf.Sin(2f * Mathf.PI * t / 6f) * Mathf.Sin(2f * Mathf.PI * t / 4f + 0.7f);
+                lp += (white - lp) * Mathf.Lerp(0.01f, 0.035f, gust);
+                lp2 += (lp - lp2) * 0.05f;
+                // The wind's moan: a faint whistle that drifts with the gusts.
+                ph += 2f * Mathf.PI * (220f + 60f * Mathf.Sin(2f * Mathf.PI * t / 12f)) / Rate;
+                float moan = Mathf.Sin(ph) * 0.03f * gust * gust;
+                // Crickets: little pulsed chirps, very quiet.
+                float cr = Mathf.Repeat(t * 2.6f, 1f) < 0.18f ? Mathf.Sin(2f * Mathf.PI * 4200f * t) * (0.5f + 0.5f * Mathf.Sin(t * 260f)) * 0.012f : 0f;
+                data[i] = lp2 * 3.2f * gust + moan + cr;
+            }
+            // Two branch creaks.
+            foreach (float at in new[] { 1.8f, 7.4f })
+            {
+                int st = Mathf.RoundToInt(at * Rate), len = Mathf.RoundToInt(0.9f * Rate);
+                float cp = 0f;
+                for (int j = 0; j < len; j++)
+                {
+                    float tt = j / (float)Rate;
+                    float k = tt / 0.9f;
+                    cp += 2f * Mathf.PI * (140f + 50f * Mathf.Sin(k * 9f)) / Rate;
+                    float rasp = Mathf.Repeat(tt * 38f, 1f) < 0.3f ? 1f : 0.4f;
+                    data[(st + j) % n] += Mathf.Sin(cp) * rasp * Mathf.Sin(Mathf.PI * k) * 0.045f;
+                }
+            }
+            // The owl: "hoo... hoo-hoo".
+            foreach (float at in new[] { 3.6f, 9.4f })
+            {
+                int st = Mathf.RoundToInt(at * Rate), len = Mathf.RoundToInt(1.4f * Rate);
+                for (int j = 0; j < len; j++)
+                {
+                    float tt = j / (float)Rate;
+                    data[(st + j) % n] += (Hoo(tt, 0.4f) + Hoo(tt - 0.6f, 0.25f) * 0.8f + Hoo(tt - 0.9f, 0.4f) * 0.8f) * 0.07f;
+                }
+            }
+            int fade = Rate / 20;
+            for (int j = 0; j < fade; j++)
+            {
+                float k = j / (float)fade;
+                data[j] = Mathf.Lerp(data[n - fade + j], data[j], k);
+            }
+            return ToClip("woods", data);
         }
 
         // A short two-note "tweedle" chirp.

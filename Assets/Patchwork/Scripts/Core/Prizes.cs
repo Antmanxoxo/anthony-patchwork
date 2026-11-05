@@ -26,7 +26,7 @@ namespace Patchwork
     // and decorations appear in the Pod.
     public static class Prizes
     {
-        public static readonly string[] DecorationNames = { "Duck Captain", "Paper Lanterns", "Snow Globe", "Pinwheels", "Grumblewool Plush" };
+        public static readonly string[] DecorationNames = { "Duck Captain", "Paper Lanterns", "Snow Globe", "Pinwheels", "Grumblewool Plush", "Sleepy Owl" };
 
         public static readonly PrizeDef[] All =
         {
@@ -44,6 +44,7 @@ namespace Patchwork
             new PrizeDef("deco_snowglobe", "Snow Globe", PrizeKind.Decoration, 2),
             new PrizeDef("deco_pinwheels", "Pinwheels", PrizeKind.Decoration, 3),
             new PrizeDef("deco_plush", "Grumblewool Plush", PrizeKind.Decoration, 4),
+            new PrizeDef("deco_owl", "Sleepy Owl", PrizeKind.Decoration, 5),
         };
 
         public static PrizeDef Get(string id)

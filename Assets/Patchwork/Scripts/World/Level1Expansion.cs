@@ -17,9 +17,25 @@ namespace Patchwork
         static void LandingMeadow(LevelKit kit)
         {
             var pod = LandedPod.Build(kit, PodLanding, 0f);
+            ClearGrass(PodLanding, 11f);
             kit.AddCheckpoint(SpawnPoint, 0f);
+            // Walk back up to the hatch to fly home.
+            var home = kit.Volume<UseSpot>(pod.DoorStep + new Vector3(0f, 0.4f, 0.4f), new Vector3(2.8f, 3f, 2.4f), "PodHome");
+            home.Label = "Head back to the Pod";
+            home.PromptPoint = pod.DoorStep + Vector3.up * 2.6f;
+            home.Used = p =>
+            {
+                var g = p.Game;
+                g.Ask("Head back to the Pod?", "Fly home to your Pod. Everything you've found is saved.", () =>
+                {
+                    Sfx.Play(SfxId.PodRocket, 0.7f);
+                    g.CameraRig.Kick(0.3f);
+                    Haptics.Pulse(0.25f, 0.15f, 0.5f);
+                    g.LoadScene(HubBuilder.SceneName);
+                });
+            };
             kit.Hint(SpawnPoint + new Vector3(0f, 1.5f, 2f), new Vector3(8f, 4f, 6f), "Landing Meadow",
-                "The Pod's landed just outside Toybox Town. Follow the stepping stones (and the bubbles) north to the bridge into town!");
+                "The Pod came down with a bit of a bump! Follow the stepping stones (and the bubbles) north to the bridge into town. Walk back up to the hatch any time to fly home.");
 
             // Patch hops out of the Pod's door when you arrive.
             var go = new GameObject("PodArrival");
@@ -38,7 +54,7 @@ namespace Patchwork
             // Stepping stones north to the Tea House lane, then west to the south bridge.
             var stones = new[] { PatchworkAssets.Felt(new Color(0.98f, 0.93f, 0.85f)), PatchworkAssets.Felt(new Color(0.98f, 0.75f, 0.8f)), PatchworkAssets.Felt(new Color(0.85f, 0.9f, 1f)) };
             var path = new List<Vector3>();
-            for (float z = -95f; z <= -45f; z += 2.4f) path.Add(new Vector3(50f + Mathf.Sin(z * 0.15f) * 1.2f, 0f, z));
+            for (float z = -90.5f; z <= -45f; z += 2.4f) path.Add(new Vector3(50f + Mathf.Sin(z * 0.15f) * 1.2f, 0f, z));
             for (float x = 48f; x >= 41.5f; x -= 2.4f) path.Add(new Vector3(x, 0f, -42.5f));
             for (int i = 0; i < path.Count; i++)
             {
@@ -48,17 +64,18 @@ namespace Patchwork
             }
 
             // A welcome arch of flowers at the start of the path, and meadow flowers all round.
-            TownKit.FlowerArch(kit, SpawnPoint + new Vector3(0f, 0f, 4f), 0f, 4f);
+            TownKit.FlowerArch(kit, SpawnPoint + new Vector3(0f, 0f, 7.5f), 0f, 4f);
             var rng = new System.Random(21);
             for (int i = 0; i < 60; i++)
             {
                 Vector3 p = new Vector3(44f + (float)rng.NextDouble() * 60f, 0f, -112f + (float)rng.NextDouble() * 22f);
                 if (Mathf.Abs(p.x - 50f) < 2.5f) continue;   // keep the path clear
-                if ((p - PodLanding).sqrMagnitude < 36f) continue;
+                if ((p - PodLanding).sqrMagnitude < 13f * 13f) continue;
+                if (p.x > 58f && p.x < 82f && Mathf.Abs(p.z - PodLanding.z) < 3f) continue;   // the skid trench
                 kit.Flower(p, FlowerColors[i % FlowerColors.Length]);
             }
             for (int i = 0; i < 6; i++)
-                kit.YarnTree(new Vector3(60f + i * 8f + (i % 2) * 3f, 0f, -108f + (i % 3) * 5f), 5f + (i % 3), FlowerColors[i % FlowerColors.Length]);
+                kit.YarnTree(new Vector3(60f + i * 8f + (i % 2) * 3f, 0f, -110.5f + (i % 2) * 1.2f), 5f + (i % 3), FlowerColors[i % FlowerColors.Length]);
             // A picnic blanket with a basket, for the view.
             kit.Deco(PrimitiveType.Cube, new Vector3(60f, 0.02f, -94f), new Vector3(4f, 0.02f, 3f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Gingham, new Color(0.99f, 0.96f, 0.9f), new Color(0.9f, 0.3f, 0.35f)), new Vector3(0f, 15f, 0f));
             kit.Deco(PrimitiveType.Cube, new Vector3(60.5f, 0.35f, -94.2f), new Vector3(1f, 0.6f, 0.7f), PatchworkAssets.Wood(new Color(0.8f, 0.6f, 0.4f)), new Vector3(0f, 15f, 0f));

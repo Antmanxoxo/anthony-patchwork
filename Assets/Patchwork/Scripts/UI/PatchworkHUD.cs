@@ -961,8 +961,13 @@ namespace Patchwork
                     UIKit.Label(tag, "NEW BEST!", UIKit.Style(17, true, TextAnchor.MiddleCenter, Color.white));
                 }
             }
-            float x = panel.x + 150f;
-            UIKit.PromptLabel(x, panel.yMax - 80f, 44f, PromptAction.Confirm, "Back to the Pod", kb, ink);
+            // Go home, or stay and enjoy the mended town.
+            var ps = UIKit.Style(Mathf.RoundToInt(44f * 0.55f), true, TextAnchor.MiddleLeft, ink);
+            float w1 = UIKit.PromptWidth(PromptAction.Confirm, 44f, kb) + 10f + UIKit.TextWidth("Back to the Pod", ps);
+            float w2 = UIKit.PromptWidth(PromptAction.Cancel, 44f, kb) + 10f + UIKit.TextWidth("Stay and explore", ps);
+            float x = panel.center.x - (w1 + 50f + w2) * 0.5f;
+            x += UIKit.PromptLabel(x, panel.yMax - 80f, 44f, PromptAction.Confirm, "Back to the Pod", kb, ink) + 50f;
+            UIKit.PromptLabel(x, panel.yMax - 80f, 44f, PromptAction.Cancel, "Stay and explore", kb, ink);
         }
     }
 }

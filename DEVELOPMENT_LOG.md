@@ -1,5 +1,41 @@
 # Development Log
 
+## The outskirts of Toybox Town
+- The Pod now lands with a bump: it sits tipped over in a crater it dug, with a walkable rim
+  of churned-up earth, a scorched floor with cracks, turf clods and pebbles flung about, bits
+  that fell off, and a long skid trench behind it. The model is cleaner and far more detailed:
+  a pill-shaped hatch flush with the shell, a riveted brass porthole, slim panel seams, three
+  striped tail fins, springy landing legs (one buckled), a bent antenna still blinking, a
+  stitched patch over a dent, tape over a crack, soot, a steaming nozzle, a smoking chimney and
+  a fizzing loose wire.
+- Walk up to the Pod's hatch to get "Head back to the Pod?".
+- After the wedding, the Level Complete card offers "Stay and explore" as well as going home.
+- New areas fill the empty corners of the toybox, all joined by stepping-stone trails (and a
+  new footbridge over the canal from the Pod's meadow):
+  - Whispering Wood (south-west): dark stitched felt pines, gnarled trees with yarn moss and
+    button eyes in their knot-holes, giant oaks whose dark crowns shade the floor, glowing
+    mushrooms, fireflies, eyes peeking from the dark, cobwebs with spiders, a lost teddy, a
+    sad sprung jack-in-the-box, pumpkins with glowing faces and low fog. It has its own
+    spooky music (a haunted nursery rhyme) and a darker look that fade in only inside it, and
+    woodland sounds (wind, creaks, crickets, an owl).
+  - The wood's secret: light the three spirit lanterns (follow the trails of glowing
+    mushrooms off the path) and the owl's hollow oak creaks open - a new secret marble and a
+    new Pod decoration, the Sleepy Owl.
+  - Button Orchard (south): knitted trees with swinging buttons for fruit, a ladder, baskets of
+    buttons, fallen buttons, a toy cart, a bench and a signpost.
+  - Patchwork Farm (north-east): quilted fields with stitched seams and rows of crops, a red
+    toy barn with a rooster weathervane, a lolly-stick sheep pen, a trough, hay bales, a
+    scarecrow and a pinwheel windmill.
+  - Toadstool Dell (north-west): a lily pond with frogs, cattails, a jetty, giant bouncy
+    toadstools and a fairy ring of score bubbles.
+  - Wildflower Meadow (east): long grass, a beehive with toy bees, a picnic.
+  - Little scenes in the gaps: a sleepy soldier's campsite with a crackling fire, kites on
+    long strings, and a sandpit with a sandcastle.
+- Toy wildlife round the outskirts: wind-up mice, felt bunnies, wooden deer on wheels, pull-
+  along ducks, woolly sheep, pincushion hedgehogs, button snails, felt frogs and foxes. They
+  wander, graze, scurry off if you run at them, and squeak and hop if you bump them. Felt
+  butterflies flutter over the open areas.
+
 ## Hats that stay on
 - On keyboard, "Enter to start" on the title screen no longer draws the key on top of the
   words; the key cap is measured first. The same fix went into the floating "Talk" / "Grab" /

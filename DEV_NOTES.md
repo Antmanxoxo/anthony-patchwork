@@ -133,6 +133,20 @@ Stuff I need to remember about how Patchwork is put together.
   and a fit scale from the head size. Don't move it in Update for that model, or it lags a frame.
 - Button prompts: use `UIKit.PromptWidth` to lay out text next to `UIKit.Prompt`; keyboard key
   caps are wider than pad glyphs.
+- Outskirts: `Level1Outskirts.cs`, built by `Outskirts(kit)` after `ApplySavedState` (before
+  ground cover, so `ClearGrass` works). Placement goes through `Spot` (FindSpot plus our own
+  `taken` circles). Toy animals are `ToyCritter` (wander near `Home`, flee within `Shy`, skip
+  updating beyond 90 m). Trails only lay stones on open ground at y 0.
+- Spooky music: `MusicSpooky.cs`. `MusicPlayer.SetSpookyArea(levelId, bounds)` composes it and
+  sets the area; it plays (and ducks everything else) while the player is inside.
+  `MusicPlayer.SpookyMix` drives `SpookyLook` (a priority-11 global Volume: darker, bluer).
+- The wood secret: `WoodSecret` + three `SpiritLantern` volumes; opens the hollow oak and
+  reveals `L1_marble_wood` and the `deco_owl` prize (Pod decoration 5, built in
+  `HubBuilder.Decorations`). `PeekingEyes`, `FireflySwarm` (also butterflies, `Pulse = false`)
+  and `Smoker` are small helpers in `WoodSecret.cs`.
+- The landed Pod (`LandedPod.Build`) builds its crater too; the rim is tilted solid slabs
+  (`Slope`) so it's walkable. The `PodHome` UseSpot at the hatch asks to go home.
+- Level Complete: Cancel returns to Gameplay ("Stay and explore").
 - Pod sounds: `PodWhimsy` (on the PodSounds group) plays a random soft one-shot every 6-12 s in
   Gameplay / PodEdit (`SfxId.Beeper`, `AlienCoo`, `Twinkle`, `Warble`, plus pitched chimes).
   `Sfx.SoftRocket` makes `PodPop` (launch tube) and `PodRocket` (level select launch).

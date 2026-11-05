@@ -705,6 +705,33 @@ namespace Patchwork
                 wob.Amount = 5f;
                 wob.Speed = 1.6f;
             });
+            // The Sleepy Owl from the Whispering Wood, dozing on the top shelf with a tiny lantern.
+            if (Prizes.HasDecoration(5)) Collect(kit, "deco5", () =>
+            {
+                float deg = -135f;
+                Vector3 at = Dir(deg) * (RadiusAt(4.4f) - 0.65f) + Vector3.up * 4.4f;
+                var owl = kit.Group("SleepyOwl", at);
+                owl.rotation = Quaternion.Euler(0f, deg + 180f, 0f);
+                var feathers = PatchworkAssets.Knit(new Color(0.55f, 0.42f, 0.32f));
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.42f, 0f), new Vector3(0.62f, 0.75f, 0.52f), feathers, default(Vector3), owl);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.5f, 0.2f), new Vector3(0.52f, 0.4f, 0.2f), PatchworkAssets.Felt(new Color(0.92f, 0.85f, 0.72f)), default(Vector3), owl);
+                for (int s = -1; s <= 1; s += 2)
+                {
+                    // Sleepy closed eyes: little curved stitches.
+                    kit.Deco(PrimitiveType.Cube, new Vector3(s * 0.12f, 0.58f, 0.3f), new Vector3(0.13f, 0.025f, 0.02f), PatchworkAssets.Felt(new Color(0.25f, 0.18f, 0.15f)), new Vector3(0f, 0f, s * 12f), owl);
+                    kit.Deco(PrimitiveType.Cube, new Vector3(s * 0.18f, 0.82f, 0.05f), new Vector3(0.08f, 0.18f, 0.06f), feathers, new Vector3(0f, 0f, -s * 25f), owl);
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.3f, 0.38f, 0f), new Vector3(0.14f, 0.45f, 0.3f), feathers, new Vector3(0f, 0f, s * 10f), owl);
+                }
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.48f, 0.33f), new Vector3(0.08f, 0.1f, 0.08f), PatchworkAssets.Felt(new Color(0.95f, 0.7f, 0.25f)), default(Vector3), owl);
+                // A nightcap.
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0.05f, 0.82f, 0f), new Vector3(0.4f, 0.2f, 0.4f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Stripes, new Color(0.45f, 0.55f, 0.9f), new Color(0.99f, 0.96f, 0.9f)), new Vector3(0f, 0f, -20f), owl);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0.28f, 0.9f, 0f), Vector3.one * 0.1f, PatchworkAssets.Yarn(Color.white), default(Vector3), owl);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0.45f, 0.18f, 0.1f), new Vector3(0.16f, 0.22f, 0.16f), PatchworkAssets.Glow(new Color(0.55f, 1f, 0.85f), 1.4f), default(Vector3), owl);
+                var breathe = owl.gameObject.AddComponent<Rocker>();
+                breathe.Axis = Vector3.forward;
+                breathe.Amount = 3f;
+                breathe.Speed = 0.8f;
+            });
             // Pinwheels in two flowerpots either side of the Button Box doorway.
             if (Prizes.HasDecoration(3)) Collect(kit, "deco3", () =>
             {

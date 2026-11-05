@@ -103,6 +103,10 @@ namespace Patchwork
 
             float target = MaxVolume * Volume / 10f * duck;
             master = Mathf.MoveTowards(master, target, udt * 0.6f);
+            // The forest's spooky song plays over everything else, so the rest dips under it.
+            float spookyDuck = UpdateSpookyTrack(udt);
+            float realMaster = master;
+            master *= spookyDuck;
             // Level soundtracks (like Toybox Town) crossfade with the Skiff's music.
             float skiff = UpdateLevelTrack(udt) * UpdatePodTrack(udt);
 
@@ -119,6 +123,7 @@ namespace Patchwork
                 sources[i].volume = master * gain * skiff;
                 filters[i].cutoffFrequency = cutoff;
             }
+            master = realMaster;
         }
 
         static int StemFor(FormType f)
