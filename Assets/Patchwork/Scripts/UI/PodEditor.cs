@@ -28,8 +28,8 @@ namespace Patchwork
             for (int i = 0; i < Prizes.DecorationNames.Length; i++)
                 if (PodDecor.Exists("deco" + i)) { decoKeys.Add("deco" + i); decoNames.Add(Prizes.DecorationNames[i]); }
             var cam = game.CameraRig;
-            cam.ShowcasePosition = new Vector3(-3.5f, 8.5f, -8f);
-            cam.ShowcaseLookAt = new Vector3(1.5f, 2.2f, 1.5f);
+            cam.ShowcasePosition = new Vector3(-2.2f, 6.4f, -5.4f);
+            cam.ShowcaseLookAt = new Vector3(1.2f, 1.6f, 2.4f);
             cam.ShowcaseBlendSpeed = 2.5f;
             cam.Showcase = true;
         }

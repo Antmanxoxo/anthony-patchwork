@@ -89,7 +89,7 @@ namespace Patchwork
                     }
                     else
                     {
-                        // A cheerful cork-pop and slide-whistle (no whoosh).
+                        // A soft little toy-rocket puff.
                         Sfx.Play(SfxId.PodPop, 0.75f);
                         FxBurst.Spawn(FxBurst.Kind.Puff, Mouth + Vector3.up * 0.7f, Color.white, (Land - Mouth).normalized);
                     }

@@ -113,7 +113,7 @@ namespace Patchwork
                     sailing = true;
                     sailTime = 0f;
                     Sfx.Play(SfxId.MenuConfirm, 0.6f);
-                    Sfx.Play(SfxId.PortalWarp, 0.5f);
+                    Sfx.Play(SfxId.PodRocket, 0.7f);
                 }
                 else
                 {

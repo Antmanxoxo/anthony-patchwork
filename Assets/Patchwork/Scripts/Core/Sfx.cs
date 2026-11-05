@@ -67,14 +67,20 @@ namespace Patchwork
         Lever,
         Rustle,        // bumping a tree or bush
         Whoosh,        // being flung by the see-saw
-        PodPop,        // popping out of the Pod's launch tube: a cork pop, a springy slide-whistle and a twinkle
+        PodPop,        // popping out of the Pod's launch tube: a soft little toy-rocket puff
         // Townsfolk babble: six little syllables (a, e, i, o, u, and a hum)
         Babble0,
         Babble1,
         Babble2,
         Babble3,
         Babble4,
-        Babble5
+        Babble5,
+        // The Pod
+        PodRocket,     // the Pod lifting off for a level: a soft, rumbly toy-rocket
+        Beeper,        // a little robot "beep-boop"
+        AlienCoo,      // a friendly alien cooing
+        Twinkle,       // a rising sparkle of tiny bells
+        Warble,        // a wobbly sci-fi "wee-oo"
     }
 
     // Continuous sounds that fade in while something requests them each frame.
@@ -451,13 +457,20 @@ namespace Patchwork
                 (Noise(t) * 0.6f * Mathf.Exp(-t * 45f) + Sine(t, 220f) * Mathf.Exp(-t * 30f) * 0.5f) * Mathf.Clamp01(t / 0.001f) * 0.6f, 3500f);
             clips[SfxId.StickerPeel] = Make("stickerpeel", 0.3f, (t, d) =>
                 Noise(t) * (0.5f + 0.5f * Mathf.Sin(t * 300f)) * Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / d)) * 0.35f, 5000f);
-            clips[SfxId.PodPop] = Make("podpop", 0.8f, (t, d) =>
-                // The cork: a sharp little pop.
-                (Noise(t) * Mathf.Exp(-t * 180f) * 0.5f + Sine(t, Mathf.Lerp(900f, 300f, Mathf.Clamp01(t / 0.05f))) * Mathf.Exp(-t * 40f) * 0.6f) * Mathf.Clamp01(t / 0.001f)
-                // A springy slide-whistle "fwee!" up, with a wobble.
-                + (t > 0.06f && t < 0.42f ? Sine(t, Mathf.Lerp(480f, 1150f, Mathf.SmoothStep(0f, 1f, (t - 0.06f) / 0.36f)) * (1f + 0.025f * Mathf.Sin(t * 70f))) * Mathf.Sin(Mathf.PI * (t - 0.06f) / 0.36f) * 0.3f : 0f)
-                // And a twinkle as Patch lands.
-                + Bell(t - 0.38f, 1568f, d) * 0.16f + Bell(t - 0.46f, 2093f, d) * 0.12f, 9000f);
+            clips[SfxId.PodPop] = SoftRocket("podpop", 1.1f, 0.12f, 0.5f);
+            clips[SfxId.PodRocket] = SoftRocket("podrocket", 2.2f, 0.45f, 0.55f);
+            clips[SfxId.Beeper] = Make("beeper", 0.42f, (t, d) =>
+                // Two soft square-ish blips, "beep" then "boop", each with a tiny pitch bend.
+                (Blip(t, 1320f, 1400f, 0.12f) + Blip(t - 0.16f, 880f, 740f, 0.15f) * 0.9f + Blip(t - 0.33f, 1175f, 1175f, 0.06f) * 0.5f) * 0.28f, 6000f);
+            clips[SfxId.AlienCoo] = Make("aliencoo", 0.7f, (t, d) =>
+                // A sung "oo-ee?" that rises like a question, with a wobble.
+                Vowel(t, Mathf.Lerp(330f, 560f, Mathf.SmoothStep(0f, 1f, t / d)) * (1f + 0.04f * Mathf.Sin(t * 38f)),
+                      Mathf.Lerp(320f, 300f, t / d), Mathf.Lerp(750f, 2300f, Mathf.SmoothStep(0f, 1f, t / d))) * Env(t, d, 0.05f) * 0.42f, 5000f);
+            clips[SfxId.Twinkle] = Make("twinkle", 1.3f, (t, d) =>
+                Bell(t, 1568f, d) * 0.12f + Bell(t - 0.07f, 1760f, d) * 0.12f + Bell(t - 0.14f, 2093f, d) * 0.12f
+                + Bell(t - 0.21f, 2349.3f, d) * 0.11f + Bell(t - 0.28f, 2637f, d) * 0.1f + Bell(t - 0.35f, 3136f, d) * 0.08f, 11000f);
+            clips[SfxId.Warble] = Make("warble", 0.9f, (t, d) =>
+                Sine(t, Mathf.Lerp(700f, 420f, t / d) * (1f + 0.12f * Mathf.Sin(t * 2f * Mathf.PI * 7f))) * Env(t, d, 0.04f) * 0.25f, 6000f);
             clips[SfxId.Grab] = Make("grab", 0.16f, (t, d) =>
                 (Noise(t) * 0.4f + Sine(t, 180f) * 0.6f) * Mathf.Exp(-t * 28f) * Mathf.Clamp01(t / 0.003f) * 0.6f, 2200f);
             clips[SfxId.Release] = Make("release", 0.14f, (t, d) =>
@@ -483,6 +496,55 @@ namespace Patchwork
             }
             clips[SfxId.Drum] = Make("drum", 0.45f, (t, d) =>
                 (Sine(t, Mathf.Lerp(160f, 90f, Mathf.Clamp01(t / 0.12f))) * Mathf.Exp(-t * 9f) * 0.7f + Noise(t) * Mathf.Exp(-t * 40f) * 0.25f) * Mathf.Clamp01(t / 0.003f), 3000f);
+        }
+
+        // A soft toy-rocket: a gentle puff at the start, then a warm, filtered rumble-hiss that
+        // swells and drifts away, with a low hum underneath and a faint rising tone. No sharp whoosh.
+        static AudioClip SoftRocket(string name, float duration, float swellAt, float volume)
+        {
+            int n = Mathf.CeilToInt(duration * Rate);
+            var data = new float[n];
+            var rng = new System.Random(name.Length * 31 + 7);
+            float y1 = 0f, y2 = 0f, ph = 0f, ph2 = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                float k = t / duration;
+                // The rumble: noise through two gentle low-pass stages, brighter at the peak.
+                float white = (float)(rng.NextDouble() * 2.0 - 1.0);
+                float bright = Mathf.Lerp(380f, 900f, Mathf.Exp(-Mathf.Pow((t - swellAt) / (duration * 0.35f), 2f)));
+                float a = Alpha(bright);
+                y1 += a * (white - y1);
+                y2 += a * (y1 - y2);
+                float flutter = 1f + 0.18f * Mathf.Sin(t * 2f * Mathf.PI * 13f) * Mathf.Sin(t * 2f * Mathf.PI * 3.1f);
+                float swell = Mathf.Clamp01(t / swellAt);
+                swell = swell * swell * (3f - 2f * swell);
+                float fade = Mathf.Pow(1f - k, 1.6f);
+                float rumble = y2 * 5f * flutter * swell * fade;
+                // The low engine hum, sliding up a little as it lifts off.
+                ph += 2f * Mathf.PI * Mathf.Lerp(62f, 95f, k) / Rate;
+                float hum = (Mathf.Sin(ph) + 0.3f * Mathf.Sin(ph * 2f)) * swell * fade * 0.35f;
+                // A faint, airy rising tone, like it's flying off.
+                ph2 += 2f * Mathf.PI * Mathf.Lerp(300f, 620f, k * k) / Rate;
+                float rise = Mathf.Sin(ph2) * Mathf.Sin(Mathf.PI * k) * 0.06f;
+                // The puff: a soft, round little pop at the very start.
+                float puff = (Mathf.Sin(2f * Mathf.PI * Mathf.Lerp(240f, 120f, Mathf.Clamp01(t / 0.08f)) * t) * 0.6f + y1 * 0.8f) * Mathf.Exp(-t * 28f) * Mathf.Clamp01(t / 0.004f);
+                data[i] = (rumble * 0.55f + hum + rise + puff * 0.7f) * volume;
+            }
+            LowPass(data, 2200f);
+            FadeEdges(data, 0.01f);
+            return ToClip(name, data);
+        }
+
+        // A soft electronic blip that bends from f0 to f1 (rounded square wave).
+        static float Blip(float t, float f0, float f1, float len)
+        {
+            if (t < 0f || t > len) return 0f;
+            float k = t / len;
+            float f = Mathf.Lerp(f0, f1, k);
+            float s = Mathf.Sin(2f * Mathf.PI * f * t);
+            float sq = s + Mathf.Sin(2f * Mathf.PI * f * 3f * t) / 3f * 0.6f;
+            return sq * Mathf.Clamp01(t / 0.005f) * Mathf.Clamp01((len - t) / 0.02f);
         }
 
         static AudioClip Make(string name, float duration, Wave wave, float lowpassHz)
@@ -879,7 +941,8 @@ namespace Patchwork
         }
 
         // Drifting through space: a warm low hum (the pod's engine), a soft airy wash that breathes
-        // slowly, the odd twinkling star-ping and a gentle "whoo" sweep. Loops seamlessly (12 s).
+        // slowly, the odd twinkling star-ping, a far-off rocket drifting by and a couple of tiny
+        // robot blips. Loops seamlessly (12 s).
         static AudioClip SpaceLoop()
         {
             const float duration = 12f;
@@ -916,17 +979,34 @@ namespace Patchwork
                     data[(start + j) % n] += s;
                 }
             }
-            // A slow "whoo" sweep, like something passing far away.
+            // A distant little rocket drifting past: a soft rumble that swells and fades.
             {
-                int start = Mathf.RoundToInt(4.5f * Rate), len = Mathf.RoundToInt(3.5f * Rate);
-                float ph = 0f;
+                int start = Mathf.RoundToInt(4.5f * Rate), len = Mathf.RoundToInt(4f * Rate);
+                float r1 = 0f, r2 = 0f, ph = 0f;
+                var rr = new System.Random(19);
                 for (int j = 0; j < len; j++)
                 {
                     float k = j / (float)len;
-                    float f = Mathf.Lerp(260f, 420f, k * k);
-                    ph += 2f * Mathf.PI * f / Rate;
                     float env = Mathf.Sin(k * Mathf.PI);
-                    data[(start + j) % n] += Mathf.Sin(ph) * env * env * 0.035f;
+                    env *= env;
+                    float white = (float)(rr.NextDouble() * 2.0 - 1.0);
+                    r1 += (white - r1) * 0.03f;
+                    r2 += (r1 - r2) * 0.03f;
+                    ph += 2f * Mathf.PI * Mathf.Lerp(70f, 88f, k) / Rate;
+                    data[(start + j) % n] += (r2 * 4f + Mathf.Sin(ph) * 0.25f) * env * 0.06f;
+                }
+            }
+            // Two cheeky little robot blips, far off.
+            {
+                float[] at = { 2.9f, 9.3f };
+                for (int q = 0; q < at.Length; q++)
+                {
+                    int st = Mathf.RoundToInt(at[q] * Rate), len = Mathf.RoundToInt(0.32f * Rate);
+                    for (int j = 0; j < len; j++)
+                    {
+                        float tt = j / (float)Rate;
+                        data[(st + j) % n] += (Blip(tt, 1046f, 1175f, 0.09f) + Blip(tt - 0.13f, 784f, 698f, 0.12f)) * 0.022f;
+                    }
                 }
             }
             // Smooth the seam.

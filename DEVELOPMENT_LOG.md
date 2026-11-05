@@ -1,5 +1,22 @@
 # Development Log
 
+## A dreamier Pod
+- The decorating camera now sits inside the Pod, up near the ceiling, looking down over the
+  floor, rug and furniture (it was outside the wall before, so you couldn't see anything).
+- New Pod song while you hold the controller: same tune and chords, now played on toy piano,
+  music box and marimba over a bouncy pizzicato bass, with a wavering theremin singing the
+  middle section, chiptune star-blips, glockenspiel and sparkly runs.
+- Little whimsical noises every so often in the Pod: a robot beep-boop, an alien coo, a
+  twinkle of bells, a wobbly "wee-oo", wind chimes, a squeaky toy and xylophone notes.
+- Launching for a level and popping out of the launch tube now sound like a soft toy rocket
+  (a gentle puff, a warm rumble and a low hum) instead of a whoosh. The far-off sweep in the
+  space hum is a distant rocket drifting past now, with a couple of tiny robot blips.
+- More storybook things floating outside the window: a big yellow stitched felt elephant with
+  a zigzag trunk and flapping ears, a white felt horse with a rainbow mane galloping on
+  nothing, a blue planet with an octopus tentacle curling out of it, a tiny gingham planet
+  with a circus tent and a seedling, a compass-rose planet, a gingham hot-air balloon, a
+  paper aeroplane looping round, and soft grey pencil-sketch clouds.
+
 ## Running faster
 - Fixed a compile error from the last batch (a sound name that didn't exist).
 - A tidy-up pass runs right after a level is built, so it draws much less without losing

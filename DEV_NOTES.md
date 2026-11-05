@@ -125,6 +125,12 @@ Stuff I need to remember about how Patchwork is put together.
 - The Pod's decorating menu: `PodEditor` (`UIMode.PodEdit`) over `PodDecor` (floor, rug, light,
   items on/off; PlayerPrefs `pw_pod_*`) and `PodTheme` (walls). Things that can be switched are
   built inside `HubBuilder.Collect(kit, key, build)`, which groups whatever the build made.
+  The editor camera is a `PlayerCamera` showcase shot set in `PodEditor.Open` and must stay
+  inside the shell (`ProfileY`/`ProfileR`: about 8.8 m radius at 6.5 m up).
+- Pod sounds: `PodWhimsy` (on the PodSounds group) plays a random soft one-shot every 6-12 s in
+  Gameplay / PodEdit (`SfxId.Beeper`, `AlienCoo`, `Twinkle`, `Warble`, plus pitched chimes).
+  `Sfx.SoftRocket` makes `PodPop` (launch tube) and `PodRocket` (level select launch).
+  Outside props from the storybook sky are in `HubBuilder.StorybookSky`.
 - `RenderOptimizer.Run` (called in `PatchworkGame` after the level is built): swaps built-in
   sphere/capsule meshes under 2.6 m / 3.2 m for lighter generated ones, turns off shadows for
   things under 0.5 m, and moves plain collider-less decorations to layer 8 (small, culled at
