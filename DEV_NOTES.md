@@ -147,6 +147,18 @@ Stuff I need to remember about how Patchwork is put together.
 - The landed Pod (`LandedPod.Build`) builds its crater too; the rim is tilted solid slabs
   (`Slope`) so it's walkable. The `PodHome` UseSpot at the hatch asks to go home.
 - Level Complete: Cancel returns to Gameplay ("Stay and explore").
+- The wood: `Level1Forest.cs` (`ForestExpansion`, `BuildMoonGlade`, `WishingWillow`,
+  `RavineCrossings`); the deep corner is still `WhisperingWood` in `Level1Outskirts.cs`.
+  `ForestArea` sets the spooky music/look. Trails are reserved first as `lanes`
+  (`TrailLines()` + `ForestPaths`) so nothing is planted on them; `Spot` checks `NearLane`.
+- Moon secret: `MoonMagic.cs` (`MoonGlade`, `MoonNeedle`, `Floater`). The needle is saved as
+  collected id `L1_moon_needle`; the glade reveals `L1_marble_moon` and `prize_wizardhat`
+  (hat 8, "Starry Wizard Hat").
+- Riding: `YarnHorse` (built by `YarnHorse.Build`). Mounting sets `FormVisuals.RideHeight`
+  and `PatchModel.Riding` (idle pose), and the horse adds `PlayerMotor.SpeedBoost` each
+  LateUpdate while grounded. It knocks you off when swimming, warping or under external control.
+- `LayoutSurvey.Run` (editor only) writes Logs/patchwork_layout_<level>.txt: a 4 m grid of
+  how much is drawn per cell, and of solid heights.
 - Pod sounds: `PodWhimsy` (on the PodSounds group) plays a random soft one-shot every 6-12 s in
   Gameplay / PodEdit (`SfxId.Beeper`, `AlienCoo`, `Twinkle`, `Warble`, plus pitched chimes).
   `Sfx.SoftRocket` makes `PodPop` (launch tube) and `PodRocket` (level select launch).

@@ -1,5 +1,33 @@
 # Development Log
 
+## A magical wood, wild horses and biomes
+- The Whispering Wood now fills the whole south-west of the toybox (everything west of the
+  ravine and south of Spindle Hill), in three bands:
+  - Birch Edge: white stitched birches, bramble bushes with berries, bluebells, fallen leaves
+    and the sleepy soldier's campsite.
+  - The Middle Wood: pines and twisted trees, glowing crystals, drifting seed-lights, the old
+    forgotten toys, the Wishing Willow with its curtain of glowing strands, and the Moonglow
+    Glade.
+  - The Deep Wood: the owl's hollow oak and its spirit lanterns (as before).
+- The Moonglow Glade: eight standing stones with runes, a moon pool, floating candles, and the
+  Gloom (grey tangles with glowing eyes) smothering it all. Find the Moonlit Needle under the
+  Wishing Willow, bring it back and raise it by the pool: a guardian made of moonlight yarn (a
+  glowing fox) bursts out, races round the stones chasing the Gloom away and dives into the
+  pool, which fills with silver light under a moonbeam. A new secret marble and a new hat, the
+  Starry Wizard Hat, rise out of it. The guardian stays curled up by the pool afterwards.
+- Ways into the wood: new stairs up the ravine's west wall (cross the stream on the stepping
+  stones), and a lantern-lit footbridge over the ravine from the orchard.
+- Wild yarn horses roam the open country (the meadows, the farm, the dell, Spindle Hill, the
+  Birch Edge). Walk up and press Ability to ride: Patch sits on its back, it gallops nearly
+  twice as fast, with clip-clop hoofbeats. Press Ability again to hop off.
+- Each area now reads as its own biome: its own ground colour, the orchard has a hedge and a
+  flower arch, and colour-coded signposts stand at the main junctions. More trails join
+  everything up (the meadow to the sandpit and Sky Hoops, the promenade to the Wildflower
+  Meadow, the workshop to the farm, the picnic park to the dell), edged with little flowers
+  and pebbles.
+- Editor only: after a level loads, a top-down survey of what's where is written to
+  Logs/patchwork_layout_<level>.txt, for checking the layout for empty or crowded patches.
+
 ## The outskirts of Toybox Town
 - The Pod now lands with a bump: it sits tipped over in a crater it dug, with a walkable rim
   of churned-up earth, a scorched floor with cracks, turf clods and pebbles flung about, bits

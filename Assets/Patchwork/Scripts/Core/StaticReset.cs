@@ -30,6 +30,8 @@ namespace Patchwork
             WindChime.FirstRung = null;
             XyloKey.AnyStruck = null;
             PatchModel.CurrentFace = PatchModel.Face.Happy;
+            PatchModel.Riding = false;
+            YarnHorse.ResetStatics();
         }
     }
 }

@@ -179,6 +179,7 @@ namespace Patchwork
                 case 5:
                 case 6:
                 case 7: return "Hidden in a prize bubble in Toybox Town.";
+                case 8: return "Somewhere magical, deep in the Whispering Wood.";
                 default: return "";
             }
         }

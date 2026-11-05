@@ -84,6 +84,9 @@ namespace Patchwork
         // The outskirts
         Hoot,          // an owl's soft "hoo-hoo"
         Critter,       // a toy animal's little squeak-chirp
+        Neigh,         // a yarn horse's whinny
+        Clop,          // a hoofbeat
+        Spell,         // a magical shimmer rising (the guardian appearing)
     }
 
     // Continuous sounds that fade in while something requests them each frame.
@@ -478,6 +481,18 @@ namespace Patchwork
             clips[SfxId.Critter] = Make("critter", 0.26f, (t, d) =>
                 (Sine(t, Mathf.Lerp(1500f, 2300f, Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / 0.12f)))) * Env(t, 0.13f, 0.005f)
                 + Sine(t - 0.14f, Mathf.Lerp(1900f, 2600f, Mathf.Clamp01((t - 0.14f) / 0.1f))) * Env(t - 0.14f, 0.1f, 0.005f) * 0.7f) * 0.3f, 7000f);
+            clips[SfxId.Neigh] = Make("neigh", 0.95f, (t, d) =>
+                // A whinny: a bright vowel that wobbles fast and slides down, then a soft snort.
+                Vowel(t, Mathf.Lerp(620f, 380f, Mathf.SmoothStep(0f, 1f, t / 0.75f)) * (1f + 0.07f * Mathf.Sin(t * 2f * Mathf.PI * 13f)), 700f, 1600f)
+                    * Mathf.Clamp01(t / 0.03f) * Mathf.Clamp01((0.75f - t) / 0.15f) * 0.38f
+                + Noise(t) * Mathf.Exp(-Mathf.Pow((t - 0.82f) / 0.05f, 2f)) * 0.25f, 4500f);
+            clips[SfxId.Clop] = Make("clop", 0.12f, (t, d) =>
+                (Sine(t, 820f) * 0.6f + Sine(t, 1230f) * 0.35f + Noise(t) * 0.25f) * Mathf.Exp(-t * 55f) * Mathf.Clamp01(t / 0.001f) * 0.6f, 5000f);
+            clips[SfxId.Spell] = Make("spell", 2.4f, (t, d) =>
+                // A shimmering rise: a soft chord swelling up, with glittering bells on top.
+                (Sine(t, 523.25f * (1f + t * 0.05f)) + Sine(t, 659.25f * (1f + t * 0.05f)) * 0.8f + Sine(t, 783.99f * (1f + t * 0.05f)) * 0.7f + Sine(t, 1046.5f * (1f + t * 0.05f)) * 0.5f)
+                    * Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / d)) * 0.12f
+                + Bell(Mathf.Repeat(t, 0.16f), 1568f + Mathf.Floor(t / 0.16f) * 110f, 0.16f) * 0.08f * Mathf.Clamp01(1.6f - t * 0.6f), 11000f);
             clips[SfxId.Warble] = Make("warble", 0.9f, (t, d) =>
                 Sine(t, Mathf.Lerp(700f, 420f, t / d) * (1f + 0.12f * Mathf.Sin(t * 2f * Mathf.PI * 7f))) * Env(t, d, 0.04f) * 0.25f, 6000f);
             clips[SfxId.Grab] = Make("grab", 0.16f, (t, d) =>

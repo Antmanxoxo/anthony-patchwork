@@ -10,7 +10,7 @@ namespace Patchwork
     // Hats sit on their own transform so changing form never resets them.
     public class FormVisuals
     {
-        public static readonly string[] HatNames = { "No Hat", "Red Beanie", "Felt Top Hat", "Daisy Clip", "Golden Crown", "Party Hat", "Pirate Hat", "Propeller Cap" };
+        public static readonly string[] HatNames = { "No Hat", "Red Beanie", "Felt Top Hat", "Daisy Clip", "Golden Crown", "Party Hat", "Pirate Hat", "Propeller Cap", "Starry Wizard Hat" };
 
         class Body
         {
@@ -25,7 +25,7 @@ namespace Patchwork
         readonly Transform root;
         readonly Body yarn = new Body(), water = new Body(), wind = new Body();
         readonly Transform accessoryRoot;
-        readonly GameObject[] hats = new GameObject[8];
+        readonly GameObject[] hats = new GameObject[9];
         static MaterialPropertyBlock mpb;
 
         // Yarn rig (the Blender model if it's there, otherwise the block-built toy)
@@ -179,6 +179,10 @@ namespace Patchwork
 
         public void PunchScale(Vector3 s) { punch = s; }
 
+        // How high Patch sits above his feet (riding a yarn horse); eased.
+        public float RideHeight;
+        float rideY;
+
         // Put on a different hat with a springy little pop.
         public void ChangeHat(int index) { SetHat(index); hatPop = 1f; }
         public Vector3 HatPosition { get { return accessoryRoot.position; } }
@@ -230,6 +234,9 @@ namespace Patchwork
             danceWeight = Mathf.MoveTowards(danceWeight, dancing ? 1f : 0f, dt * 3f);
             if (danceWeight > 0.001f) ApplyDance(DanceBeat, danceWeight);
             else root.localPosition = Vector3.zero;
+            // Sitting up on a yarn horse.
+            rideY = Mathf.MoveTowards(rideY, RideHeight, dt * 5f);
+            if (rideY > 0f) root.localPosition += Vector3.up * rideY;
 
             AnimateYarn(motor, speed, localVel, dt);
             AnimateWater(motor, dv, dt);
@@ -863,6 +870,34 @@ namespace Patchwork
             var spin = blades.gameObject.AddComponent<Spinner>();
             spin.Speed = 540f;
             hats[7] = prop.gameObject;
+
+            // Starry wizard hat: a tall, floppy midnight-blue felt cone with a wide brim, stitched
+            // stars, a little moon and a bobble that twinkles.
+            var wiz = Pivot("Hat_Wizard", accessoryRoot, Vector3.zero);
+            var midnight = PatchworkAssets.Felt(new Color(0.2f, 0.22f, 0.5f));
+            var midnight2 = PatchworkAssets.Felt(new Color(0.24f, 0.27f, 0.58f));
+            Prim(PrimitiveType.Cylinder, wiz, new Vector3(0f, -0.07f, 0f), new Vector3(0.78f, 0.02f, 0.78f), midnight);
+            Prim(PrimitiveType.Cylinder, wiz, new Vector3(0f, -0.04f, 0f), new Vector3(0.48f, 0.04f, 0.48f), PatchworkAssets.Felt(new Color(0.95f, 0.8f, 0.3f)));
+            Vector3 at = new Vector3(0f, -0.02f, 0f);
+            for (int i = 0; i < 9; i++)
+            {
+                float k = i / 8f;
+                float r = Mathf.Lerp(0.46f, 0.07f, k);
+                // The top third flops over to one side.
+                Vector3 step = k < 0.6f ? new Vector3(0f, 0.08f, 0f) : new Vector3(0.04f + (k - 0.6f) * 0.12f, 0.05f, -0.01f);
+                at += step;
+                Prim(PrimitiveType.Cylinder, wiz, at, new Vector3(r, 0.045f, r), i % 2 == 0 ? midnight : midnight2, new Vector3(0f, 0f, k < 0.6f ? 0f : -(k - 0.6f) * 110f));
+            }
+            Prim(PrimitiveType.Sphere, wiz, at + new Vector3(0.05f, 0.03f, 0f), Vector3.one * 0.09f, PatchworkAssets.Glow(new Color(1f, 0.9f, 0.5f), 1.6f));
+            var starMat = PatchworkAssets.Glow(new Color(1f, 0.88f, 0.4f), 1.2f);
+            Vector3[] stars = { new Vector3(0.2f, 0.1f, 0.15f), new Vector3(-0.17f, 0.22f, 0.14f), new Vector3(0.05f, 0.38f, 0.12f), new Vector3(-0.08f, 0.08f, -0.22f) };
+            foreach (var s in stars)
+            {
+                Prim(PrimitiveType.Cube, wiz, s, new Vector3(0.06f, 0.06f, 0.015f), starMat, new Vector3(0f, Mathf.Atan2(s.x, s.z) * Mathf.Rad2Deg, 45f));
+                Prim(PrimitiveType.Cube, wiz, s, new Vector3(0.06f, 0.06f, 0.015f), starMat, new Vector3(0f, Mathf.Atan2(s.x, s.z) * Mathf.Rad2Deg, 0f));
+            }
+            Prim(PrimitiveType.Sphere, wiz, new Vector3(0.22f, 0.24f, -0.02f), new Vector3(0.1f, 0.1f, 0.02f), PatchworkAssets.Glow(new Color(0.95f, 0.95f, 1f), 1.1f), new Vector3(0f, 90f, 0f));
+            hats[8] = wiz.gameObject;
         }
 
         // Visual-only primitive (collider removed, player layer).

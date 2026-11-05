@@ -167,6 +167,11 @@ namespace Patchwork
             // Lighter meshes for small round things, no shadows from tiny ones, and distance
             // culling for small decorations (not in the Pod, where the stars outside need to show).
             RenderOptimizer.Run(kit.Root, cam, Level.FarClip, !Level.IsHub);
+            if (!Level.IsHub)
+            {
+                Physics.SyncTransforms();
+                LayoutSurvey.Run(Level.Id, kit.Root, Level.Area);
+            }
             LevelLook.Apply(Level);
 
             // Player

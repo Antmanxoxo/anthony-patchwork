@@ -12,7 +12,7 @@ namespace Patchwork
         {
             "L1_marble_shop", "L1_marble_grotto", "L1_marble_tune", "L1_marble_hill", "L1_marble_ravine", "L1_marble_peekaboo",
             "L1_marble_rush", "L1_marble_goal", "L1_marble_hatch", "L1_marble_chimes", "L1_marble_clock", "L1_marble_duckling",
-            "L1_marble_whack", "L1_marble_trapeze", "L1_marble_wood"
+            "L1_marble_whack", "L1_marble_trapeze", "L1_marble_wood", "L1_marble_moon"
         };
 
         static readonly Vector3 ShopRoom = new Vector3(250f, 0f, -200f);

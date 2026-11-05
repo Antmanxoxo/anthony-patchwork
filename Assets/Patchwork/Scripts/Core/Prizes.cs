@@ -39,6 +39,7 @@ namespace Patchwork
             new PrizeDef("prize_partyhat", "Party Hat", PrizeKind.Hat, 5),
             new PrizeDef("prize_piratehat", "Pirate Hat", PrizeKind.Hat, 6),
             new PrizeDef("prize_propeller", "Propeller Cap", PrizeKind.Hat, 7),
+            new PrizeDef("prize_wizardhat", "Starry Wizard Hat", PrizeKind.Hat, 8),
             new PrizeDef("deco_duck", "Duck Captain", PrizeKind.Decoration, 0),
             new PrizeDef("deco_lanterns", "Paper Lanterns", PrizeKind.Decoration, 1),
             new PrizeDef("deco_snowglobe", "Snow Globe", PrizeKind.Decoration, 2),

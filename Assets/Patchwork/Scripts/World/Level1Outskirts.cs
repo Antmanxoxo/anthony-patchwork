@@ -20,15 +20,21 @@ namespace Patchwork
     {
         static readonly Vector3 WoodGate = new Vector3(-71.5f, 0f, -79f);
         static readonly Vector3 HollowTree = new Vector3(-99f, 0f, -99f);
-        static readonly Bounds WoodArea = new Bounds(new Vector3(-93f, 8f, -93f), new Vector3(44f, 36f, 44f));
         static readonly List<Vector3> taken = new List<Vector3>();   // x, z, radius of things placed here
 
         static void Outskirts(LevelKit kit)
         {
             taken.Clear();
+            lanes.Clear();
+            foreach (var t in TrailLines()) Lane(t);
+            foreach (var t in ForestPaths) Lane(t);
             Physics.SyncTransforms();
+            RavineCrossings(kit);
+            Physics.SyncTransforms();
+            ForestExpansion(kit);
             WhisperingWood(kit);
             Physics.SyncTransforms();
+            Biomes(kit);
             ButtonOrchard(kit);
             PatchworkFarm(kit);
             ToadstoolDell(kit);
@@ -39,7 +45,9 @@ namespace Patchwork
             Wildlife(kit);
 
             var P = kit.Info.MapPins;
-            P.Add(new MapPin("Whispering Wood", new Vector3(-92f, 0f, -90f)));
+            P.Add(new MapPin("Whispering Wood", new Vector3(-80f, 0f, -30f)));
+            P.Add(new MapPin("Moonglow Glade", MoonGladeCenter));
+            P.Add(new MapPin("Deep Wood", new Vector3(-95f, 0f, -95f)));
             P.Add(new MapPin("Button Orchard", new Vector3(-6f, 0f, -100f)));
             P.Add(new MapPin("Patchwork Farm", new Vector3(100f, 0f, 98f)));
             P.Add(new MapPin("Toadstool Dell", new Vector3(-62f, 0f, 102f)));
@@ -65,7 +73,7 @@ namespace Patchwork
         {
             p = near;
             if (!FindSpot(near, Mathf.Min(r, 1.2f), out p)) return false;
-            if (Taken(p, r)) return false;
+            if (Taken(p, r) || NearLane(p, r * 0.6f)) return false;
             Take(p, r);
             return true;
         }
@@ -121,7 +129,7 @@ namespace Patchwork
 
             // The gate: two crooked posts, a sagging crossbar, a hanging lantern and a sign with
             // painted eyes. Pumpkins with glowing faces either side.
-            Gate(kit, WoodGate);
+            Gate(kit, WoodGate, 68f);
             Take(WoodGate, 3.5f);
             Pumpkin(kit, WoodGate + new Vector3(1.6f, 0f, -3.4f), 0.9f, 20f);
             Pumpkin(kit, WoodGate + new Vector3(-1.5f, 0f, 3.3f), 0.7f, -30f);
@@ -224,14 +232,12 @@ namespace Patchwork
             // Sounds, music and the darker look.
             var sounds = kit.Group("WoodSounds", Vector3.zero);
             AmbientEmitter.Create(sounds, new Vector3(-93f, 2f, -93f), Sfx.Ambient(Sfx.AmbientClip.Woods), 0.6f, 10f, 34f);
-            MusicPlayer.SetSpookyArea(SceneName, WoodArea);
-            SpookyLook.Create(kit.Root);
         }
 
-        static void Gate(LevelKit kit, Vector3 at)
+        static void Gate(LevelKit kit, Vector3 at, float yaw)
         {
             var g = kit.Group("WoodGate", at);
-            g.rotation = Quaternion.Euler(0f, 68f, 0f);   // facing out along the path, towards town
+            g.rotation = Quaternion.Euler(0f, yaw, 0f);   // facing out along the path
             var bark = PatchworkAssets.Wood(new Color(0.32f, 0.24f, 0.2f));
             Rod(kit, new Vector3(-2.2f, 0f, 0f), new Vector3(-2.5f, 4.6f, 0.2f), bark, 0.4f, g);
             Rod(kit, new Vector3(2.2f, 0f, 0f), new Vector3(2.4f, 4.3f, -0.2f), bark, 0.4f, g);
@@ -259,8 +265,8 @@ namespace Patchwork
             swing.Axis = Vector3.forward;
             swing.Amount = 9f;
             swing.Speed = 1.3f;
-            TownKit.Solid(kit, at + g.rotation * new Vector3(-2.3f, 2f, 0f), new Vector3(0.5f, 4f, 0.5f), 68f);
-            TownKit.Solid(kit, at + g.rotation * new Vector3(2.3f, 2f, 0f), new Vector3(0.5f, 4f, 0.5f), 68f);
+            TownKit.Solid(kit, at + g.rotation * new Vector3(-2.3f, 2f, 0f), new Vector3(0.5f, 4f, 0.5f), yaw);
+            TownKit.Solid(kit, at + g.rotation * new Vector3(2.3f, 2f, 0f), new Vector3(0.5f, 4f, 0.5f), yaw);
         }
 
         // A felt pumpkin with a carved, glowing face.
@@ -1107,6 +1113,49 @@ namespace Patchwork
                 "Shh... the wooden deer are very shy. Walk slowly and they might let you get close.");
         }
 
+        // ================================================================ Biomes
+
+        // Each area gets its own ground colour, a proper edge and an entrance, and the main
+        // junctions get signposts (colour-coded: purple wood, gold orchard, red farm, lime meadow,
+        // teal dell, cream town, pink Pod).
+        static readonly Color SignWood = new Color(0.55f, 0.45f, 0.75f), SignOrchard = new Color(1f, 0.78f, 0.3f), SignFarm = new Color(0.88f, 0.32f, 0.3f),
+            SignMeadow = new Color(0.6f, 0.82f, 0.4f), SignDell = new Color(0.35f, 0.72f, 0.7f), SignTown = new Color(0.97f, 0.92f, 0.82f), SignPod = new Color(1f, 0.55f, 0.72f);
+
+        static void Biomes(LevelKit kit)
+        {
+            var tint = kit.Group("BiomeGround", Vector3.zero);
+            // Ground colours (just above the grass, under everything else).
+            kit.Deco(PrimitiveType.Cube, new Vector3(-5f, 0.012f, -101f), new Vector3(62f, 0.02f, 26f), PatchworkAssets.Grass(new Color(0.62f, 0.72f, 0.4f)), default(Vector3), tint);
+            kit.Deco(PrimitiveType.Cube, new Vector3(78.3f, 0.012f, -100.2f), new Vector3(73.2f, 0.02f, 28.6f), PatchworkAssets.Grass(new Color(0.58f, 0.78f, 0.44f)), default(Vector3), tint);
+            kit.Deco(PrimitiveType.Cube, new Vector3(101.4f, 0.012f, 33f), new Vector3(27.2f, 0.02f, 50f), PatchworkAssets.Grass(new Color(0.68f, 0.8f, 0.48f)), default(Vector3), tint);
+            kit.Deco(PrimitiveType.Cube, new Vector3(-62f, 0.012f, 102.4f), new Vector3(52f, 0.02f, 25.2f), PatchworkAssets.Grass(new Color(0.38f, 0.6f, 0.4f)), default(Vector3), tint);
+            kit.Deco(PrimitiveType.Cube, new Vector3(99.4f, 0.012f, 98.4f), new Vector3(31.2f, 0.02f, 33.2f), PatchworkAssets.Grass(new Color(0.62f, 0.74f, 0.4f)), default(Vector3), tint);
+
+            // The orchard's hedge along its north side, with a flower arch where the lane comes in.
+            var hedge = PatchworkAssets.Knit(new Color(0.34f, 0.55f, 0.34f));
+            var hedgeLight = PatchworkAssets.Knit(new Color(0.42f, 0.62f, 0.38f));
+            for (float x = -35f; x <= 25f; x += 1.6f)
+            {
+                if (Mathf.Abs(x - 1f) < 3f) continue;
+                Vector3 p = new Vector3(x, 0f, -88.6f);
+                if (NearLane(p, 0.2f)) continue;
+                kit.Deco(PrimitiveType.Sphere, p + Vector3.up * 0.65f, new Vector3(1.9f, 1.4f, 1.3f), ((int)(x * 2f)) % 2 == 0 ? hedge : hedgeLight, new Vector3(0f, x * 31f, 0f));
+                if (((int)(x * 10f)) % 3 == 0) kit.Deco(PrimitiveType.Sphere, p + new Vector3(0.3f, 1.3f, -0.4f), Vector3.one * 0.16f, PatchworkAssets.Felt(FlowerColors[((int)(x * 3f) + 99) % FlowerColors.Length]), default(Vector3));
+            }
+            TownKit.Solid(kit, new Vector3(-16.5f, 0.7f, -88.6f), new Vector3(37f, 1.4f, 1.2f), 0f);
+            TownKit.Solid(kit, new Vector3(14.5f, 0.7f, -88.6f), new Vector3(21f, 1.4f, 1.2f), 0f);
+            TownKit.FlowerArch(kit, new Vector3(1f, 0f, -88.6f), 0f, 4f);
+            Take(new Vector3(1f, 0f, -88.6f), 2.5f);
+
+            // Signposts at the junctions.
+            Signpost(kit, new Vector3(-55.5f, 0f, -24f), new[] { 90f, 225f, 300f }, new[] { SignTown, SignWood, SignWood });
+            Signpost(kit, new Vector3(4.5f, 0f, -85.5f), new[] { 0f, 270f, 115f }, new[] { SignTown, SignWood, SignPod });
+            Signpost(kit, new Vector3(-5f, 0f, -94f), new[] { 270f, 90f, 0f }, new[] { SignWood, SignPod, SignTown });
+            Signpost(kit, new Vector3(64f, 0f, 55f), new[] { 30f, 95f, 270f }, new[] { SignFarm, SignMeadow, SignTown });
+            Signpost(kit, new Vector3(-14f, 0f, 84.5f), new[] { 290f, 45f, 180f }, new[] { SignDell, SignTown, SignTown });
+            Signpost(kit, new Vector3(52f, 0f, -88f), new[] { 270f, 0f, 60f }, new[] { SignOrchard, SignTown, SignMeadow });
+        }
+
         // ================================================================ Little scenes in the gaps
 
         // Felt butterflies fluttering about an area.
@@ -1159,7 +1208,8 @@ namespace Patchwork
         // flames, log seats, a kettle, and the soldier fast asleep on his bedroll.
         static void Campsite(LevelKit kit, Vector3 c)
         {
-            if (!Spot(c, 5f, out Vector3 p)) return;
+            // Its clearing in the Birch Edge was kept free when the wood was planted.
+            if (!FindSpot(c, 1.2f, out Vector3 p)) p = c;
             var g = kit.Group("Campsite", p);
             var canvas = PatchworkAssets.Print(PatchworkAssets.PrintKind.Stripes, new Color(0.35f, 0.55f, 0.4f), new Color(0.95f, 0.9f, 0.75f));
             // The tent: two sloped panels and a dark doorway.
@@ -1312,19 +1362,32 @@ namespace Patchwork
 
         // ================================================================ Trails between it all
 
+        // Every trail between the areas (kept clear of trees and props, then laid with stones).
+        static Vector3[][] TrailLines()
+        {
+            return new[]
+            {
+                // The Pod's meadow, over the canal footbridge, through the orchard, over the ravine
+                // footbridge and into the wood.
+                new[] { new Vector3(47f, 0f, -97f), new Vector3(28f, 0f, -97f), new Vector3(0f, 0f, -97.5f), new Vector3(-34f, 0f, -97f), new Vector3(-36f, 0f, -92f), new Vector3(-52.5f, 0f, -92f), new Vector3(-60f, 0f, -86f), WoodGate + new Vector3(4f, 0f, 1.8f) },
+                // The weathervane lane down to the orchard.
+                new[] { new Vector3(0f, 0f, -80f), new Vector3(1f, 0f, -96f) },
+                // The Pod's meadow east to the sandpit and the Sky Hoops.
+                new[] { new Vector3(58f, 0f, -86f), new Vector3(80f, 0f, -66f), new Vector3(96f, 0f, -52f) },
+                // The canal promenade out to the Wildflower Meadow.
+                new[] { new Vector3(47f, 0f, 20f), new Vector3(70f, 0f, 24f), new Vector3(92f, 0f, 28f) },
+                // The toy workshop north to the farm.
+                new[] { new Vector3(64f, 0f, 52f), new Vector3(70f, 0f, 66f), new Vector3(78f, 0f, 84f), new Vector3(86f, 0f, 92f), new Vector3(93f, 0f, 99f) },
+                // The picnic park west to the dell.
+                new[] { new Vector3(-16f, 0f, 82f), new Vector3(-24f, 0f, 90f), new Vector3(-30f, 0f, 96f), new Vector3(-44f, 0f, 101f), new Vector3(-52f, 0f, 104f) },
+            };
+        }
+
         static void Trails(LevelKit kit)
         {
             var stones = new[] { PatchworkAssets.Felt(new Color(0.9f, 0.84f, 0.74f)), PatchworkAssets.Felt(new Color(0.84f, 0.78f, 0.7f)) };
-            // From Landing Meadow west through the orchard, then on to the wood's gate.
-            // A little footbridge over the canal, so the Pod's meadow joins the orchard.
-            TownKit.Bridge(kit, new Vector3(CanalWest - 0.5f, 0.05f, -97f), new Vector3(CanalEast + 0.5f, 0.05f, -97f), 3f, 0.7f);
-            Vector3[] west = { new Vector3(47f, 0f, -97f), new Vector3(28f, 0f, -97f), new Vector3(0f, 0f, -97.5f), new Vector3(-34f, 0f, -97f), new Vector3(-50f, 0f, -90f), new Vector3(-62f, 0f, -82f), WoodGate + new Vector3(4f, 0f, 1.8f) };
-            // From the weathervane lane down to the orchard.
-            Vector3[] south = { new Vector3(0f, 0f, -80f), new Vector3(1f, 0f, -96f) };
-            // North to the farm and the dell.
-            Vector3[] farm = { new Vector3(78f, 0f, 84f), new Vector3(86f, 0f, 92f), new Vector3(93f, 0f, 99f) };
-            Vector3[] dell = { new Vector3(-30f, 0f, 96f), new Vector3(-44f, 0f, 101f), new Vector3(-52f, 0f, 104f) };
-            foreach (var trail in new[] { west, south, farm, dell })
+            var mossy = new[] { PatchworkAssets.Cobble(new Color(0.55f, 0.6f, 0.55f)), PatchworkAssets.Cobble(new Color(0.48f, 0.52f, 0.5f)) };
+            foreach (var trail in TrailLines())
             {
                 int n = 0;
                 for (int s = 0; s < trail.Length - 1; s++)
@@ -1336,9 +1399,13 @@ namespace Patchwork
                         Vector3 p = Vector3.Lerp(a, b, k / (float)steps) + new Vector3(Mathf.Sin(n * 1.1f) * 0.35f, 0f, Mathf.Cos(n * 0.8f) * 0.35f);
                         n++;
                         if (Taken(p, 0.6f)) continue;
-                        // Only on open ground (not up on anything).
+                        // Only on open ground (not up on anything, not over water).
                         if (!Physics.Raycast(p + Vector3.up * 6f, Vector3.down, out RaycastHit hit, 12f, ~(1 << 2), QueryTriggerInteraction.Ignore) || Mathf.Abs(hit.point.y) > 0.1f) continue;
-                        kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * 0.02f, new Vector3(1.2f, 0.02f, 0.95f), stones[n % 2], new Vector3(0f, n * 41f, 0f));
+                        var mat = InForest(p) ? mossy[n % 2] : stones[n % 2];
+                        kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * 0.025f, new Vector3(1.2f, 0.02f, 0.95f), mat, new Vector3(0f, n * 41f, 0f));
+                        // Tiny flowers and pebbles edging the path now and then.
+                        if (n % 7 == 0 && !InForest(p)) kit.Flower(p + new Vector3(1.1f, 0f, 0.4f), FlowerColors[n % FlowerColors.Length]);
+                        else if (n % 9 == 0) kit.Deco(PrimitiveType.Sphere, p + new Vector3(-1f, 0.05f, 0.3f), new Vector3(0.3f, 0.14f, 0.24f), PatchworkAssets.Felt(new Color(0.75f, 0.72f, 0.68f)), default(Vector3));
                     }
                 }
             }
@@ -1392,6 +1459,17 @@ namespace Patchwork
             // Foxes at the edge of the wood.
             at(new Vector3(-66f, 0f, -70f), p => ToyCritter.Fox(kit, p));
             at(new Vector3(-74f, 0f, -98f), p => ToyCritter.Fox(kit, p));
+
+            // Wild yarn horses, in ones and twos out in the open country. Hop on to ride!
+            Color[] coats = { new Color(0.97f, 0.93f, 0.85f), new Color(0.72f, 0.45f, 0.3f), new Color(0.7f, 0.7f, 0.76f), new Color(1f, 0.75f, 0.82f), new Color(0.6f, 0.75f, 0.95f), new Color(0.3f, 0.26f, 0.3f) };
+            Color[] manes = { new Color(1f, 0.6f, 0.7f), new Color(0.98f, 0.9f, 0.7f), new Color(0.4f, 0.4f, 0.5f), new Color(0.75f, 0.55f, 0.95f), new Color(1f, 0.85f, 0.4f), new Color(0.95f, 0.95f, 0.95f) };
+            Vector3[] herd = { new Vector3(100f, 0f, 38f), new Vector3(106f, 0f, 22f), new Vector3(104f, 0f, 84f), new Vector3(84f, 0f, -100f), new Vector3(-76f, 0f, -18f), new Vector3(-44f, 0f, 92f), new Vector3(-95f, 0f, 26f), new Vector3(46f, 0f, 104f) };
+            for (int i = 0; i < herd.Length; i++)
+            {
+                if (!FindSpot(herd[i], 1.2f, out Vector3 hp)) continue;
+                var h = YarnHorse.Build(kit, hp + Vector3.up * 0.02f, coats[i % coats.Length], manes[i % manes.Length], i * 67f);
+                h.Radius = 9f;
+            }
         }
     }
 }

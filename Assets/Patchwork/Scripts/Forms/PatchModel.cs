@@ -27,6 +27,8 @@ namespace Patchwork
 
         // Remembered between scenes so the face you picked sticks.
         public static Face CurrentFace = Face.Happy;
+        // Sitting on a yarn horse: he stays in his idle pose while it does the running.
+        public static bool Riding;
         // Dance easter egg: plays the Celebrate animation on loop.
         [System.NonSerialized] public bool Dancing;
 
@@ -265,6 +267,7 @@ namespace Patchwork
             float speed = new Vector3(v.x, 0f, v.z).magnitude;
             float maxSpeed = motor.Params != null ? motor.Params.MoveSpeed : 6.5f;
             bool grounded = motor.Grounded;
+            if (Riding) { speed = 0f; grounded = true; }
             bool levelDone = PatchworkGame.Instance != null && PatchworkGame.Instance.Mode == UIMode.Complete;
 
             if (oneShotLeft > 0f) oneShotLeft -= dt;
