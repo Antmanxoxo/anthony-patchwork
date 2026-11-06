@@ -596,7 +596,7 @@ namespace Patchwork
                 float deg = ColumnAngle(i);
                 if (Mathf.Abs(Signed(deg)) < WindowHalfAngle) continue;
                 float r = RadiusAt(9.5f);
-                kit.Deco(PrimitiveType.Cube, Dir(deg) * (r + 0.9f) + Vector3.up * 9.5f, new Vector3(r * 0.25f, 0.12f, 1.4f), cap, new Vector3(0f, deg, 0f));
+                kit.Deco(PrimitiveType.Cube, Dir(deg) * (r + 0.9f) + Vector3.up * 9.5f, new Vector3(r * 0.25f, 0.12f, 1.4f), cap, new Vector3(0f, deg, 0f)).name = "OuterLedge";
             }
         }
 

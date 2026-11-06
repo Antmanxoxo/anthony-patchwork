@@ -35,8 +35,12 @@ namespace Patchwork
             }
         }
 
+        // The originals hidden behind merged meshes (the editor's level check still looks at them).
+        public static readonly List<MeshRenderer> Hidden = new List<MeshRenderer>();
+
         public static void Run(Transform root)
         {
+            Hidden.Clear();
             if (root == null) return;
             var watch = System.Diagnostics.Stopwatch.StartNew();
             matIds.Clear();
@@ -144,7 +148,7 @@ namespace Patchwork
                     Cx = Mathf.FloorToInt(c.x / Cell), Cz = Mathf.FloorToInt(c.z / Cell),
                     Shadows = r.shadowCastingMode, Receive = r.receiveShadows
                 };
-                if (groups[key].Count >= 3) r.enabled = false;
+                if (groups[key].Count >= 3) { r.enabled = false; Hidden.Add(r); }
             }
             Debug.Log("Patchwork: merged " + merged + " still decorations into " + made + " meshes (" + live.Count + " moving or changing things kept separate) in " + watch.ElapsedMilliseconds + " ms.");
         }

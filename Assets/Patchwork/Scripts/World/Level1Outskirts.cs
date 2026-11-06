@@ -490,6 +490,11 @@ namespace Patchwork
                 kit.Deco(PrimitiveType.Cube, new Vector3(0.12f, 1.14f, 0.28f), new Vector3(0.12f, 0.02f, 0.02f), thread, new Vector3(0f, 0f, s * 40f), g);
             // A patch on its tummy.
             kit.Deco(PrimitiveType.Cube, new Vector3(0.05f, 0.5f, 0.32f), new Vector3(0.28f, 0.26f, 0.03f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Gingham, new Color(0.99f, 0.96f, 0.9f), new Color(0.6f, 0.35f, 0.65f)), new Vector3(-10f, 0f, 8f), g);
+            // Solid, so Patch bumps into him instead of walking through.
+            var col = g.gameObject.AddComponent<CapsuleCollider>();
+            col.center = new Vector3(0f, 0.75f, 0f);
+            col.radius = 0.42f;
+            col.height = 1.5f;
         }
 
         // A jack-in-the-box that sprang open long ago: the clown droops sadly on his spring.

@@ -33,8 +33,12 @@ namespace Patchwork
             {
                 if (!r.enabled || !r.gameObject.activeInHierarchy) continue;
                 if (player != null && r.transform.IsChildOf(player)) continue;
+                if (r.transform.parent != null && r.transform.parent.name == "CombinedStatic") continue;
                 renderers.Add(r);
             }
+            // The originals that were merged together: check them as they really are.
+            foreach (var r in StaticCombine.Hidden)
+                if (r != null && r.gameObject.activeInHierarchy) renderers.Add(r);
 
             Stats(sb, renderers);
             sb.AppendLine("== Bubbles settled: moved " + ScoreBubbles.Moved + ", dropped " + ScoreBubbles.Dropped);
@@ -124,6 +128,9 @@ namespace Patchwork
                 if (b.size.y < 0.9f || b.size.x < 0.5f || b.size.z < 0.5f) continue;
                 if (r.shadowCastingMode == UnityEngine.Rendering.ShadowCastingMode.Off && IsSeeThrough(r)) continue;
                 if (r.GetComponentInParent<Snarling>() != null || r.GetComponentInParent<SnarlKnot>() != null) continue;   // they push you away
+                if (r.GetComponentInParent<FrayCreature>() != null || r.GetComponentInParent<TangleHopper>() != null || r.GetComponentInParent<StaticSpitter>() != null
+                    || r.GetComponentInParent<Grumblewool>() != null || r.GetComponentInParent<PathMover>() != null) continue;   // creatures and floating toys
+                if (r.name == "Cylinder" && r.transform.parent != null && r.transform.parent.name == "KiteString") continue;
                 RaycastHit hit;
                 if (!Physics.Raycast(new Vector3(b.center.x, b.min.y + 0.35f, b.center.z), Vector3.down, out hit, 1.2f, ~0, QueryTriggerInteraction.Ignore))
                     continue;                                        // not standing on anything
@@ -286,7 +293,8 @@ namespace Patchwork
             if (!t.gameObject.activeInHierarchy || depth > 8) return;
             if (t.GetComponentInParent<PatchworkPlayer>() != null || t.name == "CombinedStatic") return;
             bool group = t.childCount > 0 && t.GetComponent<MeshFilter>() == null;
-            if (group && depth >= 2)
+            if (Moving(t)) return;   // creatures, bubbles and pickups move about or float on purpose
+            if (group && depth >= 1)
             {
                 bool any = false;
                 var b = new Bounds();
@@ -304,6 +312,14 @@ namespace Patchwork
                 }
             }
             for (int i = 0; i < t.childCount; i++) Gather(t.GetChild(i), props, depth + 1);
+        }
+
+        static bool Moving(Transform t)
+        {
+            return t.GetComponent<ScoreBubble>() != null || t.GetComponent<PrizeBubble>() != null || t.GetComponent<ThreadSpool>() != null
+                || t.GetComponent<SnarlKnot>() != null || t.GetComponent<Snarling>() != null || t.GetComponent<Collectible>() != null
+                || t.GetComponent<BandPiece>() != null || t.GetComponent<Rigidbody>() != null
+                || t.name == "ScoreBubbles" || t.name == "Creatures" || t.name == "Thread" || t.name == "CombinedStatic";
         }
 
         static Bounds WorldBounds(MeshFilter mf)

@@ -15,6 +15,7 @@ namespace Patchwork
         public GameObject Exterior;
         float idle, angle, active;
         bool on;
+        readonly System.Collections.Generic.List<Renderer> backRoom = new System.Collections.Generic.List<Renderer>();
 
         void Update()
         {
@@ -59,6 +60,19 @@ namespace Patchwork
             Vector3 from = game.CameraRig.transform.position - Centre;
             angle = Mathf.Atan2(from.x, from.z) * Mathf.Rad2Deg;
             if (Exterior != null) Exterior.SetActive(true);
+            // The Button Box room sticks out of the back of the Pod: hide it while we're outside.
+            backRoom.Clear();
+            var root = game.LevelRoot != null ? game.LevelRoot : transform;
+            foreach (var r in root.GetComponentsInChildren<Renderer>())
+            {
+                if (!r.enabled || (Exterior != null && r.transform.IsChildOf(Exterior.transform))) continue;
+                Vector3 c = r.bounds.center;
+                if (c.z < -HubBuilder.RadiusAt(Mathf.Clamp(c.y, 0f, 13.4f)) + 0.1f && Mathf.Abs(c.x) < 3.6f && c.y < 7f && c.z > -16f)
+                {
+                    r.enabled = false;
+                    backRoom.Add(r);
+                }
+            }
             var cam = game.CameraRig;
             cam.ShowcaseBlendSpeed = 0.35f;
             cam.ShowcasePosition = Centre + new Vector3(Mathf.Sin(angle * Mathf.Deg2Rad) * 24f, 7f, Mathf.Cos(angle * Mathf.Deg2Rad) * 24f);
@@ -74,6 +88,8 @@ namespace Patchwork
             cam.ShowcaseBlendSpeed = 3f;
             cam.Showcase = false;
             if (Exterior != null) Exterior.SetActive(false);
+            foreach (var r in backRoom) if (r != null) r.enabled = true;
+            backRoom.Clear();
         }
 
         // ------------------------------------------------------------------ The Pod's outside

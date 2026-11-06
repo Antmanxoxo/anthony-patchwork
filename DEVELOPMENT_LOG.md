@@ -19,6 +19,10 @@
   tiny downward speed. Only sideways movement counts as moving now.
 - Fixed: the Pod tidy-up shoved wall-hugging decorations (fairy lights, bunting) sideways
   and through the wall. It now measures each piece's real shape and leaves those alone.
+- While the camera is outside the Pod, the Button Box room sticking out of the back is hidden.
+- The lost teddy is solid now. The level check is sharper: it looks at the real pieces behind
+  the merged scenery, treats a whole fern or tree as one prop, and ignores creatures, bubbles,
+  pickups, floating toys and kite strings.
 
 ## A readable map, nearby sounds and a cosier Pod
 - The map's names no longer pile up: big regions (the wood, the farm, the orchard, the dell,
