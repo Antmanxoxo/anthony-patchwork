@@ -39,6 +39,7 @@ namespace Patchwork
         {
             if (root == null) return;
             var watch = System.Diagnostics.Stopwatch.StartNew();
+            matIds.Clear();
             var live = new HashSet<Transform>();
             var seen = new HashSet<object>();
 
@@ -86,7 +87,7 @@ namespace Patchwork
                 Vector3 c = r.bounds.center;
                 var key = new Key
                 {
-                    Material = mat.GetInstanceID(), Layer = mf.gameObject.layer,
+                    Material = MatId(mat), Layer = mf.gameObject.layer,
                     Cx = Mathf.FloorToInt(c.x / Cell), Cz = Mathf.FloorToInt(c.z / Cell),
                     Shadows = r.shadowCastingMode, Receive = r.receiveShadows
                 };
@@ -139,13 +140,22 @@ namespace Patchwork
                 Vector3 c = r.bounds.center;
                 var key = new Key
                 {
-                    Material = r.sharedMaterial.GetInstanceID(), Layer = r.gameObject.layer,
+                    Material = MatId(r.sharedMaterial), Layer = r.gameObject.layer,
                     Cx = Mathf.FloorToInt(c.x / Cell), Cz = Mathf.FloorToInt(c.z / Cell),
                     Shadows = r.shadowCastingMode, Receive = r.receiveShadows
                 };
                 if (groups[key].Count >= 3) r.enabled = false;
             }
             Debug.Log("Patchwork: merged " + merged + " still decorations into " + made + " meshes (" + live.Count + " moving or changing things kept separate) in " + watch.ElapsedMilliseconds + " ms.");
+        }
+
+        // A number for each material (Unity's own object ids aren't available in this version).
+        static readonly Dictionary<Material, int> matIds = new Dictionary<Material, int>();
+        static int MatId(Material m)
+        {
+            int id;
+            if (!matIds.TryGetValue(m, out id)) { id = matIds.Count + 1; matIds[m] = id; }
+            return id;
         }
 
         static bool Live(Transform t, Transform root, HashSet<Transform> live, Dictionary<Transform, bool> cache)
