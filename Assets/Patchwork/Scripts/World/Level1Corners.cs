@@ -55,10 +55,20 @@ namespace Patchwork
             var rng = new System.Random(61);
             Color[] petal = { LevelKit.Palette.Rose, LevelKit.Palette.Butter, LevelKit.Palette.Sky, LevelKit.Palette.Lavender, new Color(1f, 0.6f, 0.35f), new Color(0.6f, 0.85f, 0.5f) };
             kit.Deco(PrimitiveType.Cylinder, c + Vector3.up * 0.014f, new Vector3(19f, 0.01f, 17f), PatchworkAssets.Grass(new Color(0.6f, 0.8f, 0.46f)));
+            var placed = new System.Collections.Generic.List<Vector3>();
             for (int i = 0; i < 26; i++)
             {
-                float a = (float)rng.NextDouble() * Mathf.PI * 2f, r = 1.5f + (float)rng.NextDouble() * 8f;
-                Vector3 p = c + new Vector3(Mathf.Cos(a) * r, 0f, Mathf.Sin(a) * r * 0.85f);
+                // Pick a spot that keeps clear of the flowers already planted (so heads don't overlap).
+                Vector3 p = c;
+                for (int tries = 0; tries < 25; tries++)
+                {
+                    float a = (float)rng.NextDouble() * Mathf.PI * 2f, r = 1.5f + (float)rng.NextDouble() * 8f;
+                    p = c + new Vector3(Mathf.Cos(a) * r, 0f, Mathf.Sin(a) * r * 0.85f);
+                    bool clear = true;
+                    foreach (var q in placed) if ((q - p).sqrMagnitude < 1.6f * 1.6f) { clear = false; break; }
+                    if (clear) break;
+                }
+                placed.Add(p);
                 float h = 1.4f + (float)rng.NextDouble() * 2.8f;
                 kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * h * 0.5f, new Vector3(0.08f, h * 0.5f, 0.08f), PatchworkAssets.Felt(new Color(0.45f, 0.68f, 0.38f)));
                 kit.Deco(PrimitiveType.Sphere, p + new Vector3(0.12f, h * 0.45f, 0f), new Vector3(0.36f, 0.06f, 0.16f), PatchworkAssets.Felt(new Color(0.45f, 0.7f, 0.4f)), new Vector3(0f, 0f, -25f));

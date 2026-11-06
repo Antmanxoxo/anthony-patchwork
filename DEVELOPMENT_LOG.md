@@ -1,5 +1,18 @@
 # Development Log
 
+## Clearing up clipping in Toybox Town
+- After Level 1 is built, a tidy-up pass keeps props out of each other: where two trees grow
+  right into each other the smaller one goes, and small props (mushrooms, pots, signs,
+  lanterns, rocks, yarn balls) are moved just clear of tree trunks, of bigger things like the
+  Big Top tent and the wood gate, and of each other. Only plain decorations are touched, never
+  more than 2 m, and things stacked on purpose are left alone.
+- The pinwheel flowers on Pinwheel Hill keep their distance so their heads don't overlap.
+- The yarn bird at the spinning wheel sits on the end of the bench instead of inside the
+  wheel, and the quill on the ink cloud no longer pokes into the heartstring.
+- A yarn ball's loose strand is part of the ball, so it stays attached if the ball moves.
+- The level check now judges trees by their trunk, and skips critters, birds and things that
+  float or sail about.
+
 ## Pod screensaver, quieter hoppers and a tidier Pod
 - The Tangle Hoppers' boing was the hopping heard all over the level. It now fades with
   distance and is silent more than 16 m away (their steam and pops fade the same way).

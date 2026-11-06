@@ -242,6 +242,16 @@ namespace Patchwork
                         float oz = Mathf.Min(bi.max.z, bj.max.z) - Mathf.Max(bi.min.z, bj.min.z);
                         float oy = Mathf.Min(bi.max.y, bj.max.y) - Mathf.Max(bi.min.y, bj.min.y);
                         if (ox <= 0.15f || oz <= 0.15f || oy <= 0.3f) continue;
+                        // Trees: only the trunk counts (ferns and toys under the branches are fine).
+                        bool treeI = Declutter.IsTree(ti.name), treeJ = Declutter.IsTree(tj.name);
+                        if (treeI != treeJ)
+                        {
+                            Transform tree = treeI ? ti : tj;
+                            Bounds tb = treeI ? bi : bj, ob = treeI ? bj : bi;
+                            float trunk = Mathf.Max(tb.size.x, tb.size.z) * (tree.name == "GnarledTree" ? 0.3f : 0.14f);
+                            var d = new Vector2(ob.center.x - tree.position.x, ob.center.z - tree.position.z).magnitude;
+                            if (d > trunk + Mathf.Max(ob.size.x, ob.size.z) * 0.4f) continue;
+                        }
                         float smaller = Mathf.Min(bi.size.x * bi.size.z, bj.size.x * bj.size.z);
                         if (ox * oz < smaller * 0.3f) continue;
                         // Something sitting on top of something else (a lamp on a table) is fine.
@@ -319,6 +329,8 @@ namespace Patchwork
             return t.GetComponent<ScoreBubble>() != null || t.GetComponent<PrizeBubble>() != null || t.GetComponent<ThreadSpool>() != null
                 || t.GetComponent<SnarlKnot>() != null || t.GetComponent<Snarling>() != null || t.GetComponent<Collectible>() != null
                 || t.GetComponent<BandPiece>() != null || t.GetComponent<Rigidbody>() != null
+                || t.GetComponent<PathMover>() != null || t.GetComponent<YarnBird>() != null || t.GetComponent<ToyCritter>() != null
+                || t.name.StartsWith("Critter_") || t.name == "BoatOrbit" || t.name == "Balloon" || t.name == "Cloud"
                 || t.name == "ScoreBubbles" || t.name == "Creatures" || t.name == "Thread" || t.name == "CombinedStatic";
         }
 

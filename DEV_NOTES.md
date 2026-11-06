@@ -273,6 +273,11 @@ Stuff I need to remember about how Patchwork is put together.
   `PodIdleCam` (on the level root) waits 40 s with no input, shows `PodExterior` (inactive
   otherwise) and orbits the camera with `PlayerCamera.Showcase`. Bulb light: range 10.5,
   shadows on Balanced and Best.
+- `Declutter.Run(root)` runs in Level1Builder just before `ScoreBubbles.Settle`. It only looks at
+  direct children of the level root, only touches "pure" decorations (no scripts but Spinner /
+  Rocker / Blinker), removes the smaller of two trees closer than 0.55 x their crown radii, and
+  pushes small props (< 4 m) out of trunks, solid 4-9 m things and each other (max 2 m). Tree
+  names and filler names are listed at the top of the file. Add new tree types there.
 - Sounds from things out in the level that the player didn't cause go through
   `Sfx.PlayNear(id, pos, volume, range)` so they fade with distance (plain `Sfx.Play` is
   heard at full volume anywhere).

@@ -147,6 +147,7 @@ namespace Patchwork
             Outskirts(kit);
             ScoreTrails(kit);
             IntroProps(kit);
+            Declutter.Run(kit.Root);   // props built by different parts of the level, kept out of each other
             ScoreBubbles.Settle(kit);
             GroundCover(kit);
             Katamari(kit);
@@ -1025,7 +1026,7 @@ namespace Patchwork
             kit.YarnBird(new Vector3(0f, 30f, 27f), c[0], true, 9f);
             kit.YarnBird(new Vector3(-44f, 6f, 10f), c[1], true, 7f);
             kit.YarnBird(new Vector3(-56f, 4.1f, -6f), c[2], false);
-            kit.YarnBird(new Vector3(-67f, 7.9f, 35.5f), c[3], false);
+            kit.YarnBird(new Vector3(-69.3f, 5.22f, 35.5f), c[3], false);   // on the end of the spinning wheel's bench
             kit.YarnBird(new Vector3(41f, 5.2f, 18f), c[4], false);
             kit.YarnBird(new Vector3(52f, 14f, 0f), c[0], true, 10f);
             kit.YarnBird(new Vector3(0f, 10.6f, -46f), c[1], false);
@@ -1181,7 +1182,7 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.47f, 0f), new Vector3(0.24f, 0.03f, 0.24f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f), default(Vector3), well);
             kit.Deco(PrimitiveType.Capsule, feet + new Vector3(1.02f, 0.04f, 0.42f), new Vector3(0.22f, 0.32f, 0.04f), ink, new Vector3(90f, 115f, 0f));
             // A quill stuck in the far edge.
-            var quill = kit.Group("Quill", feet + new Vector3(-0.95f, 0f, -0.6f));
+            var quill = kit.Group("Quill", feet + new Vector3(0.25f, 0f, -1.05f));
             quill.rotation = Quaternion.Euler(14f, 30f, -12f);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.75f, 0f), new Vector3(0.04f, 0.75f, 0.04f), PatchworkAssets.Plain(new Color(0.95f, 0.92f, 0.85f), 0.6f), default(Vector3), quill);
             kit.Deco(PrimitiveType.Capsule, new Vector3(0.08f, 1.15f, 0f), new Vector3(0.22f, 0.5f, 0.03f), PatchworkAssets.Felt(new Color(0.98f, 0.75f, 0.82f)), new Vector3(0f, 0f, -6f), quill);

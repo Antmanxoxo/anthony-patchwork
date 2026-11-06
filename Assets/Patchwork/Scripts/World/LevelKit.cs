@@ -873,6 +873,7 @@ namespace Patchwork
                 Vector3 d = next - prev;
                 var seg = Deco(PrimitiveType.Cylinder, (prev + next) * 0.5f, new Vector3(0.12f, d.magnitude * 0.5f, 0.12f), strand);
                 seg.rotation = Quaternion.FromToRotation(Vector3.up, d.normalized);
+                seg.SetParent(g, true);   // part of the ball, so it moves with it
                 prev = next;
             }
         }
