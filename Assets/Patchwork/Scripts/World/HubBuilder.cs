@@ -73,6 +73,7 @@ namespace Patchwork
             Furnishings(kit);
             Decorations(kit);
             MeritWall(kit);
+            CosyDetails(kit);
             PodDecor.ApplyAll();
             Outside(kit);
             StorybookSky(kit);
@@ -217,6 +218,137 @@ namespace Patchwork
                     b.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 }
             });
+        }
+
+        // ---------------------------------------------------------------- Cosy little things
+
+        // Felt bunting round the walls, stitched stars and a moon on the ceiling, gingham curtains
+        // tied back either side of the window, framed pictures, a cork board of notes, and a
+        // reading nook with a stack of books and a cup of tea.
+        static void CosyDetails(LevelKit kit)
+        {
+            Color[] flagCols = { new Color(0.9f, 0.3f, 0.35f), new Color(1f, 0.85f, 0.35f), new Color(0.45f, 0.7f, 0.95f), new Color(0.55f, 0.82f, 0.5f), new Color(0.95f, 0.6f, 0.78f) };
+            var cord = PatchworkAssets.Yarn(new Color(0.96f, 0.92f, 0.84f));
+            // Bunting: swags between hooks, skipping the window and the doorway.
+            const float by = 7.4f;
+            float br = RadiusAt(by) - 0.35f;
+            for (float deg = 46f; deg < 320f; deg += 22f)
+            {
+                float d0 = deg, d1 = deg + 22f;
+                if (Mathf.Abs(Mathf.DeltaAngle(d1, 0f)) < 44f) continue;
+                Vector3 a = Dir(d0) * br + Vector3.up * by, b = Dir(d1) * br + Vector3.up * by;
+                Vector3 mid = (a + b) * 0.5f + Vector3.down * 0.6f;
+                kit.Rope(a, mid, cord, 0.025f);
+                kit.Rope(mid, b, cord, 0.025f);
+                kit.Deco(PrimitiveType.Sphere, a, Vector3.one * 0.12f, PatchworkAssets.Plain(new Color(0.95f, 0.75f, 0.35f), 0.8f));
+                for (int k = 1; k < 6; k++)
+                {
+                    float u = k / 6f;
+                    Vector3 p = u < 0.5f ? Vector3.Lerp(a, mid, u * 2f) : Vector3.Lerp(mid, b, (u - 0.5f) * 2f);
+                    var flag = kit.Group("BuntingFlag", p);
+                    flag.rotation = Quaternion.LookRotation(-Dir((d0 + d1) * 0.5f), Vector3.up);
+                    // A little felt triangle (a diamond half-tucked behind its neighbour).
+                    kit.Deco(PrimitiveType.Cube, new Vector3(0f, -0.22f, 0f), new Vector3(0.32f, 0.32f, 0.02f), PatchworkAssets.Felt(flagCols[(k + (int)deg) % flagCols.Length]), new Vector3(0f, 0f, 45f), flag);
+                }
+            }
+            // Stitched stars and a crescent moon on the ceiling.
+            var starGlow = PatchworkAssets.Glow(new Color(1f, 0.9f, 0.55f), 0.9f);
+            for (int i = 0; i < 22; i++)
+            {
+                float deg = i * 137.5f;
+                float y = 9.6f + (i % 5) * 0.7f;
+                Vector3 n = Dir(deg);
+                Vector3 p = n * (RadiusAt(y) - 0.25f) + Vector3.up * y;
+                var st = kit.Group("CeilingStar", p);
+                st.rotation = Quaternion.LookRotation(-n + Vector3.down * 0.6f, Vector3.up);
+                float s = 0.25f + (i % 3) * 0.1f;
+                for (int k = 0; k < 2; k++)
+                    kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(s, s, 0.02f), starGlow, new Vector3(0f, 0f, k * 45f), st);
+            }
+            Vector3 moonAt = Dir(200f) * (RadiusAt(11f) - 0.3f) + Vector3.up * 11f;
+            var moon = kit.Group("CeilingMoon", moonAt);
+            moon.rotation = Quaternion.LookRotation(-Dir(200f) + Vector3.down * 0.5f, Vector3.up);
+            kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1.2f, 0.02f, 1.2f), PatchworkAssets.Glow(new Color(1f, 0.95f, 0.75f), 0.8f), new Vector3(90f, 0f, 0f), moon);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0.35f, 0.2f, -0.02f), new Vector3(1.05f, 0.025f, 1.05f), PatchworkAssets.Felt(new Color(0.24f, 0.26f, 0.5f)), new Vector3(90f, 0f, 0f), moon);
+
+            // Gingham curtains either side of the window, tied back with ribbon.
+            var curtain = PatchworkAssets.Print(PatchworkAssets.PrintKind.Gingham, new Color(0.99f, 0.96f, 0.9f), new Color(0.9f, 0.4f, 0.5f));
+            for (int s = -1; s <= 1; s += 2)
+            {
+                float deg = s * 43f;
+                Vector3 n = Dir(deg);
+                for (int k = 0; k < 4; k++)
+                {
+                    float y = 7.2f - k * 1.3f;
+                    float pinch = k == 2 ? 0.55f : 1f;
+                    Vector3 p = n * (RadiusAt(y) - 0.5f) + Vector3.up * y;
+                    var c = kit.Deco(PrimitiveType.Capsule, p, new Vector3(1.1f * pinch, 0.85f, 0.35f), curtain);
+                    c.rotation = Quaternion.LookRotation(-n, Vector3.up);
+                }
+                kit.Deco(PrimitiveType.Sphere, n * (RadiusAt(4.6f) - 0.45f) + Vector3.up * 4.6f, new Vector3(0.75f, 0.2f, 0.5f), PatchworkAssets.Felt(new Color(0.9f, 0.3f, 0.35f)));
+                kit.Deco(PrimitiveType.Cylinder, n * (RadiusAt(7.9f) - 0.4f) + Vector3.up * 7.9f, new Vector3(0.1f, 1.4f, 0.1f), PatchworkAssets.Wood(new Color(0.7f, 0.5f, 0.35f)), new Vector3(0f, deg, 90f));
+            }
+
+            // Framed pictures: little felt scenes on the walls.
+            float[] frames = { 58f, 74f, -52f, -62f };
+            float[] fy = { 4.4f, 3.4f, 4.2f, 2.9f };
+            PatchworkAssets.PrintKind[] scenes = { PatchworkAssets.PrintKind.Stars, PatchworkAssets.PrintKind.Polka, PatchworkAssets.PrintKind.Zigzag, PatchworkAssets.PrintKind.Gingham };
+            for (int i = 0; i < frames.Length; i++)
+            {
+                Vector3 n = Dir(frames[i]);
+                var fr = kit.Group("PictureFrame", n * (RadiusAt(fy[i]) - 0.15f) + Vector3.up * fy[i]);
+                fr.rotation = Quaternion.LookRotation(-n, Vector3.up) * Quaternion.Euler(0f, 0f, (i % 2 == 0 ? 3f : -4f));
+                float w = 0.9f + (i % 2) * 0.3f, h = 0.75f + (i % 3) * 0.15f;
+                kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(w + 0.2f, h + 0.2f, 0.06f), PatchworkAssets.Wood(i % 2 == 0 ? new Color(0.85f, 0.65f, 0.35f) : new Color(0.55f, 0.38f, 0.28f)), default(Vector3), fr);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0f, 0.035f), new Vector3(w, h, 0.02f), PatchworkAssets.Print(scenes[i], flagCols[i], new Color(0.99f, 0.96f, 0.9f)), default(Vector3), fr);
+                // A felt hill and sun in each picture.
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -h * 0.45f, 0.05f), new Vector3(w * 0.9f, h * 0.45f, 0.02f), PatchworkAssets.Felt(new Color(0.5f, 0.75f, 0.42f)), default(Vector3), fr);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(w * 0.25f, h * 0.2f, 0.05f), Vector3.one * 0.16f, PatchworkAssets.Felt(new Color(1f, 0.85f, 0.35f)), default(Vector3), fr);
+            }
+
+            // A cork board of pinned notes and doodles.
+            {
+                float deg = 66f, y = 2.2f;
+                Vector3 n = Dir(deg);
+                var cb = kit.Group("CorkBoard", n * (RadiusAt(y) - 0.15f) + Vector3.up * y);
+                cb.rotation = Quaternion.LookRotation(-n, Vector3.up);
+                kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(1.5f, 1f, 0.05f), PatchworkAssets.Felt(new Color(0.78f, 0.6f, 0.42f)), default(Vector3), cb);
+                Color[] notes = { new Color(1f, 0.95f, 0.6f), new Color(0.7f, 0.9f, 1f), new Color(1f, 0.75f, 0.8f), Color.white };
+                for (int k = 0; k < 5; k++)
+                {
+                    Vector3 at = new Vector3(-0.5f + (k % 3) * 0.48f, (k < 3 ? 0.2f : -0.25f), 0.035f);
+                    kit.Deco(PrimitiveType.Cube, at, new Vector3(0.32f, 0.3f, 0.01f), PatchworkAssets.Felt(notes[k % notes.Length]), new Vector3(0f, 0f, (k - 2) * 7f), cb);
+                    kit.Deco(PrimitiveType.Sphere, at + new Vector3(0f, 0.12f, 0.02f), Vector3.one * 0.06f, PatchworkAssets.Plain(flagCols[k], 0.8f), default(Vector3), cb);
+                    kit.Deco(PrimitiveType.Cube, at + new Vector3(0f, -0.03f, 0.008f), new Vector3(0.2f, 0.015f, 0.005f), PatchworkAssets.Felt(new Color(0.35f, 0.3f, 0.35f)), default(Vector3), cb);
+                }
+                kit.Rope(cb.position + cb.rotation * new Vector3(-0.5f, 0.2f, 0.05f), cb.position + cb.rotation * new Vector3(0.46f, -0.25f, 0.05f), PatchworkAssets.Yarn(new Color(0.9f, 0.3f, 0.35f)), 0.012f);
+            }
+
+            // A reading nook: a little round table, a stack of books, a cup of tea, a lamp.
+            {
+                float deg = 52f;
+                Vector3 at = Dir(deg) * 7.2f;
+                var t = kit.Group("ReadingNook", at);
+                t.rotation = Quaternion.Euler(0f, deg + 180f, 0f);
+                var wood = PatchworkAssets.Wood(new Color(0.75f, 0.55f, 0.38f));
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.85f, 0f), new Vector3(1.1f, 0.05f, 1.1f), wood, default(Vector3), t);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.42f, 0f), new Vector3(0.14f, 0.42f, 0.14f), wood, default(Vector3), t);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.03f, 0f), new Vector3(0.6f, 0.03f, 0.6f), wood, default(Vector3), t);
+                Color[] covers = { new Color(0.9f, 0.3f, 0.35f), new Color(0.35f, 0.55f, 0.9f), new Color(0.55f, 0.8f, 0.45f), new Color(1f, 0.8f, 0.35f) };
+                for (int k = 0; k < 4; k++)
+                {
+                    kit.Deco(PrimitiveType.Cube, new Vector3(-0.18f, 0.93f + k * 0.09f, 0.05f), new Vector3(0.5f - k * 0.04f, 0.08f, 0.36f), PatchworkAssets.Felt(covers[k]), new Vector3(0f, k * 11f - 10f, 0f), t);
+                    kit.Deco(PrimitiveType.Cube, new Vector3(-0.18f, 0.93f + k * 0.09f, 0.05f), new Vector3(0.46f - k * 0.04f, 0.065f, 0.37f), PatchworkAssets.Felt(new Color(0.98f, 0.95f, 0.88f)), new Vector3(0f, k * 11f - 10f, 0f), t);
+                }
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0.3f, 0.96f, -0.1f), new Vector3(0.18f, 0.09f, 0.18f), PatchworkAssets.Plain(new Color(0.95f, 0.95f, 1f), 0.85f), default(Vector3), t);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0.3f, 1.04f, -0.1f), new Vector3(0.15f, 0.005f, 0.15f), PatchworkAssets.Plain(new Color(0.6f, 0.38f, 0.22f), 0.9f), default(Vector3), t);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0.3f, 0.88f, -0.1f), new Vector3(0.28f, 0.01f, 0.28f), PatchworkAssets.Plain(new Color(0.95f, 0.95f, 1f), 0.85f), default(Vector3), t);
+                // A tiny lamp with a fringed felt shade, glowing.
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0.15f, 1.15f, 0.3f), new Vector3(0.04f, 0.25f, 0.04f), PatchworkAssets.Plain(new Color(0.95f, 0.75f, 0.35f), 0.8f), default(Vector3), t);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0.15f, 1.48f, 0.3f), new Vector3(0.36f, 0.12f, 0.36f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Polka, new Color(1f, 0.75f, 0.82f), new Color(0.99f, 0.96f, 0.9f)), default(Vector3), t);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0.15f, 1.38f, 0.3f), Vector3.one * 0.14f, PatchworkAssets.Glow(new Color(1f, 0.85f, 0.6f), 2f), default(Vector3), t);
+                TownKit.Solid(kit, at + Vector3.up * 0.45f, new Vector3(1f, 0.9f, 1f), 0f);
+            }
         }
 
         // ---------------------------------------------------------------- Helpers
@@ -806,7 +938,32 @@ namespace Patchwork
         {
             // A field of tiny stars streaming slowly past, so the pod feels like it's flying.
             var field = kit.Group("Starfield", Vector3.zero);
-            field.gameObject.AddComponent<Starfield>().Build(kit, 260);
+            field.gameObject.AddComponent<Starfield>().Build(kit, 700);
+            // Felt stars and little planets on every side of the Pod, not just out front.
+            var rng = new System.Random(7);
+            Color[] starCols = { new Color(1f, 0.9f, 0.4f), new Color(0.55f, 0.85f, 1f), new Color(1f, 0.55f, 0.75f), new Color(0.7f, 1f, 0.6f), new Color(1f, 0.7f, 0.4f) };
+            for (int i = 0; i < 26; i++)
+            {
+                float y = (float)(rng.NextDouble() * 2.0 - 1.0) * 0.85f;
+                float a = (float)(rng.NextDouble() * Mathf.PI * 2.0);
+                float r = Mathf.Sqrt(1f - y * y);
+                Vector3 dir = new Vector3(Mathf.Cos(a) * r, y, Mathf.Sin(a) * r);
+                if (dir.z > 0.6f && Mathf.Abs(dir.y) < 0.4f) continue;   // the front already has plenty
+                var st = Star(kit, dir * (24f + (float)rng.NextDouble() * 22f) + Vector3.up * 5f, 0.9f + (float)rng.NextDouble() * 1.4f, starCols[i % starCols.Length]);
+                st.rotation = Quaternion.LookRotation(-dir, Vector3.up);
+            }
+            Color[] planetA = { new Color(0.55f, 0.85f, 0.6f), new Color(0.75f, 0.55f, 0.95f), new Color(0.98f, 0.75f, 0.35f), new Color(0.4f, 0.7f, 0.95f) };
+            Color[] planetB = { new Color(0.99f, 0.95f, 0.85f), new Color(1f, 0.85f, 0.4f), new Color(0.9f, 0.3f, 0.35f), new Color(0.99f, 0.95f, 0.85f) };
+            Vector3[] planets = { new Vector3(-34f, 22f, -28f), new Vector3(30f, -16f, -34f), new Vector3(-6f, 40f, 4f), new Vector3(38f, 10f, -6f) };
+            PatchworkAssets.PrintKind[] kinds = { PatchworkAssets.PrintKind.Gingham, PatchworkAssets.PrintKind.Stars, PatchworkAssets.PrintKind.Stripes, PatchworkAssets.PrintKind.Polka };
+            for (int i = 0; i < planets.Length; i++)
+            {
+                var pg = kit.Group("FarPlanet", planets[i]);
+                kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * (5f + i * 1.5f), PatchworkAssets.Print(kinds[i], planetA[i], planetB[i]), new Vector3(i * 20f, 0f, i * 15f), pg);
+                if (i % 2 == 0) kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(11f + i * 2f, 0.05f, 11f + i * 2f), PatchworkAssets.Felt(planetB[(i + 1) % planetB.Length]), new Vector3(20f, 0f, -15f), pg);
+                var spin = pg.gameObject.AddComponent<Spinner>();
+                spin.Speed = 3f + i;
+            }
 
             // A trail of felt stars sweeping down from the top left, red to yellow.
             for (int i = 0; i < 9; i++)

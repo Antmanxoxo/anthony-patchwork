@@ -254,6 +254,8 @@ namespace Patchwork
             RenderSettings.fogEndDistance = Level.FogEnd;
             // The scenes still point at Unity's default blue sky; it doesn't match the pastel rooms.
             RenderSettings.skybox = null;
+            // The Pod's chosen light tints the room, so apply it now the room's light is set.
+            if (Level.IsHub) PodDecor.CaptureRoomLight();
             DynamicGI.UpdateEnvironment();
             AddReflectionProbe();
         }
@@ -419,9 +421,8 @@ namespace Patchwork
 
             if (Dance.Update(udt) && Mode == UIMode.Dance) Haptics.Pulse(0.15f, 0.05f, 0.08f);
             Player.Visuals.DanceBeat = Dance.Beat;
-            // Background ambience for the level (muffled with everything else while paused).
-            // (The Pod is quiet: no ambience loop there.)
-            if (currentLevel != LevelId.Hub) Sfx.RequestLoop(LoopId.Meadow);
+            // The level's background sounds (breeze, water, birds) now come from spots in the
+            // world (AmbientEmitters), so you only hear them when you're near.
             Sfx.TickLoops(udt);
             MusicPlayer.SetForm(Player.Forms.Current);
             Haptics.Tick(udt);

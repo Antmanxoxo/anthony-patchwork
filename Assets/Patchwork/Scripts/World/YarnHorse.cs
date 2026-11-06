@@ -55,7 +55,7 @@ namespace Patchwork
             p.Visuals.RideHeight = BackHeight;
             PatchModel.Riding = true;
             p.Motor.Velocity = new Vector3(0f, 4f, 0f);
-            Sfx.PlayPitched(SfxId.Neigh, 0.5f, Pitch);
+            Sfx.PlayPitched(SfxId.Neigh, 0.28f, Pitch);
             FxBurst.Spawn(FxBurst.Kind.Puff, transform.position + Vector3.up * 0.4f, Color.white);
             Haptics.Pulse(0.2f, 0.3f, 0.12f);
             var game = p.Game;
@@ -86,7 +86,7 @@ namespace Patchwork
             wait = Random.Range(2f, 4f);
             spot.gameObject.SetActive(true);
             if (hop && !p.Motor.ExternalControl) p.Motor.Bounce(6f);
-            Sfx.PlayPitched(SfxId.Neigh, 0.35f, Pitch * 1.08f);
+            Sfx.PlayPitched(SfxId.Neigh, 0.2f, Pitch * 1.08f);
         }
 
         void Update()
@@ -137,7 +137,7 @@ namespace Patchwork
                 if (clop <= 0f)
                 {
                     clop = 1f;
-                    Sfx.PlayPitched(SfxId.Clop, 0.22f, Random.Range(0.92f, 1.08f));
+                    Sfx.PlayPitched(SfxId.Clop, 0.1f, Random.Range(0.92f, 1.08f));
                 }
             }
             Animate(speed, m.Grounded, dt);
@@ -185,8 +185,8 @@ namespace Patchwork
             float d = (game.Player.Motor.Center - me).sqrMagnitude;
             if (d < 9f && nickerCool <= 0f)
             {
-                nickerCool = 12f;
-                Sfx.PlayPitched(SfxId.Neigh, 0.25f, Pitch * 1.15f);
+                nickerCool = 25f;
+                Sfx.PlayPitched(SfxId.Neigh, 0.1f, Pitch * 1.15f);
             }
             Animate(speed, true, dt);
         }

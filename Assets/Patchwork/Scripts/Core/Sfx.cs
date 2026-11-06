@@ -238,7 +238,7 @@ namespace Patchwork
         public static float LoopCutoff { get { return loopCutoff; } }
 
         // Clips for sounds that play from a spot in the world (AmbientEmitter, NPC voices).
-        public enum AmbientClip { Propeller, Flag, Creak, Balloon, Clock, Fountain, Vent, Space, Woods }
+        public enum AmbientClip { Propeller, Flag, Creak, Balloon, Clock, Fountain, Vent, Space, Woods, Meadow }
         static readonly Dictionary<AmbientClip, AudioClip> ambient = new Dictionary<AmbientClip, AudioClip>();
 
         public static AudioClip Ambient(AmbientClip which)
@@ -253,6 +253,7 @@ namespace Patchwork
                 case AmbientClip.Balloon: c = BalloonLoop(); break;
                 case AmbientClip.Clock: c = ClockLoop(); break;
                 case AmbientClip.Space: c = SpaceLoop(); break;
+                case AmbientClip.Meadow: c = MeadowLoop(); break;
                 case AmbientClip.Woods: c = WoodsLoop(); break;
                 case AmbientClip.Fountain: c = bubbleClip != null ? bubbleClip : (bubbleClip = BubbleLoop()); break;
                 default: c = airClip != null ? airClip : (airClip = AirLoop()); break;

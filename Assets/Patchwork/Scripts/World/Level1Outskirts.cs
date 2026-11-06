@@ -48,14 +48,14 @@ namespace Patchwork
             Wildlife(kit);
 
             var P = kit.Info.MapPins;
-            P.Add(new MapPin("Whispering Wood", new Vector3(-80f, 0f, -30f)));
+            P.Add(new MapPin("Whispering Wood", new Vector3(-80f, 0f, -30f), MapPin.Kind.Area));
             P.Add(new MapPin("Moonglow Glade", MoonGladeCenter));
             P.Add(new MapPin("Wishing Willow", WillowSpot));
-            P.Add(new MapPin("Deep Wood", new Vector3(-95f, 0f, -95f)));
-            P.Add(new MapPin("Button Orchard", new Vector3(-6f, 0f, -100f)));
-            P.Add(new MapPin("Patchwork Farm", new Vector3(100f, 0f, 98f)));
-            P.Add(new MapPin("Toadstool Dell", new Vector3(-62f, 0f, 102f)));
-            P.Add(new MapPin("Wildflower Meadow", new Vector3(102f, 0f, 32f)));
+            P.Add(new MapPin("Deep Wood", new Vector3(-95f, 0f, -95f), MapPin.Kind.Area));
+            P.Add(new MapPin("Button Orchard", new Vector3(-6f, 0f, -100f), MapPin.Kind.Area));
+            P.Add(new MapPin("Patchwork Farm", new Vector3(100f, 0f, 98f), MapPin.Kind.Area));
+            P.Add(new MapPin("Toadstool Dell", new Vector3(-62f, 0f, 102f), MapPin.Kind.Area));
+            P.Add(new MapPin("Wildflower Meadow", new Vector3(102f, 0f, 32f), MapPin.Kind.Area));
         }
 
         // ---------------------------------------------------------------- Placement helpers

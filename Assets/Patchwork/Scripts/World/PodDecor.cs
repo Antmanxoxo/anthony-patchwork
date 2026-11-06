@@ -39,7 +39,38 @@ namespace Patchwork
         static Renderer floor, rug, rugBorder, bulb;
         static Light bulbLight;
 
-        public static void ResetStatics() { items.Clear(); floor = rug = rugBorder = bulb = null; bulbLight = null; }
+        public static void ResetStatics() { items.Clear(); floor = rug = rugBorder = bulb = null; bulbLight = null; haveBase = false; }
+
+        // The room's own light (ambient and the sun through the window), remembered once the
+        // Pod's lighting is set up, so the chosen light can tint the whole room, not just the bulb.
+        static bool haveBase;
+        static Color baseSky, baseEquator, baseGround, baseSun;
+        static float baseSunIntensity;
+        static readonly float[] LightBrightness = { 1f, 1f, 0.7f, 1f, 1f };
+
+        public static void CaptureRoomLight()
+        {
+            haveBase = true;
+            baseSky = RenderSettings.ambientSkyColor;
+            baseEquator = RenderSettings.ambientEquatorColor;
+            baseGround = RenderSettings.ambientGroundColor;
+            if (RenderSettings.sun != null) { baseSun = RenderSettings.sun.color; baseSunIntensity = RenderSettings.sun.intensity; }
+            ApplyLight();
+        }
+
+        // Tints the whole room towards a colour (strength 0..1), and dims or brightens it.
+        public static void TintRoom(Color c, float strength, float brightness)
+        {
+            if (!haveBase) return;
+            RenderSettings.ambientSkyColor = Color.Lerp(baseSky, c * 0.55f, strength) * brightness;
+            RenderSettings.ambientEquatorColor = Color.Lerp(baseEquator, c * 0.8f, strength) * brightness;
+            RenderSettings.ambientGroundColor = Color.Lerp(baseGround, c * 0.5f, strength) * brightness;
+            if (RenderSettings.sun != null)
+            {
+                RenderSettings.sun.color = Color.Lerp(baseSun, c, strength * 0.7f);
+                RenderSettings.sun.intensity = baseSunIntensity * Mathf.Lerp(1f, brightness, 0.8f);
+            }
+        }
 
         public static void Register(string key, GameObject go) { items[key] = go; }
         public static void RegisterFloor(Renderer f, Renderer r, Renderer border) { floor = f; rug = r; rugBorder = border; }
@@ -112,6 +143,8 @@ namespace Patchwork
             if (bulbLight == null) return;
             int m = LightMode;
             var disco = bulbLight.GetComponent<DiscoLight>();
+            bulbLight.intensity = 3.4f;
+            bulbLight.range = 22f;
             if (m == LightNames.Length - 1)
             {
                 if (disco == null) disco = bulbLight.gameObject.AddComponent<DiscoLight>();
@@ -121,6 +154,7 @@ namespace Patchwork
             }
             if (disco != null) disco.enabled = false;
             bulbLight.color = LightColors[m];
+            TintRoom(LightColors[m], m == 0 ? 0.25f : 0.55f, LightBrightness[m]);
             if (bulb != null) bulb.sharedMaterial = PatchworkAssets.Glow(Color.Lerp(LightColors[m], Color.white, 0.25f), 2.2f);
         }
 
@@ -152,6 +186,7 @@ namespace Patchwork
             t += Time.deltaTime;
             Color c = Color.HSVToRGB(Mathf.Repeat(t * 0.25f, 1f), 0.55f, 1f);
             if (l != null) l.color = c;
+            PodDecor.TintRoom(c, 0.5f, 1f);
             if (Bulb != null)
             {
                 if (mats == null)

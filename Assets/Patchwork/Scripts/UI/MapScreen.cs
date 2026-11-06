@@ -8,7 +8,7 @@ namespace Patchwork
     // A landmark on a level's map.
     public class MapPin
     {
-        public enum Kind { Place, Band, Shop }
+        public enum Kind { Place, Band, Shop, Area }   // Area: a whole region, named in big letters with no pin
         public string Name;
         public Vector3 Position;
         public Kind Type;
@@ -274,6 +274,108 @@ namespace Patchwork
                     UIKit.Circle(c + new Vector2(sx * o, sy * o), hd, new Color(0.2f, 0.12f, 0.1f, 0.8f * k));
         }
 
+        static bool Overlaps(Rect r, System.Collections.Generic.List<Rect> placed)
+        {
+            foreach (var p in placed) if (r.Overlaps(p)) return true;
+            return false;
+        }
+
+        // Area names first (big stitched letters, long thin places written along their length),
+        // then the pins, then each pin's name tag in the first spot round it that doesn't cover
+        // another tag, an area name or a pin. A tag that can't fit anywhere is left off (the pin
+        // still shows) rather than piling up unreadably.
+        void DrawPins(Rect mapR, LevelInfo level, float k)
+        {
+            var placed = new System.Collections.Generic.List<Rect>();
+            var areaStyle = UIKit.Style(25, true, TextAnchor.MiddleCenter, new Color(1f, 0.97f, 0.9f, 0.92f * k));
+            foreach (var pin in level.MapPins)
+            {
+                if (pin.Type != MapPin.Kind.Area) continue;
+                Vector2 p = ToMap(mapR, pin.Position);
+                string text = pin.Name.ToUpperInvariant();
+                float w = UIKit.TextWidth(text, areaStyle) + 16f;
+                bool tall = pin.Name.Contains("Ravine") || pin.Name.Contains("Canal");
+                Rect box = tall ? new Rect(p.x - 17f, p.y - w * 0.5f, 34f, w) : new Rect(p.x - w * 0.5f, p.y - 17f, w, 34f);
+                if (!tall)
+                {
+                    box.x = Mathf.Clamp(box.x, mapR.x + 4f, mapR.xMax - box.width - 4f);
+                    box.y = Mathf.Clamp(box.y, mapR.y + 4f, mapR.yMax - box.height - 4f);
+                }
+                if (Overlaps(box, placed)) continue;
+                placed.Add(box);
+                Matrix4x4 saved = GUI.matrix;
+                if (tall) GUIUtility.RotateAroundPivot(-90f, box.center);
+                var lr = tall ? new Rect(box.center.x - w * 0.5f, box.center.y - 17f, w, 34f) : box;
+                UIKit.Label(lr, text, areaStyle, true);
+                GUI.matrix = saved;
+            }
+
+            // The pins themselves (and room for their heads).
+            var red = new Color(0.86f, 0.22f, 0.2f, k);
+            foreach (var pin in level.MapPins)
+            {
+                if (pin.Type == MapPin.Kind.Area) continue;
+                Vector2 p = ToMap(mapR, pin.Position);
+                if (pin.Type == MapPin.Kind.Band)
+                {
+                    bool got = !string.IsNullOrEmpty(pin.Id) && GameState.IsCollected(pin.Id);
+                    Button(p, 34f, got ? new Color(1f, 0.8f, 0.25f) : new Color(0.62f, 0.58f, 0.7f), k);
+                    UIKit.IconTransformed(new Rect(p.x - 11f, p.y - 11f, 22f, 22f), starTex, new Color(1f, 1f, 1f, 0.9f * k), 0f, 1f);
+                    placed.Add(new Rect(p.x - 17f, p.y - 17f, 34f, 34f));
+                }
+                else if (pin.Type == MapPin.Kind.Shop)
+                {
+                    Button(p, 26f, new Color(0.35f, 0.6f, 0.95f), k);
+                    placed.Add(new Rect(p.x - 13f, p.y - 13f, 26f, 26f));
+                }
+                else
+                {
+                    Matrix4x4 saved = GUI.matrix;
+                    GUIUtility.RotateAroundPivot(-30f, p);
+                    UIKit.Fill(new Rect(p.x - 1.5f, p.y - 2f, 3f, 16f), new Color(0.75f, 0.76f, 0.8f, k), 1.5f);
+                    GUI.matrix = saved;
+                    Vector2 head = p + new Vector2(-7f, -11f);
+                    UIKit.Circle(head + new Vector2(1.5f, 2f), 17f, new Color(0f, 0f, 0f, 0.3f * k));
+                    UIKit.Circle(head, 17f, red);
+                    UIKit.Circle(head + new Vector2(-3f, -3f), 5f, new Color(1f, 1f, 1f, 0.75f * k));
+                    placed.Add(new Rect(head.x - 9f, head.y - 9f, 18f, 24f));
+                }
+            }
+
+            // Name tags: band pieces first (they matter most), then shops, then places.
+            var labelStyle = UIKit.Style(17, true, TextAnchor.MiddleLeft, new Color(0.3f, 0.18f, 0.12f, k));
+            MapPin.Kind[] order = { MapPin.Kind.Band, MapPin.Kind.Shop, MapPin.Kind.Place };
+            foreach (var kind in order)
+                foreach (var pin in level.MapPins)
+                {
+                    if (pin.Type != kind) continue;
+                    Vector2 p = ToMap(mapR, pin.Position);
+                    bool got = pin.Type != MapPin.Kind.Band || (!string.IsNullOrEmpty(pin.Id) && GameState.IsCollected(pin.Id));
+                    string text = got ? pin.Name : "???";
+                    float w = UIKit.TextWidth(text, labelStyle) + 16f, h = 24f;
+                    Vector2[] spots =
+                    {
+                        new Vector2(12f, -h * 0.5f - 6f), new Vector2(-w - 14f, -h * 0.5f - 6f), new Vector2(-w * 0.5f, -h - 22f), new Vector2(-w * 0.5f, 10f),
+                        new Vector2(12f, -h - 16f), new Vector2(-w - 14f, -h - 16f), new Vector2(12f, 6f), new Vector2(-w - 14f, 6f),
+                    };
+                    bool done = false;
+                    foreach (var o in spots)
+                    {
+                        var r = new Rect(p.x + o.x, p.y + o.y, w, h);
+                        if (r.x < mapR.x + 2f || r.xMax > mapR.xMax - 2f || r.y < mapR.y + 2f || r.yMax > mapR.yMax - 2f) continue;
+                        if (Overlaps(r, placed)) continue;
+                        placed.Add(r);
+                        UIKit.Fill(new Rect(r.x + 2f, r.y + 2f, r.width, r.height), new Color(0f, 0f, 0f, 0.2f * k), 5f);
+                        UIKit.Fill(r, new Color(0.99f, 0.96f, 0.88f, 0.95f * k), 5f);
+                        RunningStitch(new Rect(r.x + 3f, r.y + 3f, r.width - 6f, r.height - 6f), new Color(0.86f, 0.4f, 0.45f, 0.55f * k), 4f, 3f, 1.2f);
+                        UIKit.Label(new Rect(r.x + 8f, r.y, w, h), text, labelStyle);
+                        done = true;
+                        break;
+                    }
+                    if (!done) continue;
+                }
+        }
+
         public void Draw(bool kb)
         {
             MakeIcons();
@@ -345,41 +447,7 @@ namespace Patchwork
             RunningStitch(new Rect(ribbon.x + 8f, ribbon.y + 7f, ribbon.width - 16f, ribbon.height - 14f), thread);
             UIKit.Label(ribbon, level.MapTitle, titleStyle, true);
 
-            // Pins: sewing pins stuck in the map (red), buttons for shops, star buttons for the band.
-            var labelStyle = UIKit.Style(21, true, TextAnchor.MiddleLeft, new Color(0.3f, 0.18f, 0.12f, k));
-            foreach (var pin in level.MapPins)
-            {
-                Vector2 p = ToMap(mapR, pin.Position);
-                if (pin.Type == MapPin.Kind.Band)
-                {
-                    bool got = !string.IsNullOrEmpty(pin.Id) && GameState.IsCollected(pin.Id);
-                    float bob = Mathf.Sin(Time.unscaledTime * 3f + p.x) * 3f;
-                    Button(new Vector2(p.x, p.y + bob), 40f, got ? new Color(1f, 0.8f, 0.25f) : new Color(0.62f, 0.58f, 0.7f), k);
-                    UIKit.IconTransformed(new Rect(p.x - 13f, p.y - 13f + bob, 26f, 26f), starTex, new Color(1f, 1f, 1f, 0.9f * k), 0f, 1f);
-                    UIKit.Label(new Rect(p.x + 24f, p.y - 16f + bob, 240f, 32f), got ? pin.Name : "???", UIKit.Style(20, true, TextAnchor.MiddleLeft, new Color(1f, 1f, 1f, k)), true);
-                    continue;
-                }
-                if (pin.Type == MapPin.Kind.Shop) Button(p, 30f, new Color(0.35f, 0.6f, 0.95f), k);
-                else
-                {
-                    // The pin's needle, slanting in, and its round glass head.
-                    Matrix4x4 saved = GUI.matrix;
-                    GUIUtility.RotateAroundPivot(-30f, p);
-                    UIKit.Fill(new Rect(p.x - 1.5f, p.y - 2f, 3f, 20f), new Color(0.75f, 0.76f, 0.8f, k), 1.5f);
-                    GUI.matrix = saved;
-                    Vector2 pinHead = p + new Vector2(-9f, -14f);
-                    UIKit.Circle(pinHead + new Vector2(1.5f, 2.5f), 22f, new Color(0f, 0f, 0f, 0.3f * k));
-                    UIKit.Circle(pinHead, 22f, red);
-                    UIKit.Circle(pinHead + new Vector2(-3.5f, -3.5f), 7f, new Color(1f, 1f, 1f, 0.75f * k));
-                }
-                // A little fabric name tag with a stitched edge.
-                float lw2 = UIKit.TextWidth(pin.Name, labelStyle) + 20f;
-                var lr = new Rect(p.x + 12f, p.y - 30f, lw2, 30f);
-                UIKit.Fill(new Rect(lr.x + 2f, lr.y + 3f, lr.width, lr.height), new Color(0f, 0f, 0f, 0.2f * k), 6f);
-                UIKit.Fill(lr, new Color(0.99f, 0.96f, 0.88f, 0.94f * k), 6f);
-                RunningStitch(new Rect(lr.x + 3f, lr.y + 3f, lr.width - 6f, lr.height - 6f), new Color(0.86f, 0.4f, 0.45f, 0.6f * k), 4f, 3f, 1.5f);
-                UIKit.Label(new Rect(lr.x + 10f, lr.y, lw2, 30f), pin.Name, labelStyle);
-            }
+            DrawPins(mapR, level, k);
 
             // Patch: a little ball of pink yarn with an arrow showing which way he's facing.
             if (game.Player != null)

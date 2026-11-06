@@ -118,11 +118,17 @@ namespace Patchwork
             wait = 0f;
         }
 
+        // A little squeak (or a frog's boing), soft, and softer the further away Patch is.
         void Squeak(float pitchMul)
         {
-            squeakCool = 2.5f;
+            squeakCool = Random.Range(5f, 8f);
+            var game = PatchworkGame.Instance;
+            float dist = game != null && game.Player != null ? Vector3.Distance(game.Player.Motor.Center, transform.position) : 0f;
+            float near = Mathf.Clamp01(1f - dist / 10f);
+            if (near <= 0.05f) return;
             var clip = Type == Kind.Duck ? SfxId.Squeak : Type == Kind.Frog ? SfxId.Boing : SfxId.Critter;
-            Sfx.PlayPitched(clip, Type == Kind.Frog ? 0.18f : 0.22f, Pitch * pitchMul * Random.Range(0.92f, 1.08f));
+            float vol = (Type == Kind.Frog ? 0.05f : 0.07f) * near;
+            Sfx.PlayPitched(clip, vol, Pitch * pitchMul * Random.Range(0.92f, 1.08f));
         }
 
         void Animate(bool moving, float dt)

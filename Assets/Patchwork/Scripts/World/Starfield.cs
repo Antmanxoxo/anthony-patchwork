@@ -4,13 +4,16 @@ namespace Patchwork
 {
     // Tiny stars drifting slowly towards the Pod's window and wrapping round, so it feels like
     // the pod is flying through space. A few twinkle.
+    // Tiny glowing stars all the way round the Pod (above, below, behind, not just out of the
+    // window), in a shell well clear of the hull. The whole field turns very slowly, so the Pod
+    // feels like it's drifting through space, and some of the stars twinkle.
     public class Starfield : MonoBehaviour
     {
-        const float MinZ = 18f, Depth = 140f;
+        const float Inner = 28f, Outer = 150f;
         Transform[] stars;
         float[] twinkle;
         Vector3[] baseScale;
-        public float Speed = 2.5f;
+        public float Speed = 1.2f;   // degrees per second the field turns
 
         public void Build(LevelKit kit, int count)
         {
@@ -27,33 +30,30 @@ namespace Patchwork
             baseScale = new Vector3[count];
             for (int i = 0; i < count; i++)
             {
-                float x = (float)(rng.NextDouble() * 2.0 - 1.0) * 80f;
-                float y = (float)(rng.NextDouble() * 2.0 - 1.0) * 55f + 6f;
-                float z = MinZ + (float)rng.NextDouble() * Depth;
-                float s = 0.12f + (float)rng.NextDouble() * 0.35f;
-                var t = kit.Deco(PrimitiveType.Sphere, new Vector3(x, y, z), Vector3.one * s, mats[i % mats.Length], default(Vector3), transform);
+                // An even spread over a sphere, at a random depth in the shell.
+                float y = (float)(rng.NextDouble() * 2.0 - 1.0);
+                float a = (float)(rng.NextDouble() * Mathf.PI * 2.0);
+                float r = Mathf.Sqrt(1f - y * y);
+                float d = Mathf.Lerp(Inner, Outer, Mathf.Pow((float)rng.NextDouble(), 0.7f));
+                Vector3 p = new Vector3(Mathf.Cos(a) * r, y, Mathf.Sin(a) * r) * d + Vector3.up * 5f;
+                float s = (0.12f + (float)rng.NextDouble() * 0.35f) * Mathf.Lerp(0.8f, 1.8f, (d - Inner) / (Outer - Inner));
+                var t = kit.Deco(PrimitiveType.Sphere, p, Vector3.one * s, mats[i % mats.Length], default(Vector3), transform);
                 t.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 stars[i] = t;
                 baseScale[i] = t.localScale;
-                twinkle[i] = i % 5 == 0 ? (float)rng.NextDouble() * 10f : -1f;
+                twinkle[i] = i % 4 == 0 ? (float)rng.NextDouble() * 10f : -1f;
             }
         }
 
         void Update()
         {
             if (stars == null) return;
-            float dt = Time.deltaTime, time = Time.time;
+            float time = Time.time;
+            transform.rotation = Quaternion.Euler(time * Speed * 0.3f, time * Speed, 0f);
             for (int i = 0; i < stars.Length; i++)
             {
-                var t = stars[i];
-                Vector3 p = t.localPosition;
-                p.z -= Speed * dt;
-                if (p.z < MinZ) p.z += Depth;
-                t.localPosition = p;
-                // Fade in from far away, and twinkle.
-                float k = Mathf.Clamp01((MinZ + Depth - p.z) / 12f) * Mathf.Clamp01((p.z - MinZ) / 4f);
-                if (twinkle[i] >= 0f) k *= 0.6f + 0.4f * Mathf.Sin(time * 3f + twinkle[i]);
-                t.localScale = baseScale[i] * k;
+                if (twinkle[i] < 0f) continue;
+                stars[i].localScale = baseScale[i] * (0.55f + 0.45f * Mathf.Sin(time * 3f + twinkle[i]));
             }
         }
     }

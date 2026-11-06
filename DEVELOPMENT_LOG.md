@@ -1,5 +1,24 @@
 # Development Log
 
+## A readable map, nearby sounds and a cosier Pod
+- The map's names no longer pile up: big regions (the wood, the farm, the orchard, the dell,
+  the meadows, Spindle Hill) are written across the map in large stitched letters with no pin
+  (the ravine and the canal along their length), and every pin's name tag tries several spots
+  round it and only goes where it doesn't cover another tag, a region name or a pin.
+- The breeze-and-water loop that played everywhere in the level is gone. The breeze and
+  birdsong now come from spots out in the open meadows and fields, and the canal and ravine
+  water is quieter and only heard close by.
+- Toy animals are much quieter: their squeaks and the frogs' boings are soft, fade with
+  distance and come less often. The yarn horses' whinnies and hoofbeats are softer too.
+- The Pod's light setting now works: it tints the whole room (the ambient light and the light
+  through the window, not just the bulb), Moonlight dims the room, and Disco cycles the room's
+  colour too. It was being reset when the room's lighting was set up after the furniture.
+- Stars all the way round the Pod (above, below and behind, not just out of the window),
+  slowly turning, with felt stars and little ringed planets on every side.
+- More detail in the Pod: felt bunting round the walls, stitched stars and a moon on the
+  ceiling, gingham curtains tied back either side of the window, framed felt pictures, a cork
+  board of pinned notes, and a reading nook with books, a cup of tea and a little lamp.
+
 ## Builds on other computers, and running faster
 - Runs much faster: the level's still decorations (tens of thousands of little shapes) are now
   merged into a few hundred meshes when a level loads, one per material per 32 m patch of the

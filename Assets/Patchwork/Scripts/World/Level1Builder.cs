@@ -90,15 +90,15 @@ namespace Patchwork
             P.Add(new MapPin("Toy Barracks", new Vector3(0f, 0f, 48f)));
             P.Add(new MapPin("Picnic Park", new Vector3(-12f, 0f, 74f)));
             P.Add(new MapPin("Duck Pond", new Vector3(14f, 0f, 74f)));
-            P.Add(new MapPin("Thread Ravine", new Vector3((RavineEast + RavineWest) * 0.5f, 0f, -30f)));
-            P.Add(new MapPin("Spindle Hill", new Vector3(-67f, 0f, 8f)));
-            P.Add(new MapPin("Inkwell Canal", new Vector3((CanalWest + CanalEast) * 0.5f, 0f, 30f)));
+            P.Add(new MapPin("Thread Ravine", new Vector3((RavineEast + RavineWest) * 0.5f, 0f, -30f), MapPin.Kind.Area));
+            P.Add(new MapPin("Spindle Hill", new Vector3(-67f, 0f, 8f), MapPin.Kind.Area));
+            P.Add(new MapPin("Inkwell Canal", new Vector3((CanalWest + CanalEast) * 0.5f, 0f, 30f), MapPin.Kind.Area));
             P.Add(new MapPin("Dye Works", Mill + new Vector3(0f, 0f, -6f)));
             P.Add(new MapPin("Tea House", new Vector3(53f, 0f, -30f), MapPin.Kind.Shop));
             P.Add(new MapPin("Toybox Express", new Vector3(70f, 0f, -51f)));
             P.Add(new MapPin("Chimney Lane", new Vector3(0f, 0f, -46f)));
             P.Add(new MapPin("Weathervane", new Vector3(0f, 0f, -72f)));
-            P.Add(new MapPin("Landing Meadow", PodLanding));
+            P.Add(new MapPin("Landing Meadow", PodLanding, MapPin.Kind.Area));
             P.Add(new MapPin("Bouncy Castle", new Vector3(20f, 0f, 102f)));
             P.Add(new MapPin("Sky Hoops", new Vector3(100f, 0f, -20f)));
             P.Add(new MapPin("Lute String", new Vector3(-67f, 0f, 31f), MapPin.Kind.Band, Level1Director.LuteId));
@@ -132,8 +132,13 @@ namespace Patchwork
 
             var sounds = kit.Group("LevelSounds", Vector3.zero);
             for (float z = -60f; z <= 60f; z += 30f)
-                AmbientEmitter.Create(sounds, new Vector3(36f, -1.2f, z), Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.22f, 3f, 16f);
-            AmbientEmitter.Create(sounds, new Vector3(-44f, -4.5f, 0f), Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.2f, 3f, 14f);
+                AmbientEmitter.Create(sounds, new Vector3(36f, -1.2f, z), Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.15f, 2f, 11f);
+            AmbientEmitter.Create(sounds, new Vector3(-44f, -4.5f, 0f), Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.15f, 2f, 11f);
+            // A soft breeze and birdsong out in the open country (not in town or the wood).
+            Vector3[] fields = { new Vector3(75f, 1f, -100f), new Vector3(100f, 1f, 30f), new Vector3(100f, 1f, 95f), new Vector3(-62f, 1f, 102f),
+                                 new Vector3(-6f, 1f, -101f), new Vector3(-90f, 4f, 20f), new Vector3(94f, 1f, 69f), new Vector3(20f, 1f, 100f) };
+            foreach (var f in fields)
+                AmbientEmitter.Create(sounds, f, Sfx.Ambient(Sfx.AmbientClip.Meadow), 0.3f, 8f, 30f);
             AmbientEmitter.Create(sounds, Mill + new Vector3(-8.5f, 4f, 0f), Sfx.Ambient(Sfx.AmbientClip.Creak), 0.5f, 3f, 18f);
             AmbientEmitter.Create(sounds, new Vector3(0f, 26f, 27f), Sfx.Ambient(Sfx.AmbientClip.Clock), 0.4f, 4f, 30f);
             AmbientEmitter.Create(sounds, new Vector3(0f, 21f, -72f), Sfx.Ambient(Sfx.AmbientClip.Flag), 0.35f, 2f, 14f);
