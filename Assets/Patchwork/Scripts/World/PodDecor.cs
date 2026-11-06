@@ -143,8 +143,10 @@ namespace Patchwork
             if (bulbLight == null) return;
             int m = LightMode;
             var disco = bulbLight.GetComponent<DiscoLight>();
-            bulbLight.intensity = 3.4f;
-            bulbLight.range = 22f;
+            bulbLight.intensity = 3.2f;
+            bulbLight.range = 10.5f;   // reaches the walls but not past them
+            // Shadows let the walls actually stop the light (skipped on Fast, where they cost too much).
+            bulbLight.shadows = GameSettings.Graphics > 0 ? LightShadows.Soft : LightShadows.None;
             if (m == LightNames.Length - 1)
             {
                 if (disco == null) disco = bulbLight.gameObject.AddComponent<DiscoLight>();

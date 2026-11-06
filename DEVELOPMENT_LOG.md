@@ -1,5 +1,21 @@
 # Development Log
 
+## Pod screensaver, quieter hoppers and a tidier Pod
+- The Tangle Hoppers' boing was the hopping heard all over the level. It now fades with
+  distance and is silent more than 16 m away (their steam and pops fade the same way).
+- Leave Patch standing still in the Pod for 40 seconds and the camera floats out through the
+  wall to show the whole Pod from outside: a cardboard egg with a glowing porthole, a zigzag
+  band, striped fins, mended patches and a blinking antenna, circling very slowly among the
+  stars. Any button or stick brings it straight back inside. The outside of the Pod only exists
+  while you're looking at it, so it never blocks the window.
+- The Pod's furniture is pushed back inside the curved wall, kept out of the doorway, the
+  window desk and the landing spot, and spread apart where pieces overlapped. Floor pieces
+  without a collider got one, so you can't walk through them.
+- The hanging bulb's light stops at the walls now (shorter reach, and on Balanced and Best it
+  casts shadows, so the walls block it).
+- The level check also lists props sunk into each other, and in the Pod anything poking out
+  through the wall, so clipping can be found and fixed across the whole game.
+
 ## A readable map, nearby sounds and a cosier Pod
 - The map's names no longer pile up: big regions (the wood, the farm, the orchard, the dell,
   the meadows, Spindle Hill) are written across the map in large stitched letters with no pin

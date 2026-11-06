@@ -13,6 +13,7 @@ namespace Patchwork
     // - boxes whose faces sit exactly on top of each other (they flicker)
     // - collectibles stuck inside something solid, and a blocked spawn point
     // - missing or broken (pink) materials
+    // - props sunk into each other, and (in the Pod) anything poking out through the wall
     // It never runs in a build.
     public static class LevelAudit
     {
@@ -42,6 +43,7 @@ namespace Patchwork
             Blocked(sb, game);
             WalkThrough(sb, renderers);
             Flicker(sb, renderers);
+            Clipping(sb, game);
 
             string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "../Logs"));
             Directory.CreateDirectory(dir);
@@ -192,6 +194,116 @@ namespace Patchwork
                 }
             }
             sb.AppendLine("count " + n);
+        }
+
+        // Props pushed into each other. A "prop" is one built thing (a bench, a tree, a lamp...):
+        // a group of shapes with no shape of its own. It reads the meshes directly, so it still
+        // works after the level's still decorations have been merged together.
+        static void Clipping(StringBuilder sb, PatchworkGame game)
+        {
+            sb.AppendLine("== Props sunk into each other");
+            Transform levelRoot = game.LevelRoot;
+            if (levelRoot == null) { sb.AppendLine("no level found"); return; }
+
+            var props = new List<KeyValuePair<Transform, Bounds>>();
+            Gather(levelRoot, props, 0);
+            var cells = new Dictionary<Vector2Int, List<int>>();
+            for (int i = 0; i < props.Count; i++)
+            {
+                var b = props[i].Value;
+                for (int x = Mathf.FloorToInt(b.min.x / 8f); x <= Mathf.FloorToInt(b.max.x / 8f); x++)
+                    for (int z = Mathf.FloorToInt(b.min.z / 8f); z <= Mathf.FloorToInt(b.max.z / 8f); z++)
+                    {
+                        List<int> l;
+                        var k = new Vector2Int(x, z);
+                        if (!cells.TryGetValue(k, out l)) cells[k] = l = new List<int>();
+                        l.Add(i);
+                    }
+            }
+            var done = new HashSet<long>();
+            int n = 0;
+            foreach (var l in cells.Values)
+                for (int a = 0; a < l.Count; a++)
+                    for (int c = a + 1; c < l.Count; c++)
+                    {
+                        int i = Mathf.Min(l[a], l[c]), j = Mathf.Max(l[a], l[c]);
+                        if (!done.Add((long)i * 100000 + j)) continue;
+                        Transform ti = props[i].Key, tj = props[j].Key;
+                        if (ti.IsChildOf(tj) || tj.IsChildOf(ti)) continue;
+                        Bounds bi = props[i].Value, bj = props[j].Value;
+                        float ox = Mathf.Min(bi.max.x, bj.max.x) - Mathf.Max(bi.min.x, bj.min.x);
+                        float oz = Mathf.Min(bi.max.z, bj.max.z) - Mathf.Max(bi.min.z, bj.min.z);
+                        float oy = Mathf.Min(bi.max.y, bj.max.y) - Mathf.Max(bi.min.y, bj.min.y);
+                        if (ox <= 0.15f || oz <= 0.15f || oy <= 0.3f) continue;
+                        float smaller = Mathf.Min(bi.size.x * bi.size.z, bj.size.x * bj.size.z);
+                        if (ox * oz < smaller * 0.3f) continue;
+                        // Something sitting on top of something else (a lamp on a table) is fine.
+                        if (bi.min.y >= bj.max.y - 0.35f || bj.min.y >= bi.max.y - 0.35f) continue;
+                        if (n++ < 120)
+                            sb.AppendLine(PathOf(ti) + " " + V(bi.center) + " size " + V(bi.size) + "  <>  " + PathOf(tj) + " " + V(bj.center) + " size " + V(bj.size));
+                    }
+            sb.AppendLine("pairs " + n + " (of " + props.Count + " props)");
+
+            if (!game.Level.IsHub) return;
+            sb.AppendLine("== Through the Pod wall");
+            int w = 0;
+            foreach (var mf in Object.FindObjectsByType<MeshFilter>())
+            {
+                if (mf.sharedMesh == null || !mf.gameObject.activeInHierarchy) continue;
+                if (mf.GetComponentInParent<PatchworkPlayer>() != null) continue;
+                var b = WorldBounds(mf);
+                if (b.size.x > 15f || b.size.z > 15f) continue;      // the shell, floor and sky
+                if (b.min.y < -0.5f || b.max.y > 14f) continue;      // outside bits above / below
+                float dc = new Vector2(b.center.x, b.center.z).magnitude;
+                if (dc > 11f) continue;                               // things out in space
+                float worst = 0f;
+                for (int cx = 0; cx < 2; cx++)
+                    for (int cz = 0; cz < 2; cz++)
+                        for (int cy = 0; cy < 2; cy++)
+                        {
+                            var p = new Vector3(cx == 0 ? b.min.x : b.max.x, cy == 0 ? b.min.y : b.max.y, cz == 0 ? b.min.z : b.max.z);
+                            float over = new Vector2(p.x, p.z).magnitude - HubBuilder.RadiusAt(p.y);
+                            if (over > worst) worst = over;
+                        }
+                if (worst > 0.35f && w++ < 80)
+                    sb.AppendLine(PathOf(mf.transform) + " at " + V(b.center) + " sticks out " + worst.ToString("0.00") + " m");
+            }
+            sb.AppendLine("count " + w);
+        }
+
+        static void Gather(Transform t, List<KeyValuePair<Transform, Bounds>> props, int depth)
+        {
+            if (!t.gameObject.activeInHierarchy || depth > 8) return;
+            if (t.GetComponentInParent<PatchworkPlayer>() != null || t.name == "CombinedStatic") return;
+            bool group = t.childCount > 0 && t.GetComponent<MeshFilter>() == null;
+            if (group && depth >= 2)
+            {
+                bool any = false;
+                var b = new Bounds();
+                foreach (var mf in t.GetComponentsInChildren<MeshFilter>())
+                {
+                    if (mf.sharedMesh == null) continue;
+                    var wb = WorldBounds(mf);
+                    if (!any) { b = wb; any = true; } else b.Encapsulate(wb);
+                }
+                // One whole thing, between a stool and a house. Bigger groups are areas: look inside.
+                if (any && b.size.x < 12f && b.size.z < 12f && b.size.y > 0.4f && (b.size.x > 0.6f || b.size.z > 0.6f))
+                {
+                    props.Add(new KeyValuePair<Transform, Bounds>(t, b));
+                    return;
+                }
+            }
+            for (int i = 0; i < t.childCount; i++) Gather(t.GetChild(i), props, depth + 1);
+        }
+
+        static Bounds WorldBounds(MeshFilter mf)
+        {
+            var lb = mf.sharedMesh.bounds;
+            var m = mf.transform.localToWorldMatrix;
+            var b = new Bounds(m.MultiplyPoint3x4(lb.center), Vector3.zero);
+            for (int i = 0; i < 8; i++)
+                b.Encapsulate(m.MultiplyPoint3x4(lb.center + Vector3.Scale(lb.extents, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1))));
+            return b;
         }
 
         static bool Covered(Vector3 p, List<KeyValuePair<Bounds, MeshRenderer>> boxes, int skipA, int skipB)

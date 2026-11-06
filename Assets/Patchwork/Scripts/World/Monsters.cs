@@ -334,7 +334,7 @@ namespace Patchwork
                 hop += dt / 0.6f;
                 float k = Mathf.Clamp01(hop);
                 pos = Vector3.Lerp(hopFrom, hopTo, k) + Vector3.up * Mathf.Sin(k * Mathf.PI) * 1.6f;
-                if (k >= 1f) { hop = -1f; rest = 0.55f; squash = 1f; Sfx.Play(SfxId.Boing, 0.15f); }
+                if (k >= 1f) { hop = -1f; rest = 0.55f; squash = 1f; Sfx.PlayNear(SfxId.Boing, pos, 0.12f, 16f); }
             }
             else
             {
@@ -442,7 +442,7 @@ namespace Patchwork
                 {
                     cooldown = Random.Range(2.4f, 3.2f);
                     FuzzBall.Launch(c + transform.forward * 0.7f, player.transform.position + player.Motor.Velocity * 0.35f);
-                    Sfx.Play(SfxId.Steam, 0.35f);
+                    Sfx.PlayNear(SfxId.Steam, c, 0.35f, 24f);
                     charge = 0f;
                 }
             }
@@ -514,7 +514,7 @@ namespace Patchwork
         void Fizzle()
         {
             FxBurst.Spawn(FxBurst.Kind.Poof, transform.position, new Color(0.7f, 0.7f, 0.75f));
-            Sfx.Play(SfxId.Pop, 0.25f);
+            Sfx.PlayNear(SfxId.Pop, transform.position, 0.25f, 20f);
             Destroy(gameObject);
         }
     }

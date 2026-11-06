@@ -35,6 +35,7 @@ namespace Patchwork
         public PatchworkPlayer Player { get; private set; }
         public PlayerCamera CameraRig { get; private set; }
         public LevelInfo Level { get; private set; }
+        public Transform LevelRoot { get; private set; }
         public UIMode Mode { get; private set; }
         public PatchworkHUD Hud { get; private set; }
         public DanceParty Dance { get; private set; }
@@ -156,6 +157,7 @@ namespace Patchwork
 
             // Level
             var kit = new LevelKit(levelId.ToString());
+            LevelRoot = kit.Root;
             // What the Fray looks like here.
             FrayTheme.Style = levelId == LevelId.Level1 ? FrayStyle.Toy : FrayStyle.Thread;
             switch (levelId)

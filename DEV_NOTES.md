@@ -265,7 +265,17 @@ Stuff I need to remember about how Patchwork is put together.
   and marbles out of anything they overlap. Place things after it and they won't be checked.
 - `LevelAudit` (editor only) runs 1.5 s after a level loads in Play mode and writes
   `Logs/PatchworkAudit_<level>.txt`: walk-through props, flickering faces, collectibles stuck in
-  solids, broken materials and counts.
+  solids, broken materials and counts. It also lists props sunk into each other (a prop = a
+  group with no mesh of its own, under 12 m across; read from mesh bounds so it still works
+  after `StaticCombine`) and, in the Pod, anything sticking out past `HubBuilder.RadiusAt(y)`.
+- Pod: `HubBuilder.TidyRoom` runs after `CosyDetails` and pushes `Item_*` groups inside the wall,
+  out of the doorway / window desk / landing spot / centre, and apart from each other.
+  `PodIdleCam` (on the level root) waits 40 s with no input, shows `PodExterior` (inactive
+  otherwise) and orbits the camera with `PlayerCamera.Showcase`. Bulb light: range 10.5,
+  shadows on Balanced and Best.
+- Sounds from things out in the level that the player didn't cause go through
+  `Sfx.PlayNear(id, pos, volume, range)` so they fade with distance (plain `Sfx.Play` is
+  heard at full volume anywhere).
 - Builds: Patchwork > Build for Windows. Every shader keyword combo the game turns on at runtime
   needs a `PW_Keep_*` material in Resources (the editor setup recreates them). The app icon is
   `Assets/Patchwork/Icons/PatchworkIcon.png`, applied on editor load.

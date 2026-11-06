@@ -74,6 +74,7 @@ namespace Patchwork
             Decorations(kit);
             MeritWall(kit);
             CosyDetails(kit);
+            TidyRoom(kit);
             PodDecor.ApplyAll();
             Outside(kit);
             StorybookSky(kit);
@@ -81,6 +82,9 @@ namespace Patchwork
             Sounds(kit);
             LaunchTube(kit);
             PodTheme.Apply();
+            // Leave Patch alone for a while and the camera floats outside to show the whole Pod.
+            var idleCam = kit.Root.gameObject.AddComponent<PodIdleCam>();
+            idleCam.Exterior = PodIdleCam.BuildExterior(kit);
 
             kit.AddCheckpoint(info.Spawn, 0f);
             kit.AddCameraZone(new Vector3(0f, 6f, 0f), new Vector3(19f, 13f, 19f), -2.4f, 3f);
@@ -347,8 +351,101 @@ namespace Patchwork
                 kit.Deco(PrimitiveType.Cylinder, new Vector3(0.15f, 1.15f, 0.3f), new Vector3(0.04f, 0.25f, 0.04f), PatchworkAssets.Plain(new Color(0.95f, 0.75f, 0.35f), 0.8f), default(Vector3), t);
                 kit.Deco(PrimitiveType.Cylinder, new Vector3(0.15f, 1.48f, 0.3f), new Vector3(0.36f, 0.12f, 0.36f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Polka, new Color(1f, 0.75f, 0.82f), new Color(0.99f, 0.96f, 0.9f)), default(Vector3), t);
                 kit.Deco(PrimitiveType.Sphere, new Vector3(0.15f, 1.38f, 0.3f), Vector3.one * 0.14f, PatchworkAssets.Glow(new Color(1f, 0.85f, 0.6f), 2f), default(Vector3), t);
-                TownKit.Solid(kit, at + Vector3.up * 0.45f, new Vector3(1f, 0.9f, 1f), 0f);
             }
+        }
+
+        // Tidies the furniture and decorations once they're all built: anything poking through
+        // the curved wall is pushed back inside, floor things that overlap each other are nudged
+        // apart, nothing blocks the doorway, the window desk or the middle of the floor, and floor
+        // things you could walk straight through get a collider so you bump into them instead.
+        static void TidyRoom(LevelKit kit)
+        {
+            var items = new System.Collections.Generic.List<Transform>();
+            foreach (Transform c in kit.Root)
+                if (c.name.StartsWith("Item_") || c.name == "ReadingNook") items.Add(c);
+            // Places to keep clear: the Button Box doorway, the window desk and globe, the launch
+            // tube landing, and a circle in the middle where Patch arrives.
+            var keepClear = new[]
+            {
+                new Bounds(new Vector3(0f, 1f, -10.5f), new Vector3(6.4f, 4f, 6f)),
+                new Bounds(new Vector3(0f, 1f, 6.6f), new Vector3(7f, 4f, 4.2f)),
+                new Bounds(Dir(140f) * 6.6f + Vector3.up, new Vector3(3f, 4f, 3f)),
+                new Bounds(new Vector3(0f, 1f, 0f), new Vector3(3.2f, 4f, 3.2f)),
+            };
+            int moved = 0;
+            for (int pass = 0; pass < 4; pass++)
+            {
+                for (int i = 0; i < items.Count; i++)
+                {
+                    var it = items[i];
+                    Bounds b;
+                    if (!ItemBounds(it, out b)) continue;
+                    // 1. Inside the wall.
+                    float worst = 0f;
+                    for (int k = 0; k < 8; k++)
+                    {
+                        Vector3 c = new Vector3((k & 1) == 0 ? b.min.x : b.max.x, (k & 2) == 0 ? b.min.y : b.max.y, (k & 4) == 0 ? b.min.z : b.max.z);
+                        float allowed = RadiusAt(Mathf.Clamp(c.y, 0f, 13.4f)) - 0.2f;
+                        float r = new Vector2(c.x, c.z).magnitude;
+                        if (r > allowed) worst = Mathf.Max(worst, r - allowed);
+                    }
+                    if (worst > 0.01f)
+                    {
+                        Vector3 inward = -new Vector3(b.center.x, 0f, b.center.z).normalized;
+                        it.position += inward * (worst + 0.05f);
+                        moved++;
+                        continue;
+                    }
+                    bool onFloor = b.min.y < 0.6f && b.max.y < 4.5f;
+                    if (!onFloor) continue;
+                    // 2. Out of the places that must stay clear.
+                    foreach (var z in keepClear)
+                        if (OverlapXZ(b, z, out Vector3 push)) { it.position += push; moved++; break; }
+                    // 3. Apart from the other floor things.
+                    for (int j = 0; j < i; j++)
+                    {
+                        Bounds o;
+                        if (!ItemBounds(items[j], out o) || !(o.min.y < 0.6f && o.max.y < 4.5f)) continue;
+                        if (OverlapXZ(b, o, out Vector3 push2)) { it.position += push2; moved++; ItemBounds(it, out b); }
+                    }
+                }
+            }
+            // Bump into floor furniture instead of walking through it.
+            foreach (var it in items)
+            {
+                Bounds b;
+                if (!ItemBounds(it, out b) || b.min.y > 0.6f || b.size.y < 0.4f || b.size.y > 4f) continue;
+                if (it.GetComponentInChildren<Collider>(true) != null) continue;
+                var col = it.gameObject.AddComponent<BoxCollider>();
+                col.center = b.center - it.position;
+                col.size = new Vector3(b.size.x * 0.85f, b.size.y, b.size.z * 0.85f);
+            }
+            if (moved > 0) Debug.Log("Patchwork: tidied the Pod (" + moved + " nudges so nothing pokes through the wall or into anything else).");
+        }
+
+        static bool ItemBounds(Transform t, out Bounds b)
+        {
+            b = new Bounds();
+            bool any = false;
+            foreach (var r in t.GetComponentsInChildren<Renderer>(true))
+            {
+                if (r is ParticleSystemRenderer) continue;
+                if (!any) { b = r.bounds; any = true; } else b.Encapsulate(r.bounds);
+            }
+            return any;
+        }
+
+        // If a and b overlap on the floor plan, how far to move a so they don't (the short way).
+        static bool OverlapXZ(Bounds a, Bounds b, out Vector3 push)
+        {
+            push = Vector3.zero;
+            if (a.max.y < b.min.y || a.min.y > b.max.y) return false;
+            float ox = Mathf.Min(a.max.x, b.max.x) - Mathf.Max(a.min.x, b.min.x);
+            float oz = Mathf.Min(a.max.z, b.max.z) - Mathf.Max(a.min.z, b.min.z);
+            if (ox <= 0.02f || oz <= 0.02f) return false;
+            if (ox < oz) push = new Vector3((a.center.x >= b.center.x ? 1f : -1f) * (ox + 0.1f), 0f, 0f);
+            else push = new Vector3(0f, 0f, (a.center.z >= b.center.z ? 1f : -1f) * (oz + 0.1f));
+            return true;
         }
 
         // ---------------------------------------------------------------- Helpers
@@ -365,7 +462,7 @@ namespace Patchwork
         static float ColumnAngle(int i) { return (i + 0.5f) * 360f / Columns; }
 
         // Radius of the wall at height y.
-        static float RadiusAt(float y)
+        internal static float RadiusAt(float y)
         {
             for (int k = 0; k < ProfileY.Length - 1; k++)
                 if (y <= ProfileY[k + 1])
@@ -726,7 +823,7 @@ namespace Patchwork
             var l = lgo.AddComponent<Light>();
             l.type = LightType.Point;
             l.color = new Color(1f, 0.84f, 0.62f);
-            l.range = 18f;
+            l.range = 10.5f;   // just the inside of the Pod (not out through the walls)
             l.intensity = 2f;
             l.shadows = LightShadows.None;
             var sway = swing.gameObject.AddComponent<Rocker>();

@@ -191,6 +191,17 @@ namespace Patchwork
             pickupStep = 0;
         }
 
+        // A sound from somewhere in the world: full volume close by, fading to nothing by
+        // `range` metres from Patch (so a monster hopping across the map isn't heard).
+        public static void PlayNear(SfxId id, Vector3 where, float volume, float range = 18f)
+        {
+            var game = PatchworkGame.Instance;
+            Vector3 ear = game != null && game.Player != null ? game.Player.Motor.Center : (Camera.main != null ? Camera.main.transform.position : where);
+            float k = 1f - Vector3.Distance(ear, where) / range;
+            if (k <= 0.02f) return;
+            Play(id, volume * k * k);
+        }
+
         public static void Play(SfxId id, float volume = 0.6f)
         {
             PlayPitched(id, volume, 1f + Random.Range(-1f, 1f) * JitterFor(id));
