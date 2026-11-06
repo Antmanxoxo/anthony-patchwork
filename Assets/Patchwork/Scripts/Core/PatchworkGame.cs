@@ -131,6 +131,7 @@ namespace Patchwork
             // so the game never runs at hundreds of frames per second and heats up people's computers.
             Application.targetFrameRate = 120;
             GameSettings.ApplyVSync();
+            GameSettings.ApplyGraphics();
             Input = new PatchworkInput();
 
             // Camera + audio
@@ -171,6 +172,8 @@ namespace Patchwork
             {
                 Physics.SyncTransforms();
                 LayoutSurvey.Run(Level.Id, kit.Root, Level.Area);
+                // Merge the still decorations into a few big meshes (much faster to draw).
+                StaticCombine.Run(kit.Root);
             }
             LevelLook.Apply(Level);
 

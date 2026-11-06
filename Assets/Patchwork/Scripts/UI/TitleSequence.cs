@@ -177,6 +177,8 @@ namespace Patchwork
         {
             float a = titleAlpha;
             if (a <= 0f) return;
+            // Which build this is, small in the corner (handy when testing on other computers).
+            UIKit.Label(new Rect(W - 420f, H - 50f, 400f, 36f), BuildLog.BuildName, UIKit.Style(18, false, TextAnchor.MiddleRight, new Color(1f, 1f, 1f, 0.55f * a)), true);
             // Soft vignette at the top so the title reads over the sky.
             UIKit.Fill(new Rect(0f, 0f, W, H * 0.45f), new Color(0.12f, 0.08f, 0.18f, 0.18f * a));
 

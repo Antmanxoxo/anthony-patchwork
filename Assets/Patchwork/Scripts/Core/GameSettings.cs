@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace Patchwork
 {
@@ -65,6 +67,60 @@ namespace Patchwork
         public static void ApplyVSync()
         {
             QualitySettings.vSyncCount = VSync ? 1 : 0;
+        }
+
+        // ------------------------------------------------------------------ Graphics
+
+        const string GraphicsKey = "pw_graphics";
+        public static readonly string[] GraphicsNames = { "Fast", "Balanced", "Best" };
+
+        // 0 Fast, 1 Balanced, 2 Best. The first time the game runs it picks one to suit the
+        // computer's graphics card (and the player can change it in Settings).
+        public static int Graphics
+        {
+            get { return Mathf.Clamp(PlayerPrefs.GetInt(GraphicsKey, AutoGraphics()), 0, 2); }
+            set { PlayerPrefs.SetInt(GraphicsKey, Mathf.Clamp(value, 0, 2)); }
+        }
+
+        public static int AutoGraphics()
+        {
+            int vram = SystemInfo.graphicsMemorySize;
+            string gpu = (SystemInfo.graphicsDeviceName ?? "").ToLowerInvariant();
+            bool integrated = (gpu.Contains("intel") && !gpu.Contains("arc")) || gpu.Contains("uhd") || gpu.Contains("iris") || (gpu.Contains("radeon") && gpu.Contains("graphics") && vram < 4000);
+            if (integrated || vram < 2500) return 0;
+            if (vram < 6000 || SystemInfo.processorCount < 6) return 1;
+            return 2;
+        }
+
+        static UniversalRenderPipelineAsset runtimePipeline;
+
+        // Applies the graphics level: resolution scale (with FSR upscaling below full), anti-
+        // aliasing, shadow distance and detail, and how far away small decorations are drawn.
+        // In a built game the pipeline settings are changed on a copy made at startup, so the
+        // project's own settings asset is never touched; in the editor only the draw distance
+        // changes.
+        public static void ApplyGraphics()
+        {
+            int g = Graphics;
+            RenderOptimizer.CullScale = g == 0 ? 0.6f : g == 1 ? 0.8f : 1f;
+            RenderOptimizer.ApplyCullDistances();
+#if !UNITY_EDITOR
+            if (runtimePipeline == null)
+            {
+                var source = (QualitySettings.renderPipeline ?? GraphicsSettings.defaultRenderPipeline) as UniversalRenderPipelineAsset;
+                if (source == null) return;
+                runtimePipeline = Object.Instantiate(source);
+                runtimePipeline.name = source.name + " (Patchwork)";
+                QualitySettings.renderPipeline = runtimePipeline;
+            }
+            var a = runtimePipeline;
+            a.renderScale = g == 0 ? 0.75f : g == 1 ? 0.9f : 1f;
+            a.upscalingFilter = g == 2 ? UpscalingFilterSelection.Auto : UpscalingFilterSelection.FSR;
+            a.msaaSampleCount = g == 0 ? 1 : g == 1 ? 2 : 4;
+            a.shadowDistance = g == 0 ? 28f : g == 1 ? 40f : 50f;
+            a.shadowCascadeCount = g == 0 ? 1 : g == 1 ? 2 : 4;
+#endif
+            Debug.Log("Patchwork: graphics set to " + GraphicsNames[g] + " (" + SystemInfo.graphicsDeviceName + ", " + SystemInfo.graphicsMemorySize + " MB, " + SystemInfo.graphicsDeviceType + ")");
         }
     }
 }

@@ -1,5 +1,26 @@
 # Development Log
 
+## Builds on other computers, and running faster
+- Runs much faster: the level's still decorations (tens of thousands of little shapes) are now
+  merged into a few hundred meshes when a level loads, one per material per 32 m patch of the
+  map. The picture is the same; the computer has far less to do every frame. Anything a script
+  moves, recolours, hides or picks up (and everything under it) is found automatically and kept
+  separate, as are see-through things. The optimiser also uses its own cube and cylinder
+  meshes, so they can always be merged in a built game.
+- New Graphics setting (Settings > Graphics: Fast / Balanced / Best). The first time the game
+  runs it picks one to suit the computer's graphics card. Fast and Balanced draw at a slightly
+  lower resolution with FSR upscaling, less anti-aliasing, closer and simpler shadows, and draw
+  small decorations a little less far.
+- Builds for other computers: Windows builds now use DirectX 11 first (much wider graphics card
+  and driver support; DirectX 12 stays as a fallback), and the fog shaders are always kept
+  (the haze is switched on from code, so Unity was leaving it out of builds).
+- Every build gets a build number, shown small in the corner of the title screen, and is
+  zipped automatically next to the build folder as "Patchwork Build N.zip", ready to send.
+- A built game writes "Patchwork Log.txt" next to Patchwork.exe: the computer's graphics card
+  and settings, and any warnings or errors. Send that file if something looks wrong.
+- The map can take you straight back to where the Pod landed ("Travel back to the Pod"), and
+  its layout is tidied so the tape measure and prompts don't overlap the edge.
+
 ## Builds look the same as the editor
 - Built games were running with no post-processing at all (no bloom, colour grading, warm and
   cool tint or vignette), so they looked flat compared with Play mode. The Player.log showed

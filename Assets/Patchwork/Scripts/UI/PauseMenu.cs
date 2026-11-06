@@ -10,7 +10,7 @@ namespace Patchwork
     {
         enum Item { Resume, Restart, ReturnToHub, Settings, Quit,
                     Music, Sounds, Rumble, CameraSpeed, InvertY, InvertX, SwingMode, Prompts, WheelButton, VSync, Back,
-                    Look, Photo, Merits }
+                    Look, Photo, Merits, Graphics }
 
         readonly PatchworkGame game;
         readonly List<Item> items = new List<Item>();
@@ -70,6 +70,7 @@ namespace Patchwork
             settingsPage = true;
             items.Clear();
             items.Add(Item.Look);
+            items.Add(Item.Graphics);
             items.Add(Item.Music);
             items.Add(Item.Sounds);
             items.Add(Item.Rumble);
@@ -103,6 +104,7 @@ namespace Patchwork
             {
                 case Item.Settings: return "Settings";
                 case Item.Look: return "Look:  " + GameSettings.LookNames[GameSettings.Look];
+                case Item.Graphics: return "Graphics:  " + GameSettings.GraphicsNames[GameSettings.Graphics];
                 case Item.Photo: return "Photo Mode";
                 case Item.Merits: return "Merit Patches:  " + Patchwork.Merits.Count() + " / " + Patchwork.Merits.All.Length;
                 case Item.CameraSpeed: return "Camera Speed";
@@ -143,6 +145,7 @@ namespace Patchwork
                 case Item.InvertX:
                 case Item.SwingMode:
                 case Item.VSync: return UIArt.IconPad;
+                case Item.Graphics: return UIArt.IconPad;
                 case Item.Restart: return UIArt.IconRestart;
                 case Item.ReturnToHub: return UIArt.IconHome;
                 case Item.Prompts:
@@ -175,6 +178,7 @@ namespace Patchwork
                 case Item.InvertX: return new Color(0.4f, 0.5f, 0.8f);
                 case Item.SwingMode: return new Color(0.9f, 0.45f, 0.58f);
                 case Item.VSync: return new Color(0.5f, 0.65f, 0.6f);
+                case Item.Graphics: return new Color(0.45f, 0.6f, 0.85f);
                 case Item.Back: return new Color(0.35f, 0.7f, 0.5f);
                 default: return new Color(0.6f, 0.5f, 0.45f);
             }
@@ -189,7 +193,7 @@ namespace Patchwork
         static bool IsToggle(Item item)
         {
             return item == Item.InvertY || item == Item.InvertX || item == Item.SwingMode || item == Item.VSync
-                || item == Item.Prompts || item == Item.WheelButton || item == Item.Look;
+                || item == Item.Prompts || item == Item.WheelButton || item == Item.Look || item == Item.Graphics;
         }
 
         void Toggle(Item item, int dir)
@@ -204,6 +208,7 @@ namespace Patchwork
                 case Item.Prompts: input.Prompts = (PatchworkInput.PromptMode)(((int)input.Prompts + (dir < 0 ? 2 : 1)) % 3); break;
                 case Item.WheelButton: input.FormWheelOnR1 = !input.FormWheelOnR1; break;
                 case Item.Look: GameSettings.Look = (GameSettings.Look + (dir < 0 ? 2 : 1)) % 3; GameSettings.ApplyLook(); break;
+                case Item.Graphics: GameSettings.Graphics = (GameSettings.Graphics + (dir < 0 ? 2 : 1)) % 3; GameSettings.ApplyGraphics(); break;
             }
             PlayerPrefs.Save();
             Sfx.Play(SfxId.MenuMove, 0.5f);

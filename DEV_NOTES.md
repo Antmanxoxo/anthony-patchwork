@@ -159,6 +159,15 @@ Stuff I need to remember about how Patchwork is put together.
   LateUpdate while grounded. It knocks you off when swimming, warping or under external control.
 - `LayoutSurvey.Run` (editor only) writes Logs/patchwork_layout_<level>.txt: a 4 m grid of
   how much is drawn per cell, and of solid heights.
+- Performance: `StaticCombine.Run(root)` runs after `RenderOptimizer` in levels (not the hub).
+  It treats as "live" every transform a MonoBehaviour is on or references (fields, lists,
+  dictionaries, delegate closures, static fields in the Patchwork namespace) plus their
+  children, and merges everything else that's opaque, single-material and under 2500 verts.
+  If a new script changes a plain decoration it doesn't hold a reference to, give it one (or put
+  any MonoBehaviour on that object) so it stays separate.
+- Graphics setting: `GameSettings.ApplyGraphics` (copies the URP asset at runtime in builds only).
+- Build output: build number in Resources/PatchworkBuild.txt, zip and "Patchwork Log.txt"
+  (`BuildLog`); DirectX 11 first and fog kept are set by `PatchworkBuildChecks`.
 - Builds: keep URP's "strip unused post-processing variants" OFF (Project Settings > Graphics >
   URP). `PatchworkBuildChecks` (IPreprocessBuildWithReport) enforces it. The built game's log is
   %USERPROFILE%/AppData/LocalLow/Little Colossus/Patchwork/Player.log.

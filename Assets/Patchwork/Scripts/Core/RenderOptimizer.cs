@@ -13,8 +13,23 @@ namespace Patchwork
     public static class RenderOptimizer
     {
         public const int SmallLayer = 8, MediumLayer = 9;
-        static Mesh hiSphere, hiCapsule;
+        static Mesh hiSphere, hiCapsule, hiCube, hiCylinder, cube, cylinder;
         static Mesh[] spheres, capsules;   // low, medium, high
+
+        // Scales how far small and medium decorations are drawn (set by the Graphics setting).
+        public static float CullScale = 1f;
+        static Camera cullCamera;
+        static float cullFar;
+
+        public static void ApplyCullDistances()
+        {
+            if (cullCamera == null) return;
+            var d = new float[32];
+            d[SmallLayer] = Mathf.Min(cullFar, 80f * CullScale);
+            d[MediumLayer] = Mathf.Min(cullFar, 180f * CullScale);
+            cullCamera.layerCullDistances = d;
+            cullCamera.layerCullSpherical = true;
+        }
 
         public static void Run(Transform root, Camera cam, float farClip, bool distanceCull)
         {
@@ -30,6 +45,9 @@ namespace Patchwork
                 Vector3 s = Vector3.Scale(mesh.bounds.size, mf.transform.lossyScale);
                 float size = Mathf.Max(Mathf.Abs(s.x), Mathf.Abs(s.y), Mathf.Abs(s.z));
 
+                // Our own copies of the cube and cylinder (same shape, but always mergeable).
+                if (mesh == hiCube) { mf.sharedMesh = cube; mesh = cube; }
+                else if (mesh == hiCylinder) { mf.sharedMesh = cylinder; mesh = cylinder; }
                 if (mesh == hiSphere && size < 2.6f) { mf.sharedMesh = spheres[size < 0.45f ? 0 : size < 1.3f ? 1 : 2]; swapped++; }
                 else if (mesh == hiCapsule && size < 3.2f) { mf.sharedMesh = capsules[size < 0.6f ? 0 : size < 1.6f ? 1 : 2]; swapped++; }
 
@@ -49,11 +67,9 @@ namespace Patchwork
             }
             if (cam != null)
             {
-                var d = new float[32];
-                d[SmallLayer] = Mathf.Min(farClip, 80f);
-                d[MediumLayer] = Mathf.Min(farClip, 180f);
-                cam.layerCullDistances = d;
-                cam.layerCullSpherical = true;
+                cullCamera = cam;
+                cullFar = farClip;
+                ApplyCullDistances();
             }
             Debug.Log("Patchwork: render tidy-up - " + swapped + " lighter round meshes, " + unshadowed + " tiny shadows off, " + layered + " decorations distance-culled.");
         }
@@ -63,12 +79,107 @@ namespace Patchwork
             if (spheres != null) return;
             var a = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             var b = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            var cu = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            var cy = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             hiSphere = a.GetComponent<MeshFilter>().sharedMesh;
             hiCapsule = b.GetComponent<MeshFilter>().sharedMesh;
+            hiCube = cu.GetComponent<MeshFilter>().sharedMesh;
+            hiCylinder = cy.GetComponent<MeshFilter>().sharedMesh;
             Object.Destroy(a);
             Object.Destroy(b);
+            Object.Destroy(cu);
+            Object.Destroy(cy);
+            cube = MakeCube();
+            cylinder = MakeCylinder(20);
             spheres = new[] { Round("LowSphere", 10, 7, 0f), Round("MidSphere", 16, 10, 0f), Round("HighSphere", 20, 14, 0f) };
             capsules = new[] { Round("LowCapsule", 10, 8, 0.5f), Round("MidCapsule", 16, 10, 0.5f), Round("HighCapsule", 20, 14, 0.5f) };
+        }
+
+        // A unit cube like Unity's (each face its own 0..1 UVs).
+        static Mesh MakeCube()
+        {
+            var verts = new List<Vector3>();
+            var normals = new List<Vector3>();
+            var uvs = new List<Vector2>();
+            var tris = new List<int>();
+            Vector3[] n = { Vector3.forward, Vector3.back, Vector3.up, Vector3.down, Vector3.right, Vector3.left };
+            foreach (var f in n)
+            {
+                Vector3 u = Mathf.Abs(f.y) > 0.5f ? Vector3.right : Vector3.Cross(Vector3.up, f);
+                Vector3 v = Vector3.Cross(f, u);
+                int i = verts.Count;
+                for (int k = 0; k < 4; k++)
+                {
+                    float su = (k == 1 || k == 2) ? 0.5f : -0.5f, sv = k >= 2 ? 0.5f : -0.5f;
+                    verts.Add(f * 0.5f + u * su + v * sv);
+                    normals.Add(f);
+                    uvs.Add(new Vector2(su + 0.5f, sv + 0.5f));
+                }
+                tris.Add(i); tris.Add(i + 2); tris.Add(i + 1);
+                tris.Add(i); tris.Add(i + 3); tris.Add(i + 2);
+            }
+            return Finish("PatchworkCube", verts, normals, uvs, tris);
+        }
+
+        // A cylinder like Unity's: radius 0.5, from y -1 to 1, smooth sides and flat caps.
+        static Mesh MakeCylinder(int seg)
+        {
+            var verts = new List<Vector3>();
+            var normals = new List<Vector3>();
+            var uvs = new List<Vector2>();
+            var tris = new List<int>();
+            for (int i = 0; i <= seg; i++)
+            {
+                float a = Mathf.PI * 2f * i / seg;
+                var d = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
+                verts.Add(d * 0.5f + Vector3.down); normals.Add(d); uvs.Add(new Vector2(i / (float)seg, 0f));
+                verts.Add(d * 0.5f + Vector3.up); normals.Add(d); uvs.Add(new Vector2(i / (float)seg, 1f));
+            }
+            for (int i = 0; i < seg; i++)
+            {
+                int b0 = i * 2, t0 = b0 + 1, b1 = b0 + 2, t1 = b0 + 3;
+                tris.Add(b0); tris.Add(t0); tris.Add(t1);
+                tris.Add(b0); tris.Add(t1); tris.Add(b1);
+            }
+            for (int cap = 0; cap < 2; cap++)
+            {
+                float y = cap == 0 ? 1f : -1f;
+                var nrm = cap == 0 ? Vector3.up : Vector3.down;
+                int centre = verts.Count;
+                verts.Add(new Vector3(0f, y, 0f)); normals.Add(nrm); uvs.Add(new Vector2(0.5f, 0.5f));
+                for (int i = 0; i <= seg; i++)
+                {
+                    float a = Mathf.PI * 2f * i / seg;
+                    verts.Add(new Vector3(Mathf.Cos(a) * 0.5f, y, Mathf.Sin(a) * 0.5f)); normals.Add(nrm);
+                    uvs.Add(new Vector2(Mathf.Cos(a) * 0.5f + 0.5f, Mathf.Sin(a) * 0.5f + 0.5f));
+                }
+                for (int i = 0; i < seg; i++)
+                {
+                    if (cap == 0) { tris.Add(centre); tris.Add(centre + i + 2); tris.Add(centre + i + 1); }
+                    else { tris.Add(centre); tris.Add(centre + i + 1); tris.Add(centre + i + 2); }
+                }
+            }
+            return Finish("PatchworkCylinder", verts, normals, uvs, tris);
+        }
+
+        // Builds the mesh and makes sure every face points outwards (matching its normals).
+        static Mesh Finish(string name, List<Vector3> verts, List<Vector3> normals, List<Vector2> uvs, List<int> tris)
+        {
+            for (int t = 0; t < tris.Count; t += 3)
+            {
+                Vector3 p0 = verts[tris[t]], p1 = verts[tris[t + 1]], p2 = verts[tris[t + 2]];
+                Vector3 fn = Vector3.Cross(p1 - p0, p2 - p0);
+                if (Vector3.Dot(fn, normals[tris[t]] + normals[tris[t + 1]] + normals[tris[t + 2]]) < 0f) { int tmp = tris[t + 1]; tris[t + 1] = tris[t + 2]; tris[t + 2] = tmp; }
+            }
+            var m = new Mesh { name = name };
+            m.SetVertices(verts);
+            m.SetNormals(normals);
+            m.SetUVs(0, uvs);
+            m.SetTriangles(tris, 0);
+            m.RecalculateTangents();
+            m.RecalculateBounds();
+            m.UploadMeshData(false);
+            return m;
         }
 
         // A UV sphere of radius 0.5 (stretch > 0 makes a capsule of total height 1 + 2 * stretch,

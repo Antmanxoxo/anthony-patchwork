@@ -55,6 +55,24 @@ namespace Patchwork
             if (openTime < 0.15f) return;
             if (input.Map.WasPressedThisFrame() || input.Cancel.WasPressedThisFrame() || input.Pause.WasPressedThisFrame())
                 game.CloseMap();
+            else if (CanTravel() && input.Confirm.WasPressedThisFrame())
+            {
+                // Hop straight back to where the Pod landed.
+                var player = game.Player;
+                if (YarnHorse.Ridden != null) YarnHorse.Ridden.Dismount(false);
+                game.CloseMap();
+                FxBurst.Spawn(FxBurst.Kind.Poof, player.Motor.Center, Color.white);
+                player.Motor.Teleport(game.Level.Spawn, game.Level.SpawnYaw);
+                FxBurst.Spawn(FxBurst.Kind.Sparkle, game.Level.Spawn + Vector3.up, new Color(1f, 0.85f, 0.5f));
+                Sfx.Play(SfxId.PodRocket, 0.45f);
+                game.ShowToast("Back at the Pod!");
+            }
+        }
+
+        bool CanTravel()
+        {
+            var level = game.Level;
+            return level != null && !level.IsHub && level.Spawn != Vector3.zero && game.Player != null && !game.Player.Motor.ExternalControl;
         }
 
         // ------------------------------------------------------------------ Painting the map
@@ -290,7 +308,7 @@ namespace Patchwork
             RunningStitch(new Rect(quilt.x + 8f, quilt.y + 8f, pw - 16f, ph - 16f), thread, 12f, 8f, 3f);
 
             // The map: a linen panel appliquéd onto the quilt, the felt picture inside it.
-            float ms = ph - 140f;
+            float ms = ph - 190f;
             var mapR = new Rect(quilt.x + 70f, quilt.y + 100f, ms, ms);
             var linen = new Rect(mapR.x - 22f, mapR.y - 22f, mapR.width + 44f, mapR.height + 44f);
             UIKit.Fill(new Rect(linen.x + 5f, linen.y + 7f, linen.width, linen.height), new Color(0f, 0f, 0f, 0.25f * k), 16f);
@@ -459,6 +477,8 @@ namespace Patchwork
             }
 
             UIKit.PromptLabel(quilt.xMax - 260f, quilt.yMax - 62f, 40f, PromptAction.Map, "Close", kb, new Color(0.99f, 0.95f, 0.85f), k);
+            if (CanTravel())
+                UIKit.PromptLabel(linen.x + 10f, quilt.yMax - 44f, 34f, PromptAction.Confirm, "Travel back to the Pod", kb, new Color(0.99f, 0.95f, 0.85f), k);
         }
     }
 }
