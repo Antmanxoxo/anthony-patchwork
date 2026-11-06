@@ -1,5 +1,12 @@
 # Development Log
 
+## Warmer meadows and a calmer map
+- The yarn grass is in warm skeins now: olive and moss greens, honey, marigold, coral, rose
+  and rust.
+- The map's picture leaves out the grass and tiny decorations, so it shows clean shapes.
+- The map sits on one calm piece of fabric instead of a busy patchwork, and the button hints
+  under it are in dark ink so they're easy to read.
+
 ## Yarn meadows, a tidy map and solid ground at Toadstool Dell
 - Fixed falling through the ground near Toadstool Dell: the dell's coloured ground patch
   stretched right across the ravine, so it looked like ground where there was none. It now

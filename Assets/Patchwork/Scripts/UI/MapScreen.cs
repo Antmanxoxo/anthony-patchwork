@@ -103,7 +103,8 @@ namespace Patchwork
             capCam.farClipPlane = level.MapCameraHeight + 30f;
             capCam.clearFlags = CameraClearFlags.SolidColor;
             capCam.backgroundColor = new Color(0.93f, 0.88f, 0.76f);
-            capCam.cullingMask = ~(1 << 2);
+            // Leave out the grass and tiny bits so the picture is clean shapes: roads, roofs, water, trees.
+            capCam.cullingMask = ~((1 << 2) | (1 << RenderOptimizer.GrassLayer) | (1 << RenderOptimizer.SmallLayer));
             capCam.depth = -10f;
             capCam.targetTexture = capRT;
             var data = capCam.GetUniversalAdditionalCameraData();
@@ -429,21 +430,12 @@ namespace Patchwork
             var quilt = new Rect((W - pw) * 0.5f, (H - ph) * 0.5f + (1f - pop) * 60f, pw, ph);
             UIKit.Fill(new Rect(quilt.x + 8f, quilt.y + 12f, pw, ph), new Color(0f, 0f, 0f, 0.3f * k), 26f);
             UIKit.Fill(quilt, new Color(0.62f, 0.32f, 0.36f, k), 26f);
-            Color[] squares = { new Color(0.96f, 0.86f, 0.74f), new Color(0.78f, 0.86f, 0.92f), new Color(0.98f, 0.8f, 0.82f), new Color(0.84f, 0.9f, 0.76f), new Color(0.98f, 0.9f, 0.68f), new Color(0.86f, 0.8f, 0.94f) };
-            Texture[] prints = { UIArt.PatternDots, UIArt.PatternKnit, UIArt.PatternSwirl, UIArt.PatternWaves };
-            int cols = 8, rows = 5;
-            float sw = (pw - 36f) / cols, sh = (ph - 36f) / rows;
-            for (int cx = 0; cx < cols; cx++)
-                for (int cy = 0; cy < rows; cy++)
-                {
-                    var sq = new Rect(quilt.x + 18f + cx * sw + 2f, quilt.y + 18f + cy * sh + 2f, sw - 4f, sh - 4f);
-                    Color sc = squares[(cx + cy * 3) % squares.Length];
-                    UIKit.Fill(sq, new Color(sc.r, sc.g, sc.b, k), 8f);
-                    var pr = prints[(cx * 2 + cy) % prints.Length];
-                    if (pr != null) UIKit.PatternFill(sq, pr, new Color(sc.r * 0.75f, sc.g * 0.75f, sc.b * 0.75f, 0.35f * k), 34f, new Vector2(cx * 13f, cy * 7f));
-                    RunningStitch(new Rect(sq.x + 6f, sq.y + 6f, sq.width - 12f, sq.height - 12f), new Color(1f, 1f, 1f, 0.55f * k));
-                }
-            RunningStitch(new Rect(quilt.x + 8f, quilt.y + 8f, pw - 16f, ph - 16f), thread, 12f, 8f, 3f);
+            // One calm piece of fabric inside the binding (a busy patchwork fought with the map).
+            var cloth = new Rect(quilt.x + 18f, quilt.y + 18f, pw - 36f, ph - 36f);
+            var clothCol = new Color(0.93f, 0.86f, 0.74f);
+            UIKit.Fill(cloth, new Color(clothCol.r, clothCol.g, clothCol.b, k), 14f);
+            if (UIArt.PatternKnit != null) UIKit.PatternFill(cloth, UIArt.PatternKnit, new Color(clothCol.r * 0.82f, clothCol.g * 0.82f, clothCol.b * 0.82f, 0.25f * k), 40f, Vector2.zero);
+            RunningStitch(new Rect(cloth.x + 8f, cloth.y + 8f, cloth.width - 16f, cloth.height - 16f), new Color(1f, 1f, 1f, 0.6f * k), 10f, 7f, 2.5f);
 
             // The map: a linen panel appliquéd onto the quilt, the felt picture inside it.
             float ms = ph - 190f;
@@ -570,9 +562,9 @@ namespace Patchwork
                 ly += 36f;
             }
 
-            UIKit.PromptLabel(quilt.xMax - 250f, quilt.yMax - 50f, 36f, PromptAction.Map, "Close", kb, new Color(0.99f, 0.95f, 0.85f), k);
+            UIKit.PromptLabel(quilt.xMax - 250f, quilt.yMax - 50f, 36f, PromptAction.Map, "Close", kb, Ink, k);
             if (CanTravel())
-                UIKit.PromptLabel(linen.x + 10f, quilt.yMax - 50f, 36f, PromptAction.Confirm, "Travel back to the Pod", kb, new Color(0.99f, 0.95f, 0.85f), k);
+                UIKit.PromptLabel(linen.x + 10f, quilt.yMax - 50f, 36f, PromptAction.Confirm, "Travel back to the Pod", kb, Ink, k);
         }
     }
 }

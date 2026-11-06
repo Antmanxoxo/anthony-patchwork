@@ -53,8 +53,9 @@ namespace Patchwork
             // Odds and ends of yarn: drifts of each colour across the meadows.
             Color[] greens =
             {
-                new Color(0.45f, 0.72f, 0.38f), new Color(1f, 0.84f, 0.42f), new Color(0.38f, 0.62f, 0.4f), new Color(0.98f, 0.6f, 0.7f),
-                new Color(0.55f, 0.75f, 0.98f), new Color(0.74f, 0.62f, 0.92f), new Color(1f, 0.66f, 0.48f),
+                // Warm skeins: olive and moss greens, honey, marigold, coral, rose and rust.
+                new Color(0.58f, 0.68f, 0.32f), new Color(0.98f, 0.78f, 0.36f), new Color(0.46f, 0.6f, 0.3f), new Color(1f, 0.58f, 0.42f),
+                new Color(0.95f, 0.62f, 0.25f), new Color(0.92f, 0.5f, 0.55f), new Color(0.8f, 0.45f, 0.3f),
             };
             Color[] patchCols = { new Color(0.6f, 0.78f, 0.46f), new Color(0.46f, 0.66f, 0.42f), new Color(0.7f, 0.8f, 0.5f), new Color(0.55f, 0.72f, 0.6f), new Color(0.78f, 0.82f, 0.55f) };
             var area = new Vector2(Half - 0.5f, Half - 0.5f);
