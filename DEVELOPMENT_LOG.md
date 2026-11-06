@@ -15,6 +15,10 @@
   casts shadows, so the walls block it).
 - The level check also lists props sunk into each other, and in the Pod anything poking out
   through the wall, so clipping can be found and fixed across the whole game.
+- Fixed: the Pod screensaver never started, because standing on the floor still counts as a
+  tiny downward speed. Only sideways movement counts as moving now.
+- Fixed: the Pod tidy-up shoved wall-hugging decorations (fairy lights, bunting) sideways
+  and through the wall. It now measures each piece's real shape and leaves those alone.
 
 ## A readable map, nearby sounds and a cosier Pod
 - The map's names no longer pile up: big regions (the wood, the farm, the orchard, the dell,

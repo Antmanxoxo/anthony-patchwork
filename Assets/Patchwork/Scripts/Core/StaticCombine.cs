@@ -44,7 +44,7 @@ namespace Patchwork
             var seen = new HashSet<object>();
 
             // 1. Everything a script is on or refers to (in the level, or anywhere in the scene).
-            foreach (var mb in Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var mb in Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include))
             {
                 if (mb == null) continue;
                 if (mb.transform.IsChildOf(root) && mb.transform != root) live.Add(mb.transform);

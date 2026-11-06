@@ -43,10 +43,13 @@ namespace Patchwork
                 return;
             }
 
-            if (touched || !inGame || game.Player.Motor.Velocity.sqrMagnitude > 0.05f) { idle = 0f; return; }
+            if (touched || !inGame || Flat(game.Player.Motor.Velocity) > 0.05f) { idle = 0f; return; }
             idle += Time.unscaledDeltaTime;
             if (idle >= WaitSeconds) Begin(game);
         }
+
+        // Sideways speed only: standing still on the floor the motor still presses down a little.
+        static float Flat(Vector3 v) { return v.x * v.x + v.z * v.z; }
 
         void Begin(PatchworkGame game)
         {

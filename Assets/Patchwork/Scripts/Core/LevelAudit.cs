@@ -256,16 +256,26 @@ namespace Patchwork
                 if (b.min.y < -0.5f || b.max.y > 14f) continue;      // outside bits above / below
                 float dc = new Vector2(b.center.x, b.center.z).magnitude;
                 if (dc > 11f) continue;                               // things out in space
+                // The wall itself (panels, ribs, the window) is the edge, not something poking through it.
+                bool shell = false;
+                for (var t = mf.transform; t != null && !shell; t = t.parent)
+                    shell = t.name == "PodWall" || t.name == "Rib" || t.name == "WindowPane" || t.name == "PodExterior" || t.name == "Porthole";
+                if (shell) continue;
+                // Test the real points of the shape (a box round a slanted piece would exaggerate).
                 float worst = 0f;
-                for (int cx = 0; cx < 2; cx++)
-                    for (int cz = 0; cz < 2; cz++)
-                        for (int cy = 0; cy < 2; cy++)
-                        {
-                            var p = new Vector3(cx == 0 ? b.min.x : b.max.x, cy == 0 ? b.min.y : b.max.y, cz == 0 ? b.min.z : b.max.z);
-                            float over = new Vector2(p.x, p.z).magnitude - HubBuilder.RadiusAt(p.y);
-                            if (over > worst) worst = over;
-                        }
-                if (worst > 0.35f && w++ < 80)
+                var m = mf.transform.localToWorldMatrix;
+                var verts = mf.sharedMesh.isReadable ? mf.sharedMesh.vertices : null;
+                if (verts != null && verts.Length > 0)
+                {
+                    int step = Mathf.Max(1, verts.Length / 300);
+                    for (int i = 0; i < verts.Length; i += step)
+                    {
+                        var p = m.MultiplyPoint3x4(verts[i]);
+                        float over = new Vector2(p.x, p.z).magnitude - HubBuilder.RadiusAt(Mathf.Clamp(p.y, 0f, 13.4f));
+                        if (over > worst) worst = over;
+                    }
+                }
+                if (worst > 0.2f && w++ < 80)
                     sb.AppendLine(PathOf(mf.transform) + " at " + V(b.center) + " sticks out " + worst.ToString("0.00") + " m");
             }
             sb.AppendLine("count " + w);

@@ -380,15 +380,11 @@ namespace Patchwork
                     var it = items[i];
                     Bounds b;
                     if (!ItemBounds(it, out b)) continue;
-                    // 1. Inside the wall.
-                    float worst = 0f;
-                    for (int k = 0; k < 8; k++)
-                    {
-                        Vector3 c = new Vector3((k & 1) == 0 ? b.min.x : b.max.x, (k & 2) == 0 ? b.min.y : b.max.y, (k & 4) == 0 ? b.min.z : b.max.z);
-                        float allowed = RadiusAt(Mathf.Clamp(c.y, 0f, 13.4f)) - 0.2f;
-                        float r = new Vector2(c.x, c.z).magnitude;
-                        if (r > allowed) worst = Mathf.Max(worst, r - allowed);
-                    }
+                    // Things strung right round the room (fairy lights, bunting) are built along
+                    // the wall already; moving them would push the far side through it.
+                    if (b.size.x > 9f || b.size.z > 9f) continue;
+                    // 1. Inside the wall (measured on the real shape, not a box round it).
+                    float worst = OutsideWall(it, 0.2f);
                     if (worst > 0.01f)
                     {
                         Vector3 inward = -new Vector3(b.center.x, 0f, b.center.z).normalized;
@@ -421,6 +417,36 @@ namespace Patchwork
                 col.size = new Vector3(b.size.x * 0.85f, b.size.y, b.size.z * 0.85f);
             }
             if (moved > 0) Debug.Log("Patchwork: tidied the Pod (" + moved + " nudges so nothing pokes through the wall or into anything else).");
+        }
+
+        // How far the furthest point of t's shapes sits past the wall (minus a margin), or 0.
+        internal static float OutsideWall(Transform t, float margin)
+        {
+            float worst = 0f;
+            foreach (var mf in t.GetComponentsInChildren<MeshFilter>(true))
+            {
+                var mesh = mf.sharedMesh;
+                if (mesh == null) continue;
+                var m = mf.transform.localToWorldMatrix;
+                if (mesh.isReadable)
+                {
+                    var v = mesh.vertices;
+                    int step = Mathf.Max(1, v.Length / 300);
+                    for (int i = 0; i < v.Length; i += step) worst = Mathf.Max(worst, Past(m.MultiplyPoint3x4(v[i]), margin));
+                }
+                else
+                {
+                    var lb = mesh.bounds;
+                    for (int k = 0; k < 8; k++)
+                        worst = Mathf.Max(worst, Past(m.MultiplyPoint3x4(lb.center + Vector3.Scale(lb.extents, new Vector3((k & 1) == 0 ? -1 : 1, (k & 2) == 0 ? -1 : 1, (k & 4) == 0 ? -1 : 1))), margin));
+                }
+            }
+            return worst;
+        }
+
+        static float Past(Vector3 p, float margin)
+        {
+            return Mathf.Max(0f, new Vector2(p.x, p.z).magnitude - (RadiusAt(Mathf.Clamp(p.y, 0f, 13.4f)) - margin));
         }
 
         static bool ItemBounds(Transform t, out Bounds b)
