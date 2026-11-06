@@ -46,17 +46,22 @@ namespace Patchwork
             sleeperBatch.Build(g, "Sleepers", PatchworkAssets.Planks(new Color(0.5f, 0.34f, 0.24f)));
         }
 
-        // Yarn grass, clover, pebbles and sewn-on felt patches over all the open grass. Last of all,
-        // so it only grows where nothing else is.
+        // Thick, colourful yarn grass, pebbles and sewn-on felt patches over all the open grass.
+        // Last of all, so it only grows where nothing else is.
         static void GroundCover(LevelKit kit)
         {
-            Color[] greens = { new Color(0.42f, 0.66f, 0.36f), new Color(0.5f, 0.74f, 0.4f), new Color(0.36f, 0.58f, 0.34f) };
+            // Odds and ends of yarn: drifts of each colour across the meadows.
+            Color[] greens =
+            {
+                new Color(0.45f, 0.72f, 0.38f), new Color(1f, 0.84f, 0.42f), new Color(0.38f, 0.62f, 0.4f), new Color(0.98f, 0.6f, 0.7f),
+                new Color(0.55f, 0.75f, 0.98f), new Color(0.74f, 0.62f, 0.92f), new Color(1f, 0.66f, 0.48f),
+            };
             Color[] patchCols = { new Color(0.6f, 0.78f, 0.46f), new Color(0.46f, 0.66f, 0.42f), new Color(0.7f, 0.8f, 0.5f), new Color(0.55f, 0.72f, 0.6f), new Color(0.78f, 0.82f, 0.55f) };
             var area = new Vector2(Half - 0.5f, Half - 0.5f);
             YarnGrass.Patches(kit, -area, area, 0f, 70, patchCols, 5);
             YarnGrass.Patches(kit, new Vector2(-74f, 4f), new Vector2(-60f, 38f), 4f, 6, patchCols, 9);
-            YarnGrass.Scatter(kit, -area, area, 0f, 1.6f, greens, FlowerColors, 3);
-            YarnGrass.Scatter(kit, new Vector2(-74f, 4f), new Vector2(-60f, 38f), 4f, 1.8f, greens, FlowerColors, 4);
+            YarnGrass.Scatter(kit, -area, area, 0f, 1.4f, greens, FlowerColors, 3);
+            YarnGrass.Scatter(kit, new Vector2(-74f, 4f), new Vector2(-60f, 38f), 4f, 1.4f, greens, FlowerColors, 4);
         }
 
         // ---------------------------------------------------------------- The intro's props
@@ -618,8 +623,11 @@ namespace Patchwork
                 var h = houses[i];
                 var r = Quaternion.Euler(0f, h.z, 0f);
                 Vector3 c = new Vector3(h.x, 0.06f, h.y);
-                FlowerPot(kit, c + r * new Vector3(-1.4f, 0f, h.w * 0.5f + 0.5f), FlowerColors[i % FlowerColors.Length]);
-                FlowerPot(kit, c + r * new Vector3(1.4f, 0f, h.w * 0.5f + 0.5f), FlowerColors[(i + 2) % FlowerColors.Length]);
+                if (i != 6)   // the Big Top tent stands on that house's doorstep
+                {
+                    FlowerPot(kit, c + r * new Vector3(-1.4f, 0f, h.w * 0.5f + 0.5f), FlowerColors[i % FlowerColors.Length]);
+                    FlowerPot(kit, c + r * new Vector3(1.4f, 0f, h.w * 0.5f + 0.5f), FlowerColors[(i + 2) % FlowerColors.Length]);
+                }
                 if (i % 2 == 0) Barrel(kit, c + r * new Vector3(-3.8f, 0f, h.w * 0.5f + 0.7f), i * 40f);
             }
             // A penny-farthing leaning by the bakery.

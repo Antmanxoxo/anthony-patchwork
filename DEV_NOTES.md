@@ -278,6 +278,14 @@ Stuff I need to remember about how Patchwork is put together.
   Rocker / Blinker), removes the smaller of two trees closer than 0.55 x their crown radii, and
   pushes small props (< 4 m) out of trunks, solid 4-9 m things and each other (max 2 m). Tree
   names and filler names are listed at the top of the file. Add new tree types there.
+- Yarn grass: `YarnGrass.Scatter` takes a colour palette (index = mesh kind; colours +
+  3 + flower colours must stay <= 16), grows nearly everywhere, scales density by
+  `GameSettings.Graphics`, builds 16 m chunks and puts them on `RenderOptimizer.GrassLayer` (10),
+  culled at 70 m x CullScale.
+- Map: places and shops are numbered in reading order (`MapScreen.Numbered`) and named in the
+  key; region (Area) names sit on felt tags on the map. Add a new place with a plain `MapPin`
+  and it gets a number and a key row by itself.
+- Thin ground decals (biome tints) have no collider: keep them off the ravine and the canal.
 - Sounds from things out in the level that the player didn't cause go through
   `Sfx.PlayNear(id, pos, volume, range)` so they fade with distance (plain `Sfx.Play` is
   heard at full volume anywhere).

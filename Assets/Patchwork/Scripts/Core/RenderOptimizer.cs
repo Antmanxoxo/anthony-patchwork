@@ -12,7 +12,7 @@ namespace Patchwork
     // Runs once, right after a level is built.
     public static class RenderOptimizer
     {
-        public const int SmallLayer = 8, MediumLayer = 9;
+        public const int SmallLayer = 8, MediumLayer = 9, GrassLayer = 10;
         static Mesh hiSphere, hiCapsule, hiCube, hiCylinder, cube, cylinder;
         static Mesh[] spheres, capsules;   // low, medium, high
 
@@ -27,6 +27,7 @@ namespace Patchwork
             var d = new float[32];
             d[SmallLayer] = Mathf.Min(cullFar, 80f * CullScale);
             d[MediumLayer] = Mathf.Min(cullFar, 180f * CullScale);
+            d[GrassLayer] = Mathf.Min(cullFar, 70f * CullScale);
             cullCamera.layerCullDistances = d;
             cullCamera.layerCullSpherical = true;
         }

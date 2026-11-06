@@ -1,5 +1,21 @@
 # Development Log
 
+## Yarn meadows, a tidy map and solid ground at Toadstool Dell
+- Fixed falling through the ground near Toadstool Dell: the dell's coloured ground patch
+  stretched right across the ravine, so it looked like ground where there was none. It now
+  stops at the ravine's edge.
+- New ground: a thick tufted yarn rug (packed little twisted tufts) instead of flat felt.
+- The grass growing out of the ground is colourful yarn now (greens, butter yellow, rose,
+  sky blue, lavender and peach in big drifts) and it covers the open ground thickly instead
+  of in scattered clumps. Tufts are bigger and taller. There's less on Fast and Balanced, and
+  it stops being drawn about 70 m away, so it stays smooth to play.
+- The map is redone: every region name is on a stitched felt tag, every place is a numbered
+  badge (moved apart with a little thread back to the real spot if two would overlap), and
+  one tidy key beside the map lists all the numbered places, the Town Band and what's left
+  to find. Nothing is left without a background or dropped any more.
+- Clipping: rounder props are measured properly by the tidy-up, and the flowerpots that
+  poked into the Big Top tent are gone.
+
 ## Clearing up clipping in Toybox Town
 - After Level 1 is built, a tidy-up pass keeps props out of each other: where two trees grow
   right into each other the smaller one goes, and small props (mushrooms, pots, signs,

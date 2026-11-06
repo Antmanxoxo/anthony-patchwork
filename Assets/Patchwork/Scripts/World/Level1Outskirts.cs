@@ -1152,7 +1152,8 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cube, new Vector3(-5f, 0.012f, -101f), new Vector3(62f, 0.02f, 26f), PatchworkAssets.Grass(new Color(0.62f, 0.72f, 0.4f)), default(Vector3), tint);
             kit.Deco(PrimitiveType.Cube, new Vector3(78.3f, 0.012f, -100.2f), new Vector3(73.2f, 0.02f, 28.6f), PatchworkAssets.Grass(new Color(0.58f, 0.78f, 0.44f)), default(Vector3), tint);
             kit.Deco(PrimitiveType.Cube, new Vector3(101.4f, 0.012f, 33f), new Vector3(27.2f, 0.02f, 50f), PatchworkAssets.Grass(new Color(0.68f, 0.8f, 0.48f)), default(Vector3), tint);
-            kit.Deco(PrimitiveType.Cube, new Vector3(-62f, 0.012f, 102.4f), new Vector3(52f, 0.02f, 25.2f), PatchworkAssets.Grass(new Color(0.38f, 0.6f, 0.4f)), default(Vector3), tint);
+            // (stops at the ravine's edge: past it there's no ground under it to stand on)
+            kit.Deco(PrimitiveType.Cube, new Vector3(-69.7f, 0.012f, 102.4f), new Vector3(36.6f, 0.02f, 25.2f), PatchworkAssets.Grass(new Color(0.38f, 0.6f, 0.4f)), default(Vector3), tint);
             kit.Deco(PrimitiveType.Cube, new Vector3(99.4f, 0.012f, 98.4f), new Vector3(31.2f, 0.02f, 33.2f), PatchworkAssets.Grass(new Color(0.62f, 0.74f, 0.4f)), default(Vector3), tint);
 
             // The orchard's hedge along its north side, with a flower arch where the lane comes in.

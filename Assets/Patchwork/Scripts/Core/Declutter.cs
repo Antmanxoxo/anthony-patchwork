@@ -47,7 +47,7 @@ namespace Patchwork
                 float foot = Mathf.Max(b.size.x, b.size.z);
                 if (foot > 12f || b.size.y < 0.25f) continue;          // areas, paths and flat patches
                 var th = new Thing { T = t, B = b, Tree = Trees.Contains(t.name), Pure = Pure(t), Filler = Fillers.Contains(t.name) };
-                th.Radius = foot * 0.4f;
+                th.Radius = foot * 0.48f;   // most props are round-ish (balls, caps, pots)
                 things.Add(th);
             }
             var trees = things.FindAll(x => x.Tree);

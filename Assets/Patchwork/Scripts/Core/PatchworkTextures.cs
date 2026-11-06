@@ -44,8 +44,9 @@ namespace Patchwork
             Felt = Build(256, FeltHeight, 0.8f, 0.2f, 2.4f, none, 0.25f, 0.1f, 3);
             Weave = Build(256, WeaveHeight2, 0.74f, 0.26f, 3.2f, new Color(0.85f, 0.83f, 0.88f), 0.35f, 0.07f, 4);
             Wicker = Build(256, WickerHeight, 0.5f, 0.5f, 5.5f, new Color(0.78f, 0.7f, 0.62f), 0.6f, 0.08f, 3);
-            // Grass: blue-green shade in the dips, sunny yellow-green tips, clumpy patches.
-            Grass = Build(512, GrassHeight, 0.64f, 0.36f, 3.8f, new Color(0.72f, 0.85f, 0.82f), 0.55f, 0.16f, 2, new Color(1.0f, 1.0f, 0.8f));
+            // Grass: a thick tufted yarn rug. Cool shade down between the tufts, sunny tips, and big
+            // soft lighter and darker drifts so the repeat doesn't show.
+            Grass = Build(512, GrassHeight, 0.6f, 0.42f, 4.6f, new Color(0.66f, 0.8f, 0.84f), 0.6f, 0.2f, 2, new Color(1.02f, 1.0f, 0.78f));
             Wood = Build(256, WoodHeight, 0.72f, 0.28f, 2.4f, new Color(0.78f, 0.68f, 0.6f), 0.4f, 0.1f, 3);
             Wrap = Build(256, WrapHeight, 0.6f, 0.4f, 4.2f, new Color(0.84f, 0.82f, 0.88f), 0.45f, 0.06f, 4);
             Cardboard = Build(256, CardboardHeight, 0.78f, 0.22f, 2.4f, new Color(0.85f, 0.78f, 0.7f), 0.3f, 0.12f, 3);
@@ -226,21 +227,30 @@ namespace Patchwork
             return Mathf.Max(reedH, stakeH) * 0.9f + fibre;
         }
 
-        // Felt lawn with little stitched grass tufts.
+        // A tufted yarn rug: packed little tufts of twisted yarn, each a soft dome with the twist
+        // of its plies showing, squeezed up against its neighbours.
         static float GrassHeight(float u, float v, int x, int y)
         {
-            float h = ValueNoise(u, v, 8, 7) * 0.35f + Hash(x, y) * 0.12f;
-            const int cells = 6;
+            const int cells = 22;
             float cu = u * cells, cv = v * cells;
             int ix = Mathf.FloorToInt(cu), iy = Mathf.FloorToInt(cv);
-            Vector2 jitter = new Vector2(Hash(ix, iy * 3) * 0.4f + 0.3f, Hash(ix * 5, iy) * 0.4f + 0.3f);
-            Vector2 p = new Vector2(cu - ix, cv - iy);
-            // Three little stitched blades fanning out from a point.
-            Vector2 root = jitter - new Vector2(0f, 0.2f);
-            float d = Mathf.Min(SegDist(p, root, root + new Vector2(-0.12f, 0.3f)),
-                      Mathf.Min(SegDist(p, root, root + new Vector2(0f, 0.36f)), SegDist(p, root, root + new Vector2(0.12f, 0.3f))));
-            if (d < 0.035f) h = Mathf.Max(h, 1f - d / 0.035f * 0.3f);
-            return h;
+            float best = 0f;
+            for (int oy = -1; oy <= 1; oy++)
+                for (int ox = -1; ox <= 1; ox++)
+                {
+                    int gx = ((ix + ox) % cells + cells) % cells, gy = ((iy + oy) % cells + cells) % cells;
+                    Vector2 c = new Vector2(ix + ox + 0.1f + Hash(gx * 3, gy * 7) * 0.8f, iy + oy + 0.1f + Hash(gx * 11, gy * 5) * 0.8f);
+                    Vector2 d = new Vector2(cu, cv) - c;
+                    float r = d.magnitude / (0.62f + Hash(gx * 17, gy * 19) * 0.18f);
+                    if (r >= 1f) continue;
+                    float dome = Mathf.Sqrt(1f - r * r);
+                    // The twist: ridges spiralling out from the middle of the tuft.
+                    float ang = Mathf.Atan2(d.y, d.x);
+                    float twist = Mathf.Sin(ang * 3f + r * 9f + Hash(gx, gy) * 6.28f) * 0.5f + 0.5f;
+                    float tuft = dome * (0.78f + twist * 0.22f) * (0.85f + Hash(gx * 23, gy * 29) * 0.15f);
+                    if (tuft > best) best = tuft;
+                }
+            return best * 0.88f + ValueNoise(u, v, 64, 7) * 0.06f + Hash(x, y) * 0.06f;
         }
 
         static float WoodHeight(float u, float v, int x, int y)

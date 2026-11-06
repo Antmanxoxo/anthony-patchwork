@@ -24,9 +24,10 @@ namespace Patchwork
         }
     }
 
-    // The pull-up map (Map button: D-pad left / M). A hand-drawn tourist map on squared paper,
-    // in the spirit of an island brochure: a painted bird's-eye view of the level, red pins with
-    // place names, Patch's arrow, little doodles round the edge and a legend of what's left to find.
+    // The pull-up map (Map button: D-pad left / M). A felt tourist map stitched onto a quilt: a
+    // bird's-eye picture of the level with region names on felt tags, numbered badges for the
+    // places (named in the key beside it), the Town Band's buttons and Patch's arrow, and one
+    // tidy panel with the key and what's left to find.
     // The painting is taken once (from a camera high overhead) the first time the map opens.
     public class MapScreen
     {
@@ -274,106 +275,143 @@ namespace Patchwork
                     UIKit.Circle(c + new Vector2(sx * o, sy * o), hd, new Color(0.2f, 0.12f, 0.1f, 0.8f * k));
         }
 
-        static bool Overlaps(Rect r, System.Collections.Generic.List<Rect> placed)
+        static bool Overlaps(Rect r, List<Rect> placed)
         {
             foreach (var p in placed) if (r.Overlaps(p)) return true;
             return false;
         }
 
-        // Area names first (big stitched letters, long thin places written along their length),
-        // then the pins, then each pin's name tag in the first spot round it that doesn't cover
-        // another tag, an area name or a pin. A tag that can't fit anywhere is left off (the pin
-        // still shows) rather than piling up unreadably.
+        static readonly Color Cream = new Color(0.99f, 0.96f, 0.88f), Ink = new Color(0.3f, 0.18f, 0.12f);
+        static readonly Color PlaceRed = new Color(0.86f, 0.24f, 0.24f), ShopBlue = new Color(0.3f, 0.55f, 0.92f);
+
+        // The numbered places, in reading order (top row of the map first, left to right), so
+        // the numbers are easy to find on the map and the key reads 1, 2, 3...
+        List<MapPin> Numbered(LevelInfo level)
+        {
+            var list = new List<MapPin>();
+            foreach (var pin in level.MapPins)
+                if (pin.Type == MapPin.Kind.Place || pin.Type == MapPin.Kind.Shop) list.Add(pin);
+            float half = Mathf.Max(area.extents.x, area.extents.z) + 2f, band = half * 2f / 6f;
+            list.Sort((x, y) =>
+            {
+                int rx = Mathf.FloorToInt((area.center.z + half - x.Position.z) / band), ry = Mathf.FloorToInt((area.center.z + half - y.Position.z) / band);
+                return rx != ry ? rx.CompareTo(ry) : x.Position.x.CompareTo(y.Position.x);
+            });
+            return list;
+        }
+
+        // A felt tag with a stitched edge: every name on the map sits on one of these.
+        static void Tag(Rect r, Color stitch, float k)
+        {
+            UIKit.Fill(new Rect(r.x + 2f, r.y + 3f, r.width, r.height), new Color(0f, 0f, 0f, 0.22f * k), 7f);
+            UIKit.Fill(r, new Color(Cream.r, Cream.g, Cream.b, 0.96f * k), 7f);
+            RunningStitch(new Rect(r.x + 3f, r.y + 3f, r.width - 6f, r.height - 6f), new Color(stitch.r, stitch.g, stitch.b, 0.7f * k), 5f, 3f, 1.4f);
+        }
+
+        // A round numbered badge.
+        static void Badge(Vector2 c, float d, Color col, string text, float k)
+        {
+            UIKit.Circle(c + new Vector2(1.5f, 2f), d, new Color(0f, 0f, 0f, 0.3f * k));
+            UIKit.Circle(c, d, new Color(1f, 1f, 1f, k));
+            UIKit.Circle(c, d - 5f, new Color(col.r, col.g, col.b, k));
+            UIKit.Label(new Rect(c.x - d, c.y - d * 0.5f, d * 2f, d), text, UIKit.Style(Mathf.RoundToInt(d * 0.52f), true, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, k)));
+        }
+
+        // On the map: region names on felt tags, then the Town Band buttons, then a numbered badge
+        // for every place (nudged apart if two would sit on top of each other, with a little
+        // thread back to the real spot). The names of the numbered places are in the key.
         void DrawPins(Rect mapR, LevelInfo level, float k)
         {
-            var placed = new System.Collections.Generic.List<Rect>();
-            var areaStyle = UIKit.Style(25, true, TextAnchor.MiddleCenter, new Color(1f, 0.97f, 0.9f, 0.92f * k));
+            var placed = new List<Rect>();
+            var areaStyle = UIKit.Style(17, true, TextAnchor.MiddleCenter, new Color(Ink.r, Ink.g, Ink.b, k));
+            var areaStitch = new Color(0.45f, 0.62f, 0.4f);
             foreach (var pin in level.MapPins)
             {
                 if (pin.Type != MapPin.Kind.Area) continue;
                 Vector2 p = ToMap(mapR, pin.Position);
                 string text = pin.Name.ToUpperInvariant();
-                float w = UIKit.TextWidth(text, areaStyle) + 16f;
+                float w = UIKit.TextWidth(text, areaStyle) + 26f, h = 30f;
                 bool tall = pin.Name.Contains("Ravine") || pin.Name.Contains("Canal");
-                Rect box = tall ? new Rect(p.x - 17f, p.y - w * 0.5f, 34f, w) : new Rect(p.x - w * 0.5f, p.y - 17f, w, 34f);
-                if (!tall)
+                if (tall)
                 {
-                    box.x = Mathf.Clamp(box.x, mapR.x + 4f, mapR.xMax - box.width - 4f);
-                    box.y = Mathf.Clamp(box.y, mapR.y + 4f, mapR.yMax - box.height - 4f);
+                    var box = new Rect(p.x - h * 0.5f, p.y - w * 0.5f, h, w);
+                    placed.Add(box);
+                    Matrix4x4 saved = GUI.matrix;
+                    GUIUtility.RotateAroundPivot(-90f, box.center);
+                    var lr = new Rect(box.center.x - w * 0.5f, box.center.y - h * 0.5f, w, h);
+                    Tag(lr, areaStitch, k);
+                    UIKit.Label(lr, text, areaStyle);
+                    GUI.matrix = saved;
+                    continue;
                 }
-                if (Overlaps(box, placed)) continue;
-                placed.Add(box);
-                Matrix4x4 saved = GUI.matrix;
-                if (tall) GUIUtility.RotateAroundPivot(-90f, box.center);
-                var lr = tall ? new Rect(box.center.x - w * 0.5f, box.center.y - 17f, w, 34f) : box;
-                UIKit.Label(lr, text, areaStyle, true);
-                GUI.matrix = saved;
+                // Try the spot itself, then a little above or below it.
+                float[] dy = { 0f, -34f, 34f, -68f, 68f };
+                foreach (float o in dy)
+                {
+                    var r = new Rect(p.x - w * 0.5f, p.y - h * 0.5f + o, w, h);
+                    r.x = Mathf.Clamp(r.x, mapR.x + 6f, mapR.xMax - r.width - 6f);
+                    r.y = Mathf.Clamp(r.y, mapR.y + 6f, mapR.yMax - r.height - 6f);
+                    if (Overlaps(r, placed) && o != dy[dy.Length - 1]) continue;
+                    placed.Add(r);
+                    Tag(r, areaStitch, k);
+                    UIKit.Label(r, text, areaStyle);
+                    break;
+                }
             }
 
-            // The pins themselves (and room for their heads).
-            var red = new Color(0.86f, 0.22f, 0.2f, k);
+            // The Town Band: gold star buttons once found, grey until then.
             foreach (var pin in level.MapPins)
             {
-                if (pin.Type == MapPin.Kind.Area) continue;
+                if (pin.Type != MapPin.Kind.Band) continue;
                 Vector2 p = ToMap(mapR, pin.Position);
-                if (pin.Type == MapPin.Kind.Band)
-                {
-                    bool got = !string.IsNullOrEmpty(pin.Id) && GameState.IsCollected(pin.Id);
-                    Button(p, 34f, got ? new Color(1f, 0.8f, 0.25f) : new Color(0.62f, 0.58f, 0.7f), k);
-                    UIKit.IconTransformed(new Rect(p.x - 11f, p.y - 11f, 22f, 22f), starTex, new Color(1f, 1f, 1f, 0.9f * k), 0f, 1f);
-                    placed.Add(new Rect(p.x - 17f, p.y - 17f, 34f, 34f));
-                }
-                else if (pin.Type == MapPin.Kind.Shop)
-                {
-                    Button(p, 26f, new Color(0.35f, 0.6f, 0.95f), k);
-                    placed.Add(new Rect(p.x - 13f, p.y - 13f, 26f, 26f));
-                }
-                else
-                {
-                    Matrix4x4 saved = GUI.matrix;
-                    GUIUtility.RotateAroundPivot(-30f, p);
-                    UIKit.Fill(new Rect(p.x - 1.5f, p.y - 2f, 3f, 16f), new Color(0.75f, 0.76f, 0.8f, k), 1.5f);
-                    GUI.matrix = saved;
-                    Vector2 head = p + new Vector2(-7f, -11f);
-                    UIKit.Circle(head + new Vector2(1.5f, 2f), 17f, new Color(0f, 0f, 0f, 0.3f * k));
-                    UIKit.Circle(head, 17f, red);
-                    UIKit.Circle(head + new Vector2(-3f, -3f), 5f, new Color(1f, 1f, 1f, 0.75f * k));
-                    placed.Add(new Rect(head.x - 9f, head.y - 9f, 18f, 24f));
-                }
+                bool got = !string.IsNullOrEmpty(pin.Id) && GameState.IsCollected(pin.Id);
+                Button(p, 34f, got ? new Color(1f, 0.8f, 0.25f) : new Color(0.62f, 0.58f, 0.7f), k);
+                UIKit.IconTransformed(new Rect(p.x - 11f, p.y - 11f, 22f, 22f), starTex, new Color(1f, 1f, 1f, 0.9f * k), 0f, 1f);
+                placed.Add(new Rect(p.x - 17f, p.y - 17f, 34f, 34f));
             }
 
-            // Name tags: band pieces first (they matter most), then shops, then places.
-            var labelStyle = UIKit.Style(17, true, TextAnchor.MiddleLeft, new Color(0.3f, 0.18f, 0.12f, k));
-            MapPin.Kind[] order = { MapPin.Kind.Band, MapPin.Kind.Shop, MapPin.Kind.Place };
-            foreach (var kind in order)
-                foreach (var pin in level.MapPins)
+            // Numbered places.
+            var list = Numbered(level);
+            const float d = 28f;
+            for (int i = 0; i < list.Count; i++)
+            {
+                Vector2 p = ToMap(mapR, list[i].Position);
+                Vector2 at = p;
+                for (int ring = 0; ring < 5; ring++)
                 {
-                    if (pin.Type != kind) continue;
-                    Vector2 p = ToMap(mapR, pin.Position);
-                    bool got = pin.Type != MapPin.Kind.Band || (!string.IsNullOrEmpty(pin.Id) && GameState.IsCollected(pin.Id));
-                    string text = got ? pin.Name : "???";
-                    float w = UIKit.TextWidth(text, labelStyle) + 16f, h = 24f;
-                    Vector2[] spots =
+                    bool found = false;
+                    int steps = ring == 0 ? 1 : 8;
+                    for (int s = 0; s < steps && !found; s++)
                     {
-                        new Vector2(12f, -h * 0.5f - 6f), new Vector2(-w - 14f, -h * 0.5f - 6f), new Vector2(-w * 0.5f, -h - 22f), new Vector2(-w * 0.5f, 10f),
-                        new Vector2(12f, -h - 16f), new Vector2(-w - 14f, -h - 16f), new Vector2(12f, 6f), new Vector2(-w - 14f, 6f),
-                    };
-                    bool done = false;
-                    foreach (var o in spots)
-                    {
-                        var r = new Rect(p.x + o.x, p.y + o.y, w, h);
+                        float a = s * Mathf.PI * 0.25f;
+                        Vector2 c = p + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * ring * 16f;
+                        var r = new Rect(c.x - d * 0.5f, c.y - d * 0.5f, d, d);
                         if (r.x < mapR.x + 2f || r.xMax > mapR.xMax - 2f || r.y < mapR.y + 2f || r.yMax > mapR.yMax - 2f) continue;
                         if (Overlaps(r, placed)) continue;
-                        placed.Add(r);
-                        UIKit.Fill(new Rect(r.x + 2f, r.y + 2f, r.width, r.height), new Color(0f, 0f, 0f, 0.2f * k), 5f);
-                        UIKit.Fill(r, new Color(0.99f, 0.96f, 0.88f, 0.95f * k), 5f);
-                        RunningStitch(new Rect(r.x + 3f, r.y + 3f, r.width - 6f, r.height - 6f), new Color(0.86f, 0.4f, 0.45f, 0.55f * k), 4f, 3f, 1.2f);
-                        UIKit.Label(new Rect(r.x + 8f, r.y, w, h), text, labelStyle);
-                        done = true;
-                        break;
+                        at = c;
+                        found = true;
                     }
-                    if (!done) continue;
+                    if (found) break;
                 }
+                if ((at - p).sqrMagnitude > 4f)
+                {
+                    // A little thread from the badge to the real spot, and a dot there.
+                    Vector2 dlt = at - p;
+                    Matrix4x4 saved = GUI.matrix;
+                    GUIUtility.RotateAroundPivot(Mathf.Atan2(dlt.y, dlt.x) * Mathf.Rad2Deg, p);
+                    UIKit.Fill(new Rect(p.x, p.y - 1f, dlt.magnitude, 2f), new Color(Ink.r, Ink.g, Ink.b, 0.7f * k));
+                    GUI.matrix = saved;
+                    UIKit.Circle(p, 7f, new Color(Ink.r, Ink.g, Ink.b, k));
+                }
+                placed.Add(new Rect(at.x - d * 0.5f, at.y - d * 0.5f, d, d));
+                Badge(at, d, list[i].Type == MapPin.Kind.Shop ? ShopBlue : PlaceRed, (i + 1).ToString(), k);
+            }
+
+            // North, in the corner.
+            var nc = new Vector2(mapR.xMax - 30f, mapR.y + 34f);
+            UIKit.Circle(nc + new Vector2(1.5f, 2f), 40f, new Color(0f, 0f, 0f, 0.25f * k));
+            UIKit.Circle(nc, 40f, new Color(Cream.r, Cream.g, Cream.b, k));
+            UIKit.Label(new Rect(nc.x - 20f, nc.y - 20f, 40f, 40f), "N", UIKit.Style(22, true, TextAnchor.MiddleCenter, new Color(0.85f, 0.3f, 0.3f, k)));
         }
 
         public void Draw(bool kb)
@@ -385,8 +423,6 @@ namespace Patchwork
             UIKit.Fill(new Rect(0f, 0f, W, H), new Color(0.12f, 0.08f, 0.14f, 0.55f * k));
             var level = game.Level;
             var thread = new Color(0.99f, 0.95f, 0.85f, 0.9f * k);
-            var brown = new Color(0.36f, 0.22f, 0.16f, k);
-            var red = new Color(0.86f, 0.22f, 0.2f, k);
 
             // The quilt: a backing of patchwork squares, each stitched round, with a binding.
             float pw = 1560f, ph = 960f;
@@ -419,14 +455,6 @@ namespace Patchwork
             if (painting != null) GUI.DrawTexture(mapR, painting, ScaleMode.StretchToFill, false, 0f, new Color(1f, 1f, 1f, k), 0f, 8f);
             else UIKit.Label(mapR, "Stitching the map...", UIKit.Style(30, true, TextAnchor.MiddleCenter, new Color(0.36f, 0.22f, 0.16f, 0.6f * k)));
             UIKit.Outline(mapR, new Color(0.45f, 0.3f, 0.25f, 0.8f * k), 3f, 8f);
-            // A tape measure along the bottom of the map.
-            var tape = new Rect(mapR.x, linen.yMax + 4f, mapR.width, 22f);
-            UIKit.Fill(tape, new Color(1f, 0.84f, 0.35f, k), 4f);
-            for (float tx = tape.x + 6f; tx < tape.xMax - 4f; tx += 10f)
-            {
-                bool big = Mathf.RoundToInt((tx - tape.x) / 10f) % 5 == 0;
-                UIKit.Fill(new Rect(tx, tape.y, 2f, big ? 12f : 6f), new Color(0.3f, 0.2f, 0.12f, 0.8f * k));
-            }
 
             // The title on a felt ribbon with notched ends.
             var titleStyle = UIKit.Style(50, true, TextAnchor.MiddleCenter, new Color(1f, 0.97f, 0.9f, k));
@@ -465,88 +493,86 @@ namespace Patchwork
                     UIKit.Fill(new Rect(p.x - 13f, p.y - 1.5f + (i - 1) * 6f, 26f, 2.5f), new Color(0.85f, 0.35f, 0.5f, k), 1.2f);
                     GUI.matrix = saved;
                 }
-                UIKit.Label(new Rect(p.x - 40f, p.y + 22f, 80f, 26f), "You", UIKit.Style(18, true, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, k)), true);
+                var you = new Rect(p.x - 26f, p.y + 22f, 52f, 26f);
+                Tag(you, new Color(0.85f, 0.35f, 0.5f), k);
+                UIKit.Label(you, "You", UIKit.Style(16, true, TextAnchor.MiddleCenter, new Color(Ink.r, Ink.g, Ink.b, k)));
             }
 
-            // The legend, on a felt pocket stitched to the quilt.
-            float lx = linen.xMax + 40f, lw = quilt.xMax - lx - 36f;
-            var pocket = new Rect(lx - 14f, mapR.y - 10f, lw + 28f, 520f);
+            // The key, on one felt panel stitched to the quilt: every numbered place, then the Town
+            // Band and what's left to find. Every row the same height, on the same cream strip.
+            float lx = linen.xMax + 34f, lw = quilt.xMax - lx - 34f;
+            var pocket = new Rect(lx, linen.y, lw, linen.height);
             UIKit.Panel(pocket, new Color(0.99f, 0.95f, 0.88f, 0.97f * k), new Color(0.85f, 0.35f, 0.4f, 0.8f * k), 20f);
-            float ly = pocket.y + 30f;
-            lx += 12f;
-            lw -= 24f;
-            var head = UIKit.Style(30, true, TextAnchor.MiddleLeft, new Color(0.85f, 0.3f, 0.3f, k));
-            var body = UIKit.Style(23, true, TextAnchor.MiddleLeft, new Color(0.3f, 0.18f, 0.12f, k));
+            float px = pocket.x + 22f, pwid = pocket.width - 44f, ly = pocket.y + 20f;
+            var head = UIKit.Style(26, true, TextAnchor.MiddleLeft, new Color(0.85f, 0.3f, 0.3f, k));
+            var row = UIKit.Style(17, true, TextAnchor.MiddleLeft, new Color(Ink.r, Ink.g, Ink.b, k));
+            var body = UIKit.Style(19, true, TextAnchor.MiddleLeft, new Color(Ink.r, Ink.g, Ink.b, k));
+
+            var places = Numbered(level);
+            if (places.Count > 0)
+            {
+                UIKit.Label(new Rect(px, ly, pwid, 34f), "Places", head);
+                ly += 38f;
+                int perCol = (places.Count + 1) / 2;
+                float colW = (pwid - 12f) * 0.5f, rowH = Mathf.Min(30f, (pocket.height * 0.55f - 40f) / Mathf.Max(1, perCol));
+                for (int i = 0; i < places.Count; i++)
+                {
+                    int col = i / perCol, r = i % perCol;
+                    var strip = new Rect(px + col * (colW + 12f), ly + r * rowH, colW, rowH - 4f);
+                    UIKit.Fill(strip, new Color(1f, 0.99f, 0.95f, k), 6f);
+                    float bd = Mathf.Min(24f, rowH - 4f);
+                    Badge(new Vector2(strip.x + bd * 0.5f + 3f, strip.center.y), bd, places[i].Type == MapPin.Kind.Shop ? ShopBlue : PlaceRed, (i + 1).ToString(), k);
+                    UIKit.Label(new Rect(strip.x + bd + 10f, strip.y, strip.width - bd - 12f, strip.height), places[i].Name, row);
+                }
+                ly += perCol * rowH + 14f;
+            }
+
             int bands = 0;
             foreach (var pin in level.MapPins) if (pin.Type == MapPin.Kind.Band) bands++;
             if (bands > 0)
             {
-                UIKit.Label(new Rect(lx, ly, lw, 40f), "Town Band", head);
-                ly += 46f;
+                UIKit.Fill(new Rect(px, ly, pwid, 2f), new Color(0.85f, 0.35f, 0.4f, 0.4f * k));
+                ly += 10f;
+                UIKit.Label(new Rect(px, ly, pwid, 34f), "Town Band", head);
+                ly += 38f;
                 foreach (var pin in level.MapPins)
                 {
                     if (pin.Type != MapPin.Kind.Band) continue;
                     bool got = GameState.IsCollected(pin.Id);
-                    Button(new Vector2(lx + 15f, ly + 17f), 28f, got ? new Color(1f, 0.8f, 0.25f) : new Color(0.62f, 0.58f, 0.7f), k);
-                    UIKit.Label(new Rect(lx + 40f, ly, lw - 40f, 34f), got ? pin.Name + "  - found!" : pin.Name, body);
-                    ly += 40f;
+                    var strip = new Rect(px, ly, pwid, 30f);
+                    UIKit.Fill(strip, new Color(1f, 0.99f, 0.95f, k), 6f);
+                    Button(new Vector2(strip.x + 15f, strip.center.y), 24f, got ? new Color(1f, 0.8f, 0.25f) : new Color(0.62f, 0.58f, 0.7f), k);
+                    UIKit.Label(new Rect(strip.x + 34f, strip.y, strip.width - 36f, strip.height), got ? pin.Name + "  - found!" : "??? (not found yet)", row);
+                    ly += 34f;
                 }
-                ly += 14f;
+                ly += 8f;
             }
+
+            UIKit.Fill(new Rect(px, ly, pwid, 2f), new Color(0.85f, 0.35f, 0.4f, 0.4f * k));
+            ly += 12f;
             if (level.HeartstringIds.Count > 0)
             {
-                UIKit.Heart(new Vector2(lx + 15f, ly + 18f), 30f, new Color(1f, 0.72f, 0.3f, k));
-                UIKit.Label(new Rect(lx + 40f, ly, lw - 40f, 36f), "Heartstrings  " + level.HeartstringCount() + " / " + level.HeartstringIds.Count, body);
-                ly += 42f;
+                UIKit.Heart(new Vector2(px + 14f, ly + 16f), 26f, new Color(1f, 0.72f, 0.3f, k));
+                UIKit.Label(new Rect(px + 36f, ly, pwid - 36f, 32f), "Heartstrings  " + level.HeartstringCount() + " / " + level.HeartstringIds.Count, body);
+                ly += 36f;
             }
             if (level.CollectibleIds.Count > 0)
             {
-                UIKit.Icon(new Rect(lx, ly + 2f, 30f, 30f), PatchworkAssets.IconButton, new Color(1f, 1f, 1f, k));
-                UIKit.Label(new Rect(lx + 40f, ly, lw - 40f, 36f), "Golden Buttons  " + level.CollectedCount() + " / " + level.CollectibleIds.Count, body);
-                ly += 42f;
+                UIKit.Icon(new Rect(px + 1f, ly + 3f, 26f, 26f), PatchworkAssets.IconButton, new Color(1f, 1f, 1f, k));
+                UIKit.Label(new Rect(px + 36f, ly, pwid - 36f, 32f), "Golden Buttons  " + level.CollectedCount() + " / " + level.CollectibleIds.Count, body);
+                ly += 36f;
             }
             if (level.SecretIds.Count > 0)
             {
-                UIKit.Circle(new Vector2(lx + 15f, ly + 18f), 28f, new Color(0.55f, 0.75f, 1f, k));
-                UIKit.Circle(new Vector2(lx + 11f, ly + 14f), 9f, new Color(1f, 1f, 1f, 0.8f * k));
-                UIKit.Label(new Rect(lx + 40f, ly, lw - 40f, 36f), "Secret Marbles  " + level.SecretCount() + " / " + level.SecretIds.Count, body);
-                ly += 42f;
-            }
-            ly += 10f;
-            var note = UIKit.Style(19, false, TextAnchor.UpperLeft, new Color(0.3f, 0.18f, 0.12f, 0.85f * k), true);
-            UIKit.Label(new Rect(lx, ly, lw, pocket.yMax - ly - 16f), level.MapNote, note);
-
-            // The compass: a big button with the directions cross-stitched on it.
-            Vector2 cp = new Vector2(lx + lw * 0.5f - 60f, quilt.yMax - 150f);
-            Button(cp, 150f, new Color(0.95f, 0.85f, 0.65f), k);
-            for (int i = 0; i < 4; i++)
-            {
-                Matrix4x4 saved = GUI.matrix;
-                GUIUtility.RotateAroundPivot(i * 90f, cp);
-                for (int s = 0; s < 4; s++)
-                    UIKit.Fill(new Rect(cp.x - 2f, cp.y - 62f + s * 11f, 4f, 7f), i == 0 ? red : brown, 2f);
-                GUI.matrix = saved;
-            }
-            UIKit.Label(new Rect(cp.x - 20f, cp.y - 112f, 40f, 34f), "N", UIKit.Style(28, true, TextAnchor.MiddleCenter, new Color(0.85f, 0.3f, 0.3f, k)), true);
-            // A spool of thread and a pincushion, sitting on the quilt.
-            Vector2 spool = new Vector2(cp.x + 140f, cp.y + 10f);
-            UIKit.Fill(new Rect(spool.x - 30f, spool.y - 46f, 60f, 12f), new Color(0.85f, 0.7f, 0.5f, k), 5f);
-            UIKit.Fill(new Rect(spool.x - 24f, spool.y - 36f, 48f, 72f), new Color(0.45f, 0.6f, 0.95f, k), 4f);
-            for (int i = 0; i < 6; i++) UIKit.Fill(new Rect(spool.x - 24f, spool.y - 30f + i * 11f, 48f, 2f), new Color(0.35f, 0.48f, 0.8f, k));
-            UIKit.Fill(new Rect(spool.x - 30f, spool.y + 34f, 60f, 12f), new Color(0.85f, 0.7f, 0.5f, k), 5f);
-            Vector2 cush = new Vector2(spool.x + 74f, spool.y + 14f);
-            UIKit.Circle(cush, 70f, new Color(0.9f, 0.28f, 0.32f, k));
-            Color[] heads = { new Color(1f, 0.85f, 0.3f), new Color(0.5f, 0.75f, 1f), Color.white, new Color(0.6f, 0.9f, 0.5f) };
-            for (int i = 0; i < 4; i++)
-            {
-                Vector2 hp = cush + new Vector2(-18f + i * 12f, -26f - (i % 2) * 8f);
-                UIKit.Fill(new Rect(hp.x - 1f, hp.y, 2f, 18f), new Color(0.75f, 0.76f, 0.8f, k));
-                UIKit.Circle(hp, 12f, new Color(heads[i].r, heads[i].g, heads[i].b, k));
+                UIKit.Circle(new Vector2(px + 14f, ly + 16f), 24f, new Color(0.55f, 0.75f, 1f, k));
+                UIKit.Circle(new Vector2(px + 10f, ly + 12f), 8f, new Color(1f, 1f, 1f, 0.8f * k));
+                UIKit.Label(new Rect(px + 36f, ly, pwid - 36f, 32f), "Secret Marbles  " + level.SecretCount() + " / " + level.SecretIds.Count, body);
+                ly += 36f;
             }
 
-            UIKit.PromptLabel(quilt.xMax - 260f, quilt.yMax - 62f, 40f, PromptAction.Map, "Close", kb, new Color(0.99f, 0.95f, 0.85f), k);
+            UIKit.PromptLabel(quilt.xMax - 250f, quilt.yMax - 50f, 36f, PromptAction.Map, "Close", kb, new Color(0.99f, 0.95f, 0.85f), k);
             if (CanTravel())
-                UIKit.PromptLabel(linen.x + 10f, quilt.yMax - 44f, 34f, PromptAction.Confirm, "Travel back to the Pod", kb, new Color(0.99f, 0.95f, 0.85f), k);
+                UIKit.PromptLabel(linen.x + 10f, quilt.yMax - 50f, 36f, PromptAction.Confirm, "Travel back to the Pod", kb, new Color(0.99f, 0.95f, 0.85f), k);
         }
     }
 }
