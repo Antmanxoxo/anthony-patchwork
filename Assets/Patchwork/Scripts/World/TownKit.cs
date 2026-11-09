@@ -217,6 +217,7 @@ namespace Patchwork
                 kit.Block(W(chimneyX, (baseY + topY) * 0.5f, cz), new Vector3(1.2f, topY - baseY, 1.2f), new Color(0.7f, 0.38f, 0.3f), "Chimney", brick);
                 kit.Deco(PrimitiveType.Cube, W(chimneyX, topY + 0.08f, cz), new Vector3(1.45f, 0.16f, 1.45f), brick);
                 house.ChimneyTop = W(chimneyX, topY + 0.16f, cz);
+                ChimneySmoke.Add(kit, house.ChimneyTop + Vector3.up * 0.2f);
             }
             if (sign != Sign.None) ShopSign(kit, W(w * 0.5f - 0.3f, 3.4f, d * 0.5f + 0.1f), yaw, sign);
             return house;

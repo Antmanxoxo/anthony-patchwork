@@ -309,6 +309,12 @@ Stuff I need to remember about how Patchwork is put together.
   `LevelLook`. Only Level 1 sets it.
 - In IMGUI code never use `GUIUtility.RotateAroundPivot` (it turns about a screen pixel and
   breaks under the UI scale); use `MapScreen.Turn` / `UIKit.IconTransformed` style matrices.
+- Toybox music: `MusicToybox.ComposeToybox`. Sections come from `ToySection(bar)`; chords,
+  tune and horn line are the string tables above it (one bar per entry, 4 beats each). Keep
+  tune notes on the beat inside the bar's chord. `AddPad` is the cheap string pad; heavy use of
+  `AddStrings` makes the first load of the level noticeably slower.
+- `Emote.Show(pos, kind)` pops a felt emote anywhere. `Puffballs.Ensure(kit).Add(...)` adds a
+  puffball; `ChimneySmoke.Add` is called by `TownKit` for every chimney.
 - Sounds from things out in the level that the player didn't cause go through
   `Sfx.PlayNear(id, pos, volume, range)` so they fade with distance (plain `Sfx.Play` is
   heard at full volume anywhere).

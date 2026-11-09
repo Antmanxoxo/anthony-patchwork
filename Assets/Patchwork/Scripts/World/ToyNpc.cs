@@ -30,6 +30,9 @@ namespace Patchwork
         float talkPulse;
         float greetCooldown;
         Instrument instrument;
+        // Noticing Patch: a hop and a little emote when he comes near, and copying his jumps.
+        float hopY, hopVel, noticeCooldown, copyDelay;
+        bool wasNear;
 
         public override string DisplayNameText { get { return Name; } }
         public override Color NameColor { get { return Tag; } }
@@ -358,6 +361,35 @@ namespace Patchwork
             yaw = Mathf.MoveTowardsAngle(yaw, want, dt * 140f);
             transform.rotation = Quaternion.Euler(0f, yaw, 0f);
 
+            hopVel -= 24f * dt;
+            hopY += hopVel * dt;
+            if (hopY < 0f) { hopY = 0f; hopVel = 0f; }
+            noticeCooldown -= dt;
+            if (game != null && game.Player != null && game.Mode == UIMode.Gameplay)
+            {
+                Vector3 d = game.Player.transform.position - transform.position;
+                float flat = d.x * d.x + d.z * d.z;
+                bool near = flat < 5.5f * 5.5f && Mathf.Abs(d.y) < 3f;
+                if (near && !wasNear && noticeCooldown <= 0f)
+                {
+                    noticeCooldown = 14f;
+                    hopVel = 4.4f;
+                    Emote.Kind e = instrument != Instrument.None ? Emote.Kind.Note
+                        : (Emote.Kind)(new[] { 0, 2, 3, 0 }[Random.Range(0, 4)]);
+                    Emote.Show(HeadPosition + Vector3.up * 0.4f, e);
+                }
+                if (near) wasNear = true;
+                else if (flat > 8f * 8f) wasNear = false;
+                // Monkey see, monkey do: when Patch jumps close by, most of them have a go too.
+                if (flat < 7f * 7f && game.Player.Motor.JustJumped && hopY <= 0f && copyDelay <= 0f && Random.value < 0.7f)
+                    copyDelay = 0.1f + Random.value * 0.2f;
+            }
+            if (copyDelay > 0f)
+            {
+                copyDelay -= dt;
+                if (copyDelay <= 0f && hopY <= 0f) hopVel = 3.8f;
+            }
+
             float beat = t * MusicPlayer.ToyBpm / 60f;
             float bob, sway;
             if (Playing)
@@ -370,7 +402,7 @@ namespace Patchwork
                 bob = Mathf.Abs(Mathf.Sin(t * 1.3f)) * 0.025f + talkPulse * 0.05f;
                 sway = Mathf.Sin(t * 0.9f) * 2.5f;
             }
-            body.localPosition = new Vector3(0f, bob, 0f);
+            body.localPosition = new Vector3(0f, bob + hopY, 0f);
             body.localRotation = Quaternion.Euler(-talkPulse * 4f, 0f, sway);
             if (head != null) head.localRotation = Quaternion.Euler(Playing ? Mathf.Sin(beat * Mathf.PI) * 6f : 0f, Mathf.Sin(t * 0.7f) * 10f, 0f);
             if (arm != null && Playing) arm.localRotation = Quaternion.Euler(Mathf.Sin(beat * Mathf.PI * 2f) * 25f, 0f, 20f);

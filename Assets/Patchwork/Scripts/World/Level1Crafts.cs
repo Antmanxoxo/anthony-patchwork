@@ -17,6 +17,38 @@ namespace Patchwork
             kit.Info.MapPins.Add(new MapPin("Tape-Measure Bridge", new Vector3((RavineEast + RavineWest) * 0.5f, 0f, TapeZ)));
         }
 
+        // ---------------------------------------------------------------- Puffball dandelions
+
+        // Clusters of puffballs out in the meadows and along the edges of town, to run through.
+        static void PuffballMeadows(LevelKit kit)
+        {
+            var puffs = Puffballs.Ensure(kit);
+            var rng = new System.Random(2024);
+            Vector3[] centres =
+            {
+                new Vector3(75f, 0f, -100f), new Vector3(100f, 0f, 30f), new Vector3(100f, 0f, 95f), new Vector3(-6f, 0f, -101f),
+                new Vector3(94f, 0f, 69f), new Vector3(20f, 0f, 100f), new Vector3(60f, 0f, 10f), new Vector3(70f, 0f, 50f),
+                new Vector3(-20f, 0f, 80f), new Vector3(55f, 0f, -60f), new Vector3(-70f, 0f, 70f), new Vector3(-95f, 0f, 60f),
+                new Vector3(0f, 0f, 70f), new Vector3(60f, 0f, -20f), new Vector3(-25f, 0f, -95f), new Vector3(85f, 0f, -30f),
+            };
+            foreach (var c in centres)
+            {
+                int made = 0;
+                // A loose drift of them, a couple of steps apart, so a run through pops a chain.
+                float heading = (float)rng.NextDouble() * Mathf.PI * 2f;
+                for (int tries = 0; tries < 26 && made < 7; tries++)
+                {
+                    float along = (tries - 13) * 1.6f + ((float)rng.NextDouble() - 0.5f);
+                    float side = ((float)rng.NextDouble() - 0.5f) * 3f;
+                    Vector3 want = c + new Vector3(Mathf.Cos(heading) * along - Mathf.Sin(heading) * side, 0f, Mathf.Sin(heading) * along + Mathf.Cos(heading) * side);
+                    Vector3 p;
+                    if (!Spot(want, 0.7f, out p)) continue;
+                    puffs.Add(kit, p, 0.75f + (float)rng.NextDouble() * 0.45f);
+                    made++;
+                }
+            }
+        }
+
         // ---------------------------------------------------------------- Button stepping stones
 
         static void ButtonStones(LevelKit kit)

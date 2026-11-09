@@ -151,6 +151,7 @@ namespace Patchwork
             IntroProps(kit);
             CraftCrossings(kit);
             NurseryMobile(kit);
+            PuffballMeadows(kit);
             Declutter.Run(kit.Root);   // props built by different parts of the level, kept out of each other
             // The soft little things lean and wobble when Patch brushes past or lands nearby.
             PropWobble.Attach(kit.Root, "Flower", "Mushroom", "FlowerPot", "Signpost", "LanternPost", "PinwheelFlower", "Lantern", "Barrel");

@@ -1,5 +1,20 @@
 # Development Log
 
+## A livelier town and a new theme tune
+- New music for Toybox Town: a sweeping orchestral adventure theme in D major (132 BPM, 40
+  bars). A twinkling harp-and-celesta intro, a main tune of big upward leaps over a falling
+  bass, a lift through two borrowed chords into a soaring section with the tune an octave up
+  and horns singing underneath, a quiet starry interlude, and a grand coda. It still builds
+  up with the band: harp with the lute, horns and fanfares with the trumpet, flute with the
+  piper.
+- Townsfolk notice Patch: a hop and a little felt emote over their head (a heart, a star, an
+  exclamation mark, or a music note if they play an instrument) when he comes near, and
+  most of them jump when he jumps.
+- Puffball dandelions grow in drifts in the meadows. Run through one and it bursts into
+  fluff with a chime; pop several in a row and the chime climbs the scale, with a sparkle on
+  every fifth. They grow back after a while.
+- Pompom smoke puffs rise from every chimney.
+
 ## A tiny handmade world
 - The miniature camera: in Toybox Town the far distance goes softly out of focus, like a
   close-up photo of a model on a table, so the level reads as a small handmade diorama. (Off

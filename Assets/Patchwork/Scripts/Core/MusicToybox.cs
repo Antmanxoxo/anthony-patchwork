@@ -4,7 +4,7 @@ namespace Patchwork
 {
     public enum MusicTrack { Skiff, Toybox, Pod }
 
-    // Toybox Town's own soundtrack: a bouncy, swung toy-town march (see the notes on
+    // Toybox Town's own soundtrack: a sweeping orchestral adventure theme (see the notes on
     // ComposeToybox). It's built in layers that match the town band:
     //   Bed     - always on (the drummer's the only one whose instrument still works)
     //   Lute    - on once the lute's string is found
@@ -14,7 +14,7 @@ namespace Patchwork
     {
         enum ToyStem { Bed, Lute, Trumpet, Pipe }
         const int ToyStemCount = 4;
-        public const float ToyBpm = 112f;
+        public const float ToyBpm = 132f;
 
         static AudioClip[] toyStems;
         AudioSource[] toySources;
@@ -99,55 +99,63 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ Composition
         //
-        // A bouncy, swung toy-town march in F major, 4/4 at 112 BPM, 32 bars:
-        //   A  (1-8)   the main tune - catchy and singable
-        //   A' (9-16)  again, with a wistful borrowed chord and a new ending
-        //   B  (17-24) D minor, a little mysterious - a soft chiptune lead takes the tune
-        //   C  (25-32) the big lift: long soaring notes, strings and brass, then back round
-        // The bed (always playing) is already a whole song: walking pizzicato bass, brushed
-        // drums, toy-piano off-beats, and the tune on music box / chip lead / glockenspiel.
-        // Each band member found adds a layer on top:
-        //   Lute    - harp arpeggios and glissandos into each section
-        //   Trumpet - brass fanfares, little answering fills, horn pads and a countermelody
-        //   Pipe    - the flute singing the tune (a clarinet-ish low flute in the minor section)
+        // A sweeping orchestral adventure theme in D major, 4/4 at 132 BPM, 40 bars:
+        //   Intro (1-4)    harp and celesta twinkling, strings swelling, a timpani roll in
+        //   A     (5-12)   the main tune: big upward leaps and long held notes over a
+        //                  falling bass line
+        //   A'    (13-20)  again, lifting through two borrowed chords (Bb, C) into...
+        //   B     (21-28)  the big soaring section: the tune an octave up, horns singing
+        //                  underneath, timpani on every bar
+        //   C     (29-36)  a quiet, starry interlude: celesta, harp and low flute, no drums
+        //   Coda  (37-40)  the head of the tune once more, grandly, and round again
+        // The bed (always playing) is already the whole piece: bass, a pattering string
+        // ostinato, soft orchestral drums, held strings, and the tune on strings with a
+        // music box, glockenspiel or celesta on top. Each band member found adds a layer:
+        //   Lute    - harp arpeggios running up and down, and glissandos into each section
+        //   Trumpet - horn pads, fanfares, and the countermelody under the soaring section
+        //   Pipe    - the flute singing the tune, with trills into each new section
 
         static readonly string[] ToyChords =
         {
-            "F", "F", "Bb", "F", "Gm7", "C7", "F", "C7",
-            "F", "F", "Bb", "Bbm", "F", "D7", "Gm7 C7", "F",
-            "Dm", "Dm", "Bb", "F", "Gm", "A7", "Dm", "C7",
-            "Bb", "C", "Am", "Dm", "Gm7", "C", "F", "C7",
+            "D", "G", "D", "A7",
+            "D", "A", "Bm", "F#m", "G", "D", "Em7", "A7",
+            "D", "A", "Bm", "F#m", "G", "D", "Bb", "C",
+            "G", "A", "F#m", "Bm", "G", "A", "D", "D",
+            "Bm", "G", "D", "A", "Bm", "G", "Em7", "A7",
+            "D", "G", "D A7", "D",
         };
 
         // One bar per entry, lengths in beats (4 a bar).
         static readonly string[] ToyTune =
         {
-            "C5:0.5 F5:0.5 A5:1 G5:0.5 F5:0.5 C5:1", "D5:0.5 F5:0.5 A5:0.5 C6:0.5 A5:2",
-            "Bb5:1 A5:0.5 G5:0.5 F5:1 D5:1", "C5:0.5 D5:0.5 F5:0.5 A5:0.5 G5:2",
-            "G5:0.5 Bb5:0.5 D6:1 C6:0.5 Bb5:0.5 G5:1", "E5:0.5 G5:0.5 C6:1 Bb5:0.5 G5:0.5 E5:1",
-            "F5:1 A5:0.5 C6:0.5 F6:1 E6:0.5 D6:0.5", "C6:1.5 Bb5:0.5 A5:0.5 G5:0.5 E5:1",
+            "r:4", "r:4", "r:2 A4:1 D5:1", "E5:1 G5:1 A5:1 C#6:1",
 
-            "C5:0.5 F5:0.5 A5:1 G5:0.5 F5:0.5 C5:1", "D5:0.5 F5:0.5 A5:0.5 C6:0.5 A5:2",
-            "Bb5:1 A5:0.5 G5:0.5 F5:1 D5:1", "Db6:1 C6:0.5 Bb5:0.5 F5:2",
-            "A5:0.5 C6:0.5 F6:1 E6:0.5 D6:0.5 C6:1", "F#5:0.5 A5:0.5 D6:1 C6:0.5 A5:0.5 F#5:1",
-            "Bb5:0.5 A5:0.5 G5:1 E5:0.5 G5:0.5 Bb5:1", "A5:2 F5:1 r:1",
+            "A4:1 D5:1 F#5:1.5 A5:0.5", "A5:2 G5:0.5 F#5:0.5 E5:1", "D5:1 F#5:1 B5:1.5 A5:0.5", "A5:2 F#5:1 C#5:1",
+            "B4:1 D5:1 G5:1.5 B5:0.5", "A5:2 F#5:1 D5:1", "E5:1 G5:1 B5:1 D6:1", "C#6:1.5 B5:0.5 A5:1 E5:1",
 
-            "D5:1 F5:0.5 A5:0.5 D6:1 A5:1", "C6:0.5 Bb5:0.5 A5:1 G5:0.5 F5:0.5 E5:1",
-            "F5:1 D5:0.5 F5:0.5 Bb5:1 A5:0.5 G5:0.5", "A5:2 F5:1 C5:1",
-            "Bb4:0.5 D5:0.5 G5:1 F5:0.5 G5:0.5 Bb5:1", "A5:0.5 C#6:0.5 E6:1 D6:0.5 C#6:0.5 A5:1",
-            "D6:1 C6:0.5 Bb5:0.5 A5:1 F5:1", "E5:1 G5:0.5 Bb5:0.5 C6:1 r:1",
+            "A4:1 D5:1 F#5:1.5 A5:0.5", "A5:2 G5:0.5 F#5:0.5 E5:1", "D5:1 F#5:1 B5:1.5 A5:0.5", "A5:2 F#5:1 C#5:1",
+            "B4:1 D5:1 G5:1.5 B5:0.5", "A5:2 F#5:1 D5:1", "D5:1 F5:1 Bb5:1 D6:1", "E6:1.5 D6:0.5 C6:1 E6:1",
 
-            "D6:2 F6:2", "E6:2 C6:1 G5:1", "A5:1.5 C6:0.5 E6:2", "D6:3 A5:1",
-            "Bb5:2 D6:1 F6:1", "E6:2 D6:1 C6:1", "C6:1 A5:1 F5:1 A5:1", "G5:1 Bb5:1 C6:0.5 Bb5:0.5 G5:1",
+            "D6:1.5 B5:0.5 G5:1 B5:1", "C#6:1.5 A5:0.5 E5:1 A5:1", "A5:1 C#6:1 F#6:2", "F#6:1 E6:0.5 D6:0.5 B5:2",
+            "D6:1.5 B5:0.5 G5:1 B5:1", "C#6:1 E6:1 A6:1.5 G6:0.5", "F#6:3 D6:1", "A5:1 D6:1 F#6:1 A6:1",
+
+            "F#5:1 B5:1 D6:2", "D6:1 B5:1 G5:2", "F#5:1 A5:1 D6:1.5 E6:0.5", "E6:2 C#6:1 A5:1",
+            "F#5:1 B5:1 D6:1 F#6:1", "G6:1.5 F#6:0.5 D6:1 B5:1", "G5:1 B5:1 E6:1 G6:1", "A6:2 G6:1 E6:1",
+
+            "A5:1 D6:1 F#6:1.5 A6:0.5", "B6:2 G6:1 D6:1", "F#6:1 D6:1 E6:1 C#6:1", "D6:3 r:1",
         };
 
-        // The brass countermelody under the soaring section (bars 25-32).
+        // The horns' countermelody under the soaring section (bars 21-28).
         static readonly string[] ToyBrassC =
         {
-            "F4:4", "G4:4", "E4:2 C5:2", "F4:4", "D5:2 Bb4:2", "C5:2 G4:2", "A4:2 C5:2", "Bb4:2 E4:2",
+            "B4:4", "A4:2 C#5:2", "C#5:2 A4:2", "D5:2 B4:2", "B4:2 D5:2", "E5:2 C#5:2", "D5:2 A4:2", "F#4:2 A4:2",
         };
 
-        const float ToySwing = 0.12f;   // how late the "and"s land (in beats)
+        // Which part of the piece a bar belongs to: 0 intro, 1 A, 2 A', 3 B (soaring), 4 C (quiet), 5 coda.
+        static int ToySection(int bar)
+        {
+            return bar < 4 ? 0 : bar < 12 ? 1 : bar < 20 ? 2 : bar < 28 ? 3 : bar < 36 ? 4 : 5;
+        }
 
         static AudioClip[] ComposeToybox()
         {
@@ -161,150 +169,202 @@ namespace Patchwork
             var lute = data[(int)ToyStem.Lute];
             var brass = data[(int)ToyStem.Trumpet];
             var pipe = data[(int)ToyStem.Pipe];
-            System.Func<float, float> T = bt => Swing(bt, ToySwing) * beat;
 
             for (int b = 0; b < bars; b++)
             {
-                int section = b / 8;   // 0 A, 1 A', 2 B, 3 C
+                int section = ToySection(b);
+                bool quiet = section == 0 || section == 4;
+                bool big = section == 3 || section == 5;
+                bool sectionStart = b == 4 || b == 12 || b == 20 || b == 28 || b == 36;
+                bool sectionEnd = b == 3 || b == 11 || b == 19 || b == 27 || b == 35 || b == bars - 1;
                 float b0 = b * 4f;
                 var names = ToyChords[b].Split(' ');
                 string first = names[0], second = names.Length > 1 ? names[1] : names[0];
 
                 // ----- Bed -----
-                // Walking pizzicato bass: root, third/fifth, fifth/octave, then a step towards the next bar.
-                int r1 = Root(first, 36), r2 = Root(second, 36);
-                string next = ToyChords[(b + 1) % bars].Split(' ')[0];
-                int nextRoot = Root(next, 36);
-                int[] walk = first == second
-                    ? new[] { r1, r1 + (first.Contains("m") ? 3 : 4), r1 + 7, nextRoot + (nextRoot > r1 ? -1 : 1) }
-                    : new[] { r1, r1 + 7, r2, r2 + 7 };
-                for (int q = 0; q < 4; q++) AddPizz(bed, (b0 + q) * beat, Freq(walk[q]), 0.13f, 1000 + b * 4 + q);
-                // Drums: soft kick on 1 and 3, brushed snare on 2 and 4, a swung shaker.
-                AddKick(bed, b0 * beat, 0.12f);
-                AddKick(bed, (b0 + 2f) * beat, 0.07f);
-                AddSnare(bed, (b0 + 1f) * beat, 0.045f, 1100 + b);
-                AddSnare(bed, (b0 + 3f) * beat, 0.05f, 1200 + b);
-                for (int e8 = 0; e8 < 8; e8++) AddBrush(bed, T(b0 + e8 * 0.5f), 0.05f, e8 % 2 == 0 ? 0.012f : 0.018f, 1300 + b * 8 + e8);
-                if (b == bars - 1 || b == 15 || b == 23)
-                    for (int s16 = 0; s16 < 8; s16++) AddSnare(bed, (b0 + 2f + s16 * 0.25f) * beat, 0.02f + s16 * 0.004f, 1400 + b * 8 + s16);
-                if (b == 24) AddTimpani(bed, b0 * beat, Freq(Root("Bb", 34)), 0.14f);
-                if (b == 16) AddTimpani(bed, b0 * beat, Freq(Root("D", 38)), 0.12f);
+                // Bass: root on 1, fifth on 3 (pizzicato in the quiet parts, bowed otherwise).
+                int r1 = Root(first, 38), r2 = Root(second, 38);
+                if (quiet)
+                {
+                    AddPizz(bed, b0 * beat, Freq(r1), 0.1f, 1000 + b * 4);
+                    AddPizz(bed, (b0 + 2f) * beat, Freq(first == second ? r1 + 7 : r2), 0.08f, 1001 + b * 4);
+                }
+                else
+                {
+                    AddBass(bed, b0 * beat, beat * 1.8f, Freq(r1), 0.1f);
+                    AddBass(bed, (b0 + 2f) * beat, beat * 1.8f, Freq(first == second ? r1 + 7 : r2), 0.085f);
+                    AddPizz(bed, (b0 + 3.5f) * beat, Freq(r2 + 7), 0.05f, 1002 + b * 4);
+                }
 
                 for (int half = 0; half < 2; half++)
                 {
                     string name = half == 0 ? first : second;
-                    var ch = Ch(name, 60);
+                    var ch = Ch(name, 57);
                     float h0 = b0 + half * 2f;
-                    if (section == 0 || section == 1)
+                    // Held strings: the warm cushion under everything (fuller in the big parts).
+                    foreach (int c in ch) AddPad(bed, h0 * beat, beat * 2f, Freq(c - 12), big ? 0.022f : 0.016f);
+                    if (big) AddPad(bed, h0 * beat, beat * 2f, Freq(ch[0] - 24), 0.018f);
+                    if (!quiet)
                     {
-                        // Toy piano on the swung "and" of each half bar.
-                        foreach (int c in ch) AddToyPiano(bed, T(h0 + 1.5f), Freq(c), 0.022f);
-                        foreach (int c in ch) AddToyPiano(bed, T(h0 + 0.5f), Freq(c), 0.012f);
-                    }
-                    else if (section == 2)
-                    {
-                        // Celesta ripples, up and back down the chord.
-                        int[] order = { 0, 1, 2, 1 };
-                        for (int e8 = 0; e8 < 4; e8++) AddCelesta(bed, T(h0 + e8 * 0.5f), beat * 0.6f, Freq(ch[order[e8] % ch.Length] + 12), 0.02f);
+                        // The pattering string ostinato: light plucked off-beats that keep it galloping.
+                        for (int e8 = 0; e8 < 4; e8++)
+                        {
+                            if (e8 % 2 == 0) AddPizz(bed, (h0 + e8 * 0.5f + 0.25f) * beat, Freq(ch[(e8 / 2) % ch.Length]), 0.028f, 1500 + b * 16 + half * 8 + e8);
+                            else foreach (int c in ch) AddPizz(bed, (h0 + e8 * 0.5f) * beat, Freq(c), 0.022f, 1600 + b * 16 + half * 8 + e8 + c);
+                        }
                     }
                     else
                     {
-                        // Warm strings holding the chords.
-                        foreach (int c in ch) AddStrings(bed, h0 * beat, beat * 2f, Freq(c - 12), 0.016f);
+                        // Celesta rippling up and back down the chord, like stars coming out.
+                        int[] order = { 0, 1, 2, 1 };
+                        for (int e8 = 0; e8 < 4; e8++) AddCelesta(bed, (h0 + e8 * 0.5f) * beat, beat * 0.7f, Freq(ch[order[e8] % ch.Length] + 12), 0.018f);
                     }
+                }
+
+                // Drums: soft and orchestral. A little march on the snare, brushes, and timpani
+                // marking the big moments. None at all in the quiet interlude.
+                if (!quiet)
+                {
+                    AddKick(bed, b0 * beat, 0.09f);
+                    AddKick(bed, (b0 + 2f) * beat, 0.05f);
+                    AddSnare(bed, (b0 + 1f) * beat, 0.03f, 1100 + b);
+                    AddSnare(bed, (b0 + 3f) * beat, 0.035f, 1200 + b);
+                    AddSnare(bed, (b0 + 3.75f) * beat, 0.014f, 1250 + b);
+                    for (int e8 = 0; e8 < 8; e8++) AddBrush(bed, (b0 + e8 * 0.5f) * beat, 0.05f, e8 % 2 == 0 ? 0.009f : 0.014f, 1300 + b * 8 + e8);
+                }
+                if (big) AddTimpani(bed, b0 * beat, Freq(Root(first, 38)), 0.1f);
+                if (sectionStart && !quiet) AddTimpani(bed, b0 * beat, Freq(Root(first, 38)), 0.13f);
+                if (sectionEnd)
+                {
+                    // A snare roll swelling into the next section, with a timpani roll under it.
+                    for (int s16 = 0; s16 < 8; s16++) AddSnare(bed, (b0 + 2f + s16 * 0.25f) * beat, 0.012f + s16 * 0.004f, 1400 + b * 8 + s16);
+                    int roll = Root(ToyChords[(b + 1) % bars].Split(' ')[0], 38);
+                    for (int s16 = 0; s16 < 6; s16++) AddTimpani(bed, (b0 + 2.5f + s16 * 0.25f) * beat, Freq(roll), 0.03f + s16 * 0.012f);
+                }
+                // Glockenspiel sparkles high above, every other bar.
+                if (b % 2 == 1 && !quiet)
+                {
+                    var g = Ch(second, 84);
+                    for (int i = 0; i < 3; i++) AddGlock(bed, (b0 + 2f + i * 0.25f) * beat, Freq(g[i % g.Length]), 0.012f);
                 }
 
                 // ----- Lute (harp) -----
-                var hc = Ch(first, 55);
-                int[] up = { hc[0], hc[1], hc[2], hc[0] + 12, hc[1] + 12, hc[2] + 12 };
-                if (section == 2)
+                var hc = Ch(first, 50);
+                var hc2 = Ch(second, 50);
+                int[] order8 = big ? new[] { 0, 1, 2, 3, 4, 5, 4, 3 } : new[] { 0, 1, 2, 3, 2, 1, 2, 3 };
+                for (int e8 = 0; e8 < 8; e8++)
                 {
-                    int[] order = { 0, 2, 1, 2 };
-                    for (int q = 0; q < 4; q++)
-                    {
-                        var c = Ch(q < 2 ? first : second, 48);
-                        AddPluck(lute, (b0 + q) * beat, beat * 1.6f, Freq(c[order[q] % c.Length]), 0.075f, 2000 + b * 4 + q);
-                    }
+                    var c = e8 < 4 ? hc : hc2;
+                    int idx = order8[e8];
+                    int note = c[idx % 3] + 12 * (idx / 3) + (big ? 12 : 0);
+                    AddPluck(lute, (b0 + e8 * 0.5f) * beat, beat * 1.3f, Freq(note), quiet ? 0.06f : 0.05f, 2100 + b * 8 + e8);
                 }
-                else
+                if (sectionEnd)
                 {
-                    int[] order = section == 3 ? new[] { 0, 1, 2, 3, 4, 5, 4, 3 } : new[] { 0, 1, 2, 3, 2, 1, 2, 3 };
-                    for (int e8 = 0; e8 < 8; e8++)
-                    {
-                        var c = e8 < 4 ? up : (first == second ? up : new[] { Ch(second, 55)[0], Ch(second, 55)[1], Ch(second, 55)[2], Ch(second, 55)[0] + 12, Ch(second, 55)[1] + 12, Ch(second, 55)[2] + 12 });
-                        AddPluck(lute, T(b0 + e8 * 0.5f), beat * 1.2f, Freq(c[order[e8]] + (section == 3 ? 12 : 0)), 0.055f, 2100 + b * 8 + e8);
-                    }
-                }
-                // Glissandos sweeping into each new section.
-                if (b % 8 == 7)
-                {
-                    var into = Ch(ToyChords[(b + 1) % bars].Split(' ')[0], 60);
-                    var run = new int[12];
-                    for (int i = 0; i < run.Length; i++) run[i] = into[i % into.Length] + 12 * (i / into.Length) - 12;
-                    AddGliss(lute, (b0 + 3f) * beat, run, beat * 0.9f, 0.05f, 2500 + b * 12);
+                    var into = Ch(ToyChords[(b + 1) % bars].Split(' ')[0], 62);
+                    var run = new int[14];
+                    for (int i = 0; i < run.Length; i++) run[i] = into[i % 3] + 12 * (i / 3) - 12;
+                    AddGliss(lute, (b0 + 3f) * beat, run, beat * 0.95f, 0.05f, 2500 + b * 14);
                 }
 
-                // ----- Trumpet (brass) -----
-                if (section == 0 || section == 1)
+                // ----- Trumpet (horns and brass) -----
+                if (section == 1 || section == 2)
                 {
+                    // Horns holding a soft open fifth, and a little fanfare every four bars.
+                    int r = Root(first, 50);
+                    AddBrass(brass, b0 * beat, beat * 3.7f, Freq(r), 0.022f);
+                    AddBrass(brass, b0 * beat, beat * 3.7f, Freq(r + 7), 0.016f);
                     if (b % 4 == 0)
                     {
-                        // Fanfare: a short stab, a pickup, and a held chord.
-                        var bc = Ch(first, 58);
-                        foreach (int c in bc) AddBrass(brass, b0 * beat, beat * 0.35f, Freq(c), 0.03f);
-                        foreach (int c in bc) AddBrass(brass, T(b0 + 1.5f), beat * 0.4f, Freq(c), 0.025f);
+                        var bc = Ch(first, 62);
+                        foreach (int c in bc) AddBrass(brass, b0 * beat, beat * 0.3f, Freq(c), 0.028f);
+                        foreach (int c in bc) AddBrass(brass, (b0 + 0.75f) * beat, beat * 0.2f, Freq(c), 0.02f);
+                        foreach (int c in bc) AddBrass(brass, (b0 + 1f) * beat, beat * 0.8f, Freq(c), 0.026f);
                     }
-                    string fill = null;
-                    float fillAt = 2f;
-                    switch (b)
+                    if (b == 18 || b == 19)
                     {
-                        case 3: fill = "F4:0.5 A4:0.5 C5:1"; break;
-                        case 7: fill = "E4:0.5 G4:0.5 C5:0.5 Bb4:0.5"; break;
-                        case 11: fill = "Db5:1 F5:1"; break;
-                        case 15: fill = "C5:0.5 A4:0.5 F4:1"; break;
+                        // The lift through the borrowed chords: brass swelling up.
+                        foreach (int c in Ch(first, 58)) AddBrass(brass, b0 * beat, beat * 3.8f, Freq(c), 0.03f);
                     }
-                    if (fill != null)
-                        foreach (var nt in Line(fill, b0 + fillAt)) AddBrass(brass, T(nt.Beat), nt.Len * beat * 0.9f, Freq(nt.Midi), 0.06f);
                 }
-                else if (section == 2)
+                else if (section == 3)
                 {
-                    // Horns: soft held fifths underneath.
-                    int r = Root(first, 46);
-                    AddBrass(brass, b0 * beat, beat * 3.8f, Freq(r), 0.03f);
-                    AddBrass(brass, b0 * beat, beat * 3.8f, Freq(r + 7), 0.022f);
+                    foreach (var nt in Line(ToyBrassC[b - 20], b0)) AddBrass(brass, nt.Beat * beat, nt.Len * beat * 0.96f, Freq(nt.Midi), 0.055f);
+                    if (b == 20)
+                        foreach (int c in Ch(first, 62)) AddBrass(brass, b0 * beat, beat * 0.5f, Freq(c), 0.035f);
                 }
-                else
+                else if (section == 5)
                 {
-                    foreach (var nt in Line(ToyBrassC[b - 24], b0)) AddBrass(brass, nt.Beat * beat, nt.Len * beat * 0.95f, Freq(nt.Midi), 0.05f);
+                    foreach (int c in Ch(first, 58)) AddBrass(brass, b0 * beat, beat * (first == second ? 3.6f : 1.8f), Freq(c), 0.034f);
+                    if (first != second) foreach (int c in Ch(second, 58)) AddBrass(brass, (b0 + 2f) * beat, beat * 1.8f, Freq(c), 0.034f);
+                }
+                else if (section == 4 && b >= 34)
+                {
+                    // Horns creeping back in under the end of the interlude.
+                    AddBrass(brass, b0 * beat, beat * 3.8f, Freq(Root(first, 50)), 0.018f + (b - 34) * 0.008f);
                 }
             }
 
             // ----- The tune -----
             for (int b = 0; b < bars; b++)
             {
-                int section = b / 8;
+                int section = ToySection(b);
                 foreach (var nt in Line(ToyTune[b], b * 4f))
                 {
-                    float t = T(nt.Beat);
+                    float t = nt.Beat * beat;
                     float len = nt.Len * beat;
                     float f = Freq(nt.Midi);
-                    // In the bed: music box (A), chiptune lead (B), glockenspiel (C).
-                    if (section < 2) AddMusicBox(bed, t, len + 0.3f, f, 0.026f);
-                    else if (section == 2) AddChip(bed, t, len * 0.92f, f, 0.018f);
-                    else AddGlock(bed, t, f, 0.028f);
-                    // The pipe: flute, dropping an octave to a mellow low flute in the minor section.
-                    if (section == 2) AddFlute(pipe, t, len * 0.95f + 0.05f, f * 0.5f, 0.075f);
+                    // In the bed: strings carry the long notes, with something bright on top
+                    // of every note so the tune speaks clearly.
+                    if (section == 4 || section == 0)
+                    {
+                        AddCelesta(bed, t, len + 0.4f, f, 0.03f);
+                        AddMusicBox(bed, t, len + 0.3f, f * 0.5f, 0.012f);
+                    }
                     else
                     {
-                        AddFlute(pipe, t, len * 0.95f + 0.05f, f, 0.07f);
-                        if (nt.Len >= 1.5f) AddFlute(pipe, t - 0.05f, 0.05f, Freq(nt.Midi + 2), 0.035f);
+                        if (nt.Len >= 1f) AddStrings(bed, t - 0.06f, len, f, section == 3 || section == 5 ? 0.034f : 0.028f);
+                        if (section == 3 || section == 5)
+                        {
+                            if (nt.Len >= 1f) AddStrings(bed, t - 0.06f, len, f * 0.5f, 0.024f);
+                            AddGlock(bed, t, f, 0.024f);
+                        }
+                        else AddMusicBox(bed, t, len + 0.3f, f, 0.024f);
+                    }
+                    // The pipe: the flute sings the tune (an octave down, soft and breathy, in
+                    // the quiet interlude), with a grace note into the long notes.
+                    if (section == 4) AddFlute(pipe, t, len * 0.95f + 0.05f, f * 0.5f, 0.07f);
+                    else if (section != 0)
+                    {
+                        AddFlute(pipe, t, len * 0.95f + 0.05f, f, 0.065f);
+                        if (nt.Len >= 1.5f) AddFlute(pipe, t - 0.05f, 0.05f, Freq(nt.Midi + 2), 0.03f);
                     }
                 }
             }
-            // A little piccolo trill flourish before the soaring section.
-            for (int i = 0; i < 8; i++) AddFlute(pipe, (23f * 4f + 3f + i * 0.125f) * beat, beat * 0.13f, Freq(i % 2 == 0 ? 84 : 86), 0.04f);
+            // Piccolo trills fluttering into the soaring section and the coda.
+            foreach (int tb in new[] { 19, 35 })
+                for (int i = 0; i < 8; i++) AddFlute(pipe, (tb * 4f + 3f + i * 0.125f) * beat, beat * 0.13f, Freq(i % 2 == 0 ? 86 : 88), 0.035f);
 
-            return FinishStems(data, "pw_toybox_", new[] { "bed", "lute", "trumpet", "pipe" }, 7000f);
+            return FinishStems(data, "pw_toybox_", new[] { "bed", "lute", "trumpet", "pipe" }, 7500f);
+        }
+
+        // A soft string pad for held chords: like AddStrings but with a simpler tone, so a whole
+        // piece of it is quick to build.
+        static void AddPad(float[] data, float start, float dur, float f, float vol)
+        {
+            int s0 = Mathf.FloorToInt(start * Rate);
+            int count = Mathf.CeilToInt((dur + 0.3f) * Rate);
+            float pa = 0f, pb = 0f;
+            float da = 2f * Mathf.PI * f * 1.004f / Rate, db = 2f * Mathf.PI * f * 0.996f / Rate;
+            for (int i = 0; i < count; i++)
+            {
+                float t = i / (float)Rate;
+                float env = Mathf.Clamp01(t / 0.3f) * Mathf.Clamp01((dur + 0.3f - t) / 0.3f);
+                pa += da;
+                pb += db;
+                float w = Mathf.Sin(pa) + Mathf.Sin(pb) + 0.35f * (Mathf.Sin(pa * 2f) + Mathf.Sin(pb * 2f)) + 0.12f * Mathf.Sin(pa * 3f);
+                Add(data, s0 + i, w * 0.4f * env * vol);
+            }
         }
 
         // Brass: a stack of harmonics that brighten as the note swells, with a little vibrato.
