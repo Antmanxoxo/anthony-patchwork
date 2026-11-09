@@ -62,6 +62,26 @@ namespace Patchwork
             Tri(c, tip, a, new Vector2(0f, 0f), new Vector2(0.05f, 1f), new Vector2(0.1f, 0f));
         }
 
+        // A cut end of chunky yarn standing up: three sides and a flat top, a little narrower at
+        // the top than the bottom (21 vertices). Soft and blunt, where Blade is a spike.
+        public void Strand(Vector3 root, float height, float width, Vector3 lean, float yaw)
+        {
+            var r = Quaternion.Euler(0f, yaw, 0f);
+            Vector3 up = Vector3.up * height + lean;
+            float t = width * 0.72f;
+            Vector3 a = root + r * new Vector3(-width * 0.5f, 0f, -width * 0.29f);
+            Vector3 b = root + r * new Vector3(width * 0.5f, 0f, -width * 0.29f);
+            Vector3 c = root + r * new Vector3(0f, 0f, width * 0.58f);
+            Vector3 a2 = root + up + r * new Vector3(-t * 0.5f, 0f, -t * 0.29f);
+            Vector3 b2 = root + up + r * new Vector3(t * 0.5f, 0f, -t * 0.29f);
+            Vector3 c2 = root + up + r * new Vector3(0f, 0f, t * 0.58f);
+            Vector2 u0 = new Vector2(0f, 0f), u1 = new Vector2(0.1f, 0f), u2 = new Vector2(0.1f, 0.3f), u3 = new Vector2(0f, 0.3f);
+            Tri(a, a2, b2, u0, u3, u2); Tri(a, b2, b, u0, u2, u1);
+            Tri(b, b2, c2, u0, u3, u2); Tri(b, c2, c, u0, u2, u1);
+            Tri(c, c2, a2, u0, u3, u2); Tri(c, a2, a, u0, u2, u1);
+            Tri(a2, c2, b2, u0, u2, u1);
+        }
+
         // A low-poly ball (squashed by scale), for pebbles, pompoms and berries.
         public void Ball(Vector3 center, Vector3 scale, int rings = 4, int segs = 6)
         {

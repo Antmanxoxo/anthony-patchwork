@@ -49,7 +49,7 @@ namespace Patchwork
         public const float BoxHalf = 115f;
         const float StreamWest = -46f, StreamEast = -42f, StreamSurface = -5.35f, CanalSurface = -0.6f;
 
-        static readonly Color GrassCol = new Color(0.52f, 0.72f, 0.42f);
+        static readonly Color GrassCol = new Color(0.6f, 0.8f, 0.5f);   // fresh spring felt
         static readonly Color CobbleCol = new Color(0.72f, 0.68f, 0.64f);
         static readonly Color[] Walls = { new Color(0.97f, 0.92f, 0.82f), new Color(0.95f, 0.85f, 0.78f), new Color(0.9f, 0.9f, 0.84f), new Color(0.98f, 0.88f, 0.7f), new Color(0.88f, 0.86f, 0.95f) };
         static readonly Color[] Roofs = { new Color(0.62f, 0.3f, 0.32f), new Color(0.3f, 0.42f, 0.6f), new Color(0.4f, 0.55f, 0.42f), new Color(0.55f, 0.4f, 0.6f), new Color(0.7f, 0.45f, 0.3f) };
@@ -68,14 +68,15 @@ namespace Patchwork
             info.SpawnYaw = 0f;
             info.KillY = -20f;
             info.FailY = -9f;   // the ravine and the canal are real places you can walk out of
-            info.Sky = new Color(0.86f, 0.84f, 0.88f);
+            info.Sky = new Color(0.8f, 0.9f, 0.97f);
             // A big sunny nursery: soft haze far away, so the room beyond the box reads as huge.
-            info.FogColor = new Color(0.9f, 0.84f, 0.82f);
+            info.FogColor = new Color(0.93f, 0.93f, 0.92f);
             info.FogStart = 90f;
             info.FogEnd = 720f;
             info.FarClip = 900f;
             info.MapCameraHeight = 70f;   // above the tallest trees in the wood
-            info.Saturation = 18f;
+            info.Saturation = 8f;
+            info.Contrast = 5f;
             info.Warmth = 9f;
             info.Glow = 0.55f;
             info.HeartstringsNeeded = HeartstringsNeeded;
@@ -230,19 +231,22 @@ namespace Patchwork
             body.SurfaceY = surface;
         }
 
-        // The walls of the giant toybox, papered inside with damask, brass corners, and the lid
-        // propped open behind the town.
+        // The walls of the giant toybox. Inside they're lined with a child's sky wallpaper: pale
+        // blue, with cut-paper hills along the bottom and felt clouds stuck on higher up, so
+        // the whole level sits in a bright little diorama. Brass corners, and the lid propped
+        // open behind the town.
         static void Toybox(LevelKit kit)
         {
-            var paper = PatchworkAssets.Damask(new Color(0.32f, 0.36f, 0.58f));
+            var skyBlue = new Color(0.7f, 0.86f, 0.96f);
+            var paper = PatchworkAssets.Felt(skyBlue);
             var wood = PatchworkAssets.Planks(new Color(0.55f, 0.36f, 0.26f));
             float h = 44f, t = 2f;
             // The walls go down below the ravine and canal beds so there's never a gap under them.
             float wh = h + 8f, wy = (42f + -10f) * 0.5f;
-            kit.Block(new Vector3(Half + t * 0.5f, wy, 0f), new Vector3(t, wh, Half * 2f + t * 2f), new Color(0.32f, 0.36f, 0.58f), "BoxWall", paper);
-            kit.Block(new Vector3(-Half - t * 0.5f, wy, 0f), new Vector3(t, wh, Half * 2f + t * 2f), new Color(0.32f, 0.36f, 0.58f), "BoxWall", paper);
-            kit.Block(new Vector3(0f, wy, Half + t * 0.5f), new Vector3(Half * 2f, wh, t), new Color(0.32f, 0.36f, 0.58f), "BoxWall", paper);
-            kit.Block(new Vector3(0f, wy, -Half - t * 0.5f), new Vector3(Half * 2f, wh, t), new Color(0.32f, 0.36f, 0.58f), "BoxWall", paper);
+            kit.Block(new Vector3(Half + t * 0.5f, wy, 0f), new Vector3(t, wh, Half * 2f + t * 2f), skyBlue, "BoxWall", paper);
+            kit.Block(new Vector3(-Half - t * 0.5f, wy, 0f), new Vector3(t, wh, Half * 2f + t * 2f), skyBlue, "BoxWall", paper);
+            kit.Block(new Vector3(0f, wy, Half + t * 0.5f), new Vector3(Half * 2f, wh, t), skyBlue, "BoxWall", paper);
+            kit.Block(new Vector3(0f, wy, -Half - t * 0.5f), new Vector3(Half * 2f, wh, t), skyBlue, "BoxWall", paper);
             // Wooden skirting and a brass rim along the top.
             var brass = PatchworkAssets.Plain(new Color(0.9f, 0.72f, 0.38f), 0.8f);
             foreach (var side in new[] { new Vector3(1f, 0f, 0f), new Vector3(-1f, 0f, 0f), new Vector3(0f, 0f, 1f), new Vector3(0f, 0f, -1f) })
@@ -256,8 +260,38 @@ namespace Patchwork
             for (int sx = -1; sx <= 1; sx += 2)
                 for (int sz = -1; sz <= 1; sz += 2)
                     kit.Deco(PrimitiveType.Sphere, new Vector3(sx * (Half + 1f), h - 1.2f, sz * (Half + 1f)), Vector3.one * 4f, brass);
+            // Cut-paper hills and felt clouds on the inside of every wall.
+            var hillCols = new[] { new Color(0.6f, 0.8f, 0.62f), new Color(0.5f, 0.74f, 0.6f), new Color(0.72f, 0.86f, 0.62f), new Color(0.56f, 0.78f, 0.7f) };
+            var cloudMat = PatchworkAssets.Felt(new Color(0.99f, 0.98f, 0.95f));
+            var scenery = kit.Group("BoxScenery", Vector3.zero);
+            var wallRng = new System.Random(77);
+            for (int wall = 0; wall < 4; wall++)
+            {
+                // Along the wall (u), and out from it into the box (n).
+                Vector3 u = wall < 2 ? Vector3.forward : Vector3.right;
+                Vector3 n = wall == 0 ? Vector3.left : wall == 1 ? Vector3.right : wall == 2 ? Vector3.back : Vector3.forward;
+                Vector3 basePos = -n * (Half - 0.25f);
+                float yaw = wall < 2 ? 90f : 0f;
+                // Two rows of hills: a tall pale row at the back, a lower greener row in front.
+                for (int row = 0; row < 2; row++)
+                    for (float a = -Half + 14f; a < Half - 6f; a += 34f + (float)wallRng.NextDouble() * 12f)
+                    {
+                        float wide = 52f + (float)wallRng.NextDouble() * 30f, tall = (row == 0 ? 30f : 18f) + (float)wallRng.NextDouble() * 10f;
+                        var hill = kit.Deco(PrimitiveType.Sphere, basePos + u * (a + row * 17f) + n * (row * 0.5f) + Vector3.up * -2f, new Vector3(wide, tall, 0.9f),
+                            PatchworkAssets.Felt(hillCols[(wall + row * 2 + wallRng.Next(2)) % hillCols.Length]), new Vector3(0f, yaw, 0f), scenery);
+                        NoShade(hill);
+                    }
+                for (int c = 0; c < 4; c++)
+                {
+                    float a = -Half + 26f + c * 56f + (float)wallRng.NextDouble() * 18f, y = 25f + (float)wallRng.NextDouble() * 12f, sc = 0.8f + (float)wallRng.NextDouble() * 0.6f;
+                    Vector3 at = basePos + u * a + n * 0.3f + Vector3.up * y;
+                    NoShade(kit.Deco(PrimitiveType.Sphere, at, new Vector3(18f, 7f, 0.7f) * sc, cloudMat, new Vector3(0f, yaw, 0f), scenery));
+                    NoShade(kit.Deco(PrimitiveType.Sphere, at + (u * -4f + Vector3.up * 2.6f) * sc, new Vector3(9f, 7.5f, 0.75f) * sc, cloudMat, new Vector3(0f, yaw, 0f), scenery));
+                    NoShade(kit.Deco(PrimitiveType.Sphere, at + (u * 3.4f + Vector3.up * 3.2f) * sc, new Vector3(10f, 8.5f, 0.8f) * sc, cloudMat, new Vector3(0f, yaw, 0f), scenery));
+                }
+            }
             // The lid, propped open behind the north wall.
-            var lid = kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(Half * 2f + 4f, 2f, 110f), PatchworkAssets.Damask(new Color(0.4f, 0.28f, 0.42f)));
+            var lid = kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(Half * 2f + 4f, 2f, 110f), PatchworkAssets.Damask(new Color(0.88f, 0.56f, 0.52f)));
             lid.rotation = Quaternion.Euler(-72f, 0f, 0f);
             lid.position = new Vector3(0f, h - 2f, Half + 2f) + lid.rotation * new Vector3(0f, 0f, 55f);
             for (int i = 0; i < 6; i++)
@@ -265,6 +299,13 @@ namespace Patchwork
                 float a = i / 6f * Mathf.PI * 2f;
                 kit.Cloud(new Vector3(Mathf.Cos(a) * 60f, 36f + (i % 2) * 3f, Mathf.Sin(a) * 60f), 2.6f);
             }
+        }
+
+        static void NoShade(Transform t)
+        {
+            var r = t.GetComponent<Renderer>();
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            r.receiveShadows = false;
         }
 
         // ================================================================ The town square

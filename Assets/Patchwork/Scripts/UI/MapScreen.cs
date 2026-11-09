@@ -104,7 +104,7 @@ namespace Patchwork
             capCam.clearFlags = CameraClearFlags.SolidColor;
             capCam.backgroundColor = new Color(0.93f, 0.88f, 0.76f);
             // Leave out the grass and tiny bits so the picture is clean shapes: roads, roofs, water, trees.
-            capCam.cullingMask = ~((1 << 2) | (1 << RenderOptimizer.GrassLayer) | (1 << RenderOptimizer.SmallLayer));
+            capCam.cullingMask = ~((1 << 2) | (1 << RenderOptimizer.GrassLayer) | (1 << RenderOptimizer.SmallLayer) | (1 << RenderOptimizer.MediumLayer));
             capCam.depth = -10f;
             capCam.targetTexture = capRT;
             var data = capCam.GetUniversalAdditionalCameraData();
@@ -142,45 +142,45 @@ namespace Patchwork
             capRT = null;
         }
 
-        // Turns the snapshot into felt appliqué: flat, bright patches of fabric with darker
-        // stitched seams where one thing meets another, a cream running stitch along the seams,
-        // and a woven texture over everything.
+        // Turns the snapshot into a clean illustrated map, like one cut from coloured felt: the
+        // picture is smoothed, every pixel is matched to one of a few flat map colours (meadow,
+        // wood, water, path, stone, and soft pastels for roofs and toys), and a thin darker line
+        // is drawn wherever two colours meet.
         static Texture2D Stylize(Texture2D src)
         {
             int w = src.width, h = src.height;
-            var px = src.GetPixels();
-            var lum = new float[w * h];
-            for (int i = 0; i < px.Length; i++) lum[i] = px[i].r * 0.3f + px[i].g * 0.59f + px[i].b * 0.11f;
-            var cream = new Color(0.98f, 0.94f, 0.84f);
-            var outPx = new Color[w * h];
-            System.Func<int, int, float> edgeAt = (x, y) =>
-            {
-                x = Mathf.Clamp(x, 1, w - 2);
-                y = Mathf.Clamp(y, 1, h - 2);
-                float gx = (lum[(y - 1) * w + x + 1] + 2f * lum[y * w + x + 1] + lum[(y + 1) * w + x + 1]) - (lum[(y - 1) * w + x - 1] + 2f * lum[y * w + x - 1] + lum[(y + 1) * w + x - 1]);
-                float gy = (lum[(y + 1) * w + x - 1] + 2f * lum[(y + 1) * w + x] + lum[(y + 1) * w + x + 1]) - (lum[(y - 1) * w + x - 1] + 2f * lum[(y - 1) * w + x] + lum[(y - 1) * w + x + 1]);
-                return Mathf.Clamp01((Mathf.Sqrt(gx * gx + gy * gy) - 0.16f) * 2.4f);
-            };
+            var px = Blur(Blur(src.GetPixels(), w, h, 2), w, h, 2);
+            var kind = new int[w * h];
+            var flat = new Color[w * h];
+            for (int i = 0; i < px.Length; i++) flat[i] = MapColour(px[i], out kind[i]);
+            // Tidy stray specks: a pixel takes the commonest kind around it.
+            var tidy = new int[w * h];
+            var counts = new int[64];
             for (int y = 0; y < h; y++)
                 for (int x = 0; x < w; x++)
                 {
-                    int i = y * w + x;
-                    Color c = px[i];
-                    float l = lum[i];
-                    // Richer, brighter colour, then flattened into a few fabric tones.
-                    c = Color.LerpUnclamped(new Color(l, l, l), c, 1.4f);
-                    c = Color.Lerp(c, cream * (0.55f + l * 0.6f), 0.18f);
-                    for (int k = 0; k < 3; k++) c[k] = Mathf.Lerp(c[k], Mathf.Round(c[k] * 6f) / 6f, 0.75f);
-                    // Seams: a dark fold where things meet, a light edge just beside it (like the
-                    // raised edge of a felt patch), and a dashed cream running stitch along it.
-                    float seam = edgeAt(x, y);
-                    float lift = edgeAt(x - 2, y + 2) - seam;
-                    c = Color.Lerp(c, c * 0.5f, seam * 0.75f);
-                    if (lift > 0.2f) c = Color.Lerp(c, Color.Lerp(c, Color.white, 0.35f), lift);
-                    if (seam > 0.55f && ((x + y) / 4) % 3 == 0) c = Color.Lerp(c, cream, 0.7f);
-                    // Woven fabric texture and a little fuzz.
-                    float weave = Mathf.Sin(x * 1.5708f) * Mathf.Sin(y * 1.5708f) * 0.025f + (Hash(x, y) - 0.5f) * 0.06f;
-                    c.r += weave; c.g += weave; c.b += weave;
+                    System.Array.Clear(counts, 0, counts.Length);
+                    int best = kind[y * w + x], bestN = 0;
+                    for (int oy = -1; oy <= 1; oy++)
+                        for (int ox = -1; ox <= 1; ox++)
+                        {
+                            int k = kind[Mathf.Clamp(y + oy, 0, h - 1) * w + Mathf.Clamp(x + ox, 0, w - 1)];
+                            if (++counts[k] > bestN) { bestN = counts[k]; best = k; }
+                        }
+                    tidy[y * w + x] = best;
+                }
+            var outPx = new Color[w * h];
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    int i = y * w + x, k = tidy[i];
+                    Color c = KindColour(k);
+                    int r = tidy[y * w + Mathf.Min(x + 1, w - 1)], d = tidy[Mathf.Max(y - 1, 0) * w + x];
+                    int r2 = tidy[y * w + Mathf.Min(x + 2, w - 1)], d2 = tidy[Mathf.Max(y - 2, 0) * w + x];
+                    if (r != k || d != k) c = Color.Lerp(c, new Color(0.3f, 0.24f, 0.26f), 0.42f);          // the outline
+                    else if (r2 != k || d2 != k) c = Color.Lerp(c, new Color(0.3f, 0.24f, 0.26f), 0.16f);
+                    float grain = (Hash(x, y) - 0.5f) * 0.02f;                                             // a breath of felt
+                    c.r += grain; c.g += grain; c.b += grain;
                     c.a = 1f;
                     outPx[i] = c;
                 }
@@ -190,6 +190,61 @@ namespace Patchwork
             t.SetPixels(outPx);
             t.Apply(true);
             return t;
+        }
+
+        static Color[] Blur(Color[] src, int w, int h, int radius)
+        {
+            var tmp = new Color[src.Length];
+            var dst = new Color[src.Length];
+            float n = radius * 2 + 1;
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    Color sum = Color.clear;
+                    for (int o = -radius; o <= radius; o++) sum += src[y * w + Mathf.Clamp(x + o, 0, w - 1)];
+                    tmp[y * w + x] = sum / n;
+                }
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    Color sum = Color.clear;
+                    for (int o = -radius; o <= radius; o++) sum += tmp[Mathf.Clamp(y + o, 0, h - 1) * w + x];
+                    dst[y * w + x] = sum / n;
+                }
+            return dst;
+        }
+
+        // Map colours: 0-5 are the land, 6+ are twelve pastel hues (roofs, toys, tents) in a light
+        // and a deeper shade each.
+        static readonly Color[] Land =
+        {
+            new Color(0.74f, 0.87f, 0.6f),    // 0 meadow
+            new Color(0.62f, 0.8f, 0.54f),    // 1 shady grass
+            new Color(0.44f, 0.66f, 0.47f),   // 2 wood
+            new Color(0.6f, 0.8f, 0.94f),     // 3 water
+            new Color(0.96f, 0.91f, 0.78f),   // 4 paths and paving
+            new Color(0.76f, 0.73f, 0.72f),   // 5 stone and shadow
+        };
+
+        static Color KindColour(int k)
+        {
+            if (k < Land.Length) return Land[k];
+            int hue = (k - Land.Length) / 2;
+            bool deep = (k - Land.Length) % 2 == 1;
+            return Color.HSVToRGB(hue / 12f, deep ? 0.5f : 0.36f, deep ? 0.8f : 0.96f);
+        }
+
+        static Color MapColour(Color c, out int kind)
+        {
+            float hh, s, v;
+            Color.RGBToHSV(c, out hh, out s, out v);
+            float deg = hh * 360f;
+            if (s < 0.16f) kind = v > 0.7f ? 4 : 5;
+            else if (deg >= 62f && deg < 170f) kind = v > 0.6f ? 0 : v > 0.42f ? 1 : 2;
+            else if (deg >= 170f && deg < 255f && s > 0.22f) kind = 3;
+            else if (deg >= 20f && deg < 62f && s < 0.42f) kind = v > 0.55f ? 4 : 5;     // sandy paths, wood, cobbles
+            else kind = Land.Length + (Mathf.RoundToInt(hh * 12f) % 12) * 2 + (v < 0.62f ? 1 : 0);
+            return KindColour(kind);
         }
 
         static float Hash(int x, int y)
@@ -336,6 +391,9 @@ namespace Patchwork
                 if (tall)
                 {
                     var box = new Rect(p.x - h * 0.5f, p.y - w * 0.5f, h, w);
+                    // Keep the whole tag on the map (a long one near the edge used to hang off it).
+                    box.x = Mathf.Clamp(box.x, mapR.x + 6f, mapR.xMax - box.width - 6f);
+                    box.y = Mathf.Clamp(box.y, mapR.y + 6f, mapR.yMax - box.height - 6f);
                     placed.Add(box);
                     Matrix4x4 saved = GUI.matrix;
                     GUIUtility.RotateAroundPivot(-90f, box.center);

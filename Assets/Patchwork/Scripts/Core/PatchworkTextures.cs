@@ -35,27 +35,28 @@ namespace Patchwork
             // Also rebuild if Unity has thrown the textures away (Play pressed again).
             if (built && Wrap != null && Wrap.Albedo != null) return;
             built = true;
-            // Deeper relief than before: stronger normals and a bit more shading in the dips.
+            // Gentle relief: the pattern of each material shows, but the dips are only a little
+            // darker than the tops, so nothing looks harsh or dirty next to anything else.
             // Each surface: height pattern, shading, relief, then the painterly extras:
             // what colour the crevices go, how much the raised edges catch the light, and how
             // much big soft colour variation there is so repeats don't show.
             var none = new Color(1f, 1f, 1f);
-            Knit = Build(256, KnitHeight, 0.56f, 0.44f, 5f, new Color(0.82f, 0.8f, 0.86f), 0.5f, 0.08f, 4);
+            Knit = Build(256, KnitHeight, 0.74f, 0.26f, 3.2f, new Color(0.9f, 0.88f, 0.92f), 0.35f, 0.08f, 4);
             Felt = Build(256, FeltHeight, 0.8f, 0.2f, 2.4f, none, 0.25f, 0.1f, 3);
-            Weave = Build(256, WeaveHeight2, 0.74f, 0.26f, 3.2f, new Color(0.85f, 0.83f, 0.88f), 0.35f, 0.07f, 4);
-            Wicker = Build(256, WickerHeight, 0.5f, 0.5f, 5.5f, new Color(0.78f, 0.7f, 0.62f), 0.6f, 0.08f, 3);
-            // Grass: a thick tufted yarn rug. Cool shade down between the tufts, sunny tips, and big
-            // soft lighter and darker drifts so the repeat doesn't show.
-            Grass = Build(512, GrassHeight, 0.6f, 0.42f, 4.6f, new Color(0.66f, 0.8f, 0.84f), 0.6f, 0.2f, 2, new Color(1.02f, 1.0f, 0.78f));
+            Weave = Build(256, WeaveHeight2, 0.8f, 0.2f, 2.6f, new Color(0.85f, 0.83f, 0.88f), 0.35f, 0.07f, 4);
+            Wicker = Build(256, WickerHeight, 0.66f, 0.34f, 4f, new Color(0.86f, 0.8f, 0.72f), 0.45f, 0.08f, 3);
+            // Grass: a soft tufted rug. The tufts only just show (a touch of shade between them),
+            // with big soft lighter and darker drifts so the repeat doesn't show.
+            Grass = Build(512, GrassHeight, 0.84f, 0.17f, 2f, new Color(0.9f, 0.96f, 0.9f), 0.3f, 0.16f, 2, new Color(1.02f, 1.0f, 0.88f));
             Wood = Build(256, WoodHeight, 0.72f, 0.28f, 2.4f, new Color(0.78f, 0.68f, 0.6f), 0.4f, 0.1f, 3);
-            Wrap = Build(256, WrapHeight, 0.6f, 0.4f, 4.2f, new Color(0.84f, 0.82f, 0.88f), 0.45f, 0.06f, 4);
+            Wrap = Build(256, WrapHeight, 0.76f, 0.24f, 3f, new Color(0.9f, 0.88f, 0.92f), 0.35f, 0.06f, 4);
             Cardboard = Build(256, CardboardHeight, 0.78f, 0.22f, 2.4f, new Color(0.85f, 0.78f, 0.7f), 0.3f, 0.12f, 3);
             // Stone and brick: mossy green in the joints and worn, sunlit edges.
-            Cobble = Build(256, CobbleHeight, 0.45f, 0.55f, 5f, new Color(0.62f, 0.74f, 0.5f), 0.9f, 0.14f, 3);
-            Brick = Build(256, BrickHeight, 0.5f, 0.5f, 4.5f, new Color(0.7f, 0.76f, 0.6f), 0.8f, 0.12f, 3);
+            Cobble = Build(256, CobbleHeight, 0.58f, 0.42f, 4.2f, new Color(0.62f, 0.74f, 0.5f), 0.9f, 0.14f, 3);
+            Brick = Build(256, BrickHeight, 0.62f, 0.38f, 3.8f, new Color(0.7f, 0.76f, 0.6f), 0.8f, 0.12f, 3);
             Plaster = Build(256, PlasterHeight, 0.82f, 0.18f, 1.6f, new Color(0.92f, 0.88f, 0.82f), 0.2f, 0.12f, 2);
-            Shingle = Build(256, ShingleHeight, 0.5f, 0.5f, 4.5f, new Color(0.7f, 0.72f, 0.66f), 0.8f, 0.12f, 3);
-            Planks = Build(256, PlankHeight, 0.6f, 0.4f, 3.5f, new Color(0.62f, 0.5f, 0.42f), 0.6f, 0.12f, 3);
+            Shingle = Build(256, ShingleHeight, 0.64f, 0.36f, 3.6f, new Color(0.7f, 0.72f, 0.66f), 0.8f, 0.12f, 3);
+            Planks = Build(256, PlankHeight, 0.68f, 0.32f, 3f, new Color(0.62f, 0.5f, 0.42f), 0.6f, 0.12f, 3);
             Damask = Build(256, DamaskHeight, 0.72f, 0.28f, 2.2f, new Color(0.86f, 0.82f, 0.9f), 0.3f, 0.06f, 4);
             Paint = Build(256, PaintHeight, 0.92f, 0.08f, 1.1f, new Color(1f, 1f, 1f), 0.15f, 0.05f, 3);
             CraftWater = BuildCraftWater(256);

@@ -51,56 +51,58 @@ namespace Patchwork
             public IEnumerable<KeyValuePair<long, MeshBatch>> All { get { return map; } }
         }
 
-        // Thick, colourful yarn grass over all the open grass in [min, max] (x, z), like a meadow
-        // knitted from odds and ends: big drifts of one colour fading into the next. density is
-        // tufts per m² (scaled down on the lower graphics settings). Built in 16 m squares on its
-        // own layer, so the camera stops drawing it further than ~70 m away.
-        public static void Scatter(LevelKit kit, Vector2 min, Vector2 max, float groundY, float density, Color[] colours, Color[] flowers, int seed)
+        // A soft shag of yarn over all the open grass in [min, max] (x, z): short, blunt cut ends
+        // of chunky yarn, packed close like a rug. Mostly the meadow's own greens (the first
+        // "greens" colours in the list), with drifts where blossom colours (the rest of the list)
+        // are mixed in. density is tufts per m² (scaled down on the lower graphics settings).
+        // Built in 16 m squares on its own layer, so it stops being drawn ~70 m away.
+        public static void Scatter(LevelKit kit, Vector2 min, Vector2 max, float groundY, float density, Color[] colours, int greens, Color[] flowers, int seed)
         {
             Physics.SyncTransforms();
             var rng = new System.Random(seed);
             System.Func<float> R = () => (float)rng.NextDouble();
             var bins = new Bins();
-            float quality = GameSettings.Graphics == 0 ? 0.45f : GameSettings.Graphics == 1 ? 0.7f : 1f;
+            float quality = GameSettings.Graphics == 0 ? 0.5f : GameSettings.Graphics == 1 ? 0.75f : 1f;
             float step = 1f / Mathf.Sqrt(Mathf.Max(0.05f, density * quality));
             float ox = seed * 3.17f, oz = seed * 1.91f;
             int flowerKind = colours.Length;
             int pebbleKind = flowerKind + 1;
             int cloverKind = flowerKind + 2;
+            int blossoms = Mathf.Max(1, colours.Length - greens);
             for (float x = min.x; x < max.x; x += step)
                 for (float z = min.y; z < max.y; z += step)
                 {
                     float px = x + (R() - 0.5f) * step, pz = z + (R() - 0.5f) * step;
-                    // Nearly everywhere, with just the odd bare spot.
                     float clump = Mathf.PerlinNoise(px * 0.08f + ox, pz * 0.08f + oz);
-                    if (clump < 0.2f && R() < 0.7f) continue;
+                    if (clump < 0.16f && R() < 0.6f) continue;      // the odd worn patch
                     float y;
                     if (!OnGrass(new Vector3(px, 0f, pz), groundY, out y)) continue;
                     Vector3 root = new Vector3(px, y - 0.02f, pz);
-                    // Colour drifts: a slow noise picks the colour, a faster one blends the edges.
-                    float drift = Mathf.PerlinNoise(px * 0.035f + 11f + ox, pz * 0.035f + 5f + oz) * 1.35f - 0.1f;
-                    drift += (Mathf.PerlinNoise(px * 0.4f + oz, pz * 0.4f + ox) - 0.5f) * 0.18f;
-                    int main = Mathf.Clamp(Mathf.FloorToInt(Mathf.Repeat(drift, 1f) * colours.Length), 0, colours.Length - 1);
-                    int blades = 5 + (int)(R() * 3f);
-                    float tall = 0.34f + clump * 0.26f + R() * 0.14f;
-                    for (int i = 0; i < blades; i++)
+                    // Which green here (slow drifts), and whether this is a blossom drift.
+                    int green = Mathf.Clamp(Mathf.FloorToInt(Mathf.PerlinNoise(px * 0.05f + 11f + ox, pz * 0.05f + 5f + oz) * 1.2f * greens), 0, greens - 1);
+                    float bloom = Mathf.PerlinNoise(px * 0.03f + 41f + oz, pz * 0.03f + 17f + ox);
+                    bool drift = bloom > 0.62f && colours.Length > greens;
+                    int blossom = greens + Mathf.Clamp(Mathf.FloorToInt(Mathf.PerlinNoise(px * 0.011f + 3f + ox, pz * 0.011f + 29f + oz) * 1.3f * blossoms), 0, blossoms - 1);
+                    float mix = drift ? Mathf.Clamp01((bloom - 0.62f) * 6f) * 0.55f : 0f;
+                    int strands = 3 + (int)(R() * 2f);
+                    float tall = 0.15f + clump * 0.14f + R() * 0.07f;
+                    for (int i = 0; i < strands; i++)
                     {
-                        // Most strands the drift's colour, a few from the next skein along.
-                        int c = R() < 0.8f ? main : (main + 1 + (int)(R() * 2f)) % colours.Length;
+                        int c = R() < mix ? blossom : (R() < 0.8f ? green : (green + 1) % greens);
                         float a = R() * Mathf.PI * 2f;
-                        Vector3 off = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * (0.03f + R() * 0.16f);
-                        Vector3 lean = off.normalized * (0.08f + R() * 0.18f) + new Vector3(0.05f, 0f, 0.03f);
-                        bins.Get(px, pz, c).Blade(root + off, tall * (0.65f + R() * 0.55f), 0.11f, lean, R() * 360f);
+                        Vector3 off = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * (0.04f + R() * 0.17f);
+                        Vector3 lean = off.normalized * (0.02f + R() * 0.07f);
+                        bins.Get(px, pz, c).Strand(root + off, tall * (0.7f + R() * 0.5f), 0.12f + R() * 0.05f, lean, R() * 360f);
                     }
                     float extra = R();
-                    if (extra < 0.02f && flowers != null && flowers.Length > 0)
+                    if (extra < 0.012f && flowers != null && flowers.Length > 0)
                     {
                         // A pompom flower on a stalk poking out of the tuft.
                         int fc = (int)(R() * flowers.Length) % flowers.Length;
-                        bins.Get(px, pz, cloverKind).Blade(root, tall + 0.22f, 0.05f, Vector3.zero, 0f);
-                        bins.Get(px, pz, flowerKind + 3 + fc).Ball(root + Vector3.up * (tall + 0.26f), new Vector3(0.18f, 0.15f, 0.18f));
+                        bins.Get(px, pz, cloverKind).Blade(root, tall + 0.24f, 0.05f, Vector3.zero, 0f);
+                        bins.Get(px, pz, flowerKind + 3 + fc).Ball(root + Vector3.up * (tall + 0.28f), new Vector3(0.18f, 0.15f, 0.18f));
                     }
-                    else if (extra < 0.035f)
+                    else if (extra < 0.02f)
                     {
                         bins.Get(px, pz, pebbleKind).Ball(root + new Vector3(0.2f, 0.04f, 0.1f), new Vector3(0.22f + R() * 0.15f, 0.1f, 0.18f + R() * 0.1f), 3, 5);
                     }
@@ -113,7 +115,7 @@ namespace Patchwork
             {
                 int kind = (int)(kv.Key % 16L);
                 Material m;
-                if (kind < colours.Length) m = PatchworkAssets.Yarn(colours[kind]);
+                if (kind < colours.Length) m = PatchworkAssets.Felt(colours[kind]);
                 else if (kind == pebbleKind) m = pebble;
                 else if (kind == cloverKind) m = clover;
                 else m = PatchworkAssets.Felt(flowers[(kind - flowerKind - 3) % flowers.Length]);
@@ -157,6 +159,7 @@ namespace Patchwork
                 Color col = colors[(int)(R() * colors.Length) % colors.Length];
                 Material mat = made % 2 == 0 ? PatchworkAssets.Felt(col) : PatchworkAssets.Fabric(col);
                 kit.Prism(pts, groundY - 0.05f, top, mat, "GroundPatch", 1.5f);
+                ClearZones.Add(new Vector3(c.x, c.z, size * 1.08f));   // no grass (or other patches) on top of it
                 // Stitches just inside the edge.
                 for (int i = 0; i < n; i++)
                 {
