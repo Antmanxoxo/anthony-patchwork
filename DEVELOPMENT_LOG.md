@@ -1,5 +1,20 @@
 # Development Log
 
+## Art direction: a bright felt diorama
+- The inside of the toybox is lined with a child's sky wallpaper now: pale blue, cut-paper
+  hills along the bottom and felt clouds higher up (it was dark navy damask, which read as
+  a gloomy night sky all round the level). The lid is a warm coral.
+- The yarn grass is a short, soft shag of blunt cut yarn ends in the meadow's own fresh
+  greens, with drifts of butter, blush, cream and peach blossom mixed in. (It was tall
+  striped spikes in rust and maroon.) It no longer grows through the felt ground patches.
+- The ground is a lighter spring green and its tufted pattern only just shows.
+- Every textured material (knit, yarn, wicker, cobbles, brick, shingles, planks) has gentler
+  shading in its dips, so tree crowns and roofs don't have harsh dark zigzags.
+- Colour boost and contrast in Toybox Town are turned down so the pastels sit together.
+- The map's picture is a clean illustration: flat areas of meadow, wood, water, path and
+  pastel roofs with a thin outline between them, instead of a speckled photo. Small props are
+  left out of it, and long region tags stay inside the map's edge.
+
 ## A world that's sewn, and notices you
 - Patch sews as he goes: a double row of running stitches behind him in his form's colour,
   a ring of dashes where he jumps, and a cross stitch with bouncing pompoms where he lands

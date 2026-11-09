@@ -297,6 +297,14 @@ Stuff I need to remember about how Patchwork is put together.
   crossings go north of that or need a gap cut.
 - The nursery mobile is on layer 1 so its small parts are never distance-culled; its lowest
   toy must stay above `MapCameraHeight` (70) or it shows up in the map picture.
+- Art direction (Toybox Town): bright pastel diorama. Box walls = sky-blue felt with paper
+  hills and clouds (`Toybox` in Level1Builder); keep big backdrops light. Texture relief is set
+  in `PatchworkTextures.EnsureBuilt` (base shade, shade range, normal strength): keep base
+  >= 0.58 so dips never go near black. Grass: `MeshBatch.Strand` (blunt), Felt material, first
+  3 palette colours are the greens, the rest are blossom drifts.
+- Map picture: `MapScreen.Stylize` blurs, snaps every pixel to `Land` colours or 12 pastel
+  hues (`MapColour`), then outlines where kinds meet. If the ground colour changes a lot,
+  check it still falls in the "meadow" range (hue 62-170, value > 0.6).
 - Sounds from things out in the level that the player didn't cause go through
   `Sfx.PlayNear(id, pos, volume, range)` so they fade with distance (plain `Sfx.Play` is
   heard at full volume anywhere).
