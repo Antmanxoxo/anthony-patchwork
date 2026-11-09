@@ -1,5 +1,20 @@
 # Development Log
 
+## A world that's sewn, and notices you
+- Patch sews as he goes: a double row of running stitches behind him in his form's colour,
+  a ring of dashes where he jumps, and a cross stitch with bouncing pompoms where he lands
+  hard. Stitches pop in, sit a few seconds and get pulled out again.
+- Soft props react to him: flowers, mushrooms, pots, signs, lantern posts and barrels lean
+  away as he brushes past and wobble back, and hop and jiggle when he lands nearby.
+- Two new ways over the north half of the Thread Ravine, made from the sewing box:
+  - Button Stones: five giant buttons hanging from a thread strung between two dressmaker's
+    pins. They bob, dip and tip under Patch's weight. A thread spool floats over each.
+  - Tape-Measure Bridge: stomp the red button at either end and the tape shoots across; a
+    few seconds later it ticks faster, shivers and snaps back into its case.
+  Both are on the map.
+- A giant crib mobile hangs from the nursery ceiling over the toybox, turning very slowly:
+  a felt star and moon with stitched faces, a cloud, a heart, a sewing button and a paper plane.
+
 ## Warmer meadows and a calmer map
 - The yarn grass is in warm skeins now: olive and moss greens, honey, marigold, coral, rose
   and rust.

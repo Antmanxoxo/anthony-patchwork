@@ -11,6 +11,7 @@ namespace Patchwork
         public FormVisuals Visuals { get; private set; }
         public PatchworkGame Game { get; private set; }
         public GrabHand Hand { get; private set; }
+        StitchTrail trail;
 
         public static PatchworkPlayer Create(PatchworkGame game, Vector3 feet, float yaw)
         {
@@ -36,6 +37,7 @@ namespace Patchwork
             player.Hand = go.AddComponent<GrabHand>();
             player.Hand.Init(player);
             BlobShadow.Create(player);
+            player.trail = StitchTrail.Create(player);
             return player;
         }
 
@@ -65,6 +67,7 @@ namespace Patchwork
             }
 
             Footsteps(dt);
+            trail.Tick(dt);
             Visuals.Tick(Motor, dt);
         }
 

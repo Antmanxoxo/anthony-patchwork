@@ -286,6 +286,17 @@ Stuff I need to remember about how Patchwork is put together.
   key; region (Area) names sit on felt tags on the map. Add a new place with a plain `MapPin`
   and it gets a number and a key row by itself.
 - Thin ground decals (biome tints) have no collider: keep them off the ravine and the canal.
+- `StitchTrail` (on the player, ticked from `PatchworkPlayer.Tick`): a pool of 72 flat cubes.
+  It won't sew onto anything with a `Carrier`, a rigidbody, or a collider named "Tape".
+- `PropWobble.Attach(root, names...)` runs after `Declutter` in Level1Builder and springs
+  the named top-level groups (their origin must be at their base). Add a name to the list to
+  make a new kind of prop react. Wobbling props are not merged by `StaticCombine`, so don't add
+  kinds that exist in the hundreds (ferns).
+- `WobbleStone` needs a `Carrier` on the same object and its `Top` collider set. `TapeBridge`
+  runs along -x from `Anchor`; the hedge on the ravine's east edge runs z 16.5..60, so new
+  crossings go north of that or need a gap cut.
+- The nursery mobile is on layer 1 so its small parts are never distance-culled; its lowest
+  toy must stay above `MapCameraHeight` (70) or it shows up in the map picture.
 - Sounds from things out in the level that the player didn't cause go through
   `Sfx.PlayNear(id, pos, volume, range)` so they fade with distance (plain `Sfx.Play` is
   heard at full volume anywhere).
