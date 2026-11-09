@@ -51,10 +51,9 @@ namespace Patchwork
             public IEnumerable<KeyValuePair<long, MeshBatch>> All { get { return map; } }
         }
 
-        // A soft shag of yarn over all the open grass in [min, max] (x, z): short, blunt cut ends
-        // of chunky yarn, packed close like a rug. Mostly the meadow's own greens (the first
-        // "greens" colours in the list), with drifts where blossom colours (the rest of the list)
-        // are mixed in. density is tufts per m² (scaled down on the lower graphics settings).
+        // Yarn tassels over all the open grass in [min, max] (x, z): little tufts of thin strands
+        // fanning out from a knot, in the meadow's own greens (the first "greens" colours in the
+        // list), with drifts where small pompom blossoms (the rest of the list) sit on top. density is tufts per m² (scaled down on the lower graphics settings).
         // Built in 16 m squares on its own layer, so it stops being drawn ~70 m away.
         public static void Scatter(LevelKit kit, Vector2 min, Vector2 max, float groundY, float density, Color[] colours, int greens, Color[] flowers, int seed)
         {
@@ -83,17 +82,22 @@ namespace Patchwork
                     float bloom = Mathf.PerlinNoise(px * 0.03f + 41f + oz, pz * 0.03f + 17f + ox);
                     bool drift = bloom > 0.62f && colours.Length > greens;
                     int blossom = greens + Mathf.Clamp(Mathf.FloorToInt(Mathf.PerlinNoise(px * 0.011f + 3f + ox, pz * 0.011f + 29f + oz) * 1.3f * blossoms), 0, blossoms - 1);
-                    float mix = drift ? Mathf.Clamp01((bloom - 0.62f) * 6f) * 0.55f : 0f;
-                    int strands = 3 + (int)(R() * 2f);
-                    float tall = 0.15f + clump * 0.14f + R() * 0.07f;
+                    float mix = drift ? Mathf.Clamp01((bloom - 0.62f) * 6f) * 0.6f : 0f;
+                    // A tassel: thin strands fanning out from one knot, the outer ones leaning further.
+                    int strands = 5 + (int)(R() * 3f);
+                    float tall = 0.2f + clump * 0.16f + R() * 0.1f;
+                    float turn = R() * Mathf.PI * 2f;
                     for (int i = 0; i < strands; i++)
                     {
-                        int c = R() < mix ? blossom : (R() < 0.8f ? green : (green + 1) % greens);
-                        float a = R() * Mathf.PI * 2f;
-                        Vector3 off = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * (0.04f + R() * 0.17f);
-                        Vector3 lean = off.normalized * (0.02f + R() * 0.07f);
-                        bins.Get(px, pz, c).Strand(root + off, tall * (0.7f + R() * 0.5f), 0.12f + R() * 0.05f, lean, R() * 360f);
+                        int c = R() < 0.75f ? green : (green + 1) % greens;
+                        float a = turn + i * 2.4f;                 // golden-angle fan
+                        float spread = i == 0 ? 0f : 0.35f + R() * 0.5f;
+                        Vector3 dir = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
+                        bins.Get(px, pz, c).Blade(root + dir * 0.03f, tall * (1f - spread * 0.35f) * (0.85f + R() * 0.3f), 0.075f, dir * tall * spread, R() * 360f);
                     }
+                    // In a blossom drift: a little pompom on top of some tufts.
+                    if (R() < mix)
+                        bins.Get(px, pz, blossom).Ball(root + Vector3.up * (tall + 0.04f) + new Vector3(R() - 0.5f, 0f, R() - 0.5f) * 0.1f, Vector3.one * (0.13f + R() * 0.07f), 3, 5);
                     float extra = R();
                     if (extra < 0.012f && flowers != null && flowers.Length > 0)
                     {

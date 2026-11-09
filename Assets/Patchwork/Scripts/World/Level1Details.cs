@@ -54,15 +54,15 @@ namespace Patchwork
             // through it here and there: butter, blush, cream and peach.
             Color[] greens =
             {
-                new Color(0.66f, 0.84f, 0.52f), new Color(0.58f, 0.79f, 0.5f), new Color(0.75f, 0.88f, 0.56f),
+                new Color(0.72f, 0.9f, 0.56f), new Color(0.64f, 0.86f, 0.56f), new Color(0.82f, 0.93f, 0.6f),
                 new Color(1f, 0.9f, 0.58f), new Color(1f, 0.78f, 0.78f), new Color(0.99f, 0.96f, 0.86f), new Color(1f, 0.8f, 0.62f),
             };
             Color[] patchCols = { new Color(0.6f, 0.78f, 0.46f), new Color(0.46f, 0.66f, 0.42f), new Color(0.7f, 0.8f, 0.5f), new Color(0.55f, 0.72f, 0.6f), new Color(0.78f, 0.82f, 0.55f) };
             var area = new Vector2(Half - 0.5f, Half - 0.5f);
             YarnGrass.Patches(kit, -area, area, 0f, 70, patchCols, 5);
             YarnGrass.Patches(kit, new Vector2(-74f, 4f), new Vector2(-60f, 38f), 4f, 6, patchCols, 9);
-            YarnGrass.Scatter(kit, -area, area, 0f, 1.25f, greens, 3, FlowerColors, 3);
-            YarnGrass.Scatter(kit, new Vector2(-74f, 4f), new Vector2(-60f, 38f), 4f, 1.25f, greens, 3, FlowerColors, 4);
+            YarnGrass.Scatter(kit, -area, area, 0f, 1.7f, greens, 3, FlowerColors, 3);
+            YarnGrass.Scatter(kit, new Vector2(-74f, 4f), new Vector2(-60f, 38f), 4f, 1.7f, greens, 3, FlowerColors, 4);
         }
 
         // ---------------------------------------------------------------- The intro's props
@@ -173,7 +173,7 @@ namespace Patchwork
             float len = d.magnitude;
             float yaw = Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg;
             var col = new Color(0.32f, 0.52f, 0.32f);
-            var h = kit.Block((a + b) * 0.5f + Vector3.up * height * 0.5f, new Vector3(width, height, len), col, "Hedge", PatchworkAssets.Knit(col));
+            var h = kit.Block((a + b) * 0.5f + Vector3.up * height * 0.5f, new Vector3(width, height, len), col, "Hedge", PatchworkAssets.Felt(col));   // felt, not knit: fine knit lines shimmered on long hedges
             h.rotation = Quaternion.Euler(0f, yaw, 0f);
             h.localScale = new Vector3(width, height, len);
             int blooms = Mathf.FloorToInt(len / 2.5f);

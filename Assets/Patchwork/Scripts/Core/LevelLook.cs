@@ -6,7 +6,7 @@ namespace Patchwork
 {
     // The stylised "storybook" look over everything: soft glow on bright and glowing things,
     // richer colour, warm highlights and cool shadows, and a gentle vignette. Each level can
-    // nudge it through its LevelInfo (warmth, saturation, glow, vignette).
+    // nudge it through its LevelInfo (warmth, saturation, glow, vignette, miniature).
     public static class LevelLook
     {
         public static Volume Apply(LevelInfo level)
@@ -46,6 +46,19 @@ namespace Patchwork
             vig.intensity.Override(level.Vignette);
             vig.smoothness.Override(0.5f);
             vig.color.Override(new Color(0.16f, 0.08f, 0.2f));
+
+            // The miniature look: like a close-up photo of a model on a table, the far distance
+            // goes softly out of focus, so the world reads as small and handmade. (Skipped on
+            // the Fast graphics setting.)
+            if (level.Miniature > 0f && GameSettings.Graphics > 0)
+            {
+                var dof = p.Add<DepthOfField>(true);
+                dof.mode.Override(DepthOfFieldMode.Gaussian);
+                dof.gaussianStart.Override(42f);
+                dof.gaussianEnd.Override(150f);
+                dof.gaussianMaxRadius.Override(Mathf.Lerp(0.5f, 1.1f, Mathf.Clamp01(level.Miniature)));
+                dof.highQualitySampling.Override(GameSettings.Graphics > 1);
+            }
 
             vol.profile = p;
             go.AddComponent<OwnedProfile>().Profile = p;

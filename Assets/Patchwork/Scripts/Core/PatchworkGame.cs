@@ -240,7 +240,7 @@ namespace Patchwork
             sun.color = new Color(1f, 0.95f, 0.86f);
             sun.intensity = Level.SunIntensity;
             sun.shadows = LightShadows.Soft;
-            sun.shadowStrength = 0.75f;
+            sun.shadowStrength = 0.62f;   // soft shadows: a bright room, not a spotlight
             sunGo.transform.rotation = Quaternion.Euler(Level.SunEuler);
             RenderSettings.sun = sun;
 

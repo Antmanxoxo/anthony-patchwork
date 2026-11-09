@@ -77,6 +77,7 @@ namespace Patchwork
             info.MapCameraHeight = 70f;   // above the tallest trees in the wood
             info.Saturation = 8f;
             info.Contrast = 5f;
+            info.Miniature = 0.7f;
             info.Warmth = 9f;
             info.Glow = 0.55f;
             info.HeartstringsNeeded = HeartstringsNeeded;
@@ -291,7 +292,7 @@ namespace Patchwork
                 }
             }
             // The lid, propped open behind the north wall.
-            var lid = kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(Half * 2f + 4f, 2f, 110f), PatchworkAssets.Damask(new Color(0.88f, 0.56f, 0.52f)));
+            var lid = kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(Half * 2f + 4f, 2f, 110f), PatchworkAssets.Felt(new Color(0.97f, 0.76f, 0.68f)));
             lid.rotation = Quaternion.Euler(-72f, 0f, 0f);
             lid.position = new Vector3(0f, h - 2f, Half + 2f) + lid.rotation * new Vector3(0f, 0f, 55f);
             for (int i = 0; i < 6; i++)

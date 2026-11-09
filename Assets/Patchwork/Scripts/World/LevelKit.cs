@@ -29,6 +29,8 @@ namespace Patchwork
         public float FogStart = 55f, FogEnd = 190f, FarClip = 600f;
         // The stylised look (see LevelLook).
         public float Saturation = 14f, Contrast = 10f, Warmth = 6f, Glow = 0.45f, Vignette = 0.22f;
+        // The "tiny model" camera: how strongly the far distance goes soft (0 = off).
+        public float Miniature;
         public readonly List<string> CollectibleIds = new List<string>();
         public int ThreadTotal;
         // Points of score bubbles placed in the level (medals are measured against it).

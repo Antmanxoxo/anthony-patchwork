@@ -356,6 +356,14 @@ namespace Patchwork
             return list;
         }
 
+        // A turn about a point, in the menu's own coordinates (Unity's own helper turns about a
+        // screen pixel, which lands in the wrong place once the menu is scaled to fit the window).
+        static Matrix4x4 Turn(float degrees, Vector2 pivot)
+        {
+            var p3 = new Vector3(pivot.x, pivot.y, 0f);
+            return Matrix4x4.Translate(p3) * Matrix4x4.Rotate(Quaternion.Euler(0f, 0f, degrees)) * Matrix4x4.Translate(-p3);
+        }
+
         // A felt tag with a stitched edge: every name on the map sits on one of these.
         static void Tag(Rect r, Color stitch, float k)
         {
@@ -396,7 +404,7 @@ namespace Patchwork
                     box.y = Mathf.Clamp(box.y, mapR.y + 6f, mapR.yMax - box.height - 6f);
                     placed.Add(box);
                     Matrix4x4 saved = GUI.matrix;
-                    GUIUtility.RotateAroundPivot(-90f, box.center);
+                    GUI.matrix = saved * Turn(-90f, box.center);
                     var lr = new Rect(box.center.x - w * 0.5f, box.center.y - h * 0.5f, w, h);
                     Tag(lr, areaStitch, k);
                     UIKit.Label(lr, text, areaStyle);
@@ -457,7 +465,7 @@ namespace Patchwork
                     // A little thread from the badge to the real spot, and a dot there.
                     Vector2 dlt = at - p;
                     Matrix4x4 saved = GUI.matrix;
-                    GUIUtility.RotateAroundPivot(Mathf.Atan2(dlt.y, dlt.x) * Mathf.Rad2Deg, p);
+                    GUI.matrix = saved * Turn(Mathf.Atan2(dlt.y, dlt.x) * Mathf.Rad2Deg, p);
                     UIKit.Fill(new Rect(p.x, p.y - 1f, dlt.magnitude, 2f), new Color(Ink.r, Ink.g, Ink.b, 0.7f * k));
                     GUI.matrix = saved;
                     UIKit.Circle(p, 7f, new Color(Ink.r, Ink.g, Ink.b, k));
@@ -516,7 +524,7 @@ namespace Patchwork
                 UIKit.Fill(tail, new Color(0.62f, 0.16f, 0.2f, k), 6f);
                 Vector2 notch = new Vector2(s < 0 ? tail.x : tail.xMax, tail.center.y);
                 Matrix4x4 saved = GUI.matrix;
-                GUIUtility.RotateAroundPivot(45f, notch);
+                GUI.matrix = saved * Turn(45f, notch);
                 UIKit.Fill(new Rect(notch.x - 18f, notch.y - 18f, 36f, 36f), new Color(0.62f, 0.32f, 0.36f, k));
                 GUI.matrix = saved;
             }
@@ -539,7 +547,7 @@ namespace Patchwork
                 for (int i = 0; i < 3; i++)
                 {
                     Matrix4x4 saved = GUI.matrix;
-                    GUIUtility.RotateAroundPivot(i * 60f + 20f, p);
+                    GUI.matrix = saved * Turn(i * 60f + 20f, p);
                     UIKit.Fill(new Rect(p.x - 13f, p.y - 1.5f + (i - 1) * 6f, 26f, 2.5f), new Color(0.85f, 0.35f, 0.5f, k), 1.2f);
                     GUI.matrix = saved;
                 }
