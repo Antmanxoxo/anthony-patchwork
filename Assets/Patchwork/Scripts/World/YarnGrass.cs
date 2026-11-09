@@ -58,6 +58,16 @@ namespace Patchwork
         public static void Scatter(LevelKit kit, Vector2 min, Vector2 max, float groundY, float density, Color[] colours, int greens, Color[] flowers, int seed)
         {
             Physics.SyncTransforms();
+            // Nothing grows up through flat things lying on the ground (felt stepping patches,
+            // rugs, picnic blankets): anything thin, lying at ground level and up to 8 m across.
+            foreach (var r in kit.Root.GetComponentsInChildren<MeshRenderer>())
+            {
+                var b = r.bounds;
+                float across = Mathf.Max(b.size.x, b.size.z);
+                if (b.size.y > 0.14f || across < 0.7f || across > 8f || Mathf.Abs(b.min.y - groundY) > 0.12f) continue;
+                if (Mathf.Min(b.size.x, b.size.z) < across * 0.45f) continue;      // long thin things (stitches, paths' edges)
+                ClearZones.Add(new Vector3(b.center.x, b.center.z, across * 0.5f));
+            }
             var rng = new System.Random(seed);
             System.Func<float> R = () => (float)rng.NextDouble();
             var bins = new Bins();

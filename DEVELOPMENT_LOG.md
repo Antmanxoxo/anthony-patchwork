@@ -1,5 +1,19 @@
 # Development Log
 
+## A tiny handmade world
+- The miniature camera: in Toybox Town the far distance goes softly out of focus, like a
+  close-up photo of a model on a table, so the level reads as a small handmade diorama. (Off
+  on the Fast graphics setting.)
+- The grass is yarn tassels now: thin strands fanning out from a knot in light fresh greens,
+  with little pompom blossoms in butter, blush, cream and peach where the drifts are. (The
+  blunt strands looked like small blocks.) Nothing grows up through felt patches, rugs or
+  other flat things lying on the ground.
+- Wood has a faint grain (it looked like zebra print on the chairs), knit is a touch softer,
+  hedges are felt (fine knit lines shimmered on them), sun shadows are softer, and the
+  toybox lid is plain pale coral felt instead of a heavy diamond pattern.
+- Map: turned labels (the ravine and canal names), the ribbon's tails and Patch's marker are
+  drawn in the right place at any window size (they were being turned about the wrong point).
+
 ## Art direction: a bright felt diorama
 - The inside of the toybox is lined with a child's sky wallpaper now: pale blue, cut-paper
   hills along the bottom and felt clouds higher up (it was dark navy damask, which read as

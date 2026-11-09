@@ -305,6 +305,10 @@ Stuff I need to remember about how Patchwork is put together.
 - Map picture: `MapScreen.Stylize` blurs, snaps every pixel to `Land` colours or 12 pastel
   hues (`MapColour`), then outlines where kinds meet. If the ground colour changes a lot,
   check it still falls in the "meadow" range (hue 62-170, value > 0.6).
+- `LevelInfo.Miniature` (0..1) adds Gaussian depth of field (start 42 m, end 150 m) in
+  `LevelLook`. Only Level 1 sets it.
+- In IMGUI code never use `GUIUtility.RotateAroundPivot` (it turns about a screen pixel and
+  breaks under the UI scale); use `MapScreen.Turn` / `UIKit.IconTransformed` style matrices.
 - Sounds from things out in the level that the player didn't cause go through
   `Sfx.PlayNear(id, pos, volume, range)` so they fade with distance (plain `Sfx.Play` is
   heard at full volume anywhere).
