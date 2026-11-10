@@ -237,10 +237,10 @@ namespace Patchwork
             var sunGo = new GameObject("Sun");
             var sun = sunGo.AddComponent<Light>();
             sun.type = LightType.Directional;
-            sun.color = new Color(1f, 0.95f, 0.86f);
+            sun.color = Level.SunColor;
             sun.intensity = Level.SunIntensity;
             sun.shadows = LightShadows.Soft;
-            sun.shadowStrength = 0.62f;   // soft shadows: a bright room, not a spotlight
+            sun.shadowStrength = Level.ShadowStrength;   // soft shadows: a bright room, not a spotlight
             sunGo.transform.rotation = Quaternion.Euler(Level.SunEuler);
             RenderSettings.sun = sun;
 
@@ -248,6 +248,9 @@ namespace Patchwork
             RenderSettings.ambientSkyColor = Color.Lerp(Level.Sky, Color.white, 0.2f) * 0.85f;
             RenderSettings.ambientEquatorColor = new Color(0.72f, 0.68f, 0.7f);
             RenderSettings.ambientGroundColor = new Color(0.45f, 0.4f, 0.42f);
+            if (Level.AmbientSky.a > 0f) RenderSettings.ambientSkyColor = Level.AmbientSky;
+            if (Level.AmbientSide.a > 0f) RenderSettings.ambientEquatorColor = Level.AmbientSide;
+            if (Level.AmbientGround.a > 0f) RenderSettings.ambientGroundColor = Level.AmbientGround;
 
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
@@ -541,7 +544,7 @@ namespace Patchwork
                     Haptics.SetSilenced(true);
                     break;
                 case UIMode.Talk:
-                    MusicPlayer.SetMuffle(22000f, Level != null && Level.QuietMusic ? 0f : 0.6f);
+                    MusicPlayer.SetMuffle(Level != null && Level.QuietMusic ? 1700f : 22000f, Level != null && Level.QuietMusic ? 0.2f : 0.6f);
                     Sfx.SetLoopCutoff(22000f);
                     Haptics.SetSilenced(true);
                     break;
@@ -551,7 +554,10 @@ namespace Patchwork
                     Haptics.SetSilenced(true);
                     break;
                 default:
-                    MusicPlayer.SetMuffle(22000f, Level != null && Level.QuietMusic ? 0f : 1f);
+                    // In the Pod the song plays softly all the time, as if from the controller's
+                    // little speaker, and swells up clear when Patch picks it up.
+                    if (Level != null && Level.QuietMusic) MusicPlayer.SetMuffle(1700f, 0.3f);
+                    else MusicPlayer.SetMuffle(22000f, 1f);
                     Sfx.SetLoopCutoff(22000f);
                     Haptics.SetSilenced(false);
                     break;

@@ -64,6 +64,11 @@ namespace Patchwork
         // Sun direction and strength (the pod lets it in through its window).
         public Vector3 SunEuler = new Vector3(52f, -35f, 0f);
         public float SunIntensity = 1.5f;
+        public Color SunColor = new Color(1f, 0.95f, 0.86f);
+        // The room's own soft light from above, the sides and below. Left as they are (alpha
+        // 0), the game works them out from the sky colour.
+        public Color AmbientSky, AmbientSide, AmbientGround;
+        public float ShadowStrength = 0.62f;
         // The title screen's slow camera circle.
         public Vector3 TitleCenter = new Vector3(0f, 5f, 2f);
         public float TitleRadius = 36f, TitleHeight = 9f;

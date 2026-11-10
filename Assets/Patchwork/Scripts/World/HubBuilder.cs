@@ -47,15 +47,27 @@ namespace Patchwork
             info.SpawnYaw = 0f;
             info.KillY = -10f;
             // Deep space outside.
-            info.Sky = new Color(0.01f, 0.01f, 0.025f);
+            info.Sky = new Color(0.035f, 0.03f, 0.09f);   // deep indigo, not pitch black
             info.FogStart = 400f;
             info.FogEnd = 900f;
             info.CameraRumble = 0.07f;
-            info.Saturation = 18f;
+            // A dreamy night-light mood to go with the Pod's song: cool moonlight through the
+            // window, dusky lavender in the shadows, soft shadows, and plenty of glow round
+            // every lamp, star and fairy light.
+            info.Saturation = 10f;
+            info.Contrast = 5f;
+            info.Warmth = 0f;
+            info.Glow = 0.85f;
+            info.Vignette = 0.3f;
+            info.SunColor = new Color(0.78f, 0.84f, 1f);
+            info.AmbientSky = new Color(0.4f, 0.42f, 0.66f, 1f);
+            info.AmbientSide = new Color(0.56f, 0.48f, 0.66f, 1f);
+            info.AmbientGround = new Color(0.46f, 0.36f, 0.42f, 1f);
+            info.ShadowStrength = 0.45f;
             info.Area.SetMinMax(new Vector3(-11f, -1f, -16f), new Vector3(11f, 14f, 11f));
-            // Sunlight pours in through the window.
+            // Moonlight pours in through the window.
             info.SunEuler = new Vector3(38f, 165f, 0f);
-            info.SunIntensity = 1.1f;
+            info.SunIntensity = 0.75f;
             info.TitleCenter = new Vector3(0f, 0f, 0.5f);
             info.TitleRadius = 5.6f;
             info.TitleHeight = 3.4f;
@@ -78,6 +90,7 @@ namespace Patchwork
             PodDecor.ApplyAll();
             Outside(kit);
             StorybookSky(kit);
+            PodDreams.Build(kit);
             MiniSkiff(kit);
             Sounds(kit);
             LaunchTube(kit);
