@@ -324,6 +324,10 @@ Stuff I need to remember about how Patchwork is put together.
   under `bubble`, which is the whole-doll wobble pivot at the feet) and moved in
   `AnimateWater`. It must stay under about 0.85 m to the top of the head: the collider is
   0.8 m so it fits through grates.
+- Wind form: `FormVisuals.BuildWind` / `AnimateWind`. Everything hangs off `cloud` (the float
+  and glide pivot): `windTail` puffs, `windBody`, `windHead`, free-floating `windHand`s and the
+  `windScarf` segments, which are laid out fresh every frame from the neck. `windStream`
+  (0 still .. 1 gliding) blends the hanging pose into the flying one.
 - Sounds from things out in the level that the player didn't cause go through
   `Sfx.PlayNear(id, pos, volume, range)` so they fade with distance (plain `Sfx.Play` is
   heard at full volume anywhere).

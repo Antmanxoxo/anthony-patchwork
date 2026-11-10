@@ -1,5 +1,15 @@
 # Development Log
 
+## The wind form is a cloud child
+- Wind form redesigned from a plain cloud into a floaty little cloud child whose body is
+  only half there: a fluffy cloud head with a tuft blown up on top and the same face (it
+  blinks now), a small puff of a body that thins into a curling wisp where legs would be,
+  two mitten puffs for hands that float beside it with no arms, and a long striped knitted
+  scarf with fringed ends.
+- At rest the wisp curls under it and the scarf hangs; on the move both stream out behind
+  with a ripple running along the scarf, and it leans into the way it's going. Its hands pump
+  as it travels, reach up when it jumps and spread wide like wings in a glide.
+
 ## The water form is a little person now
 - Water form redesigned from a plain bubble into a water-sprite doll with Patch's kind of
   proportions (big head, small body, stubby limbs): a jelly water-drop head with a curl of

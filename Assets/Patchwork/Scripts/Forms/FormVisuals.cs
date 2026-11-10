@@ -5,7 +5,7 @@ namespace Patchwork
 {
     // Builds Patch's three bodies and animates them:
     // Yarn is the Blender-made knitted toy (PatchModel), with a block-built backup if it's missing,
-    // Water is a little water sprite in a raincoat and wellies, Wind is a floating happy cloud.
+    // Water is a little water sprite in a raincoat and wellies, Wind is a floating cloud child with a scarf.
     // Also does the short change animations between forms (soak, steam, rain, unravel...).
     // Hats sit on their own transform so changing form never resets them.
     public class FormVisuals
@@ -40,6 +40,11 @@ namespace Patchwork
         // Happy / sad / angry faces for Water and Wind (Yarn's are on the Blender model).
         readonly GameObject[] waterFaces = new GameObject[3], windFaces = new GameObject[3];
         // Wind rig
+        const int ScarfLength = 6;
+        Transform windBody, windHead, windEyes;
+        readonly Transform[] windTail = new Transform[5], windHand = new Transform[2];
+        readonly Transform[,] windScarf = new Transform[2, ScarfLength];
+        float windStream, windPhase;
         Transform cloud;
         readonly Transform[] wisps = new Transform[3];
 
@@ -412,11 +417,73 @@ namespace Patchwork
         void AnimateWind(PlayerMotor motor, float dt)
         {
             if (!wind.Root.gameObject.activeSelf) return;
+            Vector3 flat = motor.Velocity;
+            flat.y = 0f;
+            float speed = flat.magnitude;
+            // How much everything streams out behind: a little on the move, all the way in a glide.
+            float want = gliding ? 1f : Mathf.Clamp01(speed / 6f);
+            windStream = Mathf.Lerp(windStream, want, 1f - Mathf.Exp(-6f * dt));
+            float ease = 1f - Mathf.Exp(-10f * dt);
+
             float floatY = 0.28f + Mathf.Sin(time * 2.2f) * 0.08f;
             cloud.localPosition = new Vector3(0f, floatY, 0f);
-            Vector3 target = gliding ? new Vector3(1.3f, 0.72f, 1.3f) : Vector3.one;
+            // Gliding: spreads out a little flatter and wider, like a cloud catching the air.
+            Vector3 target = gliding ? new Vector3(1.14f, 0.9f, 1.14f) : Vector3.one;
             cloud.localScale = Vector3.Lerp(cloud.localScale, target, 1f - Mathf.Exp(-8f * dt));
-            cloud.localRotation = Quaternion.Euler(Mathf.Sin(time * 1.3f) * 4f, 0f, Mathf.Sin(time * 1.7f) * 6f);
+            // Leans into the way it's going.
+            cloud.localRotation = Quaternion.Euler(Mathf.Sin(time * 1.3f) * 4f + windStream * (gliding ? 26f : 12f), 0f, Mathf.Sin(time * 1.7f) * 6f);
+
+            // The head stays upright-ish while the body leans, and looks about when idle.
+            windHead.localRotation = Quaternion.Euler(-windStream * (gliding ? 18f : 8f) + Mathf.Sin(time * 1.9f) * 3f, Mathf.Sin(time * 0.55f) * 9f * (1f - windStream), Mathf.Sin(time * 1.4f) * 4f);
+            windHead.localPosition = new Vector3(0f, 0.86f + Mathf.Sin(time * 2.2f + 0.8f) * 0.015f, 0f);
+            windBody.localScale = Vector3.one * (1f + Mathf.Sin(time * 2.6f) * 0.03f);
+            float blink = Mathf.Repeat(time + 1.3f, 4.1f) < 0.12f ? 0.15f : 1f;
+            windEyes.localScale = new Vector3(1f, blink, 1f);
+
+            // The wisp: curls down and forward at rest, trails straight back on the move.
+            for (int i = 0; i < windTail.Length; i++)
+            {
+                float k = i / (float)(windTail.Length - 1);
+                float wave = Mathf.Sin(time * 3.2f - i * 0.9f);
+                Vector3 rest = new Vector3(wave * 0.05f * k, 0.3f - k * 0.34f, Mathf.Sin(k * 2.6f) * 0.2f - k * 0.05f);
+                Vector3 flying = new Vector3(wave * 0.07f * k, 0.3f - k * 0.1f + wave * 0.03f * k, -k * 0.62f);
+                windTail[i].localPosition = Vector3.Lerp(rest, flying, windStream);
+            }
+
+            // The hands: bobbing at its sides, pumping as it goes, thrown wide like wings in a glide.
+            windPhase += speed * dt * 2.4f;
+            for (int side = 0; side < 2; side++)
+            {
+                float sx = side == 0 ? -1f : 1f;
+                Vector3 idle = new Vector3(sx * 0.4f, 0.5f + Mathf.Sin(time * 2.4f + side * 1.7f) * 0.04f, 0.06f);
+                Vector3 moving = new Vector3(sx * 0.42f, 0.52f, Mathf.Sin(windPhase + side * Mathf.PI) * 0.2f);
+                Vector3 wide = new Vector3(sx * 0.78f, 0.66f + Mathf.Sin(time * 5f + side) * 0.03f, -0.12f);
+                Vector3 up = new Vector3(sx * 0.5f, 0.98f, 0.05f);
+                Vector3 pos = gliding ? wide : !motor.Grounded && motor.Velocity.y > 1f ? up : Vector3.Lerp(idle, moving, Mathf.Clamp01(speed / 3f));
+                windHand[side].localPosition = Vector3.Lerp(windHand[side].localPosition, pos, ease);
+                windHand[side].localRotation = Quaternion.Euler(0f, 0f, -sx * (gliding ? 70f : 15f));
+            }
+
+            // The scarf: each piece follows the one before, hanging down at rest and flying
+            // out flat behind with a ripple running along it when there's wind in it.
+            for (int end = 0; end < 2; end++)
+            {
+                float sx = end == 0 ? -1f : 1f;
+                Vector3 prev = new Vector3(sx * 0.07f, 0.66f, -0.17f);
+                for (int i = 0; i < ScarfLength; i++)
+                {
+                    float ripple = Mathf.Sin(time * (5f + windStream * 4f) - i * 0.85f + end * 1.4f);
+                    Vector3 hang = new Vector3(sx * 0.02f + ripple * 0.012f * i, -0.115f, -0.04f);
+                    Vector3 fly = new Vector3(sx * 0.015f * i + ripple * 0.02f * i, ripple * 0.022f * i + 0.012f, -0.135f);
+                    Vector3 step = Vector3.Lerp(hang, fly, windStream);
+                    Vector3 next = prev + step;
+                    var seg = windScarf[end, i];
+                    seg.localPosition = (prev + next) * 0.5f;
+                    seg.localRotation = Quaternion.LookRotation(-step.normalized, Vector3.up);
+                    prev = next;
+                }
+            }
+
             for (int i = 0; i < wisps.Length; i++)
             {
                 float a = time * (gliding ? 5f : 2.2f) + i * Mathf.PI * 2f / 3f;
@@ -743,6 +810,10 @@ namespace Patchwork
             building = null;
         }
 
+        // Wind: a little cloud child. Nothing about it is quite solid: a fluffy cloud head with
+        // a tuft on top, a small puff of a body that thins away into a curling wisp where legs
+        // would be, two mitten puffs for hands that float beside it without any arms, and a
+        // long striped scarf that streams out behind whenever it moves.
         void BuildWind()
         {
             var def = FormLibrary.Get(FormType.Wind);
@@ -751,30 +822,77 @@ namespace Patchwork
             cloud = Pivot("Cloud", wind.Root, new Vector3(0f, 0.28f, 0f));
 
             var puff = PatchworkAssets.Felt(new Color(0.98f, 0.99f, 1f));
-            var shade = PatchworkAssets.Felt(new Color(0.8f, 0.9f, 0.97f));
-            Part(PrimitiveType.Sphere, cloud, new Vector3(0f, 0.62f, 0f), new Vector3(0.95f, 0.8f, 0.8f), puff);
-            Part(PrimitiveType.Sphere, cloud, new Vector3(-0.42f, 0.5f, 0f), new Vector3(0.6f, 0.55f, 0.58f), puff);
-            Part(PrimitiveType.Sphere, cloud, new Vector3(0.44f, 0.52f, 0f), new Vector3(0.62f, 0.56f, 0.58f), puff);
-            Part(PrimitiveType.Sphere, cloud, new Vector3(-0.15f, 0.98f, -0.04f), new Vector3(0.55f, 0.5f, 0.5f), puff);
-            Part(PrimitiveType.Sphere, cloud, new Vector3(0.2f, 0.93f, -0.08f), new Vector3(0.45f, 0.42f, 0.42f), puff);
-            Part(PrimitiveType.Sphere, cloud, new Vector3(0f, 0.36f, -0.02f), new Vector3(1.05f, 0.32f, 0.7f), shade);
+            var shade = PatchworkAssets.Felt(new Color(0.84f, 0.92f, 0.98f));
+            var scarfA = PatchworkAssets.Knit(def.SecondaryColor);
+            var scarfB = PatchworkAssets.Knit(new Color(0.99f, 0.96f, 0.88f));
 
-            // Happy face: shiny eyes, rosy cheeks, a wide smile.
+            // The wisp: puffs getting smaller and smaller, curling away underneath.
+            for (int i = 0; i < windTail.Length; i++)
+            {
+                float k = i / (float)(windTail.Length - 1);
+                windTail[i] = Pivot("Wisp" + i, cloud, Vector3.zero);
+                float sz = Mathf.Lerp(0.34f, 0.09f, k);
+                Part(PrimitiveType.Sphere, windTail[i], Vector3.zero, new Vector3(sz, sz * 0.9f, sz), i % 2 == 0 ? shade : puff);
+            }
+
+            // The body: one soft puff with a rounder tummy and two little shoulders.
+            windBody = Pivot("Body", cloud, new Vector3(0f, 0.46f, 0f));
+            Part(PrimitiveType.Sphere, windBody, Vector3.zero, new Vector3(0.5f, 0.46f, 0.44f), puff);
+            Part(PrimitiveType.Sphere, windBody, new Vector3(0f, -0.1f, 0.03f), new Vector3(0.44f, 0.3f, 0.4f), shade);
+            Part(PrimitiveType.Sphere, windBody, new Vector3(-0.19f, 0.1f, 0f), Vector3.one * 0.24f, puff);
+            Part(PrimitiveType.Sphere, windBody, new Vector3(0.19f, 0.1f, 0f), Vector3.one * 0.24f, puff);
+
+            // The scarf: a striped loop round the neck, and two long ends that fly behind.
+            Part(PrimitiveType.Cylinder, windBody, new Vector3(0f, 0.2f, 0f), new Vector3(0.4f, 0.05f, 0.38f), scarfA, new Vector3(6f, 0f, -5f));
+            Part(PrimitiveType.Sphere, windBody, new Vector3(0.11f, 0.19f, 0.17f), new Vector3(0.13f, 0.1f, 0.1f), scarfB);
+            for (int end = 0; end < 2; end++)
+                for (int i = 0; i < ScarfLength; i++)
+                {
+                    float w = Mathf.Lerp(0.13f, 0.1f, i / (float)(ScarfLength - 1));
+                    windScarf[end, i] = Part(PrimitiveType.Cube, cloud, Vector3.zero, new Vector3(w, 0.028f, 0.15f), (i + end) % 2 == 0 ? scarfA : scarfB);
+                }
+            // A little fringe on the end of each one.
+            for (int end = 0; end < 2; end++)
+                for (int f = -1; f <= 1; f++)
+                    Part(PrimitiveType.Cube, windScarf[end, ScarfLength - 1], new Vector3(f * 0.33f, 0f, -0.62f), new Vector3(0.16f, 0.9f, 0.3f), scarfB);
+
+            // The hands: two mitten puffs with a thumb, floating free.
+            for (int side = 0; side < 2; side++)
+            {
+                float sx = side == 0 ? -1f : 1f;
+                windHand[side] = Pivot(side == 0 ? "HandL" : "HandR", cloud, new Vector3(sx * 0.4f, 0.5f, 0.05f));
+                Part(PrimitiveType.Sphere, windHand[side], Vector3.zero, new Vector3(0.17f, 0.15f, 0.17f), puff);
+                Part(PrimitiveType.Sphere, windHand[side], new Vector3(-sx * 0.06f, 0.05f, 0.05f), Vector3.one * 0.075f, puff);
+            }
+
+            // The head: a big soft cloud with puffs round it and a tuft blown up on top.
+            windHead = Pivot("Head", cloud, new Vector3(0f, 0.86f, 0f));
+            Part(PrimitiveType.Sphere, windHead, Vector3.zero, new Vector3(0.64f, 0.58f, 0.6f), puff);
+            Part(PrimitiveType.Sphere, windHead, new Vector3(-0.27f, -0.05f, -0.03f), new Vector3(0.34f, 0.32f, 0.34f), puff);
+            Part(PrimitiveType.Sphere, windHead, new Vector3(0.28f, -0.04f, -0.03f), new Vector3(0.35f, 0.33f, 0.34f), puff);
+            Part(PrimitiveType.Sphere, windHead, new Vector3(-0.12f, 0.22f, -0.05f), new Vector3(0.34f, 0.3f, 0.32f), puff);
+            Part(PrimitiveType.Sphere, windHead, new Vector3(0.14f, 0.2f, -0.08f), new Vector3(0.3f, 0.27f, 0.3f), puff);
+            Part(PrimitiveType.Sphere, windHead, new Vector3(0f, -0.17f, -0.02f), new Vector3(0.56f, 0.2f, 0.46f), shade);
+            Part(PrimitiveType.Sphere, windHead, new Vector3(0.05f, 0.35f, -0.04f), new Vector3(0.15f, 0.17f, 0.15f), puff, new Vector3(0f, 0f, -20f));
+            Part(PrimitiveType.Sphere, windHead, new Vector3(0.12f, 0.44f, -0.05f), new Vector3(0.09f, 0.1f, 0.09f), puff);
+
+            // The face: shiny eyes, rosy cheeks, a wide smile.
             var black = PatchworkAssets.Plain(new Color(0.12f, 0.12f, 0.2f), 0.6f);
             var shine = PatchworkAssets.Glow(Color.white, 0.6f);
+            windEyes = Pivot("Eyes", windHead, new Vector3(0f, 0.03f, 0.285f));
             for (int side = -1; side <= 1; side += 2)
             {
-                Part(PrimitiveType.Sphere, cloud, new Vector3(side * 0.15f, 0.7f, 0.38f), new Vector3(0.1f, 0.14f, 0.05f), black);
-                Part(PrimitiveType.Sphere, cloud, new Vector3(side * 0.15f + 0.025f, 0.74f, 0.405f), Vector3.one * 0.035f, shine);
+                Part(PrimitiveType.Sphere, windEyes, new Vector3(side * 0.12f, 0f, 0f), new Vector3(0.085f, 0.12f, 0.045f), black);
+                Part(PrimitiveType.Sphere, windEyes, new Vector3(side * 0.12f + 0.02f, 0.032f, 0.02f), Vector3.one * 0.03f, shine);
             }
-            AddCheeks(cloud, new Vector3(0f, 0.6f, 0.36f), 0.28f, 0.11f);
-            var happy = Pivot("Face_Happy", cloud, Vector3.zero);
-            AddMouth(happy, new Vector3(0f, 0.57f, 0.4f), 0.1f, black, 0.03f, 1f);
-            var sad = Pivot("Face_Sad", cloud, Vector3.zero);
-            AddMouth(sad, new Vector3(0f, 0.53f, 0.4f), 0.09f, black, 0.03f, -1f);
+            AddCheeks(windHead, new Vector3(0f, -0.06f, 0.275f), 0.22f, 0.09f);
+            var happy = Pivot("Face_Happy", windHead, Vector3.zero);
+            AddMouth(happy, new Vector3(0f, -0.08f, 0.3f), 0.075f, black, 0.024f, 1f);
+            var sad = Pivot("Face_Sad", windHead, Vector3.zero);
+            AddMouth(sad, new Vector3(0f, -0.12f, 0.3f), 0.07f, black, 0.024f, -1f);
             CloudBrows(sad, -1f, black);
-            var angry = Pivot("Face_Angry", cloud, Vector3.zero);
-            AddMouth(angry, new Vector3(0f, 0.55f, 0.4f), 0.1f, black, 0.03f, -0.5f);
+            var angry = Pivot("Face_Angry", windHead, Vector3.zero);
+            AddMouth(angry, new Vector3(0f, -0.1f, 0.3f), 0.075f, black, 0.024f, -0.5f);
             CloudBrows(angry, 1f, black);
             windFaces[0] = happy.gameObject;
             windFaces[1] = sad.gameObject;
@@ -838,15 +956,15 @@ namespace Patchwork
                 }
         }
 
-        // Eyebrows over the cloud's eyes. slope 1 = angry, -1 = sad.
+        // Eyebrows over the cloud child's eyes (on its head). slope 1 = angry, -1 = sad.
         void CloudBrows(Transform parent, float slope, Material mat)
         {
             for (int side = -1; side <= 1; side += 2)
                 for (int i = 0; i < 4; i++)
                 {
                     float t = i / 3f;
-                    var p = new Vector3(side * (0.07f + t * 0.16f), 0.84f + slope * (t - 0.5f) * 0.07f, 0.34f);
-                    Part(PrimitiveType.Sphere, parent, p, new Vector3(0.035f, 0.035f, 0.03f), mat);
+                    var p = new Vector3(side * (0.06f + t * 0.13f), 0.135f + slope * (t - 0.5f) * 0.06f, 0.275f);
+                    Part(PrimitiveType.Sphere, parent, p, new Vector3(0.03f, 0.03f, 0.026f), mat);
                 }
         }
 

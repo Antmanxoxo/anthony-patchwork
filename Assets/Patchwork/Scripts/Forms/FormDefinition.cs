@@ -96,7 +96,7 @@ namespace Patchwork
             {
                 Type = FormType.Wind,
                 DisplayName = "Wind Form",
-                Tagline = "A happy floating cloud. Glides, falls slowly and bursts forward on a gust.",
+                Tagline = "A floating cloud child with a long scarf. Glides, falls slowly and bursts forward on a gust.",
                 AbilityHint = "Hold Jump in the air to glide. Press Ability for a gust (once per jump). White updrafts lift you.",
                 PrimaryColor = new Color(0.86f, 0.95f, 0.97f),
                 SecondaryColor = new Color(0.55f, 0.85f, 0.8f),
