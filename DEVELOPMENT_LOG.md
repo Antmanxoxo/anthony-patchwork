@@ -1,5 +1,17 @@
 # Development Log
 
+## A dreamy Pod and a glowing night sky
+- The Pod has a night-light mood: cool moonlight through the window, dusky lavender in the
+  shadows, softer shadows and a strong glow round every lamp, star and fairy light.
+- The Pod's song only plays while Patch holds the controller. Picking a level fades it out
+  into the loading screen, and the music stays silent until the new place is on screen.
+- Outer space is still dark but full of glow: felt nebula swirls with bright hearts, a river
+  of sequin stars right round the sky with soft pools of colour in it, aurora ribbons that sway
+  slowly, five constellations stitched from star buttons and thread (a heart, a needle and
+  thread, a teddy, a rocket, waves), and shooting stars every few seconds, mostly out in
+  front of the window.
+- Inside: glowing motes drift round the room, and a shy clockwork mouse lives aboard.
+
 ## A dreamier Pod song
 - The song that plays while you hold the controller in the Pod is new: slow, floating and
   dreamy (a lilting 3/4 in D major, 104 BPM, 32 bars, no drums). Harp ripples up and down

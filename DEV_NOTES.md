@@ -315,6 +315,11 @@ Stuff I need to remember about how Patchwork is put together.
   `AddStrings` makes the first load of the level noticeably slower.
 - `Emote.Show(pos, kind)` pops a felt emote anywhere. `Puffballs.Ensure(kit).Add(...)` adds a
   puffball; `ChimneySmoke.Add` is called by `TownKit` for every chimney.
+- `MusicPlayer.Hush()` fades the music out and keeps it silent until the next loading screen
+  has finished; the music is also always silent while `LoadingScreen.Busy`.
+- `LevelInfo.SunColor`, `AmbientSky/Side/Ground` (alpha 0 = work it out from the sky) and
+  `ShadowStrength` set a level's lighting mood. The Pod's extras (space glow, motes, mouse)
+  are in `PodDreams`.
 - Sounds from things out in the level that the player didn't cause go through
   `Sfx.PlayNear(id, pos, volume, range)` so they fade with distance (plain `Sfx.Play` is
   heard at full volume anywhere).

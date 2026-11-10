@@ -44,6 +44,17 @@ namespace Patchwork
             }
         }
 
+        bool hushed, wasLoading;
+        float hushTime;
+
+        // Fade the music out now and keep it silent until the next loading screen has finished.
+        public static void Hush()
+        {
+            if (instance == null) return;
+            instance.hushed = true;
+            instance.hushTime = 0f;
+        }
+
         // Paused / Satchel: quieter and "behind glass". Form Wheel: muffled. Normal: clear.
         public static void SetMuffle(float cutoffHz, float volumeScale)
         {
@@ -101,7 +112,13 @@ namespace Patchwork
             cutoff = Mathf.Lerp(cutoff, cutoffTarget, k);
             duck = Mathf.Lerp(duck, duckTarget, k);
 
-            float target = MaxVolume * Volume / 10f * duck;
+            // Hushed: the music fades away when a level is picked, stays silent behind the
+            // loading screen, and only comes back once the new place is on screen.
+            bool loading = LoadingScreen.Busy;
+            if (hushed && wasLoading && !loading) hushed = false;
+            if (hushed) { hushTime += udt; if (hushTime > 30f) hushed = false; }
+            wasLoading = loading;
+            float target = hushed || loading ? 0f : MaxVolume * Volume / 10f * duck;
             master = Mathf.MoveTowards(master, target, udt * 0.6f);
             // The forest's spooky song plays over everything else, so the rest dips under it.
             float spookyDuck = UpdateSpookyTrack(udt);

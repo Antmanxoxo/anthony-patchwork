@@ -57,7 +57,7 @@ namespace Patchwork
             info.Saturation = 10f;
             info.Contrast = 5f;
             info.Warmth = 0f;
-            info.Glow = 0.85f;
+            info.Glow = 1f;
             info.Vignette = 0.3f;
             info.SunColor = new Color(0.78f, 0.84f, 1f);
             info.AmbientSky = new Color(0.4f, 0.42f, 0.66f, 1f);

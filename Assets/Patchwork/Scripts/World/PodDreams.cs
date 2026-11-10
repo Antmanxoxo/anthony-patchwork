@@ -10,6 +10,8 @@ namespace Patchwork
         public static void Build(LevelKit kit)
         {
             Nebulas(kit);
+            StarRiver(kit);
+            Auroras(kit);
             Constellations(kit);
             var sky = kit.Group("ShootingStars", Vector3.zero);
             sky.gameObject.AddComponent<ShootingStars>().Build(kit);
@@ -42,15 +44,87 @@ namespace Patchwork
                     // A spiral arm: each patch a little further round and further out.
                     float k = i / (float)(puffs - 1);
                     float a = k * 4.4f, r = 6f + k * 34f;
-                    Color c = Color.Lerp(from[nb], to[nb], k) * 0.5f;
+                    Color c = Color.Lerp(from[nb], to[nb], k) * 0.62f;
                     float size = Mathf.Lerp(30f, 13f, k) * (0.85f + (float)rng.NextDouble() * 0.3f);
                     var t = kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * r, Mathf.Sin(a) * r, i * 0.6f), new Vector3(size, size * 0.7f, 1.2f),
-                        PatchworkAssets.Glow(new Color(c.r, c.g, c.b), 0.55f), new Vector3(0f, 0f, a * Mathf.Rad2Deg + 60f), g);
+                        PatchworkAssets.Glow(new Color(c.r, c.g, c.b), 1.25f), new Vector3(0f, 0f, a * Mathf.Rad2Deg + 60f), g);
                     Plain(t);
+                    // A second, fainter arm curling the other way round.
+                    var t2 = kit.Deco(PrimitiveType.Sphere, new Vector3(-Mathf.Cos(a) * r, -Mathf.Sin(a) * r, i * 0.6f + 0.3f), new Vector3(size * 0.8f, size * 0.55f, 1.2f),
+                        PatchworkAssets.Glow(new Color(c.r * 0.7f, c.g * 0.7f, c.b * 0.7f), 1f), new Vector3(0f, 0f, a * Mathf.Rad2Deg + 60f), g);
+                    Plain(t2);
                 }
+                // A bright heart to the swirl.
+                Plain(kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0f, -0.5f), new Vector3(11f, 11f, 1.4f), PatchworkAssets.Glow(Color.Lerp(from[nb], Color.white, 0.55f), 2.2f), default(Vector3), g));
                 var spin = g.gameObject.AddComponent<Spinner>();
                 spin.Axis = Vector3.forward;
                 spin.Speed = (nb % 2 == 0 ? 1f : -1f) * 0.8f;
+            }
+        }
+
+        // ---------------------------------------------------------------- The river of stars
+
+        // A band of glowing dust right round the sky, like the Milky Way sewn in sequins: lots
+        // of tiny bright specks, and soft pools of colour glowing among them.
+        static void StarRiver(LevelKit kit)
+        {
+            var g = kit.Group("StarRiver", Vector3.up * 5f);
+            g.rotation = Quaternion.Euler(24f, 0f, 38f);
+            var rng = new System.Random(5);
+            Material[] specks =
+            {
+                PatchworkAssets.Glow(new Color(1f, 0.96f, 0.85f), 2.6f), PatchworkAssets.Glow(new Color(0.7f, 0.85f, 1f), 2.6f),
+                PatchworkAssets.Glow(new Color(1f, 0.75f, 0.9f), 2.4f), PatchworkAssets.Glow(new Color(0.75f, 1f, 0.9f), 2.4f),
+            };
+            for (int i = 0; i < 260; i++)
+            {
+                float a = (float)rng.NextDouble() * Mathf.PI * 2f;
+                // Bunched towards the middle of the band.
+                float off = ((float)rng.NextDouble() + (float)rng.NextDouble() + (float)rng.NextDouble() - 1.5f) * 22f;
+                float d = 120f + (float)rng.NextDouble() * 30f;
+                float s = 0.35f + (float)rng.NextDouble() * (float)rng.NextDouble() * 1.3f;
+                Plain(kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * d, off, Mathf.Sin(a) * d), Vector3.one * s, specks[i % specks.Length], default(Vector3), g));
+            }
+            Color[] pools = { new Color(0.3f, 0.2f, 0.55f), new Color(0.15f, 0.35f, 0.5f), new Color(0.5f, 0.2f, 0.45f), new Color(0.2f, 0.3f, 0.6f) };
+            for (int i = 0; i < 18; i++)
+            {
+                float a = i / 18f * Mathf.PI * 2f + (float)rng.NextDouble() * 0.2f;
+                Vector3 p = new Vector3(Mathf.Cos(a) * 158f, ((float)rng.NextDouble() - 0.5f) * 14f, Mathf.Sin(a) * 158f);
+                var t = kit.Deco(PrimitiveType.Sphere, p, new Vector3(44f + (float)rng.NextDouble() * 22f, 20f + (float)rng.NextDouble() * 10f, 1.5f), PatchworkAssets.Glow(pools[i % pools.Length], 0.9f), default(Vector3), g);
+                t.rotation = Quaternion.LookRotation(-(g.TransformPoint(p) - g.position).normalized, g.up);
+                Plain(t);
+            }
+            var spin = g.gameObject.AddComponent<Spinner>();
+            spin.Speed = 0.35f;
+        }
+
+        // ---------------------------------------------------------------- Auroras
+
+        // Ribbons of light hanging in the dark: curtains of thin glowing strips, each a slightly
+        // different height and shade, that sway very slowly.
+        static void Auroras(LevelKit kit)
+        {
+            Vector3[] where = { new Vector3(-30f, 46f, 95f), new Vector3(70f, 30f, 60f), new Vector3(-90f, 50f, -30f) };
+            Color[] low = { new Color(0.2f, 0.9f, 0.7f), new Color(0.45f, 0.6f, 1f), new Color(0.9f, 0.45f, 0.8f) };
+            Color[] high = { new Color(0.5f, 0.45f, 1f), new Color(0.85f, 0.4f, 0.9f), new Color(0.45f, 0.7f, 1f) };
+            for (int n = 0; n < where.Length; n++)
+            {
+                var g = kit.Group("Aurora", where[n]);
+                g.rotation = Quaternion.LookRotation(-where[n].normalized, Vector3.up);
+                const int strips = 34;
+                for (int i = 0; i < strips; i++)
+                {
+                    float k = i / (float)(strips - 1);
+                    // The curtain hangs in a lazy S.
+                    float x = (k - 0.5f) * 70f, z = Mathf.Sin(k * 6.3f) * 9f;
+                    float tall = 10f + Mathf.Sin(k * 9f + n) * 4f + Mathf.Sin(k * 23f) * 2f;
+                    Color c = Color.Lerp(low[n], high[n], Mathf.Sin(k * Mathf.PI)) * (0.35f + 0.25f * Mathf.Sin(k * 17f + n * 2f));
+                    Plain(kit.Deco(PrimitiveType.Cube, new Vector3(x, tall * 0.5f, z), new Vector3(1.5f, tall, 0.15f), PatchworkAssets.Glow(new Color(c.r, c.g, c.b), 1.8f), new Vector3(0f, Mathf.Cos(k * 6.3f) * 35f, 0f), g));
+                }
+                var sway = g.gameObject.AddComponent<Rocker>();
+                sway.Axis = Vector3.up;
+                sway.Amount = 3f;
+                sway.Speed = 0.25f + n * 0.05f;
             }
         }
 
@@ -160,7 +234,7 @@ namespace Patchwork
     public class ShootingStars : MonoBehaviour
     {
         Transform star, tail;
-        float wait = 4f, age = -1f, life;
+        float wait = 2f, age = -1f, life;
         Vector3 from, to;
 
         public void Build(LevelKit kit)
@@ -168,8 +242,8 @@ namespace Patchwork
             var g = kit.Group("ShootingStar", Vector3.zero);
             g.SetParent(transform, false);
             star = g;
-            var head = kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 0.9f, PatchworkAssets.Glow(new Color(1f, 0.97f, 0.85f), 3f), default(Vector3), g);
-            tail = kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0f, -4f), new Vector3(0.45f, 0.45f, 8f), PatchworkAssets.Glow(new Color(1f, 0.85f, 0.55f), 2f), default(Vector3), g);
+            var head = kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 1.3f, PatchworkAssets.Glow(new Color(1f, 0.97f, 0.85f), 4f), default(Vector3), g);
+            tail = kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0f, -6f), new Vector3(0.6f, 0.6f, 12f), PatchworkAssets.Glow(new Color(1f, 0.85f, 0.55f), 2.6f), default(Vector3), g);
             foreach (var t in new[] { head, tail })
             {
                 var r = t.GetComponent<Renderer>();
@@ -190,14 +264,14 @@ namespace Patchwork
                 if (wait > 0f) return;
                 // Somewhere out in the dark, more often in front of the window than behind.
                 Vector3 dir = Random.onUnitSphere;
-                if (Random.value < 0.6f) dir = new Vector3(Random.Range(-0.7f, 0.7f), Random.Range(-0.1f, 0.6f), 1f).normalized;
-                Vector3 mid = dir * Random.Range(55f, 80f) + Vector3.up * 5f;
+                if (Random.value < 0.75f) dir = new Vector3(Random.Range(-0.6f, 0.6f), Random.Range(0f, 0.5f), 1f).normalized;
+                Vector3 mid = dir * Random.Range(45f, 70f) + Vector3.up * 5f;
                 Vector3 across = Vector3.Cross(dir, Random.onUnitSphere).normalized;
                 across.y = -Mathf.Abs(across.y) - 0.25f;   // always falling a little
                 across.Normalize();
                 from = mid - across * 28f;
                 to = mid + across * 28f;
-                life = Random.Range(0.9f, 1.4f);
+                life = Random.Range(1.1f, 1.7f);
                 age = 0f;
                 star.rotation = Quaternion.LookRotation(across, Vector3.up);
                 star.gameObject.SetActive(true);
@@ -208,7 +282,7 @@ namespace Patchwork
             {
                 star.gameObject.SetActive(false);
                 age = -1f;
-                wait = Random.Range(5f, 11f);
+                wait = Random.Range(2.5f, 6f);
                 return;
             }
             star.position = Vector3.Lerp(from, to, k);

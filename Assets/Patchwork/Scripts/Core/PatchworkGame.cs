@@ -544,7 +544,7 @@ namespace Patchwork
                     Haptics.SetSilenced(true);
                     break;
                 case UIMode.Talk:
-                    MusicPlayer.SetMuffle(Level != null && Level.QuietMusic ? 1700f : 22000f, Level != null && Level.QuietMusic ? 0.2f : 0.6f);
+                    MusicPlayer.SetMuffle(22000f, Level != null && Level.QuietMusic ? 0f : 0.6f);
                     Sfx.SetLoopCutoff(22000f);
                     Haptics.SetSilenced(true);
                     break;
@@ -554,10 +554,8 @@ namespace Patchwork
                     Haptics.SetSilenced(true);
                     break;
                 default:
-                    // In the Pod the song plays softly all the time, as if from the controller's
-                    // little speaker, and swells up clear when Patch picks it up.
-                    if (Level != null && Level.QuietMusic) MusicPlayer.SetMuffle(1700f, 0.3f);
-                    else MusicPlayer.SetMuffle(22000f, 1f);
+                    // (The Pod is quiet until Patch picks up the controller.)
+                    MusicPlayer.SetMuffle(22000f, Level != null && Level.QuietMusic ? 0f : 1f);
                     Sfx.SetLoopCutoff(22000f);
                     Haptics.SetSilenced(false);
                     break;
