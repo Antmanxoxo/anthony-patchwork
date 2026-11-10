@@ -21,10 +21,25 @@ namespace Patchwork
         static Camera cullCamera;
         static float cullFar;
 
+        static bool farView;
+
+        // Cutscenes that fly over the whole level switch this on, so small things are drawn at
+        // any distance for a while instead of popping in as the camera gets near.
+        public static void SetFarView(bool on)
+        {
+            farView = on;
+            ApplyCullDistances();
+        }
+
         public static void ApplyCullDistances()
         {
             if (cullCamera == null) return;
             var d = new float[32];
+            if (farView)
+            {
+                cullCamera.layerCullDistances = d;   // all 0: everything out to the far clip
+                return;
+            }
             d[SmallLayer] = Mathf.Min(cullFar, 80f * CullScale);
             d[MediumLayer] = Mathf.Min(cullFar, 180f * CullScale);
             d[GrassLayer] = Mathf.Min(cullFar, 70f * CullScale);
@@ -35,6 +50,7 @@ namespace Patchwork
         public static void Run(Transform root, Camera cam, float farClip, bool distanceCull)
         {
             Prepare();
+            farView = false;
             int swapped = 0, unshadowed = 0, layered = 0;
             var filters = root.GetComponentsInChildren<MeshFilter>(true);
             foreach (var mf in filters)

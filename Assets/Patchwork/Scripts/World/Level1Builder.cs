@@ -79,7 +79,7 @@ namespace Patchwork
             info.MapCameraHeight = 70f;   // above the tallest trees in the wood
             info.Saturation = 8f;
             info.Contrast = 5f;
-            info.Miniature = 0.7f;
+            info.Miniature = 0f;   // no soft-focus distance blur: everything stays crisp
             info.Warmth = 9f;
             info.Glow = 0.55f;
             info.HeartstringsNeeded = HeartstringsNeeded;

@@ -1,5 +1,15 @@
 # Development Log
 
+## Sharper picture, and a cleaner start to the opening
+- No more distance blur: the soft-focus "miniature" effect is gone from Toybox Town, so
+  everything stays crisp.
+- The opening no longer shows the town popping in: while it plays, every little thing is
+  drawn at any distance (normally small things far away are skipped to save work).
+- The opening takes over straight from the loading screen and waits on its first shot until
+  the picture has settled, instead of flashing the normal view first.
+- Patch is already standing outside the landed Pod when the story gets to him, instead of
+  hanging in the doorway waiting to hop out.
+
 ## A storybook opening for Toybox Town, told by the Storyteller
 - New opening chapter for Level 1. It starts outside the toybox with a chapter card
   ("Chapter One: The Wedding That Nearly Wasn't"), dives over the wall into town on the
@@ -13,8 +23,6 @@
   letter on a strip of cream paper with a wax seal, with a low murmur as he speaks. He also
   passes a remark the first time you reach eleven places round town (once each, saved).
   He's written words and a murmur, not a recorded voice, and he's my own character.
-- The soft-focus "miniature" blur switches off during the opening (the far-away shots want
-  to be sharp) and back on when you take over.
 - Patchwork > Replay Toybox Town Opening (next visit) plays the opening again once, even on
   a save that's already past it.
 

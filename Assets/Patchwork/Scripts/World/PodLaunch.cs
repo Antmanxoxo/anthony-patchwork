@@ -34,6 +34,25 @@ namespace Patchwork
 
         void OnDisable() { Busy = false; }
 
+        // Skip the hop: Patch is already standing outside with the door open (the level's
+        // opening cutscene shows him there).
+        public void SkipToLanded(PatchworkGame game)
+        {
+            state = State.Done;
+            Busy = false;
+            Vector3 d = Land - Mouth;
+            flightYaw = Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg;
+            var motor = game.Player.Motor;
+            motor.ExternalControl = false;
+            motor.Velocity = Vector3.zero;
+            motor.Teleport(Land, flightYaw);
+            if (Door != null) Door.localRotation = Quaternion.Euler(0f, DoorAngle, 0f);
+            if (Tube != null && tubeScale != Vector3.zero) Tube.localScale = tubeScale;
+            var cam = game.CameraRig;
+            cam.Showcase = false;
+            cam.SnapBehind(flightYaw);
+        }
+
         Vector3 Path(float k)
         {
             // A quick shove out of the tube (first 15%), then a lovely arc to the ground.

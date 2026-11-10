@@ -75,17 +75,31 @@ namespace Patchwork
             if (game == null || game.Player == null) return;
             if (t < 0f)
             {
-                // Wait for the loading fade, then roll.
-                if (game.Mode != UIMode.Gameplay || game.Fade > 0.02f || LoadingScreen.Busy) return;
-                wait += Time.unscaledDeltaTime;
-                if (wait < 0.4f) return;
+                // Take over the camera straight away, behind the loading screen, so the first
+                // thing you see is the chapter card (not Patch, then a jump cut).
+                if (game.Mode != UIMode.Gameplay) return;
                 t = 0f;
+                // Patch has already hopped out of the Pod by the time the story gets to him.
+                var arrival = FindAnyObjectByType<PodLaunch>();
+                if (arrival != null) arrival.SkipToLanded(game);
                 game.StartScriptedCutscene(new Vector3(0f, 150f, -200f), new Vector3(0f, 26f, 0f), 0.9f);
                 game.CutsceneSkippable = true;
                 game.CameraRig.SnapShowcase();
-                LevelLook.SetMiniature(false);   // the whole town from far off: keep it sharp
+                // The whole town is on show from far off: draw every little thing at any
+                // distance while the story plays, so nothing pops in as the camera flies about.
+                RenderOptimizer.SetFarView(true);
             }
             if (game.Mode != UIMode.Cutscene) return;
+
+            // Hold on the opening shot until the loading screen has gone and the picture has
+            // settled for a moment, then start the story.
+            if (LoadingScreen.Busy || game.Fade > 0.02f) { wait = 0f; return; }
+            if (wait < 0.6f)
+            {
+                wait += Time.unscaledDeltaTime;
+                Narrator.Card("Chapter One", "The Wedding That Nearly Wasn't");
+                return;
+            }
 
             float dt = Time.deltaTime;
             t += dt;
@@ -337,7 +351,7 @@ namespace Patchwork
             Director.ApplySavedState();
             GameState.SetHintSeen(SeenKey);
             game.CutsceneCaption = null;
-            LevelLook.SetMiniature(true);
+            RenderOptimizer.SetFarView(false);
             Narrator.Card(null, null);
             Narrator.Place(null);
             game.CutsceneSkipFill = 0f;

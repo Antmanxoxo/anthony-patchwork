@@ -306,7 +306,7 @@ Stuff I need to remember about how Patchwork is put together.
   hues (`MapColour`), then outlines where kinds meet. If the ground colour changes a lot,
   check it still falls in the "meadow" range (hue 62-170, value > 0.6).
 - `LevelInfo.Miniature` (0..1) adds Gaussian depth of field (start 42 m, end 150 m) in
-  `LevelLook`. Only Level 1 sets it.
+  `LevelLook`. No level uses it now: it made the game look blurry. Leave it at 0.
 - In IMGUI code never use `GUIUtility.RotateAroundPivot` (it turns about a screen pixel and
   breaks under the UI scale); use `MapScreen.Turn` / `UIKit.IconTransformed` style matrices.
 - Toybox music: `MusicToybox.ComposeToybox`. Sections come from `ToySection(bar)`; chords,
@@ -356,8 +356,11 @@ Stuff I need to remember about how Patchwork is put together.
   the Storyteller too. `NarrationZone` is a volume that says its line once (hint-seen key).
 - Remarks round town are in `Level1Crafts.StorytellerRemarks` (keys `L1_say_<place>`).
 - `World/ToyboxIntro.cs` is one timeline; the `T...` constants at the top are when each shot
-  starts. It turns the miniature blur off with `LevelLook.SetMiniature(false)` and back on in
-  `Finish`.
+  starts. It takes the camera as soon as the level is in Gameplay mode (behind the loading
+  screen) and holds the first shot until the fade has gone. It calls
+  `PodLaunch.SkipToLanded` so Patch is already outside the Pod, and
+  `RenderOptimizer.SetFarView(true)` (off again in `Finish`) so small things aren't
+  distance-culled while the camera flies over the whole town.
 - The Storyteller is text plus a murmur sound. If a voice is ever added it has to be my own
   recording or one I have the rights to, never an imitation of a real narrator.
 - Play starts without reloading scripts, so anything kept in a `static` that Unity made
