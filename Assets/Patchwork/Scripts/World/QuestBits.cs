@@ -224,7 +224,7 @@ namespace Patchwork
             Emote.Show(Bird.HeadPosition + Vector3.up * 0.4f, Emote.Kind.Surprise);
             FxBurst.Spawn(FxBurst.Kind.Puff, from + Vector3.up, new Color(0.7f, 0.85f, 1f));
             Sfx.PlayPitched(SfxId.Squeak, 0.45f, 1.5f);
-            Sfx.Play(SfxId.Glide, 0.4f);
+            Sfx.Play(SfxId.Gust, 0.4f);
             game.ShowToast(Squeaks[Mathf.Min(at - 1, Squeaks.Length - 1)]);
             if (at == 1) Narrator.Say("Ah. Wisp, it seems, is afraid of heights, of the Fray, and at present of you. After him. Gently.");
         }

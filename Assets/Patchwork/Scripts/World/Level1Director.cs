@@ -310,7 +310,7 @@ namespace Patchwork
                 Sfx.Play(SfxId.Pop, 0.7f);
                 Sfx.Play(SfxId.Boing, 0.3f);
             }
-            if (Reached(6, 5.4f) && Gift(Doves)) { ShowGift(Doves); Sfx.Play(SfxId.Glide, 0.5f); }
+            if (Reached(6, 5.4f) && Gift(Doves)) { ShowGift(Doves); Sfx.Play(SfxId.Gust, 0.5f); }
             if (Gift(Fireworks) && weddingT > 5f && weddingT < 13.6f)
             {
                 fireworkTimer -= dt;
