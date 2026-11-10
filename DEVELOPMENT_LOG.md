@@ -1,5 +1,16 @@
 # Development Log
 
+## The sewing-box sky, and comforts in the Pod
+- The things floating near the Pod now all come from one idea: a sewing box. A button moon,
+  a cotton reel trailing its thread, a ball-of-yarn planet with knitting needles through it,
+  a pincushion planet bristling with glass-headed pins, and a silver thimble station with lit
+  windows. A line of glowing stitches joins the patchwork planet to each of them. (They
+  replace the elephant, the horse, the doughnut, the toadstool, the octopus planet, the loose
+  gears and the pencil clouds. The fabric planets, moon, comet, balloon, circus-tent planet,
+  paper plane, saucer and woolly aliens stay.)
+- In the Pod: a wind chime on a long thread that rings up a five-note scale when Patch jumps
+  into it, a lava lamp glowing on the window ledge, and a steaming mug of cocoa.
+
 ## A dreamy Pod and a glowing night sky
 - The Pod has a night-light mood: cool moonlight through the window, dusky lavender in the
   shadows, softer shadows and a strong glow round every lamp, star and fairy light.

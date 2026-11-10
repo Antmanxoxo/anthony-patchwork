@@ -111,7 +111,12 @@ namespace Patchwork
 
         public static void Add(LevelKit kit, Vector3 top)
         {
-            var g = kit.Group("ChimneySmoke", top);
+            Attach(kit, kit.Group("ChimneySmoke", top));
+        }
+
+        // The same puffs on something that's already there (scale it down for a mug's steam).
+        public static void Attach(LevelKit kit, Transform g)
+        {
             var s = g.gameObject.AddComponent<ChimneySmoke>();
             s.puff = new Transform[Count];
             s.age = new float[Count];

@@ -489,6 +489,9 @@ namespace Patchwork
 
         // ---------------------------------------------------------------- Helpers
 
+        internal static float DeskHeight { get { return DeskTop; } }
+        internal static Vector3 GlobePoint { get { return GlobeCenter; } }
+
         static Vector3 Dir(float deg)
         {
             float a = deg * Mathf.Deg2Rad;
@@ -1068,8 +1071,8 @@ namespace Patchwork
             return g;
         }
 
-        // Outer space, after the toy-box collage on the game's box art: felt stars, bold
-        // patterned planets, a doughnut and a toadstool drifting by, and some woolly aliens.
+        // Outer space: felt stars, bold fabric-print planets, a moon, a comet and some woolly
+        // aliens. (The sewing-box planets and the glow are in PodDreams.)
         static void Outside(LevelKit kit)
         {
             // A field of tiny stars streaming slowly past, so the pod feels like it's flying.
@@ -1127,39 +1130,6 @@ namespace Patchwork
             // A woolly alien sitting on top of it, waving.
             Alien(kit, p3.position + Vector3.up * 2.5f, new Color(0.7f, 0.45f, 0.9f), 1f, true);
 
-            // A polka-dot toadstool floating by.
-            var shroom = kit.Group("Toadstool", new Vector3(-8.6f, 5.6f, 20f));
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.7f, 0f), new Vector3(0.9f, 0.8f, 0.9f), PatchworkAssets.Felt(new Color(0.99f, 0.95f, 0.86f)), default(Vector3), shroom);
-            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.2f, 0f), new Vector3(2.6f, 1.4f, 2.6f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Polka, new Color(0.9f, 0.22f, 0.25f), new Color(0.99f, 0.96f, 0.9f)), default(Vector3), shroom);
-            shroom.rotation = Quaternion.Euler(0f, 0f, 14f);
-            var sb = shroom.gameObject.AddComponent<Spinner>();
-            sb.Speed = 8f;
-            sb.BobHeight = 0.3f;
-            sb.BobSpeed = 0.5f;
-
-            // A frosted doughnut with sprinkles.
-            var donut = kit.Group("Doughnut", new Vector3(8.4f, 8f, 21f));
-            donut.rotation = Quaternion.Euler(-60f, 0f, 20f);
-            var dough = PatchworkAssets.Felt(new Color(0.9f, 0.68f, 0.42f));
-            var icing = PatchworkAssets.Felt(new Color(1f, 0.6f, 0.75f));
-            Color[] sprinkles = { new Color(0.4f, 0.75f, 1f), new Color(1f, 0.9f, 0.4f), new Color(0.6f, 0.9f, 0.5f), Color.white };
-            for (int k = 0; k < 14; k++)
-            {
-                float a = k * Mathf.PI * 2f / 14f;
-                Vector3 p = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * 1.05f;
-                kit.Deco(PrimitiveType.Sphere, p, Vector3.one * 0.95f, dough, default(Vector3), donut);
-                kit.Deco(PrimitiveType.Sphere, p + Vector3.up * 0.18f, new Vector3(0.95f, 0.7f, 0.95f), icing, default(Vector3), donut);
-                kit.Deco(PrimitiveType.Cube, p * 1.05f + Vector3.up * 0.52f, new Vector3(0.22f, 0.06f, 0.06f), PatchworkAssets.Felt(sprinkles[k % 4]), new Vector3(0f, k * 47f, 0f), donut);
-            }
-            var ds = donut.gameObject.AddComponent<Spinner>();
-            ds.Speed = 12f;
-            ds.BobHeight = 0.35f;
-            ds.BobSpeed = 0.45f;
-
-            // Clockwork gears turning beside the planet.
-            Gear(kit, new Vector3(5.6f, 1.2f, 21f), 1.6f, new Color(0.55f, 0.35f, 0.75f), 20f);
-            Gear(kit, new Vector3(7.7f, 2.9f, 22.6f), 1.1f, new Color(0.95f, 0.65f, 0.25f), -29f);
-
             // A little felt moon with craters.
             var moon = kit.Group("Moon", new Vector3(-7.4f, 1.6f, 21f));
             kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 2.2f, PatchworkAssets.Felt(new Color(0.85f, 0.82f, 0.75f)), default(Vector3), moon);
@@ -1216,49 +1186,11 @@ namespace Patchwork
                 kit.Deco(PrimitiveType.Sphere, new Vector3(-1.6f - k * 1.9f, (k % 2 == 0 ? 0.15f : -0.15f), 0f), new Vector3(2.6f, 1.2f - k * 0.2f, 0.4f), PatchworkAssets.Felt(tail[k]), default(Vector3), comet);
         }
 
-        // More storybook things floating about outside, like a felt-and-paper picture book sky:
-        // a yellow stitched elephant with a zigzag trunk, a white felt horse galloping on nothing,
-        // a blue planet with an octopus tentacle curling out of it, a circus tent and a seedling on
-        // a tiny planet, a compass-rose planet, a gingham hot-air balloon, a paper aeroplane looping
-        // round, and soft grey pencil-sketch clouds.
+        // More things floating about outside: a circus tent and a seedling on a tiny planet, a
+        // compass-rose planet, a gingham hot-air balloon, and a paper aeroplane looping round.
         static void StorybookSky(LevelKit kit)
         {
-            Elephant(kit, new Vector3(17f, 5.5f, 30f), -120f);
-            Horse(kit, new Vector3(-19f, 1.5f, 35f), 110f);
-
-            // The octopus planet.
-            var op = kit.Group("OctopusPlanet", new Vector3(7f, -9f, 36f));
-            op.rotation = Quaternion.LookRotation(new Vector3(-7f, 0f, -36f).normalized, Vector3.up) * Quaternion.Euler(0f, 180f, 0f);
-            kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 10f, PatchworkAssets.Print(PatchworkAssets.PrintKind.Polka, new Color(0.3f, 0.45f, 0.85f), new Color(0.55f, 0.75f, 1f)), default(Vector3), op);
-            var tentacle = kit.Group("Tentacle", op.position);
-            tentacle.SetParent(op, true);
-            var arm = PatchworkAssets.Felt(new Color(0.35f, 0.55f, 0.95f));
-            var sucker = PatchworkAssets.Felt(new Color(0.95f, 0.75f, 0.85f));
-            const int segs = 18;
-            for (int k = 0; k < segs; k++)
-            {
-                float s = k / (float)(segs - 1);
-                Vector3 lp;
-                if (s < 0.15f) lp = Vector3.Lerp(new Vector3(-1.2f, 4.4f, 0f), new Vector3(-0.6f, 6.6f, 0f), s / 0.15f);
-                else
-                {
-                    float u = (s - 0.15f) / 0.85f;
-                    float a = Mathf.PI * 1.1f - u * Mathf.PI * 2.3f;
-                    float r = Mathf.Lerp(3.6f, 0.6f, u);
-                    lp = new Vector3(2.6f + Mathf.Cos(a) * r, 8.2f + Mathf.Sin(a) * r, 0f);
-                }
-                float size = Mathf.Lerp(1.5f, 0.35f, s);
-                kit.Deco(PrimitiveType.Sphere, lp, Vector3.one * size, arm, default(Vector3), tentacle);
-                if (k % 2 == 1) kit.Deco(PrimitiveType.Sphere, lp + new Vector3(0f, 0f, -size * 0.42f), Vector3.one * size * 0.32f, sucker, default(Vector3), tentacle);
-            }
-            var tw = tentacle.gameObject.AddComponent<Rocker>();
-            tw.Axis = Vector3.forward;
-            tw.Amount = 7f;
-            tw.Speed = 0.6f;
-            var ops = op.gameObject.AddComponent<Spinner>();
-            ops.Speed = 0f;
-            ops.BobHeight = 0.3f;
-            ops.BobSpeed = 0.3f;
+            // (The sewing-box planets that used to be an elephant, a horse and an octopus are in PodDreams.)
 
             // A tiny planet with a circus tent and a seedling on top.
             var tp = kit.Group("TentPlanet", new Vector3(-4f, 13.5f, 40f));
@@ -1333,11 +1265,6 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, -0.12f, 0f), new Vector3(0.03f, 0.35f, 2.2f), paper, default(Vector3), plane);
             kit.Deco(PrimitiveType.Cube, new Vector3(0.5f, 0.12f, -0.4f), new Vector3(0.5f, 0.035f, 0.05f), PatchworkAssets.Felt(new Color(0.5f, 0.7f, 0.95f)), new Vector3(0f, 0f, 16f), plane);
 
-            // Soft grey pencil-sketch clouds.
-            SketchCloud(kit, new Vector3(-14f, -3f, 27f), 1.6f);
-            SketchCloud(kit, new Vector3(22f, -5f, 38f), 2.2f);
-            SketchCloud(kit, new Vector3(-8f, 11.5f, 47f), 2f);
-            SketchCloud(kit, new Vector3(26f, 10f, 48f), 1.8f);
         }
 
         // A soft grey cloud with darker "pencil" shading underneath.
