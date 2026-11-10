@@ -54,7 +54,6 @@ namespace Patchwork
             if (toyStems == null || toyStems[0] == null) toyStems = ComposeToybox();
             toySources = new AudioSource[ToyStemCount];
             toyFilters = new AudioLowPassFilter[ToyStemCount];
-            double start = AudioSettings.dspTime + 0.15;
             for (int i = 0; i < ToyStemCount; i++)
             {
                 var go = new GameObject("Music Toybox " + (ToyStem)i);
@@ -64,12 +63,13 @@ namespace Patchwork
                 src.loop = true;
                 src.playOnAwake = false;
                 src.spatialBlend = 0f;
-                src.volume = 0f;
+                src.volume = SilentVolume;
+                src.priority = 0;
                 src.ignoreListenerPause = true;
                 toyFilters[i] = go.AddComponent<AudioLowPassFilter>();
                 toySources[i] = src;
-                src.PlayScheduled(start);
             }
+            StartTogether(toySources, 0);
         }
 
         // Fades between the Skiff music and the level track. Returns how loud the Skiff music should be.
@@ -84,7 +84,7 @@ namespace Patchwork
                     if (toySources[i] == null) continue;
                     toyLayer[i] = Mathf.MoveTowards(toyLayer[i], toyWant[i] ? 1f : 0f, udt / 2f);
                     float gain = Mathf.Sin(toyLayer[i] * Mathf.PI * 0.5f);
-                    toySources[i].volume = master * gain * Mathf.Sin(toyMix * Mathf.PI * 0.5f);
+                    toySources[i].volume = Mathf.Max(SilentVolume, master * gain * Mathf.Sin(toyMix * Mathf.PI * 0.5f));
                     toyFilters[i].cutoffFrequency = cutoff;
                 }
                 // Back on the Skiff and fully faded: stop the town band.
@@ -157,6 +157,11 @@ namespace Patchwork
             return bar < 4 ? 0 : bar < 12 ? 1 : bar < 20 ? 2 : bar < 28 ? 3 : bar < 36 ? 4 : 5;
         }
 
+        // Flutes and horns take a moment to "speak", so their notes are started this much early
+        // and their loudest point lands on the beat with the plucked and struck instruments.
+        // (Without it they sound as if they're trailing behind the rest of the band.)
+        const float FluteLead = 0.04f, BrassLead = 0.025f;
+
         static AudioClip[] ComposeToybox()
         {
             float beat = 60f / ToyBpm;
@@ -209,7 +214,7 @@ namespace Patchwork
                         // The pattering string ostinato: light plucked off-beats that keep it galloping.
                         for (int e8 = 0; e8 < 4; e8++)
                         {
-                            if (e8 % 2 == 0) AddPizz(bed, (h0 + e8 * 0.5f + 0.25f) * beat, Freq(ch[(e8 / 2) % ch.Length]), 0.028f, 1500 + b * 16 + half * 8 + e8);
+                            if (e8 % 2 == 0) AddPizz(bed, (h0 + e8 * 0.5f) * beat, Freq(ch[(e8 / 2) % ch.Length]), 0.028f, 1500 + b * 16 + half * 8 + e8);
                             else foreach (int c in ch) AddPizz(bed, (h0 + e8 * 0.5f) * beat, Freq(c), 0.022f, 1600 + b * 16 + half * 8 + e8 + c);
                         }
                     }
@@ -272,36 +277,36 @@ namespace Patchwork
                 {
                     // Horns holding a soft open fifth, and a little fanfare every four bars.
                     int r = Root(first, 50);
-                    AddBrass(brass, b0 * beat, beat * 3.7f, Freq(r), 0.022f);
-                    AddBrass(brass, b0 * beat, beat * 3.7f, Freq(r + 7), 0.016f);
+                    AddBrass(brass, b0 * beat - BrassLead, beat * 3.7f, Freq(r), 0.022f);
+                    AddBrass(brass, b0 * beat - BrassLead, beat * 3.7f, Freq(r + 7), 0.016f);
                     if (b % 4 == 0)
                     {
                         var bc = Ch(first, 62);
-                        foreach (int c in bc) AddBrass(brass, b0 * beat, beat * 0.3f, Freq(c), 0.028f);
-                        foreach (int c in bc) AddBrass(brass, (b0 + 0.75f) * beat, beat * 0.2f, Freq(c), 0.02f);
-                        foreach (int c in bc) AddBrass(brass, (b0 + 1f) * beat, beat * 0.8f, Freq(c), 0.026f);
+                        foreach (int c in bc) AddBrass(brass, b0 * beat - BrassLead, beat * 0.3f, Freq(c), 0.028f);
+                        foreach (int c in bc) AddBrass(brass, (b0 + 0.75f) * beat - BrassLead, beat * 0.2f, Freq(c), 0.02f);
+                        foreach (int c in bc) AddBrass(brass, (b0 + 1f) * beat - BrassLead, beat * 0.8f, Freq(c), 0.026f);
                     }
                     if (b == 18 || b == 19)
                     {
                         // The lift through the borrowed chords: brass swelling up.
-                        foreach (int c in Ch(first, 58)) AddBrass(brass, b0 * beat, beat * 3.8f, Freq(c), 0.03f);
+                        foreach (int c in Ch(first, 58)) AddBrass(brass, b0 * beat - BrassLead, beat * 3.8f, Freq(c), 0.03f);
                     }
                 }
                 else if (section == 3)
                 {
-                    foreach (var nt in Line(ToyBrassC[b - 20], b0)) AddBrass(brass, nt.Beat * beat, nt.Len * beat * 0.96f, Freq(nt.Midi), 0.055f);
+                    foreach (var nt in Line(ToyBrassC[b - 20], b0)) AddBrass(brass, nt.Beat * beat - BrassLead, nt.Len * beat * 0.96f, Freq(nt.Midi), 0.055f);
                     if (b == 20)
-                        foreach (int c in Ch(first, 62)) AddBrass(brass, b0 * beat, beat * 0.5f, Freq(c), 0.035f);
+                        foreach (int c in Ch(first, 62)) AddBrass(brass, b0 * beat - BrassLead, beat * 0.5f, Freq(c), 0.035f);
                 }
                 else if (section == 5)
                 {
-                    foreach (int c in Ch(first, 58)) AddBrass(brass, b0 * beat, beat * (first == second ? 3.6f : 1.8f), Freq(c), 0.034f);
-                    if (first != second) foreach (int c in Ch(second, 58)) AddBrass(brass, (b0 + 2f) * beat, beat * 1.8f, Freq(c), 0.034f);
+                    foreach (int c in Ch(first, 58)) AddBrass(brass, b0 * beat - BrassLead, beat * (first == second ? 3.6f : 1.8f), Freq(c), 0.034f);
+                    if (first != second) foreach (int c in Ch(second, 58)) AddBrass(brass, (b0 + 2f) * beat - BrassLead, beat * 1.8f, Freq(c), 0.034f);
                 }
                 else if (section == 4 && b >= 34)
                 {
                     // Horns creeping back in under the end of the interlude.
-                    AddBrass(brass, b0 * beat, beat * 3.8f, Freq(Root(first, 50)), 0.018f + (b - 34) * 0.008f);
+                    AddBrass(brass, b0 * beat - BrassLead, beat * 3.8f, Freq(Root(first, 50)), 0.018f + (b - 34) * 0.008f);
                 }
             }
 
@@ -333,17 +338,17 @@ namespace Patchwork
                     }
                     // The pipe: the flute sings the tune (an octave down, soft and breathy, in
                     // the quiet interlude), with a grace note into the long notes.
-                    if (section == 4) AddFlute(pipe, t, len * 0.95f + 0.05f, f * 0.5f, 0.07f);
+                    if (section == 4) AddFlute(pipe, t - FluteLead, len * 0.95f + 0.05f, f * 0.5f, 0.07f);
                     else if (section != 0)
                     {
-                        AddFlute(pipe, t, len * 0.95f + 0.05f, f, 0.065f);
-                        if (nt.Len >= 1.5f) AddFlute(pipe, t - 0.05f, 0.05f, Freq(nt.Midi + 2), 0.03f);
+                        AddFlute(pipe, t - FluteLead, len * 0.95f + 0.05f, f, 0.065f);
+                        if (nt.Len >= 1.5f) AddFlute(pipe, t - FluteLead - 0.05f, 0.05f, Freq(nt.Midi + 2), 0.03f);
                     }
                 }
             }
             // Piccolo trills fluttering into the soaring section and the coda.
             foreach (int tb in new[] { 19, 35 })
-                for (int i = 0; i < 8; i++) AddFlute(pipe, (tb * 4f + 3f + i * 0.125f) * beat, beat * 0.13f, Freq(i % 2 == 0 ? 86 : 88), 0.035f);
+                for (int i = 0; i < 8; i++) AddFlute(pipe, (tb * 4f + 3f + i * 0.125f) * beat - FluteLead, beat * 0.13f, Freq(i % 2 == 0 ? 86 : 88), 0.035f);
 
             return FinishStems(data, "pw_toybox_", new[] { "bed", "lute", "trumpet", "pipe" }, 7500f);
         }

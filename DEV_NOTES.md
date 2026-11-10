@@ -371,6 +371,27 @@ Stuff I need to remember about how Patchwork is put together.
   (meshes, materials, textures) must be checked with `== null` before reuse, not just "did I
   make it once". `RenderOptimizer.Prepare` does this now (it's what made the Pod vanish).
 
+## Toybox Town's quests and wedding presents
+- `World/Level1Quests.cs` places everything; `World/QuestBits.cs` has the moving parts
+  (`PirateQuest`, `ScaredPiper`, `DyeTap` / `DyeWorksQuest`, `WeddingPresent`).
+- A `BandPiece` can be `SetLocked(true)` until its story is done (`HideWhenLocked`,
+  `LockedToast`). The pirate, the piper and the dye works each unlock theirs.
+- Quest progress that isn't a pickup is saved with `GameState.SetHintSeen(key)`:
+  `L1_pirate_met`, `L1_pirate_treasure`, `L1_pirate_paid`, `L1_dye_rose` / `_butter` / `_sky`.
+- Presents are `Level1Director.GiftIds` (saved as collected). What each adds is built hidden in
+  `Level1Builder.WeddingExtras` and kept in `director.GiftScenes`; `director.Explored()`
+  (0..1 of all secrets) sets how many of `ExtraGuests` come. To add a present: add an id, a
+  name and a hint in the director, a `Present(...)` in `WeddingPresents`, and its scene.
+- `DigSpot` can dig up anything now: pass a null marble and set `OnDug`.
+- `ToyNpc.Kind.Pirate` is a new toy body.
+
+## Music layers must stay in step
+- Never set a music layer's volume to 0: use `MusicPlayer.SilentVolume`. Unity stops really
+  playing silent sounds and they come back slightly late.
+- Start layers with `StartTogether(sources, sample)`; `KeepInStep` checks them once a second.
+- `MusicPlayer.PodBands(float[])` gives the Pod song's loudness from low to high notes and
+  `PodBeat` its beat count; `SoundRing` (in PodDreams.cs) draws the ring from them.
+
 ## Habits
 - Test every change with Play and check the Console.
 - Keep it to C# 9 and older Unity APIs so it compiles everywhere.

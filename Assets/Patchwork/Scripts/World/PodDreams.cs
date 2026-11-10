@@ -304,33 +304,29 @@ namespace Patchwork
             spin.Speed = 0.35f;
         }
 
-        // ---------------------------------------------------------------- Auroras
+        // ---------------------------------------------------------------- The ring of light
 
-        // Ribbons of light hanging in the dark: curtains of thin glowing strips, each a slightly
-        // different height and shade, that sway very slowly.
+        // A ring of glowing bars right round the Pod, like the northern lights bent into a hoop.
+        // On its own it breathes slowly. When the Pod's song is playing (controller in hand) it
+        // becomes the song's soundwave: each bar jumps with one part of the music, low notes
+        // and high, and a ripple runs round it on every beat. The colours drift round the ring
+        // the way an aurora's do: green into teal, blue, violet and rose.
         static void Auroras(LevelKit kit)
         {
-            Vector3[] where = { new Vector3(-30f, 46f, 95f), new Vector3(70f, 30f, 60f), new Vector3(-90f, 50f, -30f) };
-            Color[] low = { new Color(0.2f, 0.9f, 0.7f), new Color(0.45f, 0.6f, 1f), new Color(0.9f, 0.45f, 0.8f) };
-            Color[] high = { new Color(0.5f, 0.45f, 1f), new Color(0.85f, 0.4f, 0.9f), new Color(0.45f, 0.7f, 1f) };
-            for (int n = 0; n < where.Length; n++)
+            var g = kit.Group("SoundRing", new Vector3(0f, SoundRing.Height, 0f));
+            var ring = g.gameObject.AddComponent<SoundRing>();
+            var mat = PatchworkAssets.Glow(new Color(0.3f, 0.9f, 0.7f), 1.8f);
+            ring.Bars = new Transform[SoundRing.Count];
+            ring.Rends = new Renderer[SoundRing.Count];
+            float step = Mathf.PI * 2f * SoundRing.Radius / SoundRing.Count;
+            for (int i = 0; i < SoundRing.Count; i++)
             {
-                var g = kit.Group("Aurora", where[n]);
-                g.rotation = Quaternion.LookRotation(-where[n].normalized, Vector3.up);
-                const int strips = 34;
-                for (int i = 0; i < strips; i++)
-                {
-                    float k = i / (float)(strips - 1);
-                    // The curtain hangs in a lazy S.
-                    float x = (k - 0.5f) * 70f, z = Mathf.Sin(k * 6.3f) * 9f;
-                    float tall = 10f + Mathf.Sin(k * 9f + n) * 4f + Mathf.Sin(k * 23f) * 2f;
-                    Color c = Color.Lerp(low[n], high[n], Mathf.Sin(k * Mathf.PI)) * (0.35f + 0.25f * Mathf.Sin(k * 17f + n * 2f));
-                    Plain(kit.Deco(PrimitiveType.Cube, new Vector3(x, tall * 0.5f, z), new Vector3(1.5f, tall, 0.15f), PatchworkAssets.Glow(new Color(c.r, c.g, c.b), 1.8f), new Vector3(0f, Mathf.Cos(k * 6.3f) * 35f, 0f), g));
-                }
-                var sway = g.gameObject.AddComponent<Rocker>();
-                sway.Axis = Vector3.up;
-                sway.Amount = 3f;
-                sway.Speed = 0.25f + n * 0.05f;
+                float a = i / (float)SoundRing.Count * Mathf.PI * 2f;
+                var bar = kit.Deco(PrimitiveType.Cube, new Vector3(Mathf.Sin(a) * SoundRing.Radius, 0f, Mathf.Cos(a) * SoundRing.Radius),
+                    new Vector3(step * 0.56f, 1f, 0.1f), mat, new Vector3(0f, a * Mathf.Rad2Deg, 0f), g);
+                Plain(bar);
+                ring.Bars[i] = bar;
+                ring.Rends[i] = bar.GetComponent<Renderer>();
             }
         }
 
@@ -392,6 +388,91 @@ namespace Patchwork
         }
     }
 
+    // The ring of light round the Pod (see PodDreams.Auroras).
+    public class SoundRing : MonoBehaviour
+    {
+        public const int Count = 96;
+        public const float Radius = 17.5f, Height = 2.6f;   // outside the Button Box and the launch tube, inside the nearest planets
+        const int BandCount = 24;
+
+        public Transform[] Bars;
+        public Renderer[] Rends;
+
+        readonly float[] bands = new float[BandCount];
+        readonly float[] smooth = new float[BandCount];
+        float[] tall;
+        float peak = 0.05f, awake, t;
+        MaterialPropertyBlock block;
+        static readonly int BaseId = Shader.PropertyToID("_BaseColor"), EmissionId = Shader.PropertyToID("_EmissionColor");
+
+        // The aurora's colours, in the order they follow each other round the ring.
+        static readonly Color[] Lights =
+        {
+            new Color(0.2f, 1f, 0.5f), new Color(0.12f, 0.9f, 0.85f), new Color(0.3f, 0.5f, 1f),
+            new Color(0.65f, 0.38f, 1f), new Color(1f, 0.42f, 0.75f), new Color(0.35f, 0.95f, 0.6f),
+        };
+
+        static Color Shade(float k)
+        {
+            k = Mathf.Repeat(k, 1f) * (Lights.Length - 1);
+            int i = Mathf.Min(Lights.Length - 2, Mathf.FloorToInt(k));
+            return Color.Lerp(Lights[i], Lights[i + 1], Mathf.SmoothStep(0f, 1f, k - i));
+        }
+
+        void Update()
+        {
+            if (Bars == null) return;
+            if (tall == null) { tall = new float[Bars.Length]; block = new MaterialPropertyBlock(); }
+            float dt = Mathf.Min(Time.unscaledDeltaTime, 0.05f);
+            t += dt;
+
+            float playing = MusicPlayer.PodBands(bands);
+            awake = Mathf.MoveTowards(awake, playing > 0.05f ? 1f : 0f, dt * 0.8f);
+            // The song's quiet and loud passages are a long way apart, so measure against its
+            // own recent loudest moment: the wave always fills the ring.
+            float now = 0f;
+            for (int b = 0; b < BandCount; b++) now = Mathf.Max(now, bands[b]);
+            peak = Mathf.Max(now, Mathf.Lerp(peak, 0.02f, dt * 0.35f));
+            for (int b = 0; b < BandCount; b++)
+            {
+                float v = Mathf.Sqrt(Mathf.Clamp01(bands[b] / peak));
+                // Up fast, down slowly, like a meter needle.
+                smooth[b] = v > smooth[b] ? Mathf.Lerp(smooth[b], v, dt * 22f) : Mathf.Lerp(smooth[b], v, dt * 4.5f);
+            }
+            // A ripple sets off round the ring on each beat of the song.
+            float beat = MusicPlayer.PodBeat;
+            float sinceBeat = beat - Mathf.Floor(beat);
+
+            int n = Bars.Length;
+            for (int i = 0; i < n; i++)
+            {
+                float k = i / (float)n;
+                // Four mirrored copies of the bands round the ring, so it joins up everywhere
+                // and the low notes swell at the front, back and both sides.
+                float fold = Mathf.PingPong(k * 4f, 1f) * (BandCount - 1);
+                int b0 = Mathf.FloorToInt(fold), b1 = Mathf.Min(BandCount - 1, b0 + 1);
+                float music = Mathf.Lerp(smooth[b0], smooth[b1], fold - b0);
+                float ripple = Mathf.Exp(-sinceBeat * 3.5f) * Mathf.Max(0f, Mathf.Cos((Mathf.PingPong(k * 2f, 1f) - sinceBeat * 0.9f) * Mathf.PI * 2.2f)) * 0.3f;
+                float idle = 0.5f + 0.3f * Mathf.Sin(k * Mathf.PI * 6f + t * 0.5f) + 0.2f * Mathf.Sin(k * Mathf.PI * 14f - t * 0.33f);
+                float want = Mathf.Lerp(0.5f + idle * 0.7f, 0.7f + music * 5.2f + ripple * 2.5f, awake);
+                tall[i] = Mathf.Lerp(tall[i], want, dt * 14f);
+                var s = Bars[i].localScale;
+                s.y = tall[i];
+                Bars[i].localScale = s;
+
+                // The colours slide slowly round, and quicker while the music's on; the taller
+                // a bar, the brighter and paler it burns.
+                float lift = Mathf.Clamp01((tall[i] - 0.6f) / 4.5f);
+                Color c = Shade(k * 2f + t * (0.02f + 0.035f * awake) + lift * 0.12f);
+                c = Color.Lerp(c, Color.white, lift * 0.3f);
+                float glow = Mathf.Lerp(0.55f, 1.1f, awake) + lift * 1.6f + 0.15f * Mathf.Sin(t * 0.8f + k * 40f);
+                block.SetColor(BaseId, c * 0.5f);
+                block.SetColor(EmissionId, c * glow);
+                Rends[i].SetPropertyBlock(block);
+            }
+        }
+    }
+
     // A wind chime: five tubes and a felt-star clapper on threads. They stir a little all the
     // time, and when Patch jumps up into them they swing wide and ring, one after another, up a
     // gentle five-note scale.
@@ -435,7 +516,7 @@ namespace Patchwork
                 if (ringAt[i] >= 0f && t >= ringAt[i])
                 {
                     ringAt[i] = -1f;
-                    Sfx.PlayPitched(SfxId.Chime, 0.3f, Notes[i % Notes.Length]);
+                    Sfx.PlayPitched(SfxId.Chime, 0.11f, Notes[i % Notes.Length] * 0.75f);   // soft and low: it's a calm room
                 }
                 // A soft spring, plus a breath of air so they're never quite still.
                 vel[i] += (-swing[i] * 30f - vel[i] * 1.6f) * dt;

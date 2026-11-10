@@ -8,7 +8,7 @@ namespace Patchwork
     // go by, can carry an instrument, and talks in its own little voice.
     public class ToyNpc : Npc
     {
-        public enum Kind { Teddy, RagDoll, TinSoldier, Nutcracker, JackInBox, Bunny, Bird }
+        public enum Kind { Teddy, RagDoll, TinSoldier, Nutcracker, JackInBox, Bunny, Bird, Pirate }
         public enum Instrument { None, Lute, Trumpet, Pipe, Drum }
 
         public string Name = "Toy";
@@ -210,6 +210,44 @@ namespace Patchwork
                     }
                     arm = Part(PrimitiveType.Capsule, body, new Vector3(0.36f, 0.95f, 0.06f), new Vector3(0.16f, 0.28f, 0.16f), tin, new Vector3(0f, 0f, 12f));
                     Part(PrimitiveType.Capsule, body, new Vector3(-0.36f, 0.95f, 0.06f), new Vector3(0.16f, 0.28f, 0.16f), tin, new Vector3(0f, 0f, -12f));
+                    break;
+                }
+                case Kind.Pirate:
+                {
+                    // A stout rag-doll pirate: striped jersey under a long coat, one boot and one
+                    // peg leg, a hook, an eyepatch, a beard with buttons sewn into it and a big
+                    // black hat.
+                    height = 1.95f;
+                    var wood = PatchworkAssets.Wood(new Color(0.6f, 0.42f, 0.28f));
+                    var skin = PatchworkAssets.Felt(new Color(0.96f, 0.8f, 0.68f));
+                    Part(PrimitiveType.Cylinder, body, new Vector3(-0.17f, 0.3f, 0f), new Vector3(0.11f, 0.3f, 0.11f), wood);
+                    Part(PrimitiveType.Cylinder, body, new Vector3(0.17f, 0.34f, 0f), new Vector3(0.25f, 0.3f, 0.25f), black);
+                    Part(PrimitiveType.Cylinder, body, new Vector3(0.17f, 0.08f, 0.05f), new Vector3(0.29f, 0.08f, 0.36f), black);
+                    Part(PrimitiveType.Sphere, body, new Vector3(0f, 0.92f, 0f), new Vector3(0.95f, 0.86f, 0.8f), cream);
+                    for (int i = -1; i <= 1; i++)
+                    {
+                        float girth = Mathf.Sqrt(1f - (i * 0.18f / 0.43f) * (i * 0.18f / 0.43f));
+                        Part(PrimitiveType.Cylinder, body, new Vector3(0f, 0.92f + i * 0.18f, 0f), new Vector3(0.965f * girth, 0.035f, 0.815f * girth), acc);
+                    }
+                    Part(PrimitiveType.Cylinder, body, new Vector3(0f, 0.92f, -0.09f), new Vector3(1.02f, 0.36f, 0.82f), felt);       // coat
+                    Part(PrimitiveType.Cylinder, body, new Vector3(0f, 0.62f, -0.02f), new Vector3(1.0f, 0.04f, 0.86f), black);        // belt
+                    Part(PrimitiveType.Cube, body, new Vector3(0f, 0.62f, 0.41f), new Vector3(0.18f, 0.13f, 0.04f), gold);
+                    head.SetParent(body, false);
+                    head.localPosition = new Vector3(0f, 1.52f, 0f);
+                    Part(PrimitiveType.Sphere, head, Vector3.zero, new Vector3(0.7f, 0.64f, 0.64f), skin);
+                    Part(PrimitiveType.Sphere, head, new Vector3(0f, -0.2f, 0.12f), new Vector3(0.64f, 0.44f, 0.48f), black);          // beard
+                    for (int i = -1; i <= 1; i++)
+                        Part(PrimitiveType.Cylinder, head, new Vector3(i * 0.17f, -0.27f + Mathf.Abs(i) * 0.05f, 0.34f - Mathf.Abs(i) * 0.03f), new Vector3(0.12f, 0.014f, 0.12f), i == 0 ? gold : acc, new Vector3(80f, i * 20f, 0f));
+                    Part(PrimitiveType.Sphere, head, new Vector3(0f, -0.02f, 0.33f), new Vector3(0.15f, 0.11f, 0.11f), cheek);         // nose
+                    Part(PrimitiveType.Sphere, head, new Vector3(-0.13f, 0.08f, 0.29f), Vector3.one * 0.09f, black);
+                    Part(PrimitiveType.Cylinder, head, new Vector3(0.13f, 0.08f, 0.3f), new Vector3(0.17f, 0.012f, 0.17f), black, new Vector3(80f, 0f, 0f));   // eyepatch
+                    Part(PrimitiveType.Cube, head, new Vector3(0f, 0.15f, 0.27f), new Vector3(0.6f, 0.03f, 0.02f), black, new Vector3(0f, 0f, -12f));
+                    Part(PrimitiveType.Sphere, head, new Vector3(0f, 0.34f, 0f), new Vector3(1.02f, 0.3f, 0.44f), black);              // hat
+                    Part(PrimitiveType.Sphere, head, new Vector3(0f, 0.45f, 0f), new Vector3(0.6f, 0.38f, 0.38f), black);
+                    Part(PrimitiveType.Cylinder, head, new Vector3(0f, 0.43f, 0.19f), new Vector3(0.16f, 0.012f, 0.16f), cream, new Vector3(80f, 0f, 0f));
+                    arm = Part(PrimitiveType.Capsule, body, new Vector3(0.52f, 0.95f, 0.05f), new Vector3(0.2f, 0.28f, 0.2f), felt, new Vector3(0f, 0f, 25f));
+                    Part(PrimitiveType.Capsule, body, new Vector3(-0.52f, 0.95f, 0.05f), new Vector3(0.2f, 0.28f, 0.2f), felt, new Vector3(0f, 0f, -25f));
+                    Part(PrimitiveType.Sphere, body, new Vector3(-0.64f, 0.7f, 0.08f), new Vector3(0.12f, 0.16f, 0.12f), gold);       // hook
                     break;
                 }
                 case Kind.JackInBox:

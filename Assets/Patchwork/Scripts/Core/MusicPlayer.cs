@@ -84,8 +84,6 @@ namespace Patchwork
             // Start straight on the saved form's layer (no fade-in from another one).
             form = GameState.CurrentForm;
             for (int i = 1; i < StemCount; i++) layerMix[i] = StemFor(form) == i ? 1f : 0f;
-            // All layers start on the same audio tick so they stay perfectly in time.
-            double start = AudioSettings.dspTime + 0.2;
             for (int i = 0; i < StemCount; i++)
             {
                 var go = new GameObject("Music " + (Stem)i);
@@ -95,18 +93,96 @@ namespace Patchwork
                 src.loop = true;
                 src.playOnAwake = false;
                 src.spatialBlend = 0f;
-                src.volume = 0f;
+                src.volume = SilentVolume;
+                src.priority = 0;   // never the one dropped when lots of sounds play at once
                 src.ignoreListenerPause = true;
                 filters[i] = go.AddComponent<AudioLowPassFilter>();
                 filters[i].cutoffFrequency = 22000f;
                 sources[i] = src;
-                src.PlayScheduled(start);
             }
+            StartTogether(sources, 0);
         }
+
+        // ------------------------------------------------------------------ Keeping layers in step
+        //
+        // A song here is several layers (one per instrument) played by separate players. They
+        // only sound right if every layer is on exactly the same sample. Two things could knock
+        // them apart:
+        //  - A layer at zero volume (an instrument the band hasn't got back yet). The sound
+        //    engine stops really playing silent sounds and only keeps count of where they'd be;
+        //    when the layer fades in it picks up a few hundredths of a second off, which is just
+        //    enough to sound like a sloppy band. So a "silent" layer is kept at a volume far
+        //    too low to hear instead of at zero, and it never stops playing.
+        //  - A hitch while layers are started one after another, or the game being paused and
+        //    woken (clicking away and back). So every layer is started on one shared audio
+        //    tick, and once a second the game checks they're on the same sample and lines them
+        //    up again if not (at most a few times, in case the check itself is ever wrong).
+        const float SilentVolume = 0.0002f;
+
+        static void StartTogether(AudioSource[] set, int fromSample)
+        {
+            if (set == null) return;
+            foreach (var s in set)
+            {
+                if (s == null || s.clip == null) continue;
+                s.Stop();
+                s.timeSamples = Mathf.Clamp(fromSample, 0, s.clip.samples - 1);
+            }
+            // Nothing slow happens between working out the tick and booking every layer onto it.
+            double start = AudioSettings.dspTime + 0.12;
+            foreach (var s in set) if (s != null && s.clip != null) s.PlayScheduled(start);
+        }
+
+        static bool OutOfStep(AudioSource[] set)
+        {
+            if (set == null || set.Length < 2 || set[0] == null || set[0].clip == null || !set[0].isPlaying) return false;
+            int n = set[0].clip.samples;
+            // The mixer can move on between reading one layer and the next, which would look like
+            // a gap. So read, and only trust it if the first layer hasn't moved meanwhile.
+            for (int attempt = 0; attempt < 6; attempt++)
+            {
+                int before = set[0].timeSamples;
+                int worst = 0;
+                for (int i = 1; i < set.Length; i++)
+                {
+                    if (set[i] == null) continue;
+                    if (!set[i].isPlaying) return true;
+                    int d = Mathf.Abs(set[i].timeSamples - before);
+                    worst = Mathf.Max(worst, Mathf.Min(d, n - d));
+                }
+                if (set[0].timeSamples != before) continue;
+                return worst > 160;   // 5 thousandths of a second
+            }
+            return false;
+        }
+
+        float stepCheck = 1f;
+        int stepStrikes, stepFixes;
+
+        void KeepInStep(float udt)
+        {
+            if (stepFixes >= 4) return;
+            stepCheck -= udt;
+            if (stepCheck > 0f) return;
+            stepCheck = 1f;
+            bool a = OutOfStep(sources), b = OutOfStep(toySources);
+            if (!a && !b) { stepStrikes = 0; return; }
+            // Seen twice in a row (not just a blip while they were starting): line them up.
+            if (++stepStrikes < 2) { stepCheck = 0.25f; return; }
+            stepStrikes = 0;
+            stepFixes++;
+            if (a) StartTogether(sources, sources[0].timeSamples);
+            if (b) StartTogether(toySources, toySources[0].timeSamples);
+            stepCheck = 1.5f;
+        }
+
+        void OnApplicationFocus(bool focus) { if (focus) stepCheck = Mathf.Min(stepCheck, 0.4f); }
+        void OnApplicationPause(bool paused) { if (!paused) stepCheck = Mathf.Min(stepCheck, 0.4f); }
 
         void Update()
         {
             float udt = Time.unscaledDeltaTime;
+            KeepInStep(udt);
             // Ease the muffle over about 0.3 s, in real time so it works while the game is paused.
             float k = 1f - Mathf.Exp(-10f * udt);
             cutoff = Mathf.Lerp(cutoff, cutoffTarget, k);
@@ -137,7 +213,7 @@ namespace Patchwork
                 }
                 // Equal-power curve so the overall loudness stays even mid-crossfade.
                 float gain = i == (int)Stem.Base ? 1f : Mathf.Sin(layerMix[i] * Mathf.PI * 0.5f);
-                sources[i].volume = master * gain * skiff;
+                sources[i].volume = Mathf.Max(SilentVolume, master * gain * skiff);
                 filters[i].cutoffFrequency = cutoff;
             }
             master = realMaster;

@@ -1341,7 +1341,9 @@ namespace Patchwork
         // half-buried toy boat.
         static void Sandpit(LevelKit kit, Vector3 c)
         {
+            sandpitAt = c;
             if (!Spot(c, 4.5f, out Vector3 p)) return;
+            sandpitAt = p;   // (the pirate's treasure is buried here: see Level1Quests)
             var sand = PatchworkAssets.Felt(new Color(0.96f, 0.86f, 0.62f));
             var boards = PatchworkAssets.Planks(new Color(0.75f, 0.58f, 0.42f));
             kit.Deco(PrimitiveType.Cube, p + Vector3.up * 0.1f, new Vector3(7f, 0.2f, 7f), sand);

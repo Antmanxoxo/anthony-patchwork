@@ -9,6 +9,13 @@ namespace Patchwork
     // weathervane). Each one brings a new part of the town's music back, and peels the Fray off
     // that corner of town. With the whole band home, the Mayor can be married; the music
     // unravels the Fray's knot on the clock tower, and the town is mended.
+    //
+    // How grand the wedding is depends on how much of the toybox Patch has explored. Five lost
+    // wedding presents are hidden in out-of-the-way corners, and each one adds something of its
+    // own to the day (fireworks, confetti cannons, balloons, paper doves, bunting). The more of
+    // the town's other secrets he's found (Heartstrings, golden buttons, marbles), the more
+    // guests turn up and the thicker the confetti. Presents found after the wedding still
+    // arrive in the square, late.
     public class Level1Director : MonoBehaviour
     {
         public static Level1Director Instance { get; private set; }
@@ -26,7 +33,42 @@ namespace Patchwork
         public Vector3 ArchCenter;
         public Vector3 MayorSpot, BrideSpot;
 
+        // ----- Wedding presents -----
+        public const int Fireworks = 0, Cannons = 1, Balloons = 2, Doves = 3, Bunting = 4;
+        public static readonly string[] GiftIds = { "L1_gift_fireworks", "L1_gift_cannons", "L1_gift_balloons", "L1_gift_doves", "L1_gift_bunting" };
+        public static readonly string[] GiftNames = { "a box of fireworks", "a crate of confetti cannons", "a bag of balloons", "a basket of paper doves", "the good bunting" };
+        public static readonly string[] GiftHints =
+        {
+            "They say a box of fireworks was left out west, by a soldier's campfire at the edge of the wood.",
+            "A crate of confetti cannons was last seen floating off into the clouds, high above the weathervane.",
+            "A bag of balloons fell in the canal and drifted off south, down towards the meadow where you landed.",
+            "A basket of paper doves tumbled into the ravine. The north end, on the far bank, I heard.",
+            "And the good bunting was sent to the farm by mistake. Try the far north-east corner of the toybox.",
+        };
+        // What each present adds to the square (nothing to show for the fireworks: they go off).
+        public readonly GameObject[] GiftScenes = new GameObject[5];
+        public readonly List<ToyNpc> ExtraGuests = new List<ToyNpc>();
+        public LevelInfo Info;
+
+        public static int GiftCount()
+        {
+            int n = 0;
+            foreach (var id in GiftIds) if (GameState.IsCollected(id)) n++;
+            return n;
+        }
+
+        // How much of the town's hidden things Patch has found, 0 (none) to 1 (the lot).
+        public float Explored()
+        {
+            int found = GiftCount() + GameState.GoldenButtonCount(), total = GiftIds.Length + Level1Builder.CollectibleIds.Length;
+            if (Ids != null) { found += Count; total += Ids.Length; }
+            if (Info != null) { found += Info.SecretCount(); total += Info.SecretIds.Count; }
+            return total > 0 ? Mathf.Clamp01(found / (float)total) : 0f;
+        }
+
         float weddingT = -1f;
+        int stage;
+        float fireworkTimer, lateFirework = 8f;
         Vector3 knotScale;
         readonly List<Transform> notes = new List<Transform>();
         float confettiTimer;
@@ -73,8 +115,19 @@ namespace Patchwork
                 if (Mayor != null) Mayor.transform.position = Vector3.Lerp(MayorSpot, BrideSpot, 0.35f);
                 if (Bride != null) Bride.transform.position = Vector3.Lerp(BrideSpot, MayorSpot, 0.35f);
             }
+            ApplyExtras();
             UpdateMusic();
             MusicPlayer.SnapBand();
+        }
+
+        // The wedding's extras: there afterwards if they were there on the day (or came late).
+        public void ApplyExtras()
+        {
+            for (int i = 0; i < GiftScenes.Length; i++)
+                if (GiftScenes[i] != null) GiftScenes[i].SetActive(Done && GameState.IsCollected(GiftIds[i]));
+            int guests = Done ? GuestsFor(Explored()) : 0;
+            for (int i = 0; i < ExtraGuests.Count; i++)
+                if (ExtraGuests[i] != null) ExtraGuests[i].gameObject.SetActive(i < guests);
         }
 
         void SetBandPlaying(bool on)
@@ -131,8 +184,68 @@ namespace Patchwork
             if (game != null)
             {
                 if (n >= BandIds.Length) game.ShowToast(msg + " The whole band is ready! Go and tell the Mayor.");
+                if (n >= BandIds.Length && GiftCount() < GiftIds.Length)
+                    Narrator.Say("The band is whole again. Though if one fancied a grander wedding, there are lost presents about. Lady Lacewing keeps count.");
                 else game.ShowToast(msg + "  (Band " + n + "/" + BandIds.Length + ")");
             }
+        }
+
+        // ------------------------------------------------------------------ Wedding presents
+
+        int GuestsFor(float explored) { return Mathf.RoundToInt(ExtraGuests.Count * Mathf.Clamp01(explored * 1.15f)); }
+
+        void ShowGift(int i)
+        {
+            if (i < 0 || i >= GiftScenes.Length || GiftScenes[i] == null || GiftScenes[i].activeSelf) return;
+            GiftScenes[i].SetActive(true);
+            FxBurst.Spawn(FxBurst.Kind.Poof, GiftScenes[i].transform.position + Vector3.up * 2f, Color.white);
+        }
+
+        public void OnGift(int i)
+        {
+            var game = PatchworkGame.Instance;
+            int n = GiftCount();
+            if (Done)
+            {
+                // Late, but welcome: it goes straight to the square.
+                ShowGift(i);
+                if (i == Fireworks) lateFirework = 1f;
+                if (game != null) game.ShowToast("A late wedding present: " + GiftNames[i] + "! It's gone straight to the square.  (" + n + "/" + GiftIds.Length + ")");
+            }
+            else if (game != null) game.ShowToast("A lost wedding present: " + GiftNames[i] + "!  (" + n + "/" + GiftIds.Length + ")");
+            if (n >= GiftIds.Length) Narrator.Say("That's all five presents. Nobody could say the Bramblebuttons were short-changed now.");
+            else if (n == 1) Narrator.Say("A wedding present, a long way from the wedding. I dare say there are more of those about.");
+        }
+
+        static readonly Color[] FireworkColours =
+        {
+            new Color(1f, 0.45f, 0.55f), new Color(1f, 0.85f, 0.35f), new Color(0.45f, 0.8f, 1f), new Color(0.7f, 0.5f, 1f), new Color(0.5f, 1f, 0.65f),
+        };
+
+        void Firework(float volume)
+        {
+            Vector3 p = ArchCenter + new Vector3(Random.Range(-13f, 13f), Random.Range(9f, 15f), Random.Range(2f, 16f));
+            Color c = FireworkColours[Random.Range(0, FireworkColours.Length)];
+            FxBurst.Spawn(FxBurst.Kind.Sparkle, p, c);
+            FxBurst.Spawn(FxBurst.Kind.Sparkle, p + Random.insideUnitSphere * 1.2f, Color.Lerp(c, Color.white, 0.5f));
+            FxBurst.Spawn(FxBurst.Kind.Scraps, p, c);
+            Sfx.PlayNear(SfxId.Pop, p, volume, 70f);
+            Sfx.PlayNear(SfxId.Twinkle, p, volume * 0.6f, 70f);
+        }
+
+        // Once the town's married, anyone who found the fireworks gets one now and then over
+        // the square, for as long as they're near enough to see it.
+        void LateFireworks(float dt)
+        {
+            if (!Done || !GameState.IsCollected(GiftIds[Fireworks])) return;
+            var game = PatchworkGame.Instance;
+            if (game == null || game.Player == null || game.Mode != UIMode.Gameplay) return;
+            Vector3 d = game.Player.transform.position - ArchCenter;
+            if (d.x * d.x + d.z * d.z > 45f * 45f) return;
+            lateFirework -= dt;
+            if (lateFirework > 0f) return;
+            lateFirework = Random.Range(7f, 13f);
+            Firework(0.35f);
         }
 
         // ------------------------------------------------------------------ The wedding
@@ -145,7 +258,19 @@ namespace Patchwork
             var game = PatchworkGame.Instance;
             if (game == null) return;
             weddingT = 0f;
+            stage = 0;
+            fireworkTimer = 0f;
             confettiTimer = 0f;
+            // The more of the toybox Patch has explored, the more toys have heard and come.
+            int guests = GuestsFor(Explored());
+            for (int i = 0; i < ExtraGuests.Count && i < guests; i++)
+            {
+                var g = ExtraGuests[i];
+                if (g == null) continue;
+                g.gameObject.SetActive(true);
+                g.Playing = true;
+                FxBurst.Spawn(FxBurst.Kind.Puff, g.transform.position + Vector3.up, Color.white);
+            }
             game.CutsceneCaption = "The Toybox Wedding";
             game.StartCutscene(ArchCenter + new Vector3(0f, 0f, 3f), 15f, 5f, 180f);
             SetBandPlaying(true);
@@ -153,12 +278,44 @@ namespace Patchwork
             Sfx.Play(SfxId.Checkpoint, 0.6f);
         }
 
+        // True the first time the wedding passes a moment, so each thing happens once.
+        bool Reached(int bit, float time)
+        {
+            if (weddingT < time || (stage & (1 << bit)) != 0) return false;
+            stage |= 1 << bit;
+            return true;
+        }
+
+        static bool Gift(int i) { return GameState.IsCollected(GiftIds[i]); }
+
         void Update()
         {
-            if (weddingT < 0f) return;
+            if (weddingT < 0f) { LateFireworks(Time.deltaTime); return; }
             float dt = Time.deltaTime;
             weddingT += dt;
             var game = PatchworkGame.Instance;
+            float explored = Explored();
+
+            // ----- What the presents add -----
+            if (Reached(0, 1.2f) && Gift(Bunting)) { ShowGift(Bunting); Sfx.Play(SfxId.Whoosh, 0.4f); }
+            if (Reached(1, 2.6f) && Gift(Balloons)) { ShowGift(Balloons); Sfx.Play(SfxId.Pop, 0.4f); }
+            if (Reached(2, 3.6f) && Gift(Cannons)) ShowGift(Cannons);
+            if (Gift(Cannons) && (Reached(3, 4.6f) || Reached(4, 6.2f) || Reached(5, 8.4f)))
+            {
+                // Both cannons go off over the aisle.
+                Color[] cc = { LevelKit.Palette.Rose, LevelKit.Palette.Butter, LevelKit.Palette.Sky, LevelKit.Palette.Lavender };
+                for (int s = -1; s <= 1; s += 2)
+                    for (int i = 0; i < 4; i++)
+                        FxBurst.Spawn(i % 2 == 0 ? FxBurst.Kind.Scraps : FxBurst.Kind.Pompoms, ArchCenter + new Vector3(s * (4.2f - i * 0.9f), 2.2f + i * 0.9f, -4.6f + i * 0.5f), cc[(i + (s > 0 ? 1 : 0)) % cc.Length]);
+                Sfx.Play(SfxId.Pop, 0.7f);
+                Sfx.Play(SfxId.Boing, 0.3f);
+            }
+            if (Reached(6, 5.4f) && Gift(Doves)) { ShowGift(Doves); Sfx.Play(SfxId.Glide, 0.5f); }
+            if (Gift(Fireworks) && weddingT > 5f && weddingT < 13.6f)
+            {
+                fireworkTimer -= dt;
+                if (fireworkTimer <= 0f) { fireworkTimer = Random.Range(0.35f, 0.7f); Firework(0.5f); }
+            }
 
             // The Mayor and his bride meet under the flower arch.
             float walk = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((weddingT - 1f) / 3f));
@@ -177,7 +334,7 @@ namespace Patchwork
                 confettiTimer -= dt;
                 if (confettiTimer <= 0f)
                 {
-                    confettiTimer = 0.35f;
+                    confettiTimer = Mathf.Lerp(0.35f, 0.1f, explored);
                     Color[] cols = { LevelKit.Palette.Rose, LevelKit.Palette.Butter, LevelKit.Palette.Sky, LevelKit.Palette.Lavender, LevelKit.Palette.Sage };
                     Vector3 p = ArchCenter + new Vector3(Random.Range(-7f, 7f), Random.Range(3f, 6f), Random.Range(-4f, 6f));
                     FxBurst.Spawn(FxBurst.Kind.Scraps, p, cols[Random.Range(0, cols.Length)]);
@@ -218,9 +375,18 @@ namespace Patchwork
                     if (game != null) game.CutsceneCaption = "Toybox Town is mended!";
                 }
             }
-            if (weddingT > 13f)
+            // The Storyteller's verdict on the day.
+            if (Reached(7, 11.4f) && game != null)
+            {
+                int gifts = GiftCount();
+                game.CutsceneCaption = gifts >= GiftIds.Length ? "And with every present found, it was the grandest wedding the toybox had ever seen."
+                    : gifts > 0 ? "A fine wedding, with " + gifts + " of its five lost presents. One wonders what the others would have added."
+                    : "A fine wedding, if a simple one. Five presents went missing on the way, you see.";
+            }
+            if (weddingT > 14.6f)
             {
                 weddingT = -1f;
+                foreach (var g in ExtraGuests) if (g != null) g.Playing = false;
                 foreach (var c in Crowd) if (c != null) c.Playing = false;
                 if (game != null)
                 {

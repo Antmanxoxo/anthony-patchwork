@@ -1,5 +1,36 @@
 # Development Log
 
+## Band quests with a twist, a wedding that grows, and the Pod's ring of light
+- The lute: Captain Buttonbeard, a pirate on top of Spindle Hill, has the string and thinks
+  "lute" means "loot". He'll only swap it for his own treasure, buried under a stitched red X
+  in the sandpit by his wrecked toy boat (out east, on the way to the Sky Hoops). Dig it up,
+  go back and he hands the string over. You can find the treasure before you ever meet him.
+- The piper: Wisp is scared of everything. Get close and he squeaks and flaps off to the next
+  cloud up. There's now a staircase of four clouds above the weathervane, each with a puff of
+  steam to ride to the next, and he only calms down when he runs out of sky.
+- The trumpet: the valve dew only gathers while all three dye taps are running. Two are
+  inside the Dye Works (first floor and top floor); the third is the intake in the canal wall,
+  down at the waterline. Each tap starts its colour flowing and speeds up the waterwheel.
+- Five lost wedding presents are hidden in far corners (out west by the campsite, on the
+  third cloud, adrift in the canal, down in the ravine, the north-east corner). Each adds
+  something to the wedding: fireworks, confetti cannons, balloons, paper doves, bunting.
+  Lady Lacewing keeps count and gives a clue to the next one.
+- The more secrets found overall (presents, Heartstrings, golden buttons, marbles), the more
+  guests come to the wedding and the thicker the confetti. Presents found after the wedding
+  still turn up in the square, and the fireworks go off now and then over the married town.
+- The Pod: the three aurora curtains are now one ring of 96 glowing bars right round the Pod.
+  It breathes slowly on its own; with the controller in hand it becomes the song's soundwave
+  (each bar follows part of the music, with a ripple on every beat) and its colours drift
+  round like the northern lights: green, teal, blue, violet, rose.
+- The Pod's chime is much softer and lower, and the little surprise noises are quieter and
+  about half as often.
+- Fixed the Toybox Town band sounding out of time. A layer that was "off" sat at zero volume,
+  and the sound engine doesn't really play silent sounds, so it came back in slightly late.
+  Quiet layers now stay at a volume too low to hear, every layer starts on one audio tick,
+  and the game re-lines them up if they ever slip. The flute and horns also start their notes
+  a hair early (they take a moment to speak), and the plucked strings sit on the same beat
+  grid as the harp.
+
 ## Sharper picture, and a cleaner start to the opening
 - Crisper writing: all the on-screen text is now drawn at the real size it appears on
   screen, instead of being drawn for a 1080-high screen and then shrunk or stretched to fit

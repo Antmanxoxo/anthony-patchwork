@@ -147,8 +147,17 @@ namespace Patchwork
     {
         public static DigSpot Active { get; private set; }
         public SecretMarble Marble;
+        public System.Action OnDug;     // for digging up something that isn't a marble
         readonly List<Transform> glints = new List<Transform>();
         bool dug;
+
+        // Already dug up on an earlier visit.
+        public void MarkDug()
+        {
+            dug = true;
+            if (Active == this) Active = null;
+            foreach (var s in glints) if (s != null) s.gameObject.SetActive(false);
+        }
 
         public static DigSpot Place(LevelKit kit, Vector3 feet, SecretMarble marble)
         {
@@ -181,6 +190,7 @@ namespace Patchwork
             player.Visuals.PunchScale(new Vector3(1.2f, 0.8f, 1.2f));
             foreach (var s in glints) if (s != null) s.gameObject.SetActive(false);
             if (Marble != null) Marble.Reveal();
+            if (OnDug != null) OnDug();
         }
 
         protected override void OnPlayerExit(PatchworkPlayer player) { if (Active == this) Active = null; }

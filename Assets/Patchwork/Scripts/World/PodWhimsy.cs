@@ -17,7 +17,7 @@ namespace Patchwork
             if (game == null || (game.Mode != UIMode.Gameplay && game.Mode != UIMode.PodEdit)) return;
             wait -= Time.deltaTime;
             if (wait > 0f) return;
-            wait = Random.Range(6f, 12f);
+            wait = Random.Range(14f, 26f);   // rare: a little surprise, not a soundtrack
 
             int pick = Random.Range(0, 7);
             if (pick == last) pick = (pick + 1) % 7;
@@ -25,13 +25,13 @@ namespace Patchwork
             float note = Pentatonic[Random.Range(0, Pentatonic.Length)];
             switch (pick)
             {
-                case 0: Sfx.PlayPitched(SfxId.Beeper, 0.22f, Random.Range(0.9f, 1.15f)); break;
-                case 1: Sfx.PlayPitched(SfxId.AlienCoo, 0.2f, Random.Range(0.9f, 1.2f)); break;
-                case 2: Sfx.PlayPitched(SfxId.Twinkle, 0.2f, note > 1.6f ? 1f : note); break;
-                case 3: Sfx.PlayPitched(SfxId.Warble, 0.16f, Random.Range(0.85f, 1.2f)); break;
-                case 4: Sfx.PlayPitched(SfxId.Chime, 0.18f, note); Sfx.PlayPitched(SfxId.Chime, 0.12f, note * 1.5f); break;
-                case 5: Sfx.PlayPitched(SfxId.Squeak, 0.12f, Random.Range(1.1f, 1.4f)); break;
-                default: Sfx.PlayPitched(SfxId.Xylo, 0.16f, note); break;
+                case 0: Sfx.PlayPitched(SfxId.Beeper, 0.1f, Random.Range(0.9f, 1.15f)); break;
+                case 1: Sfx.PlayPitched(SfxId.AlienCoo, 0.12f, Random.Range(0.9f, 1.2f)); break;
+                case 2: Sfx.PlayPitched(SfxId.Twinkle, 0.07f, note > 1.3f ? 0.75f : note * 0.75f); break;
+                case 3: Sfx.PlayPitched(SfxId.Warble, 0.09f, Random.Range(0.85f, 1.2f)); break;
+                case 4: Sfx.PlayPitched(SfxId.Chime, 0.05f, note * 0.5f); break;   // one soft, low chime (the high pair got wearing)
+                case 5: Sfx.PlayPitched(SfxId.Squeak, 0.07f, Random.Range(1.1f, 1.4f)); break;
+                default: Sfx.PlayPitched(SfxId.Xylo, 0.07f, note * 0.75f); break;
             }
         }
     }

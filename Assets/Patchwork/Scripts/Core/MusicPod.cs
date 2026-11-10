@@ -70,6 +70,39 @@ namespace Patchwork
             if (instance.master < 0.01f) instance.podSource.time = 0f;
         }
 
+        static readonly float[] podSpectrum = new float[256];
+
+        // How loud the Pod song is right now from its low notes (first band) up to its high
+        // ones (last band), for the ring of light round the Pod. Returns how much of the song
+        // is playing, 0 (silent) to 1.
+        public static float PodBands(float[] bands)
+        {
+            for (int i = 0; i < bands.Length; i++) bands[i] = 0f;
+            if (instance == null || instance.podSource == null || !instance.podSource.isPlaying) return 0f;
+            float playing = Mathf.Sin(instance.podMix * Mathf.PI * 0.5f) * (instance.master > 0.002f ? 1f : 0f);
+            if (playing <= 0.01f) return 0f;
+            instance.podSource.GetSpectrumData(podSpectrum, 0, FFTWindow.BlackmanHarris);
+            // The song lives between about 100 Hz and 5 kHz: the first 56 slices or so, with
+            // more bands given to the low end where the notes are.
+            const int top = 56;
+            float loud = Mathf.Max(0.02f, instance.podSource.volume);
+            for (int b = 0; b < bands.Length; b++)
+            {
+                int lo = 1 + Mathf.FloorToInt(top * Mathf.Pow(b / (float)bands.Length, 1.7f));
+                int hi = Mathf.Max(lo + 1, 1 + Mathf.FloorToInt(top * Mathf.Pow((b + 1) / (float)bands.Length, 1.7f)));
+                float v = 0f;
+                for (int k = lo; k < hi && k < podSpectrum.Length; k++) v = Mathf.Max(v, podSpectrum[k]);
+                bands[b] = v / loud;
+            }
+            return playing;
+        }
+
+        // Where the Pod song is in its bar, counted in beats (for pulsing along with it).
+        public static float PodBeat
+        {
+            get { return instance == null || instance.podSource == null ? 0f : instance.podSource.time * PodBpm / 60f; }
+        }
+
         // Fades the Pod song in or out. Returns how loud the other music should be.
         float UpdatePodTrack(float udt)
         {

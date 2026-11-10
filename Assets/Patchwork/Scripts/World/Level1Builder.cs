@@ -149,6 +149,7 @@ namespace Patchwork
 
             director.ApplySavedState();
             Outskirts(kit);
+            Quests(kit);
             ScoreTrails(kit);
             IntroProps(kit);
             CraftCrossings(kit);
@@ -763,7 +764,7 @@ namespace Patchwork
                     kit.Deco(PrimitiveType.Cube, L(-hw - 0.04f, 4f + f * 4f, i * 3.5f), new Vector3(0.06f, 1.6f, 1.2f), pane);
                 }
             kit.Hint(L(0f, 1.5f, -hd - 2.5f), new Vector3(6f, 3f, 3f), "The Dye Works",
-                "The trumpet's valve dew is kept in the reservoir up top. The only way in is the drain. Squeeze through as Water!", HintTheme.Water);
+                "The trumpet's valve dew collects in the reservoir up top, but only while all three dye taps are running: two inside, and the intake out in the canal. The only way in is the drain. Squeeze through as Water!", HintTheme.Water);
             var wheel = kit.Group("Waterwheel", L(-hw - 1.4f, 4.2f, 0f));
             var wood = PatchworkAssets.Wood(new Color(0.55f, 0.38f, 0.26f));
             for (int i = 0; i < 12; i++)
@@ -777,6 +778,7 @@ namespace Patchwork
             var spin = wheel.gameObject.AddComponent<Spinner>();
             spin.Axis = Vector3.right;
             spin.Speed = 30f;
+            millWheel = spin;
             kit.Deco(PrimitiveType.Cylinder, L(-hw - 1.4f, 0.05f, 0f), new Vector3(5.5f, 0.05f, 9.5f), PatchworkAssets.Cobble(TownKit.Stone));
             kit.Deco(PrimitiveType.Cylinder, L(-hw - 1.4f, 0.12f, 0f), new Vector3(4.8f, 0.02f, 8.8f), PatchworkAssets.Water(new Color(0.4f, 0.65f, 0.88f)));
 
@@ -958,6 +960,7 @@ namespace Patchwork
                 l.shadows = LightShadows.None;
             }
             piece.Setup(id, part, title, vis, stranded);
+            bandPieces[id] = piece;
         }
 
         // ================================================================ The toys of Toybox Town
@@ -985,14 +988,16 @@ namespace Patchwork
             pip.Lines = () => Level1Director.Has(Level1Director.LuteId)
                 ? new[] { "Listen to her sing! A lute's nothing without its string, and now she's got hers back.", "Thank you, little one. Now, has anyone seen Brassby's valve dew? Or Wisp?" }
                 : new[] { "Pip Plunkett, lutenist to the Mayor! Or I was, until the Fray snapped my string clean off.", "I saw it blow away west, over the ravine and up Spindle Hill. It'll be caught in the old spinning wheel up there, I'd bet my hat.",
+                          "Mind you, I heard a pirate's been seen up that way since his ship ran aground. If he's found it, he'll want paying.",
                           "You'll want to swing across. Anything wrapped in pink yarn will hold you!" };
             var brassby = Toy(kit, b + new Vector3(2.6f, 0f, -0.8f), 180f, ToyNpc.Kind.TinSoldier, "Corporal Brassby", new Color(0.8f, 0.22f, 0.25f), LevelKit.Palette.Gold, ToyNpc.Instrument.Trumpet, 0.8f, new Color(0.65f, 0.2f, 0.22f));
             brassby.Lines = () => Level1Director.Has(Level1Director.TrumpetId)
                 ? new[] { "Ten-HUT! Ta-ra-ta-raaa! The valves are slick as a sardine. Splendid work!", "I shall play the wedding march with full military gusto!" }
-                : new[] { "Corporal Brassby, first trumpet! Ahem. My valves are stuck solid. The Fray dried them right out.", "What they need is a drop of valve dew. The Dye Works by the canal keeps some in its reservoir.",
+                : new[] { "Corporal Brassby, first trumpet! Ahem. My valves are stuck solid. The Fray dried them right out.", "What they need is a drop of valve dew. It gathers in the Dye Works' reservoir, but only when all three dye taps are running, and the Fray shut the lot.",
+                          "Two taps are inside the works. The third is the intake, down at the waterline in the canal wall.",
                           "The mill's all locked up, mind. Only a drain to get in. A wee bubble of Water might manage it." };
             var wisp = Toy(kit, b + new Vector3(0f, 0f, 0.4f), 180f, ToyNpc.Kind.Bird, "Wisp", new Color(0.45f, 0.65f, 0.95f), new Color(0.95f, 0.5f, 0.55f), ToyNpc.Instrument.Pipe, 1.45f, new Color(0.3f, 0.5f, 0.85f));
-            wisp.Lines = () => new[] { "Tweedle-dee! You came all the way up the weathervane for me!", "The Fray's gust blew me clean off my perch. I'll pipe the sweetest tune this town's ever heard. Promise!" };
+            wisp.Lines = () => new[] { "Tweedle-dee! You chased me right to the top of the sky, and I thought you were the Fray the whole way. Sorry!", "I'm a little bit scared of... well, everything. But not of piping! I'll pipe the sweetest tune this town's ever heard. Promise!" };
             var bumble = Toy(kit, b + new Vector3(0f, 0f, 2.8f), 180f, ToyNpc.Kind.Bunny, "Bumble", new Color(0.95f, 0.75f, 0.8f), new Color(0.97f, 0.93f, 0.85f), ToyNpc.Instrument.Drum, 1.25f, new Color(0.8f, 0.5f, 0.6f));
             bumble.Lines = () => Level1Director.BandCount() >= 3
                 ? new[] { "Ba-dum! We're all here! Go on, tell the Mayor we're ready!" }
@@ -1010,15 +1015,22 @@ namespace Patchwork
                 if (GameState.IsLevelComplete(SceneName))
                     return new[] { "What a wedding! The finest Toybox Town has ever seen, and the Fray gone from our clock tower.", "You'll always be welcome here, young Patch. Do visit the bandstand. They haven't stopped playing since!" };
                 if (Level1Director.BandCount() >= 3)
-                    return new[] { "The whole band is back? Then, ahem... places, everyone! Places!", "Lady Lacewing, my dear... shall we?" };
+                {
+                    int gifts = Level1Director.GiftCount();
+                    return new[] { "The whole band is back? Then, ahem... places, everyone! Places!",
+                        gifts >= Level1Director.GiftIds.Length ? "And every last wedding present found! This will be a day the toybox never forgets."
+                        : gifts > 0 ? "We've " + gifts + " of our five lost presents, too. Any more that turn up afterwards will be just as welcome."
+                        : "Our five wedding presents never did turn up, but no matter. If you ever find one, bring it along. Better late than never!",
+                        "Lady Lacewing, my dear... shall we?" };
+                }
                 return new[] { "Mayor Bramblebutton, at your service! Today I marry the loveliest doll in all the toybox.", "But the Fray has ruined the band, and I simply cannot be married without music. It's tradition!",
                                "Pip, Brassby and Bumble will tell you what they need. Oh, and our piper Wisp has gone missing altogether!" };
             };
             mayor.TalkEnded = () => { if (director.CanStartWedding) director.StartWedding(); };
             var bride = Toy(kit, director.BrideSpot, 180f, ToyNpc.Kind.RagDoll, "Lady Lacewing", new Color(0.98f, 0.97f, 0.95f), new Color(0.95f, 0.75f, 0.4f), ToyNpc.Instrument.None, 1.3f, new Color(0.8f, 0.55f, 0.65f));
             bride.Lines = () => GameState.IsLevelComplete(SceneName)
-                ? new[] { "I'm Lady Bramblebutton now! Oh, it does have a ring to it." }
-                : new[] { "Isn't it a beautiful morning for a wedding? Or it would be, if it weren't so... grey.", "That nasty Fray has wrapped itself round the clock tower. I do hope the music will chase it away." };
+                ? WithPresents(new[] { "I'm Lady Bramblebutton now! Oh, it does have a ring to it." }, true)
+                : WithPresents(new[] { "Isn't it a beautiful morning for a wedding? Or it would be, if it weren't so... grey.", "That nasty Fray has wrapped itself round the clock tower. I do hope the music will chase it away." }, false);
             director.Mayor = mayor;
             director.Bride = bride;
 
@@ -1030,7 +1042,7 @@ namespace Patchwork
             var jack = Toy(kit, new Vector3(-31f, 0.05f, 4f), 90f, ToyNpc.Kind.JackInBox, "Jack", new Color(0.35f, 0.55f, 0.85f), new Color(0.95f, 0.4f, 0.45f), ToyNpc.Instrument.None, 1.2f, new Color(0.35f, 0.5f, 0.8f));
             jack.Lines = () => new[] { "BOING! Ha! Got you.", "Want to cross the ravine? Swing from the clothesline peg wrapped in pink yarn. Yarn Form only, mind!", "Drop in? No bother. There are steps back up on this side." };
             var thimbleby = Toy(kit, new Vector3(-4f, 0.05f, -34f), 180f, ToyNpc.Kind.RagDoll, "Mrs. Thimbleby", new Color(0.55f, 0.45f, 0.75f), new Color(0.6f, 0.4f, 0.3f), ToyNpc.Instrument.None, 1.05f, new Color(0.5f, 0.4f, 0.7f));
-            thimbleby.Lines = () => new[] { "Oh, poor Wisp! A great grey gust took him right up onto the weathervane at the end of the lane.", "My laundry's been up on those roofs twice this week. The steam from the vent carries things right up.", "A little cloud like you would float up there like a feather, dear." };
+            thimbleby.Lines = () => new[] { "Oh, poor Wisp! A great grey gust took him right up onto the weathervane at the end of the lane.", "My laundry's been up on those roofs twice this week. The steam from the vent carries things right up.", "A little cloud like you would float up there like a feather, dear.", "Go gently, mind. He's a nervous little thing. Startle him and he'll bolt for the clouds, and you'll have to follow." };
             var bun = Toy(kit, new Vector3(45.5f, 0.05f, -46.5f), 0f, ToyNpc.Kind.Bunny, "Bun", new Color(0.97f, 0.97f, 0.95f), new Color(0.85f, 0.6f, 0.7f), ToyNpc.Instrument.None, 1.5f, new Color(0.75f, 0.55f, 0.65f));
             bun.Lines = () => new[] { "Ready, steady... RACE! Touch the stopwatch and grab every ring along the promenade!", "My record's twelve seconds. Hop to it!" };
             var ted = Toy(kit, new Vector3(-6f, 0.06f, -11f), 45f, ToyNpc.Kind.Teddy, "Little Ted", new Color(0.85f, 0.65f, 0.4f), new Color(0.4f, 0.6f, 0.85f), ToyNpc.Instrument.None, 1.4f, new Color(0.55f, 0.45f, 0.3f));

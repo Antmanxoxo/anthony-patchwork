@@ -16,6 +16,28 @@ namespace Patchwork
         float t;
         bool taken;
 
+        // Locked: it's there (or hidden) but can't be picked up yet, because something has to
+        // happen first (the pirate wants his treasure, the dye taps aren't running, the piper is
+        // still flying away). Touching a locked one can show a line saying why.
+        public bool Locked { get; private set; }
+        public bool HideWhenLocked = true;
+        public string LockedToast;
+        public bool Taken { get { return taken; } }
+
+        public void SetLocked(bool locked)
+        {
+            if (taken) return;
+            bool was = Locked;
+            Locked = locked;
+            if (visual != null) visual.gameObject.SetActive(!(locked && HideWhenLocked));
+            if (was && !locked)
+            {
+                FxBurst.Spawn(FxBurst.Kind.Sparkle, transform.position, new Color(1f, 0.85f, 0.4f));
+                FxBurst.Spawn(FxBurst.Kind.Poof, transform.position, Color.white);
+                Sfx.Play(SfxId.Twinkle, 0.5f);
+            }
+        }
+
         public void Setup(string id, Part kind, string title, Transform visualRoot, ToyNpc strandedNpc)
         {
             Id = id;
@@ -42,6 +64,22 @@ namespace Patchwork
         protected override void OnPlayerEnter(PatchworkPlayer player)
         {
             if (taken) return;
+            if (Locked)
+            {
+                if (!string.IsNullOrEmpty(LockedToast) && player.Game != null) player.Game.ShowToast(LockedToast);
+                return;
+            }
+            Take(player);
+        }
+
+        // (If it's unlocked while Patch is already standing in it.)
+        protected override void OnPlayerStay(PatchworkPlayer player, float dt)
+        {
+            if (!taken && !Locked) Take(player);
+        }
+
+        void Take(PatchworkPlayer player)
+        {
             taken = true;
             GameState.SetCollected(Id);
             ScoreKeeper.Bonus(1000, transform.position);
