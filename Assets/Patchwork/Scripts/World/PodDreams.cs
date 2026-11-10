@@ -183,7 +183,7 @@ namespace Patchwork
             star.SetParent(chime, false);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.45f, 0f), new Vector3(0.012f, 0.45f, 0.012f), thread, default(Vector3), star);
             kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -0.95f, 0f), new Vector3(0.34f, 0.34f, 0.12f), PatchworkAssets.Glow(new Color(1f, 0.9f, 0.5f), 1.2f), default(Vector3), star);
-            var wc = chime.gameObject.AddComponent<WindChime>();
+            var wc = chime.gameObject.AddComponent<PodChime>();
             wc.Tubes = tubes;
             wc.Clapper = star;
 
@@ -395,7 +395,7 @@ namespace Patchwork
     // A wind chime: five tubes and a felt-star clapper on threads. They stir a little all the
     // time, and when Patch jumps up into them they swing wide and ring, one after another, up a
     // gentle five-note scale.
-    public class WindChime : MonoBehaviour
+    public class PodChime : MonoBehaviour
     {
         public Transform[] Tubes;
         public Transform Clapper;
