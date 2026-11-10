@@ -5,7 +5,7 @@ namespace Patchwork
 {
     // Builds Patch's three bodies and animates them:
     // Yarn is the Blender-made knitted toy (PatchModel), with a block-built backup if it's missing,
-    // Water is a jiggly see-through bubble with big eyes, Wind is a floating happy cloud.
+    // Water is a little water sprite in a raincoat and wellies, Wind is a floating happy cloud.
     // Also does the short change animations between forms (soak, steam, rain, unravel...).
     // Hats sit on their own transform so changing form never resets them.
     public class FormVisuals
@@ -32,6 +32,8 @@ namespace Patchwork
         PatchModel patchModel;
         Transform yarnTorso, yarnHead, hipL, hipR, shoulderL, shoulderR, armR, handR;
         // Water rig
+        Transform wHipL, wHipR, wArmL, wArmR, wBody, wHead;
+        float waterPhase;
         Transform bubble, bubbleEyes;
         Vector3 bubbleEyesBase;
         readonly Transform[] miniBubbles = new Transform[2];
@@ -363,20 +365,47 @@ namespace Patchwork
         void AnimateWater(PlayerMotor motor, Vector3 dv, float dt)
         {
             if (!water.Root.gameObject.activeSelf) return;
-            jiggle = Mathf.Min(0.32f, jiggle + dv.magnitude * 0.03f);
-            jiggle = Mathf.MoveTowards(jiggle, 0.035f, dt * 0.5f);
+            // Still water at heart: the whole doll wobbles when it's knocked about, and
+            // stretches a little as it rises and falls.
+            jiggle = Mathf.Min(0.2f, jiggle + dv.magnitude * 0.02f);
+            jiggle = Mathf.MoveTowards(jiggle, 0.02f, dt * 0.4f);
             float w = Mathf.Sin(time * 13f) * jiggle;
             float w2 = Mathf.Sin(time * 9f + 1.3f) * jiggle * 0.6f;
-            float stretch = Mathf.Clamp(motor.Velocity.y * 0.015f, -0.12f, 0.15f);
+            float stretch = Mathf.Clamp(motor.Velocity.y * 0.012f, -0.1f, 0.12f);
             bubble.localScale = new Vector3(1f + w - stretch * 0.5f, 1f - w + stretch, 1f + w2 - stretch * 0.5f);
-            bubbleEyes.localPosition = bubbleEyesBase + new Vector3(0f, w * 0.06f, 0f);
+
+            // A quick little walk: short legs, so lots of steps, arms swinging the other way.
+            Vector3 flat = motor.Velocity;
+            flat.y = 0f;
+            float speed = flat.magnitude;
+            bool air = !motor.Grounded;
+            float stride = Mathf.Clamp01(speed / 4.5f);
+            waterPhase += speed * dt * 4.4f;
+            float leg = air ? 0f : Mathf.Sin(waterPhase) * 44f * stride;
+            float tuck = air ? (motor.Velocity.y > 0f ? 30f : -12f) : 0f;
+            float ease = 1f - Mathf.Exp(-18f * dt);
+            wHipL.localRotation = Quaternion.Slerp(wHipL.localRotation, Quaternion.Euler(leg + tuck, 0f, 0f), ease);
+            wHipR.localRotation = Quaternion.Slerp(wHipR.localRotation, Quaternion.Euler(-leg + tuck * 0.6f, 0f, 0f), ease);
+            // Arms: swinging on the ground, thrown up and out in the air.
+            float lift = air ? (motor.Velocity.y > 0f ? 115f : 70f) : 14f + Mathf.Sin(time * 1.6f) * 3f;
+            wArmL.localRotation = Quaternion.Slerp(wArmL.localRotation, Quaternion.Euler(-leg * 0.8f, 0f, -lift), ease);
+            wArmR.localRotation = Quaternion.Slerp(wArmR.localRotation, Quaternion.Euler(leg * 0.8f, 0f, lift), ease);
+            // The body bobs with each step and leans into a run; breathing when stood still.
+            float bob = air ? 0f : Mathf.Abs(Mathf.Sin(waterPhase)) * 0.028f * stride + Mathf.Sin(time * 2.6f) * 0.006f;
+            wBody.localPosition = new Vector3(0f, 0.2f + bob, 0f);
+            wBody.localRotation = Quaternion.Euler(stride * 9f, 0f, Mathf.Sin(waterPhase) * 3f * stride);
+            // The head lolls a touch behind the body, like a full water balloon.
+            wHead.localRotation = Quaternion.Euler(-stride * 5f + Mathf.Sin(time * 1.7f) * 2.5f + w * 30f, Mathf.Sin(time * 0.6f) * 6f * (1f - stride), -Mathf.Sin(waterPhase) * 5f * stride + w2 * 30f);
+            wHead.localScale = new Vector3(1f + w * 0.6f, 1f - w * 0.6f, 1f + w2 * 0.6f);
+
+            bubbleEyes.localPosition = bubbleEyesBase + new Vector3(0f, w * 0.04f, 0f);
             // Blink every few seconds.
             float blink = Mathf.Repeat(time, 3.7f) < 0.12f ? 0.15f : 1f;
             bubbleEyes.localScale = new Vector3(1f, blink, 1f);
             for (int i = 0; i < miniBubbles.Length; i++)
             {
                 float a = time * (1.5f + i * 0.7f) + i * 3f;
-                miniBubbles[i].localPosition = new Vector3(Mathf.Cos(a) * 0.5f, 0.5f + Mathf.Sin(time * 2f + i) * 0.2f, Mathf.Sin(a) * 0.5f);
+                miniBubbles[i].localPosition = new Vector3(Mathf.Cos(a) * 0.36f, 0.5f + Mathf.Sin(time * 2f + i) * 0.2f, Mathf.Sin(a) * 0.36f);
             }
         }
 
@@ -610,63 +639,107 @@ namespace Patchwork
             building = null;
         }
 
+        // Water: a little water sprite, a doll like Patch but made of rain. A big jelly
+        // water-drop head with a curl of droplets on top, a felt raincoat with two buttons and
+        // a pocket, red wellies, and round water hands. Short enough to slip through a drain.
         void BuildWater()
         {
             var def = FormLibrary.Get(FormType.Water);
             building = water;
             water.Root = Pivot("WaterForm", root, Vector3.zero);
-            bubble = Pivot("Bubble", water.Root, Vector3.zero);
+            bubble = Pivot("Bubble", water.Root, Vector3.zero);     // the whole doll wobbles from the feet
 
-            var shell = PatchworkAssets.Bubble(new Color(def.PrimaryColor.r, def.PrimaryColor.g, def.PrimaryColor.b, 0.45f));
-            Part(PrimitiveType.Sphere, bubble, new Vector3(0f, 0.4f, 0f), new Vector3(0.8f, 0.78f, 0.8f), shell);
-            // A soft inner core gives the bubble some depth.
-            Part(PrimitiveType.Sphere, bubble, new Vector3(0f, 0.36f, -0.05f), new Vector3(0.5f, 0.45f, 0.5f),
-                PatchworkAssets.Bubble(new Color(def.SecondaryColor.r, def.SecondaryColor.g, def.SecondaryColor.b, 0.35f)));
-            // Shiny highlights.
+            var skin = PatchworkAssets.Plain(Color.Lerp(def.PrimaryColor, def.SecondaryColor, 0.35f), 0.9f);
+            var shell = PatchworkAssets.Bubble(new Color(def.PrimaryColor.r, def.PrimaryColor.g, def.PrimaryColor.b, 0.42f));
+            var coat = PatchworkAssets.Felt(new Color(1f, 0.82f, 0.32f));
+            var coatDark = PatchworkAssets.Felt(new Color(0.92f, 0.68f, 0.22f));
+            var boot = PatchworkAssets.Plain(new Color(0.92f, 0.3f, 0.32f), 0.85f);
             var shine = PatchworkAssets.Glow(Color.white, 0.8f);
-            Part(PrimitiveType.Sphere, bubble, new Vector3(-0.18f, 0.6f, 0.24f), new Vector3(0.14f, 0.09f, 0.05f), shine, new Vector3(0f, 0f, 30f));
-            Part(PrimitiveType.Sphere, bubble, new Vector3(-0.26f, 0.5f, 0.22f), Vector3.one * 0.04f, shine);
-
-            // Big friendly cartoon eyes sitting ON the bubble's surface (not inside it), so they stay
-            // crisp instead of looking cloudy through the see-through shell. They blink.
-            Vector3 bubbleCenter = new Vector3(0f, 0.4f, 0f);
-            const float bubbleRadius = 0.4f;
-            const float eyeHeight = 0.07f;   // above the bubble centre
-            bubbleEyes = Pivot("Eyes", bubble, bubbleCenter + Vector3.up * eyeHeight);
-            bubbleEyesBase = bubbleEyes.localPosition;
             var white = PatchworkAssets.Plain(new Color(0.98f, 0.98f, 1f), 0.85f);
             var black = PatchworkAssets.Plain(new Color(0.05f, 0.07f, 0.14f), 0.85f);
-            for (int side = -1; side <= 1; side += 2)
+
+            // Legs (they swing from the hip): a short water leg in a shiny red welly.
+            wHipL = Pivot("HipL", bubble, new Vector3(-0.085f, 0.2f, 0f));
+            wHipR = Pivot("HipR", bubble, new Vector3(0.085f, 0.2f, 0f));
+            foreach (var hip in new[] { wHipL, wHipR })
             {
-                // Direction from the bubble centre to where this eye sits on the surface.
-                Vector3 n = new Vector3(side * 0.36f, eyeHeight / bubbleRadius, 1f).normalized;
-                Vector3 onSurface = n * (bubbleRadius - 0.02f);
-                Vector3 local = onSurface - Vector3.up * eyeHeight;   // relative to the Eyes pivot
-                Vector3 euler = Quaternion.LookRotation(n, Vector3.up).eulerAngles;
-                // Eyeball, pupil (nudged slightly inward for a cute look), sparkle.
-                Part(PrimitiveType.Sphere, bubbleEyes, local, new Vector3(0.17f, 0.22f, 0.08f), white, euler);
-                Vector3 inward = new Vector3(-side * 0.012f, -0.01f, 0f);
-                Part(PrimitiveType.Sphere, bubbleEyes, local + n * 0.025f + inward, new Vector3(0.11f, 0.15f, 0.06f), black, euler);
-                Part(PrimitiveType.Sphere, bubbleEyes, local + n * 0.05f + new Vector3(0.025f, 0.035f, 0f), new Vector3(0.04f, 0.04f, 0.02f), shine, euler);
+                Part(PrimitiveType.Cylinder, hip, new Vector3(0f, -0.05f, 0f), new Vector3(0.085f, 0.06f, 0.085f), skin);
+                Part(PrimitiveType.Cylinder, hip, new Vector3(0f, -0.12f, 0f), new Vector3(0.115f, 0.05f, 0.115f), boot);
+                Part(PrimitiveType.Sphere, hip, new Vector3(0f, -0.165f, 0.03f), new Vector3(0.13f, 0.075f, 0.19f), boot);
+                Part(PrimitiveType.Cylinder, hip, new Vector3(0f, -0.075f, 0f), new Vector3(0.125f, 0.012f, 0.125f), white);
             }
 
-            // Mouths (and brows for sad / angry) drawn as little dots on the bubble's surface.
+            // The raincoat: a little felt bell, wider at the hem, with a collar, two buttons,
+            // a seam down the front and a pocket.
+            wBody = Pivot("Body", bubble, new Vector3(0f, 0.2f, 0f));
+            Part(PrimitiveType.Sphere, wBody, new Vector3(0f, 0.11f, 0f), new Vector3(0.36f, 0.3f, 0.32f), coat);
+            Part(PrimitiveType.Cylinder, wBody, new Vector3(0f, 0.02f, 0f), new Vector3(0.39f, 0.035f, 0.35f), coat);
+            Part(PrimitiveType.Cylinder, wBody, new Vector3(0f, -0.012f, 0f), new Vector3(0.4f, 0.012f, 0.36f), coatDark);
+            Part(PrimitiveType.Cylinder, wBody, new Vector3(0f, 0.235f, 0f), new Vector3(0.26f, 0.025f, 0.24f), coatDark);
+            Part(PrimitiveType.Cube, wBody, new Vector3(0f, 0.11f, 0.158f), new Vector3(0.012f, 0.2f, 0.01f), coatDark);
+            for (int i = 0; i < 2; i++)
+                Part(PrimitiveType.Cylinder, wBody, new Vector3(0.035f, 0.07f + i * 0.085f, 0.157f - i * 0.006f), new Vector3(0.04f, 0.008f, 0.04f), boot, new Vector3(90f, 0f, 0f));
+            Part(PrimitiveType.Cube, wBody, new Vector3(-0.085f, 0.055f, 0.146f), new Vector3(0.075f, 0.06f, 0.012f), coatDark, new Vector3(0f, -22f, 0f));
+
+            // Arms (they swing from the shoulder): a raincoat sleeve and a round water hand.
+            wArmL = Pivot("ArmL", wBody, new Vector3(-0.17f, 0.2f, 0f));
+            wArmR = Pivot("ArmR", wBody, new Vector3(0.17f, 0.2f, 0f));
+            foreach (var arm in new[] { wArmL, wArmR })
+            {
+                Part(PrimitiveType.Cylinder, arm, new Vector3(0f, -0.075f, 0f), new Vector3(0.095f, 0.075f, 0.095f), coat);
+                Part(PrimitiveType.Cylinder, arm, new Vector3(0f, -0.15f, 0f), new Vector3(0.105f, 0.012f, 0.105f), coatDark);
+                Part(PrimitiveType.Sphere, arm, new Vector3(0f, -0.195f, 0f), Vector3.one * 0.095f, skin);
+            }
+
+            // The head: a big drop of water. A see-through shell over a paler middle gives it
+            // some depth, like jelly, and a curl of droplets stands up on top like a quiff.
+            Vector3 headCenter = new Vector3(0f, 0.2f, 0f);          // relative to the head pivot
+            const float headRadius = 0.225f;
+            wHead = Pivot("Head", wBody, new Vector3(0f, 0.2f, 0f));
+            Part(PrimitiveType.Sphere, wHead, headCenter + new Vector3(0f, -0.005f, -0.01f), Vector3.one * (headRadius * 2f - 0.07f), skin);
+            Part(PrimitiveType.Sphere, wHead, headCenter, new Vector3(headRadius * 2f, headRadius * 1.94f, headRadius * 2f), shell);
+            Part(PrimitiveType.Sphere, wHead, headCenter + new Vector3(0.01f, 0.215f, -0.01f), new Vector3(0.15f, 0.17f, 0.15f), skin);
+            Part(PrimitiveType.Sphere, wHead, headCenter + new Vector3(0.035f, 0.305f, -0.015f), new Vector3(0.095f, 0.11f, 0.095f), skin, new Vector3(0f, 0f, -25f));
+            Part(PrimitiveType.Sphere, wHead, headCenter + new Vector3(0.075f, 0.36f, -0.02f), Vector3.one * 0.055f, skin);
+            // Shiny highlights.
+            Part(PrimitiveType.Sphere, wHead, headCenter + new Vector3(-0.1f, 0.12f, 0.15f), new Vector3(0.085f, 0.05f, 0.03f), shine, new Vector3(0f, -25f, 30f));
+            Part(PrimitiveType.Sphere, wHead, headCenter + new Vector3(-0.145f, 0.07f, 0.14f), Vector3.one * 0.025f, shine);
+
+            // Big friendly eyes sitting ON the surface of the head so they stay crisp. They blink.
+            const float eyeHeight = 0.035f;
+            bubbleEyes = Pivot("Eyes", wHead, headCenter + Vector3.up * eyeHeight);
+            bubbleEyesBase = bubbleEyes.localPosition;
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Vector3 n = new Vector3(side * 0.4f, eyeHeight / headRadius, 1f).normalized;
+                Vector3 local = n * (headRadius - 0.012f) - Vector3.up * eyeHeight;
+                Vector3 euler = Quaternion.LookRotation(n, Vector3.up).eulerAngles;
+                Part(PrimitiveType.Sphere, bubbleEyes, local, new Vector3(0.105f, 0.135f, 0.05f), white, euler);
+                Vector3 inward = new Vector3(-side * 0.008f, -0.006f, 0f);
+                Part(PrimitiveType.Sphere, bubbleEyes, local + n * 0.016f + inward, new Vector3(0.068f, 0.092f, 0.036f), black, euler);
+                Part(PrimitiveType.Sphere, bubbleEyes, local + n * 0.031f + new Vector3(0.016f, 0.022f, 0f), new Vector3(0.026f, 0.026f, 0.012f), shine, euler);
+                // A rosy cheek under each eye.
+                Vector3 cn = new Vector3(side * 0.62f, -0.3f, 1f).normalized;
+                Part(PrimitiveType.Sphere, wHead, headCenter + cn * (headRadius - 0.004f), new Vector3(0.06f, 0.035f, 0.02f), PatchworkAssets.Felt(new Color(1f, 0.62f, 0.72f)), Quaternion.LookRotation(cn, Vector3.up).eulerAngles);
+            }
+
+            // Mouths (and brows for sad / angry): little stitches on the surface of the head.
             // Happy: smile. Sad: frown with brows tilted up in the middle. Angry: flatter frown, brows down.
-            var happy = Pivot("Face_Happy", bubble, Vector3.zero);
-            WaterMouth(happy, bubbleCenter, bubbleRadius, -0.2f, -1f, black);
-            var sad = Pivot("Face_Sad", bubble, Vector3.zero);
-            WaterMouth(sad, bubbleCenter, bubbleRadius, -0.28f, 1f, black);
-            WaterBrows(sad, bubbleCenter, bubbleRadius, -1f, black);
-            var angry = Pivot("Face_Angry", bubble, Vector3.zero);
-            WaterMouth(angry, bubbleCenter, bubbleRadius, -0.25f, 0.5f, black);
-            WaterBrows(angry, bubbleCenter, bubbleRadius, 1f, black);
+            var happy = Pivot("Face_Happy", wHead, Vector3.zero);
+            WaterMouth(happy, headCenter, headRadius, -0.36f, -1f, black);
+            var sad = Pivot("Face_Sad", wHead, Vector3.zero);
+            WaterMouth(sad, headCenter, headRadius, -0.46f, 1f, black);
+            WaterBrows(sad, headCenter, headRadius, -1f, black);
+            var angry = Pivot("Face_Angry", wHead, Vector3.zero);
+            WaterMouth(angry, headCenter, headRadius, -0.42f, 0.5f, black);
+            WaterBrows(angry, headCenter, headRadius, 1f, black);
             waterFaces[0] = happy.gameObject;
             waterFaces[1] = sad.gameObject;
             waterFaces[2] = angry.gameObject;
 
             var tiny = PatchworkAssets.Bubble(new Color(0.8f, 0.92f, 1f, 0.5f));
             for (int i = 0; i < miniBubbles.Length; i++)
-                miniBubbles[i] = Part(PrimitiveType.Sphere, water.Root, Vector3.zero, Vector3.one * (0.1f + i * 0.04f), tiny);
+                miniBubbles[i] = Part(PrimitiveType.Sphere, water.Root, Vector3.zero, Vector3.one * (0.07f + i * 0.03f), tiny);
             building = null;
         }
 
@@ -748,20 +821,20 @@ namespace Patchwork
             for (int i = 0; i < 5; i++)
             {
                 float t = (i / 4f) * 2f - 1f;
-                Vector3 n = new Vector3(t * 0.13f, baseY + curve * (1f - t * t) * 0.07f, 1f).normalized;
-                Part(PrimitiveType.Sphere, parent, center + n * (radius - 0.005f), Vector3.one * 0.03f, mat);
+                Vector3 n = new Vector3(t * 0.2f, baseY + curve * (1f - t * t) * 0.1f, 1f).normalized;
+                Part(PrimitiveType.Sphere, parent, center + n * (radius - 0.003f), Vector3.one * radius * 0.09f, mat);
             }
         }
 
-        // Eyebrows over the bubble's eyes. slope 1 = angry (inner ends down), -1 = sad (inner ends up).
+        // Eyebrows over the water doll's eyes. slope 1 = angry (inner ends down), -1 = sad (inner ends up).
         void WaterBrows(Transform parent, Vector3 center, float radius, float slope, Material mat)
         {
             for (int side = -1; side <= 1; side += 2)
                 for (int i = 0; i < 4; i++)
                 {
                     float t = i / 3f;   // 0 = inner end, 1 = outer end
-                    Vector3 n = new Vector3(side * (0.18f + t * 0.34f), 0.66f + slope * (t - 0.5f) * 0.16f, 1f).normalized;
-                    Part(PrimitiveType.Sphere, parent, center + n * (radius - 0.003f), Vector3.one * 0.035f, mat);
+                    Vector3 n = new Vector3(side * (0.2f + t * 0.36f), 0.62f + slope * (t - 0.5f) * 0.18f, 1f).normalized;
+                    Part(PrimitiveType.Sphere, parent, center + n * (radius - 0.002f), Vector3.one * radius * 0.095f, mat);
                 }
         }
 

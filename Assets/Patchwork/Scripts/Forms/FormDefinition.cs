@@ -64,7 +64,7 @@ namespace Patchwork
             {
                 Type = FormType.Water,
                 DisplayName = "Water Form",
-                Tagline = "A jiggly bubble with big eyes. Slips through drain grates and rides blue fountains.",
+                Tagline = "A little water sprite in a raincoat and wellies. Slips through drain grates and rides blue fountains.",
                 AbilityHint = "Slip through blue drain grates. Step into blue fountains to ride them up.",
                 PrimaryColor = new Color(0.36f, 0.66f, 0.95f),
                 SecondaryColor = new Color(0.78f, 0.92f, 1f),

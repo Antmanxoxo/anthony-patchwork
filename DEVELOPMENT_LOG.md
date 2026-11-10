@@ -1,5 +1,14 @@
 # Development Log
 
+## The water form is a little person now
+- Water form redesigned from a plain bubble into a water-sprite doll with Patch's kind of
+  proportions (big head, small body, stubby limbs): a jelly water-drop head with a curl of
+  droplets on top, big blinking eyes, rosy cheeks and a stitched mouth; a yellow felt raincoat
+  with a collar, two buttons, a seam and a pocket; red wellies; round water hands.
+- It walks with quick little steps and swinging arms, throws its arms up when it jumps, bobs
+  and leans into a run, and its head lolls like a full water balloon. It still wobbles like
+  water when knocked about, and it's still short enough to slip through drain grates.
+
 ## The sewing-box sky, and comforts in the Pod
 - The things floating near the Pod now all come from one idea: a sewing box. A button moon,
   a cotton reel trailing its thread, a ball-of-yarn planet with knitting needles through it,

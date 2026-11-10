@@ -320,6 +320,10 @@ Stuff I need to remember about how Patchwork is put together.
 - `LevelInfo.SunColor`, `AmbientSky/Side/Ground` (alpha 0 = work it out from the sky) and
   `ShadowStrength` set a level's lighting mood. The Pod's extras (space glow, motes, mouse)
   are in `PodDreams`.
+- Water form: built in `FormVisuals.BuildWater` (pivots `wHipL/R`, `wArmL/R`, `wBody`, `wHead`
+  under `bubble`, which is the whole-doll wobble pivot at the feet) and moved in
+  `AnimateWater`. It must stay under about 0.85 m to the top of the head: the collider is
+  0.8 m so it fits through grates.
 - Sounds from things out in the level that the player didn't cause go through
   `Sfx.PlayNear(id, pos, volume, range)` so they fade with distance (plain `Sfx.Play` is
   heard at full volume anywhere).
