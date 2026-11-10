@@ -1,5 +1,10 @@
 # Development Log
 
+## The Pod's soundwave moved out to the backdrop
+- The ring of light now sits far out on the horizon (170 m away, well beyond the planets),
+  drawn nine times bigger, with 144 bars, so it reads as a band of aurora light all the way
+  round the sky instead of a fence right next to the Pod.
+
 ## A quieter, snugger Pod
 - The "star pings" in the Pod's background hum were the chiming that got annoying: eight
   bright bell notes every twelve seconds, forever. Now there are three in the loop, an octave

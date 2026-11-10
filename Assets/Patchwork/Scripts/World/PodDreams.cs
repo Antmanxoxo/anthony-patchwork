@@ -399,7 +399,8 @@ namespace Patchwork
             {
                 float a = i / (float)SoundRing.Count * Mathf.PI * 2f;
                 var bar = kit.Deco(PrimitiveType.Cube, new Vector3(Mathf.Sin(a) * SoundRing.Radius, 0f, Mathf.Cos(a) * SoundRing.Radius),
-                    new Vector3(step * 0.56f, 1f, 0.1f), mat, new Vector3(0f, a * Mathf.Rad2Deg, 0f), g);
+                    new Vector3(step * 0.56f, SoundRing.Size, 1f), mat, new Vector3(0f, a * Mathf.Rad2Deg, 0f), g);
+                bar.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 Plain(bar);
                 ring.Bars[i] = bar;
                 ring.Rends[i] = bar.GetComponent<Renderer>();
@@ -513,8 +514,11 @@ namespace Patchwork
     // The ring of light round the Pod (see PodDreams.Auroras).
     public class SoundRing : MonoBehaviour
     {
-        public const int Count = 96;
-        public const float Radius = 17.5f, Height = 2.6f;   // outside the Button Box and the launch tube, inside the nearest planets
+        // Far out in the backdrop, well beyond the planets and the sewing-box things, like a
+        // band of light on the horizon all round. Everything about the bars is drawn this many
+        // times bigger than it would be up close, so it still reads from that far away.
+        public const int Count = 144;
+        public const float Radius = 170f, Height = 2f, Size = 9f;
         const int BandCount = 24;
 
         public Transform[] Bars;
@@ -579,7 +583,7 @@ namespace Patchwork
                 float want = Mathf.Lerp(0.5f + idle * 0.7f, 0.7f + music * 5.2f + ripple * 2.5f, awake);
                 tall[i] = Mathf.Lerp(tall[i], want, dt * 14f);
                 var s = Bars[i].localScale;
-                s.y = tall[i];
+                s.y = tall[i] * Size;
                 Bars[i].localScale = s;
 
                 // The colours slide slowly round, and quicker while the music's on; the taller
