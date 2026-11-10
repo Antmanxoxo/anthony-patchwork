@@ -56,13 +56,13 @@ namespace Patchwork
             // every lamp, star and fairy light.
             info.Saturation = 10f;
             info.Contrast = 5f;
-            info.Warmth = 0f;
+            info.Warmth = 4f;   // a touch of lamplight in the colours
             info.Glow = 1f;
             info.Vignette = 0.3f;
             info.SunColor = new Color(0.78f, 0.84f, 1f);
             info.AmbientSky = new Color(0.4f, 0.42f, 0.66f, 1f);
             info.AmbientSide = new Color(0.56f, 0.48f, 0.66f, 1f);
-            info.AmbientGround = new Color(0.46f, 0.36f, 0.42f, 1f);
+            info.AmbientGround = new Color(0.52f, 0.39f, 0.38f, 1f);
             info.ShadowStrength = 0.45f;
             info.Area.SetMinMax(new Vector3(-11f, -1f, -16f), new Vector3(11f, 14f, 11f));
             // Moonlight pours in through the window.

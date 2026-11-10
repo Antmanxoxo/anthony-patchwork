@@ -999,9 +999,11 @@ namespace Patchwork
                 float air = lp2 * 3f * (0.6f + 0.4f * Mathf.Sin(2f * Mathf.PI * t / 4f + 1f));
                 data[i] = hum * 0.16f + air * 0.35f;
             }
-            // Star pings: little bell tones from a pentatonic scale, high and soft.
-            float[] notes = { 1318.5f, 1568f, 1760f, 2093f, 2349.3f, 2637f };
-            float[] when = { 0.6f, 2.3f, 3.1f, 5.4f, 7.2f, 8.0f, 9.9f, 11.0f };
+            // Star pings: just three in the whole loop now, an octave lower than they were and a
+            // quarter as loud, with a soft start. (Eight bright ones every twelve seconds, for
+            // as long as you sat in the Pod, wore on the ears.)
+            float[] notes = { 659.3f, 784f, 880f, 1046.5f, 1174.7f, 1318.5f };
+            float[] when = { 1.4f, 6.1f, 10.2f };
             for (int k = 0; k < when.Length; k++)
             {
                 float f = notes[(k * 3 + 1) % notes.Length];
@@ -1010,8 +1012,8 @@ namespace Patchwork
                 for (int j = 0; j < len; j++)
                 {
                     float tt = j / (float)Rate;
-                    float env = Mathf.Exp(-tt * 3.2f) * Mathf.Clamp01(tt * 200f);
-                    float s = (Mathf.Sin(2f * Mathf.PI * f * tt) + 0.3f * Mathf.Sin(2f * Mathf.PI * f * 2.01f * tt)) * env * 0.05f;
+                    float env = Mathf.Exp(-tt * 3.2f) * Mathf.Clamp01(tt * 40f);
+                    float s = (Mathf.Sin(2f * Mathf.PI * f * tt) + 0.15f * Mathf.Sin(2f * Mathf.PI * f * 2.01f * tt)) * env * 0.012f;
                     data[(start + j) % n] += s;
                 }
             }

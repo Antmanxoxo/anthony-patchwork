@@ -1,5 +1,14 @@
 # Development Log
 
+## A quieter, snugger Pod
+- The "star pings" in the Pod's background hum were the chiming that got annoying: eight
+  bright bell notes every twelve seconds, forever. Now there are three in the loop, an octave
+  lower, a quarter as loud and with a soft start.
+- Small cosy touches round the bean bag: a knitted throw over it, a ginger kitten asleep on
+  the throw (it breathes), and a candle lantern on the floor with a flickering glow. They go
+  away with the bean bag if it's switched off in the decorating menu.
+- The room's colours are a touch warmer (a little lamplight in the grade and the floor light).
+
 ## Band quests with a twist, a wedding that grows, and the Pod's ring of light
 - The lute: Captain Buttonbeard, a pirate on top of Spindle Hill, has the string and thinks
   "lute" means "loot". He'll only swap it for his own treasure, buried under a stitched red X

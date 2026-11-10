@@ -11,6 +11,7 @@ namespace Patchwork
         {
             SewingBoxSky(kit);
             Comforts(kit);
+            Snug(kit);
             Nebulas(kit);
             StarRiver(kit);
             Auroras(kit);
@@ -230,6 +231,81 @@ namespace Patchwork
             ChimneySmoke.Attach(kit, steamRoot);
         }
 
+        // ---------------------------------------------------------------- Snug
+
+        // Small things that make the room feel lived in, all round the bean bag by the window:
+        // a knitted throw over it, a kitten asleep on the throw (you can see it breathing), and
+        // a candle lantern on the floor beside it with a soft flickering glow. They belong to
+        // the bean bag, so they go away with it if it's switched off in the decorating menu.
+        static void Snug(LevelKit kit)
+        {
+            var bag = kit.Root.Find("Item_beanbag");
+            var g = new GameObject("Snug").transform;
+            g.SetParent(bag != null ? bag : kit.Root, false);
+            g.localPosition = new Vector3(4.2f, 0f, 5.2f);   // where the bean bag was built
+
+            // The throw: soft knit, draped over the seat and down the front.
+            var knit = PatchworkAssets.Knit(new Color(0.96f, 0.84f, 0.72f));
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0.1f, 0.82f, -0.15f), new Vector3(1.55f, 0.2f, 1.25f), knit, new Vector3(0f, 20f, 0f), g);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0.05f, 0.52f, -0.82f), new Vector3(1.2f, 0.62f, 0.3f), knit, new Vector3(18f, 20f, 0f), g);
+            var trim = PatchworkAssets.Yarn(new Color(0.9f, 0.5f, 0.5f));
+            for (int i = -2; i <= 2; i++)
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0.05f + i * 0.24f, 0.26f, -0.95f - Mathf.Abs(i) * 0.02f), Vector3.one * 0.11f, trim, default(Vector3), g);
+
+            // The kitten, curled up nose to tail.
+            var cat = new GameObject("Kitten").transform;
+            cat.SetParent(g, false);
+            cat.localPosition = new Vector3(0.05f, 0.92f, -0.12f);
+            cat.localRotation = Quaternion.Euler(0f, 35f, 0f);
+            var fur = PatchworkAssets.Knit(new Color(0.95f, 0.62f, 0.32f));
+            var pale = PatchworkAssets.Felt(new Color(0.99f, 0.94f, 0.86f));
+            var body = kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.13f, 0f), new Vector3(0.62f, 0.3f, 0.5f), fur, default(Vector3), cat);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0.26f, 0.15f, 0.14f), new Vector3(0.28f, 0.24f, 0.26f), fur, default(Vector3), cat);            // head, tucked in
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0.36f, 0.11f, 0.18f), new Vector3(0.13f, 0.1f, 0.12f), pale, default(Vector3), cat);              // muzzle
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0.41f, 0.12f, 0.2f), Vector3.one * 0.035f, PatchworkAssets.Felt(new Color(1f, 0.6f, 0.65f)), default(Vector3), cat);
+            foreach (float ez in new[] { 0.06f, 0.22f })
+                kit.Deco(PrimitiveType.Cube, new Vector3(0.24f, 0.28f, ez), new Vector3(0.09f, 0.11f, 0.03f), fur, new Vector3(0f, 0f, 45f), cat);       // ears
+            foreach (float ez in new[] { 0.09f, 0.21f })
+                kit.Deco(PrimitiveType.Cube, new Vector3(0.345f, 0.185f, ez + 0.04f), new Vector3(0.012f, 0.012f, 0.07f), PatchworkAssets.Felt(new Color(0.2f, 0.15f, 0.15f)), new Vector3(0f, 60f, 0f), cat);   // closed eyes
+            for (int i = 0; i < 6; i++)
+            {
+                // The tail, wrapped round to the nose.
+                float a = Mathf.Lerp(200f, 20f, i / 5f) * Mathf.Deg2Rad;
+                kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 0.3f, 0.06f, Mathf.Sin(a) * 0.27f + 0.02f), Vector3.one * (0.12f - i * 0.008f), i == 5 ? pale : fur, default(Vector3), cat);
+            }
+            var breath = cat.gameObject.AddComponent<SleepyBreath>();
+            breath.Body = body;
+
+            // The candle lantern: a little brass frame, a stub of candle and a flame.
+            var lantern = new GameObject("CandleLantern").transform;
+            lantern.SetParent(g, false);
+            lantern.localPosition = new Vector3(-0.3f, 0f, -1.9f);   // on the floor in front, clear of the reading nook
+            var brass = PatchworkAssets.Plain(new Color(0.9f, 0.72f, 0.38f), 0.8f);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.04f, 0f), new Vector3(0.46f, 0.04f, 0.46f), brass, default(Vector3), lantern);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.72f, 0f), new Vector3(0.46f, 0.03f, 0.46f), brass, default(Vector3), lantern);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.8f, 0f), new Vector3(0.3f, 0.2f, 0.3f), brass, default(Vector3), lantern);
+            for (int i = 0; i < 4; i++)
+            {
+                float a = (i + 0.5f) * Mathf.PI * 0.5f;
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(Mathf.Cos(a) * 0.2f, 0.38f, Mathf.Sin(a) * 0.2f), new Vector3(0.03f, 0.33f, 0.03f), brass, default(Vector3), lantern);
+            }
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.2f, 0f), new Vector3(0.16f, 0.13f, 0.16f), PatchworkAssets.Felt(new Color(0.99f, 0.95f, 0.86f)), default(Vector3), lantern);
+            var flame = kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.43f, 0f), new Vector3(0.09f, 0.17f, 0.09f), PatchworkAssets.Glow(new Color(1f, 0.72f, 0.3f), 2.4f), default(Vector3), lantern);
+            flame.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var lgo = new GameObject("CandleLight");
+            lgo.transform.SetParent(lantern, false);
+            lgo.transform.localPosition = new Vector3(0f, 0.5f, 0f);
+            var l = lgo.AddComponent<Light>();
+            l.type = LightType.Point;
+            l.color = new Color(1f, 0.68f, 0.36f);
+            l.intensity = 1.5f;
+            l.range = 5f;
+            l.shadows = LightShadows.None;
+            var flicker = lantern.gameObject.AddComponent<CandleFlicker>();
+            flicker.Glow = l;
+            flicker.Flame = flame;
+        }
+
         // ---------------------------------------------------------------- Nebulas
 
         // Great soft swirls of felt far off in the dark, each a curl of overlapping patches that
@@ -385,6 +461,52 @@ namespace Patchwork
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             r.receiveShadows = false;
             t.gameObject.layer = 1;   // never distance-culled: it's always a long way off
+        }
+    }
+
+    // Something fast asleep: its body rises and falls very slowly.
+    public class SleepyBreath : MonoBehaviour
+    {
+        public Transform Body;
+        Vector3 rest;
+        float t;
+
+        void Start() { if (Body != null) rest = Body.localScale; }
+
+        void Update()
+        {
+            if (Body == null) return;
+            t += Time.deltaTime;
+            float k = Mathf.Sin(t * 1.5f) * 0.5f + 0.5f;
+            Body.localScale = new Vector3(rest.x * (1f + k * 0.03f), rest.y * (1f + k * 0.12f), rest.z * (1f + k * 0.03f));
+        }
+    }
+
+    // A candle: the flame leans and stretches a little and its light wavers, never quite still.
+    public class CandleFlicker : MonoBehaviour
+    {
+        public Light Glow;
+        public Transform Flame;
+        float baseGlow, t;
+        Vector3 rest;
+
+        void Start()
+        {
+            if (Glow != null) baseGlow = Glow.intensity;
+            if (Flame != null) rest = Flame.localScale;
+            t = Random.value * 10f;
+        }
+
+        void Update()
+        {
+            t += Time.deltaTime;
+            float f = 0.5f * Mathf.Sin(t * 7.3f) + 0.3f * Mathf.Sin(t * 13.1f + 1f) + 0.2f * Mathf.Sin(t * 23.7f + 2f);
+            if (Glow != null) Glow.intensity = baseGlow * (1f + f * 0.12f);
+            if (Flame != null)
+            {
+                Flame.localScale = new Vector3(rest.x, rest.y * (1f + f * 0.18f), rest.z);
+                Flame.localRotation = Quaternion.Euler(Mathf.Sin(t * 3.1f) * 7f, 0f, Mathf.Sin(t * 4.3f + 1f) * 7f);
+            }
         }
     }
 
