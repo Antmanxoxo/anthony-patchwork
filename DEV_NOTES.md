@@ -306,7 +306,11 @@ Stuff I need to remember about how Patchwork is put together.
   hues (`MapColour`), then outlines where kinds meet. If the ground colour changes a lot,
   check it still falls in the "meadow" range (hue 62-170, value > 0.6).
 - `LevelInfo.Miniature` (0..1) adds Gaussian depth of field (start 42 m, end 150 m) in
-  `LevelLook`. No level uses it now: it made the game look blurry. Leave it at 0.
+  `LevelLook`. Only Level 1 sets it (0.7), and I like it: keep it.
+- All IMGUI text goes through `UIKit.Sharp` (via `UIKit.Label`), which takes the UI scale off
+  and draws the font at the real pixel size so letters stay crisp. Don't call `GUI.Label`
+  directly (the one exception is the loading-screen title inside a `GUI.BeginGroup`).
+- If the whole game looks soft in the editor, check the Game view's Scale slider is at 1x.
 - In IMGUI code never use `GUIUtility.RotateAroundPivot` (it turns about a screen pixel and
   breaks under the UI scale); use `MapScreen.Turn` / `UIKit.IconTransformed` style matrices.
 - Toybox music: `MusicToybox.ComposeToybox`. Sections come from `ToySection(bar)`; chords,
@@ -359,8 +363,8 @@ Stuff I need to remember about how Patchwork is put together.
   starts. It takes the camera as soon as the level is in Gameplay mode (behind the loading
   screen) and holds the first shot until the fade has gone. It calls
   `PodLaunch.SkipToLanded` so Patch is already outside the Pod, and
-  `RenderOptimizer.SetFarView(true)` (off again in `Finish`) so small things aren't
-  distance-culled while the camera flies over the whole town.
+  `RenderOptimizer.SetFarView(true)` and `LevelLook.SetMiniature(false)` (both undone in
+  `Finish`) so small things aren't distance-culled and the wide shots stay sharp.
 - The Storyteller is text plus a murmur sound. If a voice is ever added it has to be my own
   recording or one I have the rights to, never an imitation of a real narrator.
 - Play starts without reloading scripts, so anything kept in a `static` that Unity made

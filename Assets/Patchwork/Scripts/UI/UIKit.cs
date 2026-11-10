@@ -155,10 +155,40 @@ namespace Patchwork
                 for (int dx = -1; dx <= 1; dx++)
                     for (int dy = -1; dy <= 1; dy++)
                         if (dx != 0 || dy != 0)
-                            GUI.Label(new Rect(r.x + dx * 2f, r.y + dy * 2f, r.width, r.height), text, style);
+                            Sharp(new Rect(r.x + dx * 2f, r.y + dy * 2f, r.width, r.height), text, style);
                 style.normal.textColor = prev;
             }
-            GUI.Label(r, text, style);
+            Sharp(r, text, style);
+        }
+
+        // Text drawn at the real size it ends up on screen. Everything here is laid out for a
+        // 1080-high screen and scaled to fit, and letters drawn at one size then shrunk or
+        // stretched come out soft. So the scale is taken off for the text alone and the font is
+        // drawn at the matching pixel size instead: same place, same size, crisp edges.
+        static readonly Dictionary<GUIStyle, Dictionary<int, GUIStyle>> sharpStyles = new Dictionary<GUIStyle, Dictionary<int, GUIStyle>>();
+
+        public static void Sharp(Rect r, string text, GUIStyle style)
+        {
+            Matrix4x4 m = GUI.matrix;
+            float s = new Vector2(m.m00, m.m10).magnitude;
+            if (style == null || style.fontSize <= 0 || s < 0.05f || Mathf.Abs(s - 1f) < 0.01f) { GUI.Label(r, text, style); return; }
+            int px = Mathf.Max(1, Mathf.RoundToInt(style.fontSize * s));
+            Dictionary<int, GUIStyle> bySize;
+            if (!sharpStyles.TryGetValue(style, out bySize)) { bySize = new Dictionary<int, GUIStyle>(); sharpStyles[style] = bySize; }
+            GUIStyle st;
+            if (!bySize.TryGetValue(px, out st) || st == null)
+            {
+                st = new GUIStyle(style);
+                st.fontSize = px;
+                st.padding = new RectOffset(Mathf.RoundToInt(style.padding.left * s), Mathf.RoundToInt(style.padding.right * s), Mathf.RoundToInt(style.padding.top * s), Mathf.RoundToInt(style.padding.bottom * s));
+                bySize[px] = st;
+            }
+            st.normal.textColor = style.normal.textColor;
+            st.alignment = style.alignment;
+            st.wordWrap = style.wordWrap;
+            GUI.matrix = m * Matrix4x4.Scale(new Vector3(1f / s, 1f / s, 1f));
+            GUI.Label(new Rect(r.x * s, r.y * s, r.width * s, r.height * s), text, st);
+            GUI.matrix = m;
         }
 
         // Tiles a pattern texture across a rect (tileSize in virtual pixels), with a scrolling offset.
@@ -294,7 +324,7 @@ namespace Patchwork
             Fill(new Rect(x, y + 3f, w, h), new Color(0f, 0f, 0f, 0.3f * alpha), h * 0.28f);
             Fill(r, new Color(0.13f, 0.11f, 0.19f, alpha), h * 0.28f);
             Outline(r, new Color(1f, 1f, 1f, 0.85f * alpha), 2f, h * 0.28f);
-            GUI.Label(r, text, style);
+            Sharp(r, text, style);
             return w;
         }
 
@@ -351,7 +381,7 @@ namespace Patchwork
                         Prompt(x, y + (lineH - iconH) * 0.5f, iconH, action, keyboard, color.a);
                         style = Style(size, bold, TextAnchor.MiddleLeft, color);
                         x += iw;
-                        if (aw > 0f) { GUI.Label(new Rect(x, y, aw + 4f, lineH), after, style); x += aw; }
+                        if (aw > 0f) { Sharp(new Rect(x, y, aw + 4f, lineH), after, style); x += aw; }
                         x += space;
                         continue;
                     }
@@ -361,7 +391,7 @@ namespace Patchwork
                 if (x + w > r.xMax && x > r.x) { x = r.x; y += lineH; }
                 // Prompt() can hand out the same style with another colour, so set ours again.
                 style = Style(size, bold, TextAnchor.MiddleLeft, color);
-                GUI.Label(new Rect(x, y, w + 4f, lineH), raw, style);
+                Sharp(new Rect(x, y, w + 4f, lineH), raw, style);
                 x += w + space;
             }
         }

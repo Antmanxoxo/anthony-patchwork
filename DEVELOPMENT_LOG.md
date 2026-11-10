@@ -1,8 +1,10 @@
 # Development Log
 
 ## Sharper picture, and a cleaner start to the opening
-- No more distance blur: the soft-focus "miniature" effect is gone from Toybox Town, so
-  everything stays crisp.
+- Crisper writing: all the on-screen text is now drawn at the real size it appears on
+  screen, instead of being drawn for a 1080-high screen and then shrunk or stretched to fit
+  (which made letters soft, especially in a small Game window).
+- The soft-focus distance blur stays (it's switched off only during the opening's wide shots).
 - The opening no longer shows the town popping in: while it plays, every little thing is
   drawn at any distance (normally small things far away are skipped to save work).
 - The opening takes over straight from the loading screen and waits on its first shot until

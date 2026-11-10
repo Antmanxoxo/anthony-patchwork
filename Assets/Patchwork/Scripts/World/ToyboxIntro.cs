@@ -88,6 +88,7 @@ namespace Patchwork
                 // The whole town is on show from far off: draw every little thing at any
                 // distance while the story plays, so nothing pops in as the camera flies about.
                 RenderOptimizer.SetFarView(true);
+                LevelLook.SetMiniature(false);   // the whole town from far off: keep it sharp
             }
             if (game.Mode != UIMode.Cutscene) return;
 
@@ -352,6 +353,7 @@ namespace Patchwork
             GameState.SetHintSeen(SeenKey);
             game.CutsceneCaption = null;
             RenderOptimizer.SetFarView(false);
+            LevelLook.SetMiniature(true);
             Narrator.Card(null, null);
             Narrator.Place(null);
             game.CutsceneSkipFill = 0f;
