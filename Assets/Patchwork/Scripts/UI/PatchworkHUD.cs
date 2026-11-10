@@ -205,6 +205,14 @@ namespace Patchwork
             }
 
             DrawLetterbox(kb);
+            // The Storyteller: cutscene captions, chapter cards and place tags, and the odd
+            // remark while Patch explores.
+            if (Game.Mode == UIMode.Cutscene)
+            {
+                float ck = Game.CameraRig != null ? Mathf.Max(Game.CameraRig.CutsceneBlend, Game.CameraRig.ShowcaseBlend) : 1f;
+                Narrator.Draw(Game.CutsceneCaption, Mathf.SmoothStep(0f, 1f, ck), true);
+            }
+            else if (Game.Mode == UIMode.Gameplay) Narrator.Draw(null, 1f, false);
             if (Game.Mode != UIMode.Loading && Game.Mode != UIMode.Dance && Game.Mode != UIMode.LevelSelect && Game.Mode != UIMode.Talk && Game.Mode != UIMode.Cutscene)
             {
                 DrawHelmPrompt(kb);
@@ -269,12 +277,6 @@ namespace Patchwork
                     UIKit.Fill(new Rect(sx, sy + 48f, 290f, 8f), new Color(1f, 1f, 1f, 0.2f * e), 4f);
                     UIKit.Fill(new Rect(sx, sy + 48f, 290f * fill, 8f), new Color(1f, 0.85f, 0.5f, e), 4f);
                 }
-            }
-            if (Game.Mode == UIMode.Cutscene && !string.IsNullOrEmpty(Game.CutsceneCaption))
-            {
-                UIKit.Label(new Rect(0f, UIKit.Height - bar + 26f, UIKit.Width, 60f), Game.CutsceneCaption,
-                    UIKit.Style(30, true, TextAnchor.MiddleCenter, new Color(1f, 0.92f, 0.7f, e)));
-                return;
             }
             if (Game.Mode != UIMode.Dance) return;
 

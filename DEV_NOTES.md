@@ -349,6 +349,21 @@ Stuff I need to remember about how Patchwork is put together.
 - Falling is 1.5x gravity for Yarn and Water (`FallGravityMultiplier`), but not after a launch
   (swing release, gust, bounce pad), so those distances stayed the same.
 
+## The Storyteller and the Toybox Town opening
+- `UI/Narrator.cs`: `Narrator.Say(line)` for a timed remark in play, `Narrator.Card(kicker, title)`
+  and `Narrator.Place(name)` for the chapter card and place tags (pass null to hide), and
+  `Narrator.Draw` which the HUD calls. Cutscene captions (`game.CutsceneCaption`) are drawn by
+  the Storyteller too. `NarrationZone` is a volume that says its line once (hint-seen key).
+- Remarks round town are in `Level1Crafts.StorytellerRemarks` (keys `L1_say_<place>`).
+- `World/ToyboxIntro.cs` is one timeline; the `T...` constants at the top are when each shot
+  starts. It turns the miniature blur off with `LevelLook.SetMiniature(false)` and back on in
+  `Finish`.
+- The Storyteller is text plus a murmur sound. If a voice is ever added it has to be my own
+  recording or one I have the rights to, never an imitation of a real narrator.
+- Play starts without reloading scripts, so anything kept in a `static` that Unity made
+  (meshes, materials, textures) must be checked with `== null` before reuse, not just "did I
+  make it once". `RenderOptimizer.Prepare` does this now (it's what made the Pod vanish).
+
 ## Habits
 - Test every change with Play and check the Console.
 - Keep it to C# 9 and older Unity APIs so it compiles everywhere.

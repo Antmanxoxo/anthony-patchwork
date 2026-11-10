@@ -1,5 +1,30 @@
 # Development Log
 
+## A storybook opening for Toybox Town, told by the Storyteller
+- New opening chapter for Level 1. It starts outside the toybox with a chapter card
+  ("Chapter One: The Wedding That Nearly Wasn't"), dives over the wall into town on the
+  wedding morning, visits the band while they still have all their music, then a crack opens
+  in the lid and the Fray swoops in and the music stops.
+- The camera then chases each lost thing to where it ends up, with the place's name on a
+  stitched tag, so the three jobs are clear before you start: the lute string to Spindle
+  Hill, the Dye Works for the trumpet, and Wisp the piper blown up to the weathervane. Then
+  the knot round the clock tower, the Mayor and his bride with no band, and Patch landing.
+- The Storyteller: a dry, fond storybook narrator. His lines write themselves out letter by
+  letter on a strip of cream paper with a wax seal, with a low murmur as he speaks. He also
+  passes a remark the first time you reach eleven places round town (once each, saved).
+  He's written words and a murmur, not a recorded voice, and he's my own character.
+- The soft-focus "miniature" blur switches off during the opening (the far-away shots want
+  to be sharp) and back on when you take over.
+- Patchwork > Replay Toybox Town Opening (next visit) plays the opening again once, even on
+  a save that's already past it.
+
+## Fixed: the Pod vanishing
+- After pressing Play a second time without scripts reloading, Unity had sometimes thrown
+  away the lighter cube / cylinder / ball shapes the game makes for itself, but the game
+  still thought it had them, so every wall, floor and piece of furniture was given a shape
+  that draws nothing. Only Patch and the big planets were left. It now checks the shapes
+  are really still there and makes them again if not.
+
 ## Water and wind forms redesigned again, and hats that fit
 - Water form: a doll from Patch's own family, sewn out of water. A see-through jelly toy
   with button eyes like Patch's, a seam of white stitches down its front and over its head,

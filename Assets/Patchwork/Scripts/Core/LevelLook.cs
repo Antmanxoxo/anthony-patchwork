@@ -9,8 +9,18 @@ namespace Patchwork
     // nudge it through its LevelInfo (warmth, saturation, glow, vignette, miniature).
     public static class LevelLook
     {
+        static DepthOfField miniature;
+
+        // Switch the soft-focus distance off for a while (a cutscene that shows the whole town
+        // from far away wants it sharp), and back on afterwards.
+        public static void SetMiniature(bool on)
+        {
+            if (miniature != null) miniature.active = on;
+        }
+
         public static Volume Apply(LevelInfo level)
         {
+            miniature = null;
             var go = new GameObject("Look");
             var vol = go.AddComponent<Volume>();
             vol.isGlobal = true;
@@ -53,6 +63,7 @@ namespace Patchwork
             if (level.Miniature > 0f && GameSettings.Graphics > 0)
             {
                 var dof = p.Add<DepthOfField>(true);
+                miniature = dof;
                 dof.mode.Override(DepthOfFieldMode.Gaussian);
                 dof.gaussianStart.Override(42f);
                 dof.gaussianEnd.Override(150f);

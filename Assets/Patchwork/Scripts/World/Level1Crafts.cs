@@ -17,6 +17,31 @@ namespace Patchwork
             kit.Info.MapPins.Add(new MapPin("Tape-Measure Bridge", new Vector3((RavineEast + RavineWest) * 0.5f, 0f, TapeZ)));
         }
 
+        // ---------------------------------------------------------------- The Storyteller
+
+        // Places where the Storyteller has a remark to make, the first time Patch gets there.
+        static void StorytellerRemarks(LevelKit kit)
+        {
+            Remark(kit, "square", new Vector3(0f, 2f, 2f), 18f, "The town square. On an ordinary day there would be dancing. Today there is mostly worrying.");
+            Remark(kit, "tower", new Vector3(0f, 2f, 24f), 12f, "And there it sits: the Fray, knotted round the clock like a sulking scarf.");
+            Remark(kit, "hill", new Vector3(-67f, 5f, 14f), 22f, "Spindle Hill. The wind up here has opinions, and shares them freely.");
+            Remark(kit, "dye", new Vector3(64f, 2f, 2f), 18f, "The Dye Works, where every colour in town is brewed. Do mind the vats. Purple never quite washes out.");
+            Remark(kit, "lane", new Vector3(0f, 2f, -62f), 16f, "Chimney Lane. If you listen closely, you can hear a very small piper being very brave indeed.");
+            Remark(kit, "dell", new Vector3(-62f, 2f, 100f), 20f, "Toadstool Dell. Everything here is either bouncy or asleep, and occasionally both.");
+            Remark(kit, "wood", new Vector3(-82f, 2f, -45f), 24f, "The Whispering Wood. It is not whispering about you. Probably.");
+            Remark(kit, "stones", new Vector3(RavineEast + 5f, 2f, StonesZ), 9f, "Buttons, on a thread, over a ravine. What could possibly go wrong?");
+            Remark(kit, "tape", new Vector3(RavineEast + 6f, 2f, TapeZ), 9f, "A tape-measure bridge. Exactly as long as it needs to be, for exactly as long as it feels like.");
+            Remark(kit, "canal", new Vector3(36f, 2f, -30f), 12f, "The Inkwell Canal. The ducks consider it theirs, and nobody has dared to argue.");
+            Remark(kit, "farm", new Vector3(98f, 2f, 98f), 22f, "Patchwork Farm, where the sheep are wool all the way through.");
+        }
+
+        static void Remark(LevelKit kit, string key, Vector3 at, float size, string line)
+        {
+            var z = kit.Volume<NarrationZone>(at, new Vector3(size, 8f, size), "Remark_" + key);
+            z.Key = "L1_say_" + key;
+            z.Line = line;
+        }
+
         // ---------------------------------------------------------------- Puffball dandelions
 
         // Clusters of puffballs out in the meadows and along the edges of town, to run through.

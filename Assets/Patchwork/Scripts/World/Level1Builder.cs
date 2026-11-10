@@ -44,6 +44,8 @@ namespace Patchwork
         static readonly Vector3 Bandstand = new Vector3(0f, 0f, 7f);
         static readonly Vector3 Tower = new Vector3(0f, 0f, 27f);
         static readonly Vector3 Mill = new Vector3(64f, 0f, 8f);
+        public static Vector3 DyeWorksPoint { get { return Mill; } }
+        public static Vector3 ClockTowerPoint { get { return Tower; } }
         const float RavineEast = -37f, RavineWest = -51f, CanalWest = 32f, CanalEast = 40f, Half = BoxHalf;
         // Half the width of the giant toybox (it was 90 before the town grew).
         public const float BoxHalf = 115f;
@@ -152,6 +154,7 @@ namespace Patchwork
             CraftCrossings(kit);
             NurseryMobile(kit);
             PuffballMeadows(kit);
+            StorytellerRemarks(kit);
             Declutter.Run(kit.Root);   // props built by different parts of the level, kept out of each other
             // The soft little things lean and wobble when Patch brushes past or lands nearby.
             PropWobble.Attach(kit.Root, "Flower", "Mushroom", "FlowerPot", "Signpost", "LanternPost", "PinwheelFlower", "Lantern", "Barrel");

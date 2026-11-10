@@ -2,19 +2,25 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    // The first time you visit Toybox Town: a short cutscene of the Fray arriving.
-    //   1. The town on the morning of the wedding, from high above.
-    //   2. The band practising on the bandstand (with all their music).
-    //   3. A crack opens in the toybox lid and the Fray creeps out.
-    //   4. It swoops onto the bandstand: the lute string snaps off and flies west, the trumpet
-    //      seizes up, and Wisp the piper is blown onto the weathervane. The music stops.
-    //   5. It ties itself round the clock tower and grey threads spread over town.
-    //   6. The Mayor and his bride, with no band for their wedding. Over to you!
-    // Confirm or Pause skips it. It only plays once (saved), and never once you've found any of
-    // the band's things.
+    // The first time you visit Toybox Town: the opening chapter of the storybook, told by the
+    // Storyteller (see Narrator).
+    //   1. A chapter card over the toybox seen from outside, in the nursery.
+    //   2. Down over the wall into town on the morning of the wedding.
+    //   3. The band practising on the bandstand (with all their music).
+    //   4. A crack opens in the toybox lid and the Fray creeps out and swoops onto the bandstand.
+    //      The music stops.
+    //   5. The camera follows each thing the band has lost to where it ends up, with the
+    //      place's name, so you know the three places to go: the lute string to Spindle Hill,
+    //      the Dye Works (for the trumpet's cure), and Wisp the piper to the weathervane.
+    //   6. The Fray ties itself round the clock tower and grey threads spread over town.
+    //   7. The Mayor and his bride, with no band for their wedding.
+    //   8. Patch, who has just landed. Over to you!
+    // Hold Confirm or Pause to skip it. It only plays once (saved), and never once you've found
+    // any of the band's things.
     public class ToyboxIntro : MonoBehaviour
     {
         public const string SeenKey = "L1_intro_seen";
+        public const string ReplayPref = "Patchwork_ReplayToyboxIntro";   // editor only: play it again once
         public Level1Director Director;
         public Transform Crack, Blob, Streak;
 
@@ -30,7 +36,13 @@ namespace Patchwork
         void Start()
         {
             blobHover = new Vector3(0f, 7.9f, 7f);
-            if (Director == null || GameState.IsHintSeen(SeenKey) || GameState.IsLevelComplete(Level1Builder.SceneName) || Level1Director.BandCount() > 0)
+            bool replay = false;
+#if UNITY_EDITOR
+            // Patchwork > Replay Toybox Town Opening.
+            replay = UnityEditor.EditorPrefs.GetBool(ReplayPref, false);
+            if (replay) UnityEditor.EditorPrefs.SetBool(ReplayPref, false);
+#endif
+            if (Director == null || !replay && (GameState.IsHintSeen(SeenKey) || GameState.IsLevelComplete(Level1Builder.SceneName) || Level1Director.BandCount() > 0))
             {
                 finished = true;
                 // The crack the Fray came in by stays until the town is mended.
@@ -68,9 +80,10 @@ namespace Patchwork
                 wait += Time.unscaledDeltaTime;
                 if (wait < 0.4f) return;
                 t = 0f;
-                game.StartScriptedCutscene(new Vector3(0f, 62f, -120f), new Vector3(0f, 8f, 10f), 0.9f);
+                game.StartScriptedCutscene(new Vector3(0f, 150f, -200f), new Vector3(0f, 26f, 0f), 0.9f);
                 game.CutsceneSkippable = true;
                 game.CameraRig.SnapShowcase();
+                LevelLook.SetMiniature(false);   // the whole town from far off: keep it sharp
             }
             if (game.Mode != UIMode.Cutscene) return;
 
@@ -87,69 +100,114 @@ namespace Patchwork
             }
 
             var band = Bandstand();
-            if (t < 5f)
+            Vector3 hill = new Vector3(-67f, 6f, 31f);
+            Vector3 dye = Level1Builder.DyeWorksPoint;
+            Vector3 outside = new Vector3(0f, 150f, -200f), overWall = new Vector3(0f, 44f, -82f);
+            if (t < TTown)
             {
-                Caption(game, "Toybox Town, on the morning of the Mayor's wedding...");
-                float k = Ease(t / 5f);
-                game.SetCutsceneCamera(Vector3.Lerp(new Vector3(0f, 62f, -120f), new Vector3(0f, 40f, -76f), k), Vector3.Lerp(new Vector3(0f, 8f, 10f), new Vector3(0f, 6f, 12f), k));
+                // The toybox from outside, in the nursery, under its mobile.
+                Narrator.Card("Chapter One", "The Wedding That Nearly Wasn't");
+                Caption(game, "Once upon a bedtime, at the foot of a perfectly ordinary bed, there sat a most extraordinary toybox.");
+                float k = Ease(t / TTown);
+                game.SetCutsceneCamera(outside + new Vector3(Mathf.Sin(k * 1.2f) * 30f, -k * 14f, k * 18f), new Vector3(0f, 26f, 0f));
             }
-            else if (t < 9.5f)
+            else if (t < TBand)
             {
-                Caption(game, "The town band was practising for the big day.");
-                float k = Ease((t - 5f) / 4.5f);
+                // Down over the wall and into town.
+                Narrator.Card(null, null);
+                Caption(game, "Inside it lay Toybox Town, which was having the finest morning of its life. The Mayor was getting married.");
+                float k = Ease((t - TTown) / (TBand - TTown));
+                Vector3 from = outside + new Vector3(Mathf.Sin(1.2f) * 30f, -14f, 18f);
+                game.SetCutsceneCamera(Vector3.Lerp(from, overWall, k) + Vector3.up * Mathf.Sin(k * Mathf.PI) * 10f, Vector3.Lerp(new Vector3(0f, 26f, 0f), band + Vector3.up * 3f, k));
+            }
+            else if (t < TCrack)
+            {
+                Caption(game, "The town band had been practising for weeks. They had very nearly learned the tune.");
+                float k = Ease((t - TBand) / (TCrack - TBand));
                 game.SetCutsceneCamera(Vector3.Lerp(new Vector3(7f, 3.5f, -3f), new Vector3(-7f, 3.8f, -2f), k), band + new Vector3(0f, 2.2f, 0f));
             }
-            else if (t < 13.5f)
+            else if (t < TSnap)
             {
                 // The crack opens, and the Fray comes creeping out.
-                Caption(game, "But then the Fray crept in, through a crack in the lid!");
+                Caption(game, "But then, as things so often do at the worst possible moment, something came unstitched.");
                 if (Crack != null)
                 {
                     if (!Crack.gameObject.activeSelf) { Crack.gameObject.SetActive(true); Sfx.Play(SfxId.Unravel, 0.7f); }
-                    Crack.localScale = crackScale * UIKit.EaseOutBack(Mathf.Clamp01((t - 9.5f) / 0.7f));
+                    Crack.localScale = crackScale * UIKit.EaseOutBack(Mathf.Clamp01((t - TCrack) / 0.7f));
                 }
                 Vector3 above = band + new Vector3(0f, 7f, 0f);
                 blobHover = above;
                 Vector3 bp = CrackPos + Vector3.back * 2f;
-                if (t > 10.3f)
+                if (t > TCrack + 0.8f)
                 {
                     if (Blob != null && !Blob.gameObject.activeSelf)
                     {
                         Blob.gameObject.SetActive(true);
                         FxBurst.Spawn(FxBurst.Kind.Threads, CrackPos, SnarlKnot.FrayDark);
                     }
-                    float k = Ease((t - 10.3f) / 3.2f);
+                    float k = Ease((t - TCrack - 0.8f) / (TSnap - TCrack - 0.8f));
                     // A swooping curve down from the lid to over the bandstand.
                     Vector3 mid = new Vector3(14f, 30f, 45f);
                     bp = Vector3.Lerp(Vector3.Lerp(CrackPos + Vector3.back * 2f, mid, k), Vector3.Lerp(mid, above, k), k);
                     if (Blob != null) Blob.position = bp;
                 }
-                Vector3 camPos = Vector3.Lerp(new Vector3(-3f, 5f, -5f), new Vector3(0f, 6f, -9f), Ease((t - 9.5f) / 4f));
-                game.SetCutsceneCamera(camPos, Vector3.Lerp(CrackPos, bp, Mathf.Clamp01((t - 10.3f) / 2f)));
+                Vector3 camPos = Vector3.Lerp(new Vector3(-3f, 5f, -5f), new Vector3(0f, 6f, -9f), Ease((t - TCrack) / (TSnap - TCrack)));
+                game.SetCutsceneCamera(camPos, Vector3.Lerp(CrackPos, bp, Mathf.Clamp01((t - TCrack - 0.8f) / 2f)));
             }
-            else if (t < 17.5f)
+            else if (t < THill)
             {
-                if (Blob != null) Blob.position = blobHover + new Vector3(Mathf.Sin(t * 5f) * 0.4f, Mathf.Sin(t * 3.3f) * 0.3f, 0f);
-                if (!snapped && t > 14f) Snap(game);
-                if (t < 15.2f) Caption(game, "It snapped Pip's lute string and seized up Brassby's trumpet...");
-                else Caption(game, "...and blew poor Wisp the piper right up onto the weathervane!");
-                // The lute string flies off west to Spindle Hill.
+                // The Fray over the bandstand: the music stops.
+                Hover();
+                if (!snapped && t > TSnap + 0.5f) Snap(game);
+                Caption(game, "The Fray. It has never cared for music.");
+                game.SetCutsceneCamera(Vector3.Lerp(new Vector3(0f, 5.5f, -5.5f), new Vector3(1.5f, 6.5f, -7.5f), Ease((t - TSnap) / (THill - TSnap))), band + Vector3.up * 3.6f);
+            }
+            else if (t < TDye)
+            {
+                // Follow the lute string all the way to Spindle Hill.
+                Hover();
+                Caption(game, "It flung the lute's only string clean across town to the top of Spindle Hill...");
+                float k = Mathf.Clamp01((t - THill) / 3f);
+                Vector3 p = Vector3.Lerp(streakFrom, streakTo, Ease(k)) + Vector3.up * Mathf.Sin(k * Mathf.PI) * 16f;
                 if (Streak != null && Streak.gameObject.activeSelf)
                 {
-                    float k = Mathf.Clamp01((t - 14f) / 2.2f);
-                    Vector3 p = Vector3.Lerp(streakFrom, streakTo, k) + Vector3.up * Mathf.Sin(k * Mathf.PI) * 14f;
                     if (k > 0f) Streak.rotation = Quaternion.LookRotation((p - Streak.position).normalized + Vector3.forward * 0.001f);
                     Streak.position = p;
-                    if (k >= 1f) Streak.gameObject.SetActive(false);
+                    if (k >= 1f)
+                    {
+                        Streak.gameObject.SetActive(false);
+                        FxBurst.Spawn(FxBurst.Kind.Sparkle, streakTo, new Color(1f, 0.85f, 0.5f));
+                    }
                 }
-                // Wisp tumbles away south to the weathervane.
-                if (Director.Piper != null && Director.Piper.gameObject.activeSelf && t > 14.4f)
+                if (k >= 0.85f) Narrator.Place("Spindle Hill");
+                // The camera chases it, then settles looking up at where it came down.
+                Vector3 chase = p + new Vector3(9f, 4f, -11f);
+                Vector3 settle = hill + new Vector3(15f, 5f, -16f);
+                game.SetCutsceneCamera(Vector3.Lerp(chase, settle, Ease((k - 0.6f) / 0.4f)), Vector3.Lerp(p, hill, Ease((k - 0.6f) / 0.4f)));
+            }
+            else if (t < TVane)
+            {
+                // The Dye Works, where the cure for the trumpet is.
+                Hover();
+                Narrator.Place("The Dye Works");
+                Caption(game, "...gummed up the trumpet so thoroughly that only valve dew from the Dye Works will ever cure it...");
+                float k = Ease((t - TDye) / (TVane - TDye));
+                game.SetCutsceneCamera(dye + Vector3.Lerp(new Vector3(-20f, 13f, -22f), new Vector3(-12f, 9f, -19f), k), dye + new Vector3(0f, 5f, 0f));
+            }
+            else if (t < TKnot)
+            {
+                // Wisp is blown away south to the weathervane; the camera goes with him.
+                Hover();
+                Caption(game, "...and blew poor Wisp the piper up onto the weathervane, where he is being very brave about it.");
+                float k = Mathf.Clamp01((t - TVane - 0.3f) / 3f);
+                Vector3 look = wispTo;
+                if (Director.Piper != null && Director.Piper.gameObject.activeSelf && !wispGone)
                 {
-                    float k = Mathf.Clamp01((t - 14.4f) / 2.6f);
                     Vector3 p = Vector3.Lerp(wispFrom, wispTo, Ease(k)) + Vector3.up * Mathf.Sin(k * Mathf.PI) * 10f;
                     Director.Piper.transform.position = p;
                     Director.Piper.transform.rotation = Quaternion.Euler(t * 400f, t * 220f, 0f);
-                    if (k >= 1f && !wispGone)
+                    look = p;
+                    if (k >= 1f)
                     {
                         wispGone = true;
                         Director.Piper.gameObject.SetActive(false);
@@ -157,27 +215,30 @@ namespace Patchwork
                         FxBurst.Spawn(FxBurst.Kind.Puff, wispTo, Color.white);
                     }
                 }
-                Vector3 look = Director.Piper != null && Director.Piper.gameObject.activeSelf && t > 14.6f ? Director.Piper.transform.position : band + Vector3.up * 3f;
-                float c = Ease(Mathf.Clamp01((t - 14.8f) / 2.5f));
-                game.SetCutsceneCamera(Vector3.Lerp(new Vector3(0f, 5.5f, -5.5f), new Vector3(2f, 12f, -32f), c), look);
+                if (k >= 0.85f) Narrator.Place("The Weathervane");
+                else Narrator.Place(null);
+                Vector3 chase = look + new Vector3(-8f, 3f, 12f);
+                Vector3 settle = wispTo + new Vector3(-7f, 2.5f, 9f);
+                game.SetCutsceneCamera(Vector3.Lerp(chase, settle, Ease((k - 0.6f) / 0.4f)), look);
             }
-            else if (t < 22f)
+            else if (t < TCouple)
             {
-                if (t < 20f) Caption(game, "Then it tied itself in a knot round the clock tower...");
-                else Caption(game, "...and every toy it touched turned grey and broken.");
+                Narrator.Place(null);
+                if (t < TKnot + 2.4f) Caption(game, "Then it tied itself in a smug little knot around the clock tower...");
+                else Caption(game, "...and the colour drained out of everything it touched.");
                 Vector3 knotPos = Director.TowerKnot != null ? Director.TowerKnot.position : new Vector3(0f, 19f, 22.1f);
-                float k = Ease(Mathf.Clamp01((t - 17.5f) / 2f));
+                float k = Ease(Mathf.Clamp01((t - TKnot) / 2f));
                 if (Blob != null && Blob.gameObject.activeSelf)
                 {
                     Blob.position = Vector3.Lerp(blobHover, knotPos, k);
-                    if (t > 19.5f)
+                    if (t > TKnot + 2f)
                     {
-                        float s = 1f - Mathf.Clamp01((t - 19.5f) / 0.6f);
-                        Blob.localScale = Vector3.one * Mathf.Max(0.01f, s);
-                        if (s <= 0f) Blob.gameObject.SetActive(false);
+                        float sc = 1f - Mathf.Clamp01((t - TKnot - 2f) / 0.6f);
+                        Blob.localScale = Vector3.one * Mathf.Max(0.01f, sc);
+                        if (sc <= 0f) Blob.gameObject.SetActive(false);
                     }
                 }
-                if (!knotTied && t > 19.5f)
+                if (!knotTied && t > TKnot + 2f)
                 {
                     knotTied = true;
                     if (Director.TowerKnot != null) { Director.TowerKnot.gameObject.SetActive(true); Director.TowerKnot.localScale = Vector3.zero; }
@@ -187,17 +248,37 @@ namespace Patchwork
                     if (Director.SquareRegion != null) Director.SquareRegion.GrowFray();
                 }
                 if (knotTied && Director.TowerKnot != null)
-                    Director.TowerKnot.localScale = knotScale * UIKit.EaseOutBack(Mathf.Clamp01((t - 19.5f) / 0.8f));
-                game.SetCutsceneCamera(Vector3.Lerp(new Vector3(7f, 7f, -2f), new Vector3(4f, 9f, 6f), Ease((t - 17.5f) / 4.5f)), Vector3.Lerp(blobHover, knotPos, Mathf.Clamp01(k * 1.3f)));
+                    Director.TowerKnot.localScale = knotScale * UIKit.EaseOutBack(Mathf.Clamp01((t - TKnot - 2f) / 0.8f));
+                // Pulling back and up, so you see the grey spreading out over the town.
+                float pull = Ease((t - TKnot) / (TCouple - TKnot));
+                game.SetCutsceneCamera(Vector3.Lerp(new Vector3(7f, 7f, -2f), new Vector3(10f, 24f, -30f), pull), Vector3.Lerp(blobHover, knotPos, Mathf.Clamp01(k * 1.3f)));
             }
-            else if (t < 26.5f)
+            else if (t < TPatch)
             {
-                if (t < 24.2f) Caption(game, "No band means no music, and no music means no wedding!");
-                else Caption(game, "Talk to the toys, Patch. They'll tell you what the band needs.");
+                Caption(game, "No band, no music. No music, no wedding. It was all a dreadful pickle.");
                 Vector3 couple = (Director.MayorSpot + Director.BrideSpot) * 0.5f;
-                game.SetCutsceneCamera(Vector3.Lerp(couple + new Vector3(0f, 2.4f, -6f), couple + new Vector3(0f, 2.1f, -4.8f), Ease((t - 22f) / 4.5f)), couple + new Vector3(0f, 1.4f, 0f));
+                game.SetCutsceneCamera(Vector3.Lerp(couple + new Vector3(0f, 2.4f, -6f), couple + new Vector3(0f, 2.1f, -4.8f), Ease((t - TCouple) / (TPatch - TCouple))), couple + new Vector3(0f, 1.4f, 0f));
+            }
+            else if (t < TEnd)
+            {
+                // Patch, who has only just landed.
+                Narrator.Place("Landing Meadow");
+                Caption(game, "Fortunately, somebody small and woolly had just dropped in. Go and talk to the toys, Patch. They'll know what the band needs.");
+                Vector3 patch = game.Player.transform.position;
+                Vector3 fwd = game.Player.transform.forward;
+                float k = Ease((t - TPatch) / (TEnd - TPatch));
+                game.SetCutsceneCamera(patch + Quaternion.AngleAxis(Mathf.Lerp(150f, 180f, k), Vector3.up) * fwd * -Mathf.Lerp(9f, 6f, k) + Vector3.up * Mathf.Lerp(5f, 2.6f, k), patch + Vector3.up * 1.1f);
             }
             else Finish(game);
+        }
+
+        // When each part of the story starts, in seconds.
+        const float TTown = 5f, TBand = 10.5f, TCrack = 15.5f, TSnap = 19.5f, THill = 22f, TDye = 26.5f, TVane = 30.5f, TKnot = 35.5f, TCouple = 40.5f, TPatch = 44.5f, TEnd = 50f;
+
+        // The Fray hanging over the bandstand, twitching.
+        void Hover()
+        {
+            if (Blob != null) Blob.position = blobHover + new Vector3(Mathf.Sin(t * 5f) * 0.4f, Mathf.Sin(t * 3.3f) * 0.3f, 0f);
         }
 
         Vector3 Bandstand()
@@ -256,9 +337,12 @@ namespace Patchwork
             Director.ApplySavedState();
             GameState.SetHintSeen(SeenKey);
             game.CutsceneCaption = null;
+            LevelLook.SetMiniature(true);
+            Narrator.Card(null, null);
+            Narrator.Place(null);
             game.CutsceneSkipFill = 0f;
             game.EndCutscene();
-            game.ShowToast("Talk to the toys of Toybox Town to find out what the band needs!");
+            Narrator.Say("Three things lost, in three corners of town. I do hope you brought sensible shoes.");
         }
 
         static void Caption(PatchworkGame game, string text)

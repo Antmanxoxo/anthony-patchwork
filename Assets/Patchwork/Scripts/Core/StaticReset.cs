@@ -14,6 +14,7 @@ namespace Patchwork
             Haptics.ResetStatics();
             GameState.ResetStatics();
             LoadingScreen.ResetStatics();
+            Narrator.ResetStatics();
             TitleSequence.ResetStatics();
             LevelSelectMenu.ResetStatics();
             UseSpot.ResetStatics();

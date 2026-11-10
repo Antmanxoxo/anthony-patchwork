@@ -77,7 +77,13 @@ namespace Patchwork
 
         static void Prepare()
         {
-            if (spheres != null) return;
+            // Play starts without reloading scripts, so these can be left over from the last
+            // Play press with the shapes themselves already thrown away by Unity. Anything given
+            // a thrown-away shape draws nothing at all (that's how the whole Pod once vanished),
+            // so check the shapes are really still there, not just that we made them once.
+            if (spheres != null && capsules != null && cube != null && cylinder != null && hiCube != null
+                && spheres[0] != null && spheres[1] != null && spheres[2] != null
+                && capsules[0] != null && capsules[1] != null && capsules[2] != null) return;
             var a = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             var b = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             var cu = GameObject.CreatePrimitive(PrimitiveType.Cube);
