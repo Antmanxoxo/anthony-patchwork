@@ -1,5 +1,12 @@
 # Development Log
 
+## A dreamier Pod song
+- The song that plays while you hold the controller in the Pod is new: slow, floating and
+  dreamy (a lilting 3/4 in D major, 104 BPM, 32 bars, no drums). Harp ripples up and down
+  wide soft chords over a warm pad, the tune is on celesta and music box, a soft flute joins,
+  a glassy wavering voice sings the "far away" middle section over two borrowed chords, and
+  warm strings bring it home. Glockenspiel stars twinkle and bubbles drift up now and then.
+
 ## A livelier town and a new theme tune
 - New music for Toybox Town: a sweeping orchestral adventure theme in D major (132 BPM, 40
   bars). A twinkling harp-and-celesta intro, a main tune of big upward leaps over a falling
