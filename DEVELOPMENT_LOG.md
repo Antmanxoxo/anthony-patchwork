@@ -1,5 +1,17 @@
 # Development Log
 
+## Water and wind forms redesigned again, and hats that fit
+- Water form: a doll from Patch's own family, sewn out of water. A see-through jelly toy
+  with button eyes like Patch's, a seam of white stitches down its front and over its head,
+  a drip standing up on top, stubby arms and legs, and a tiny goldfish doing laps of its
+  tummy (faster when it runs). No more raincoat and wellies.
+- Wind form: a little whirlwind. A round cloud head rides on a twister of six soft rings,
+  wide at the top and narrowing to a point; each ring turns and sways a beat behind the one
+  above, the tip trails behind on the move, and in a glide it spins fast and spreads out.
+  Two stubby cloud arms hang from the top ring. No more scarf or loose hands.
+- Hats fit both of them: the hat now sits on top of each form's own head, tips with it, and
+  is sized to that head. The drip and the curl on top tuck away while a hat is on.
+
 ## The wind form is a cloud child
 - Wind form redesigned from a plain cloud into a floaty little cloud child whose body is
   only half there: a fluffy cloud head with a tuft blown up on top and the same face (it

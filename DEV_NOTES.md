@@ -320,14 +320,15 @@ Stuff I need to remember about how Patchwork is put together.
 - `LevelInfo.SunColor`, `AmbientSky/Side/Ground` (alpha 0 = work it out from the sky) and
   `ShadowStrength` set a level's lighting mood. The Pod's extras (space glow, motes, mouse)
   are in `PodDreams`.
-- Water form: built in `FormVisuals.BuildWater` (pivots `wHipL/R`, `wArmL/R`, `wBody`, `wHead`
-  under `bubble`, which is the whole-doll wobble pivot at the feet) and moved in
-  `AnimateWater`. It must stay under about 0.85 m to the top of the head: the collider is
-  0.8 m so it fits through grates.
-- Wind form: `FormVisuals.BuildWind` / `AnimateWind`. Everything hangs off `cloud` (the float
-  and glide pivot): `windTail` puffs, `windBody`, `windHead`, free-floating `windHand`s and the
-  `windScarf` segments, which are laid out fresh every frame from the neck. `windStream`
-  (0 still .. 1 gliding) blends the hanging pose into the flying one.
+- Water form: `FormVisuals.BuildWater` / `AnimateWater` (pivots `wHipL/R`, `wArmL/R`, `wBody`,
+  `wHead`, `wFish` under `bubble`, the whole-doll wobble pivot at the feet). Keep the top of
+  its head under about 0.8 m: the collider is 0.8 m so it fits through grates.
+- Wind form: `BuildWind` / `AnimateWind`. `windRing[0..5]` (tip to top, heights from `RingY`),
+  `windArm`, `windHead`, all under `cloud` (the float pivot). `windStream` is 0 still .. 1 gliding.
+- Hats: made for a head 0.6 m across with the hat's origin at the top of the head. Water and
+  Wind place it with `PlaceHatOnFormHead` using `WaterHeadRadius` / `WindHeadRadius`; if a head
+  changes size, change those constants. Things that stand up on a head go under
+  `waterTopper` / `windTopper` so `SetHat` can hide them.
 - Sounds from things out in the level that the player didn't cause go through
   `Sfx.PlayNear(id, pos, volume, range)` so they fade with distance (plain `Sfx.Play` is
   heard at full volume anywhere).

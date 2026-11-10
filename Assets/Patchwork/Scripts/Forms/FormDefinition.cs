@@ -64,7 +64,7 @@ namespace Patchwork
             {
                 Type = FormType.Water,
                 DisplayName = "Water Form",
-                Tagline = "A little water sprite in a raincoat and wellies. Slips through drain grates and rides blue fountains.",
+                Tagline = "A see-through jelly doll with a goldfish in its tummy. Slips through drain grates and rides blue fountains.",
                 AbilityHint = "Slip through blue drain grates. Step into blue fountains to ride them up.",
                 PrimaryColor = new Color(0.36f, 0.66f, 0.95f),
                 SecondaryColor = new Color(0.78f, 0.92f, 1f),
@@ -96,7 +96,7 @@ namespace Patchwork
             {
                 Type = FormType.Wind,
                 DisplayName = "Wind Form",
-                Tagline = "A floating cloud child with a long scarf. Glides, falls slowly and bursts forward on a gust.",
+                Tagline = "A little whirlwind with a cloud head. Glides, falls slowly and bursts forward on a gust.",
                 AbilityHint = "Hold Jump in the air to glide. Press Ability for a gust (once per jump). White updrafts lift you.",
                 PrimaryColor = new Color(0.86f, 0.95f, 0.97f),
                 SecondaryColor = new Color(0.55f, 0.85f, 0.8f),
