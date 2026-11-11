@@ -318,10 +318,10 @@ namespace Patchwork
         readonly Dictionary<FrayCreature, float> lastTime = new Dictionary<FrayCreature, float>();
         int mask;
 
-        public static void ResetStatics() { Instance = null; }
+        public static void ResetStatics() { Instance = null; MusicPlayer.FrayDread = 0f; }
 
         void Awake() { Instance = this; }
-        void OnDestroy() { if (Instance == this) Instance = null; LevelLook.SetDrain(0f); }
+        void OnDestroy() { if (Instance == this) Instance = null; LevelLook.SetDrain(0f); MusicPlayer.FrayDread = 0f; }
 
         void Start()
         {
@@ -415,12 +415,13 @@ namespace Patchwork
                     if (knot == null || knot.IsPopped || !knot.isActiveAndEnabled) continue;
                     nearest = Mathf.Min(nearest, (knot.transform.position - pp).magnitude + 1.5f);
                 }
-                float want = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(4.5f, 17f, nearest));
+                float want = 0.75f * (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(3f, 13f, nearest)));
                 drainTarget = game.Mode == UIMode.Gameplay || game.Mode == UIMode.FormWheel ? want : 0f;
             }
             drain = Mathf.MoveTowards(drain, drainTarget, dt * 1.4f);
             flash = Mathf.MoveTowards(flash, 0f, dt * 1.6f);
             LevelLook.SetDrain(drain, flash);
+            MusicPlayer.FrayDread = drain;
 
             for (int i = 0; i < Count; i++)
             {

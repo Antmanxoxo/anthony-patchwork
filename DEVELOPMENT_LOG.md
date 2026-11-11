@@ -1,5 +1,20 @@
 # Development Log
 
+## The Unpicker's entrance, gentler grey, and a few fixes
+- The opening now gives the Unpicker his own shot: the camera goes up to the crack in the lid
+  and pushes in slowly as he lowers himself through, upside down, lit violet so he stands
+  out, before the Fray pours out past him. (Before, the camera never looked at him.) The
+  opening is three seconds longer.
+- The grey near the Fray is much gentler: at its strongest it takes away about half the
+  colour (it used to drain nearly all of it), and only when they're quite close.
+- Near the Fray the music also goes a little muffled and quieter, easing back as you move away.
+- Two hay bales of yarn on the way to the Whispering Wood had ended up in its gate at the top of
+  the ravine steps, blocking it: moved clear.
+- A hedge south of town ran out over the canal: it stops at the railing now.
+- Toy animals no longer walk off edges onto thin air: they check there's ground under their
+  next step (so they won't wander over the ravine or the canal), and one that does end up
+  with nothing under it goes back.
+
 ## The Fray, redesigned: things from the Underside, and the Unpicker
 - New story for the Fray: it isn't from Patch's world. It comes from the Underside, the back
   of the cloth, where nothing has ever had a colour. Its creatures eat colour.

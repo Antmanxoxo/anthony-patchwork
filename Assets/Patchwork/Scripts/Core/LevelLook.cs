@@ -20,9 +20,11 @@ namespace Patchwork
         {
             if (colours == null) return;
             amount = Mathf.Clamp01(amount);
-            colours.saturation.Override(Mathf.Lerp(baseSaturation, -82f, amount * 0.9f) + flash * 22f);
-            colours.contrast.Override(Mathf.Lerp(baseContrast, baseContrast - 12f, amount));
-            colours.postExposure.Override(0.1f - amount * 0.18f + flash * 0.08f);
+            // (Only part of the way to grey even at its strongest: you should still be able to
+            // tell what colour things are, just that it's being sucked out of them.)
+            colours.saturation.Override(Mathf.Lerp(baseSaturation, -38f, amount) + flash * 18f);
+            colours.contrast.Override(Mathf.Lerp(baseContrast, baseContrast - 5f, amount));
+            colours.postExposure.Override(0.1f - amount * 0.07f + flash * 0.06f);
         }
 
         // Switch the soft-focus distance off for a while (a cutscene that shows the whole town

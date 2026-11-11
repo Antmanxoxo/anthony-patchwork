@@ -55,6 +55,11 @@ namespace Patchwork
             instance.hushTime = 0f;
         }
 
+        // Creatures of the Fray close by (0 none, 1 right on top of Patch): the music goes a
+        // little muffled and quieter, as if the colour were draining out of it too.
+        public static float FrayDread;
+        float dread;
+
         // Paused / Satchel: quieter and "behind glass". Form Wheel: muffled. Normal: clear.
         public static void SetMuffle(float cutoffHz, float volumeScale)
         {
@@ -198,8 +203,14 @@ namespace Patchwork
             master = Mathf.MoveTowards(master, target, udt * 0.6f);
             // The forest's spooky song plays over everything else, so the rest dips under it.
             float spookyDuck = UpdateSpookyTrack(udt);
-            float realMaster = master;
+            float realMaster = master, realCutoff = cutoff;
             master *= spookyDuck;
+            dread = Mathf.MoveTowards(dread, Mathf.Clamp01(FrayDread), udt * 0.8f);
+            if (dread > 0.001f)
+            {
+                cutoff = Mathf.Min(cutoff, 22000f * Mathf.Pow(0.09f, dread));   // down to about 2 kHz at most
+                master *= 1f - 0.22f * dread;
+            }
             // Level soundtracks (like Toybox Town) crossfade with the Skiff's music.
             float skiff = UpdateLevelTrack(udt) * UpdatePodTrack(udt);
 
@@ -217,6 +228,7 @@ namespace Patchwork
                 filters[i].cutoffFrequency = cutoff;
             }
             master = realMaster;
+            cutoff = realCutoff;
         }
 
         static int StemFor(FormType f)

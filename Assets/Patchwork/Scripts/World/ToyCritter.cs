@@ -85,8 +85,11 @@ namespace Patchwork
             {
                 Vector3 dir = to.normalized;
                 float spd = Speed * (fleeing > 0f ? 2.3f : 1f);
-                // Bumped into something? Go somewhere else.
-                if (Physics.SphereCast(me + Vector3.up * 0.35f, 0.25f, dir, out RaycastHit hit, 0.7f, mask, QueryTriggerInteraction.Ignore))
+                // Bumped into something, or about to walk off an edge (a ravine, the canal, a
+                // drop)? Go somewhere else. They only ever step where there's ground close under
+                // the next step.
+                if (Physics.SphereCast(me + Vector3.up * 0.35f, 0.25f, dir, out RaycastHit hit, 0.7f, mask, QueryTriggerInteraction.Ignore)
+                    || !GroundAhead(me + dir * 0.6f))
                 {
                     PickTarget();
                 }
@@ -104,11 +107,25 @@ namespace Patchwork
                 if (g.point.y - groundY < 0.5f) groundY = Mathf.Lerp(groundY, g.point.y, 1f - Mathf.Exp(-12f * dt));
                 else PickTarget();   // a step too high for a little toy
             }
+            else
+            {
+                // Nothing underneath at all (it was pushed or fled over an edge): back to where
+                // it was standing last.
+                me = transform.position;
+                PickTarget();
+            }
             me.y = groundY;
             transform.position = me;
             transform.rotation = Quaternion.Euler(0f, yaw, 0f);
 
             Animate(moving, dt);
+        }
+
+        bool GroundAhead(Vector3 p)
+        {
+            RaycastHit g;
+            if (!Physics.Raycast(p + Vector3.up * 1.5f, Vector3.down, out g, 2.4f, mask, QueryTriggerInteraction.Ignore)) return false;
+            return g.point.y > groundY - 0.6f && g.normal.y > 0.6f;
         }
 
         void PickTarget()

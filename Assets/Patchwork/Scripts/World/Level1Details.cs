@@ -102,6 +102,8 @@ namespace Patchwork
             var master = kit.Group("TheUnpicker_Intro", new Vector3(3f, 40.8f, Half - 1.2f));
             master.rotation = Quaternion.Euler(0f, 180f, 180f);   // hanging upside down, facing the town
             FrayBodies.Unpicker(master);
+            AddGlow(master, SnarlKnot.FrayGlow, 26f, 2.5f);   // a sickly violet light, so he can be seen against the lid
+            master.Find("Glow").localPosition = new Vector3(0f, 3.4f, 1.2f);   // (down by his coat, in front of him)
             master.gameObject.SetActive(false);
             intro.Master = master;
 
@@ -786,7 +788,7 @@ namespace Patchwork
             for (int i = 0; i < corners.Length; i++) PomTree(kit, corners[i], 4.8f + (i % 2) * 0.8f, leaves[(i + 1) % leaves.Length]);
             // South end: hedged gardens behind the rooftop terraces.
             Hedge(kit, new Vector3(-34f, 0f, -66f), new Vector3(-22f, 0f, -66f));
-            Hedge(kit, new Vector3(22f, 0f, -66f), new Vector3(34f, 0f, -66f));
+            Hedge(kit, new Vector3(22f, 0f, -66f), new Vector3(31.2f, 0f, -66f));   // (stops short of the canal railing)
             for (int i = 0; i < 4; i++) PomTree(kit, new Vector3(-30f + i * 20f, 0f, -84f), 5f, leaves[i % leaves.Length]);
         }
 
@@ -941,8 +943,10 @@ namespace Patchwork
             path(new Vector3(-53f, 0f, 1.5f), new Vector3(-65f, 0f, 1.5f));
             stones.Build(kit.Group("HillPath", Vector3.zero), "Stones", PatchworkAssets.Cobble(new Color(0.82f, 0.8f, 0.76f)), false);
             // Hay bales of yarn and a wheelbarrow.
-            kit.YarnBall(new Vector3(-58f, 0f, -26f), 1.2f, new Color(0.95f, 0.82f, 0.45f));
-            kit.YarnBall(new Vector3(-56.6f, 0f, -27.4f), 0.9f, new Color(0.95f, 0.82f, 0.45f));
+            // (Well clear of the Whispering Wood's gate at the top of the ravine steps: they used
+            // to sit right in it and block the way.)
+            kit.YarnBall(new Vector3(-61f, 0f, -21.5f), 1.2f, new Color(0.95f, 0.82f, 0.45f));
+            kit.YarnBall(new Vector3(-62.8f, 0f, -23f), 0.9f, new Color(0.95f, 0.82f, 0.45f));
             ClearGrass(new Vector3(-58f, 0f, -18f), 2f);
             Barrel(kit, new Vector3(-68.8f, 0f, -7.2f), 0f);
             FlowerPot(kit, new Vector3(-62.5f, 0f, -7.4f), LevelKit.Palette.Lavender);
