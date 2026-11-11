@@ -393,6 +393,9 @@ namespace Patchwork
                 var c = new GameObject("Cannon").transform;
                 c.SetParent(cannons, false);
                 c.position = arch + new Vector3(s * 4.4f, 0.06f, -2.8f);
+                var cb = c.gameObject.AddComponent<BoxCollider>();   // solid (it's only there after the wedding)
+                cb.center = new Vector3(0f, 0.6f, 0f);
+                cb.size = new Vector3(1.1f, 1.2f, 0.9f);
                 kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.3f, 0f), new Vector3(0.7f, 0.08f, 0.7f), PatchworkAssets.Wood(TownKit.DarkWood), new Vector3(0f, 0f, 90f), c);
                 var barrel = kit.Deco(PrimitiveType.Cylinder, new Vector3(-s * 0.15f, 0.75f, 0f), new Vector3(0.5f, 0.6f, 0.5f), stripes, new Vector3(0f, 0f, s * 35f), c);
                 kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.98f, 0f), new Vector3(1.16f, 0.06f, 1.16f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f), default(Vector3), barrel);

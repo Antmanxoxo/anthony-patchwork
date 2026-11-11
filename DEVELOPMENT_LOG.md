@@ -1,5 +1,24 @@
 # Development Log
 
+## Polish: invisible walls gone for good, and collecting feels better
+- Found the cause of the invisible walls: lots of props aren't solid themselves but have an
+  invisible box beside them. When the level tidy-up nudged a prop (or took out a crowded
+  tree), its box stayed behind. Now the box moves with its prop (or goes with its tree), and
+  any prop-sized box left with nothing visible there is taken away when the level is built.
+- The level check (Logs/PatchworkAudit_Level1.txt) now lists any invisible walls it finds.
+- Took out the two lone strips of hedge at the south end of Chimney Lane.
+- The confetti cannons at the wedding are solid now.
+- Collecting:
+  - Every bubble sends a spark arcing up into the score counter.
+  - The chain shows under the counter with a timer bar running down, so you can see how
+    long you've got. Chains of 10, 25, 50 and 100 get a shout ("NICE!", "GREAT CHAIN!",
+    "STITCHTASTIC!", "UNSTOPPABLE!") and a bonus.
+  - Collect every bubble in a trail or ring for a "PERFECT TRAIL!" / "PERFECT RING!" bonus.
+  - Gold bubbles are pinatas: they burst into a shower of little bubbles.
+  - A new golden button is a proper moment: everything pauses for a heartbeat, the button
+    leaps up over Patch's head spinning, a fanfare plays, 1000 points, and a card shows
+    how many of the level's buttons you've found. Heartstrings get a card too.
+
 ## The Unpicker's entrance, gentler grey, and a few fixes
 - The opening now gives the Unpicker his own shot: the camera goes up to the crack in the lid
   and pushes in slowly as he lowers himself through, upside down, lit violet so he stands

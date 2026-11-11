@@ -64,23 +64,28 @@ namespace Patchwork
             Trail(kit, new Vector3(66.2f, 8.9f, 47f), new Vector3(69.8f, 8.9f, 47f), 4, -1f, 50);
         }
 
+        // A line of bubbles (collect every one of them for a "perfect trail" bonus).
         static void Trail(LevelKit kit, Vector3 a, Vector3 b, int n, float lift = -1f, int value = 10)
         {
+            ScoreBubbles.BeginSet(kit);
             for (int i = 0; i < n; i++)
             {
                 Vector3 p = Vector3.Lerp(a, b, n == 1 ? 0.5f : i / (float)(n - 1));
                 if (lift >= 0f) p = Snap(p, lift);
                 ScoreBubbles.Place(kit, p, value);
             }
+            ScoreBubbles.EndSet();
         }
 
         static void Ring(LevelKit kit, Vector3 c, float radius, int n, float height, int value = 10)
         {
+            ScoreBubbles.BeginSet(kit);
             for (int i = 0; i < n; i++)
             {
                 float a = i / (float)n * Mathf.PI * 2f;
                 ScoreBubbles.Place(kit, c + new Vector3(Mathf.Cos(a) * radius, height, Mathf.Sin(a) * radius), value);
             }
+            ScoreBubbles.EndSet();
         }
 
         // Drops a point onto whatever's below it (a roof, a bridge) and lifts it a little.

@@ -48,6 +48,7 @@ namespace Patchwork
             WalkThrough(sb, renderers);
             Flicker(sb, renderers);
             Clipping(sb, game);
+            InvisibleWalls(sb, renderers);
 
             string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "../Logs"));
             Directory.CreateDirectory(dir);
@@ -296,6 +297,43 @@ namespace Patchwork
                     sb.AppendLine(PathOf(mf.transform) + " at " + V(b.center) + " sticks out " + worst.ToString("0.00") + " m");
             }
             sb.AppendLine("count " + w);
+        }
+
+        // Solid things with nothing to see where they are: the invisible boxes put beside props
+        // (TownKit.Solid) whose prop has gone or moved away. Each one is an invisible wall.
+        static void InvisibleWalls(StringBuilder sb, List<MeshRenderer> renderers)
+        {
+            sb.AppendLine("== Invisible walls");
+            int n = 0;
+            foreach (var col in Object.FindObjectsByType<Collider>())
+            {
+                if (col.isTrigger || !col.enabled || !col.gameObject.activeInHierarchy) continue;
+                if (col.GetComponent<Renderer>() != null || col.GetComponentInChildren<Renderer>() != null) continue;
+                if (col.GetComponentInParent<PatchworkPlayer>() != null) continue;
+                var b = col.bounds;
+                if (b.size.x > 12f || b.size.z > 12f || b.size.y < 0.3f) continue;   // floors and big level walls
+                var test = b;
+                test.Expand(0.15f);
+                bool seen = false;
+                foreach (var r in renderers)
+                {
+                    if (!r.bounds.Intersects(test)) continue;
+                    if (r.bounds.size.x > 20f && r.bounds.size.z > 20f) continue;          // the ground doesn't count
+                    seen = true;
+                    break;
+                }
+                if (seen) continue;
+                n++;
+                if (n <= 60) sb.AppendLine("   " + NameOf(col.transform) + " at " + b.center.ToString("F1") + " size " + b.size.ToString("F1"));
+            }
+            sb.AppendLine("count " + n);
+        }
+
+        static string NameOf(Transform t)
+        {
+            string s = t.name;
+            for (int i = 0; i < 2 && t.parent != null; i++) { t = t.parent; s = t.name + "/" + s; }
+            return s;
         }
 
         static void Gather(Transform t, List<KeyValuePair<Transform, Bounds>> props, int depth)

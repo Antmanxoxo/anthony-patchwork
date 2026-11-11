@@ -786,9 +786,8 @@ namespace Patchwork
             for (int i = 0; i < promenade.Length; i++) PomTree(kit, new Vector3(48.6f, 0f, promenade[i]), 4.5f + (i % 3) * 0.6f, leaves[i % leaves.Length]);
             Vector3[] corners = { new Vector3(-20f, 0f, 21f), new Vector3(20f, 0f, 21f), new Vector3(-20f, 0f, -21f), new Vector3(20f, 0f, -21f), new Vector3(-30f, 0f, 26f), new Vector3(29f, 0f, 26f), new Vector3(-30f, 0f, -28f), new Vector3(29f, 0f, -28f) };
             for (int i = 0; i < corners.Length; i++) PomTree(kit, corners[i], 4.8f + (i % 2) * 0.8f, leaves[(i + 1) % leaves.Length]);
-            // South end: hedged gardens behind the rooftop terraces.
-            Hedge(kit, new Vector3(-34f, 0f, -66f), new Vector3(-22f, 0f, -66f));
-            Hedge(kit, new Vector3(22f, 0f, -66f), new Vector3(31.2f, 0f, -66f));   // (stops short of the canal railing)
+            // (Two lone strips of hedge used to stand at the south end of Chimney Lane, belonging
+            // to nothing: taken out.)
             for (int i = 0; i < 4; i++) PomTree(kit, new Vector3(-30f + i * 20f, 0f, -84f), 5f, leaves[i % leaves.Length]);
         }
 

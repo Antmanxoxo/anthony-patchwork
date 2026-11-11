@@ -83,6 +83,13 @@ namespace Patchwork
             FxBurst.Spawn(FxBurst.Kind.Scraps, transform.position, new Color(1f, 0.55f, 0.65f));
             visual.gameObject.SetActive(false);
             if (glow != null) glow.enabled = false;
+            var game = player.Game;
+            if (game != null && game.Level != null && game.Level.HeartstringIds.Count > 0)
+            {
+                int n = game.Level.HeartstringCount(), all = game.Level.HeartstringIds.Count;
+                PatchworkHUD.ShowGet("HEARTSTRING!", n >= all ? "Every Heartstring in " + game.Level.Title + " is mended!" : n + " of " + all + " mended", new Color(1f, 0.55f, 0.65f), 1);
+                game.HitStop(0.1f);
+            }
             if (Level1Director.Instance != null) Level1Director.Instance.OnHeartstring(this);
         }
     }

@@ -17,13 +17,24 @@ namespace Patchwork
         internal Transform Visual;
         internal Color Tint;
         internal bool Pulled;
+        internal int Set = -1;     // the trail or ring it belongs to (-1: none)
 
         protected override void OnPlayerEnter(PatchworkPlayer player)
         {
             var game = PatchworkGame.Instance;
-            if (game != null && game.Score != null) game.Score.AddChained(Value, transform.position);
-            if (ScoreBubbles.Instance != null) ScoreBubbles.Instance.PopAt(transform.position, Tint);
+            Vector3 at = transform.position;
+            if (game != null && game.Score != null) game.Score.AddChained(Value, at);
+            var all = ScoreBubbles.Instance;
+            if (all != null) all.PopAt(at, Tint);
             gameObject.SetActive(false);
+            // A gold bubble is a pinata: it bursts into a shower of little ones.
+            if (Value >= 100 && !FromBurst && all != null)
+            {
+                all.Burst(at, 6);
+                FxBurst.Spawn(FxBurst.Kind.Sparkle, at, new Color(1f, 0.85f, 0.4f));
+                Sfx.Play(SfxId.Pop, 0.5f);
+            }
+            if (Set >= 0 && all != null) all.SetPopped(Set, at);
         }
     }
 
@@ -42,6 +53,36 @@ namespace Patchwork
         LevelKit kit;
 
         const float MagnetRadius = 2.6f;
+
+        // Trails and rings: bubbles placed between BeginSet and EndSet belong together, and
+        // getting every one of them pays a bonus (a "perfect trail").
+        static int placingSet = -1;
+        readonly List<int> setSize = new List<int>(), setLeft = new List<int>();
+
+        public static void BeginSet(LevelKit kit)
+        {
+            var m = Ensure(kit);
+            placingSet = m.setSize.Count;
+            m.setSize.Add(0);
+            m.setLeft.Add(0);
+        }
+
+        public static void EndSet() { placingSet = -1; }
+
+        public void SetPopped(int set, Vector3 at)
+        {
+            if (set < 0 || set >= setLeft.Count || setLeft[set] <= 0) return;
+            setLeft[set]--;
+            if (setLeft[set] > 0 || setSize[set] < 4) return;
+            int bonus = setSize[set] * 25;
+            ScoreKeeper.Bonus(bonus, at + Vector3.up * 0.8f);
+            var game = PatchworkGame.Instance;
+            if (game != null && game.Score != null) game.Score.Shout(setSize[set] >= 10 ? "PERFECT RING!" : "PERFECT TRAIL!", new Color(0.55f, 0.9f, 1f));
+            FxBurst.Spawn(FxBurst.Kind.Sparkle, at, new Color(0.7f, 0.9f, 1f));
+            FxBurst.Spawn(FxBurst.Kind.Pompoms, at, new Color(0.6f, 0.85f, 1f));
+            Sfx.PlayPitched(SfxId.Chime, 0.4f, 1.5f);
+            Sfx.PlayPitched(SfxId.Chime, 0.3f, 2f);
+        }
 
         public static ScoreBubbles Ensure(LevelKit kit)
         {
@@ -77,6 +118,12 @@ namespace Patchwork
             var m = Ensure(kit);
             var b = m.Make(pos, value, false);
             kit.Info.ScorePossible += value;
+            if (placingSet >= 0 && placingSet < m.setSize.Count)
+            {
+                b.Set = placingSet;
+                m.setSize[placingSet]++;
+                m.setLeft[placingSet]++;
+            }
             return b;
         }
 
@@ -247,6 +294,7 @@ namespace Patchwork
                     else
                     {
                         Dropped++;
+                        if (s.Set >= 0 && s.Set < Instance.setLeft.Count) { Instance.setLeft[s.Set]--; Instance.setSize[s.Set]--; }
                         Note("bubble dropped", s.Home, s.Home);
                         kit.Info.ScorePossible -= s.Value;
                         s.gameObject.SetActive(false);

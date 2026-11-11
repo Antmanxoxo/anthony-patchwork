@@ -55,10 +55,63 @@ namespace Patchwork
             bool isNew = !GameState.IsCollected(Id);
             GameState.SetCollected(Id);
             Sfx.PlayPickup(SfxId.Collect, 0.8f);
-            if (isNew) Sfx.Voice(SfxId.VoiceYay, player.Forms.Current, 0.5f);
             FxBurst.Spawn(FxBurst.Kind.Scraps, transform.position, new Color(1f, 0.82f, 0.25f));
-            player.Game.ShowToast(isNew ? "Golden button found!" : "Button already in your satchel.");
+            var game = player.Game;
+            if (!isNew)
+            {
+                game.ShowToast("Button already in your satchel.");
+                gameObject.SetActive(false);
+                return;
+            }
+            // A proper moment for a proper find: everything holds still for a heartbeat, the
+            // button leaps up over Patch's head spinning and shining, then bursts, and a card
+            // says how many of the level's buttons that makes.
+            Sfx.Voice(SfxId.VoiceYay, player.Forms.Current, 0.5f);
+            Sfx.Play(SfxId.PrizeFanfare, 0.55f);
+            game.HitStop(0.12f);
+            if (game.CameraRig != null) game.CameraRig.Kick(0.15f);
+            Haptics.Pulse(0.4f, 0.6f, 0.3f);
+            ScoreKeeper.Bonus(1000, transform.position + Vector3.up);
+            int found = game.Level.CollectedCount(), total = game.Level.CollectibleIds.Count;
+            PatchworkHUD.ShowGet("GOLDEN BUTTON!", found >= total ? "That's every golden button in " + game.Level.Title + "!" : found + " of " + total + " found in " + game.Level.Title,
+                new Color(1f, 0.78f, 0.25f), 0);
+            if (visual != null)
+            {
+                visual.SetParent(null, true);
+                var fly = visual.gameObject.AddComponent<PrizeLeap>();
+                fly.Over = player.transform;
+            }
             gameObject.SetActive(false);
+        }
+    }
+
+    // Something just collected leaping up over Patch's head: up, a spin and a grow, a hold,
+    // then a burst of sparkles and it's gone.
+    public class PrizeLeap : MonoBehaviour
+    {
+        public Transform Over;
+        Vector3 from, scale;
+        float t;
+
+        void Start()
+        {
+            from = transform.position;
+            scale = transform.localScale;
+        }
+
+        void Update()
+        {
+            t += Time.unscaledDeltaTime;
+            Vector3 top = Over != null ? Over.position + Vector3.up * 2.6f : from + Vector3.up * 2f;
+            float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / 0.35f));
+            transform.position = Vector3.Lerp(from, top, k) + Vector3.up * Mathf.Sin(t * 4f) * 0.08f;
+            transform.rotation = Quaternion.Euler(0f, t * 540f * Mathf.Max(0.25f, 1f - t), 0f);
+            transform.localScale = scale * (1f + UIKit.EaseOutBack(Mathf.Clamp01(t / 0.35f)) * 0.5f);
+            if (t < 1.2f) return;
+            FxBurst.Spawn(FxBurst.Kind.Sparkle, transform.position, new Color(1f, 0.85f, 0.4f));
+            FxBurst.Spawn(FxBurst.Kind.Pompoms, transform.position, new Color(1f, 0.8f, 0.3f));
+            Sfx.Play(SfxId.Pop, 0.4f);
+            Destroy(gameObject);
         }
     }
 }

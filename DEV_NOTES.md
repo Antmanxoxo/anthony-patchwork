@@ -418,6 +418,17 @@ Stuff I need to remember about how Patchwork is put together.
 - The creature designs are original. The museum pieces were inspiration for the feel only:
   don't copy a particular sculpture.
 
+## Invisible boxes and collecting
+- `TownKit.Solid` boxes belong to whatever prop is around them. `Declutter` moves them with
+  the prop, disables them with a removed tree, and switches off any prop-sized one (up to 6 m)
+  with nothing visible where it is. A box that's meant to be invisible and alone must be
+  bigger than 6 m or not be named "Solid".
+- Score bubbles: wrap a line or ring in `ScoreBubbles.BeginSet(kit)` / `EndSet()` to make it
+  a set (4+ bubbles pays a "perfect" bonus). `Level1Fun.Trail` and `Ring` already do.
+- `ScoreKeeper.Sparks`, `Shout(words, colour)`, `ChainLeft`; the HUD draws them.
+- `PatchworkHUD.ShowGet(title, line, colour, icon)` shows the big "got it" card (icon 0 a
+  button, 1 a heart). `PrizeLeap` makes a picked-up thing leap over Patch's head.
+
 ## Habits
 - Test every change with Play and check the Console.
 - Keep it to C# 9 and older Unity APIs so it compiles everywhere.

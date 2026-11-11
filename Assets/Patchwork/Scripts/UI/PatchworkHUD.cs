@@ -24,6 +24,93 @@ namespace Patchwork
         int chipKind = -1;
         float chipTimer, chipPop;
 
+        // The "you got something!" card: a big find (a golden button, a Heartstring).
+        static string getTitle, getSub;
+        static Color getColor;
+        static int getIcon;
+        static float getTime = -1f;
+
+        public static void ShowGet(string title, string sub, Color accent, int icon)
+        {
+            getTitle = title;
+            getSub = sub;
+            getColor = accent;
+            getIcon = icon;
+            getTime = 0f;
+        }
+
+        public static void ResetStatics() { getTime = -1f; }
+
+        void DrawGetCard()
+        {
+            if (getTime < 0f) return;
+            getTime += Time.unscaledDeltaTime;
+            const float Life = 3.4f;
+            if (getTime > Life) { getTime = -1f; return; }
+            float tin = UIKit.EaseOutBack(Mathf.Clamp01(getTime / 0.4f));
+            float tout = Mathf.Clamp01((getTime - (Life - 0.4f)) / 0.4f);
+            float w = 600f;
+            var r = new Rect((UIKit.Width - w) * 0.5f, 120f - (1f - tin) * 260f - tout * 260f, w, 140f);
+            UIKit.Panel(r, new Color(1f, 0.97f, 0.9f, 0.97f), new Color(getColor.r, getColor.g, getColor.b, 0.95f), 24f);
+            Vector2 c = new Vector2(r.x + 80f, r.center.y);
+            // Rays turning slowly behind the icon.
+            for (int i = 0; i < 8; i++)
+            {
+                float a = i * 45f + getTime * 40f;
+                var save = GUI.matrix;
+                GUI.matrix = save * Matrix4x4.TRS(c, Quaternion.Euler(0f, 0f, a), Vector3.one) * Matrix4x4.TRS(-c, Quaternion.identity, Vector3.one);
+                UIKit.Fill(new Rect(c.x - 7f, c.y - 62f, 14f, 50f), new Color(getColor.r, getColor.g, getColor.b, 0.35f), 7f);
+                GUI.matrix = save;
+            }
+            UIKit.Circle(c, 92f, new Color(getColor.r, getColor.g, getColor.b, 0.35f));
+            float spin = Mathf.Sin(getTime * 5f) * 12f * Mathf.Clamp01(1.2f - getTime);
+            if (getIcon == 1) UIKit.Heart(c, 74f * (1f + Mathf.Sin(getTime * 6f) * 0.06f), new Color(1f, 0.72f, 0.3f));
+            else UIKit.IconTransformed(new Rect(c.x - 40f, c.y - 40f, 80f, 80f), PatchworkAssets.IconButton, Color.white, spin, 1f + Mathf.Sin(getTime * 3f) * 0.04f);
+            var ink = UIKit.Ink;
+            UIKit.Label(new Rect(r.x + 150f, r.y + 22f, w - 170f, 50f), getTitle, UIKit.Style(36, true, TextAnchor.MiddleLeft, Color.Lerp(getColor, ink, 0.35f)));
+            UIKit.Label(new Rect(r.x + 150f, r.y + 76f, w - 170f, 40f), getSub, UIKit.Style(21, false, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.8f)));
+        }
+
+        // Sparks flying into the score counter, and the big shout for a long chain.
+        Vector2 ScoreTarget() { return new Vector2(UIKit.Width - 270f - 28f + 40f, 24f + 38f); }
+
+        void DrawSparks()
+        {
+            var s = Game.Score;
+            if (s == null || Game.CameraRig == null || s.Sparks.Count == 0) return;
+            var cam = Game.CameraRig.Cam;
+            Vector2 to = ScoreTarget();
+            foreach (var sp in s.Sparks)
+            {
+                Vector3 p = cam.WorldToScreenPoint(sp.World);
+                if (p.z <= 0f) continue;
+                Vector2 from = new Vector2(p.x / UIKit.Scale, (Screen.height - p.y) / UIKit.Scale);
+                float k = Mathf.Clamp01(sp.Age / ScoreKeeper.SparkTime);
+                float e = k * k * (3f - 2f * k);
+                // An arc: up and over into the counter.
+                Vector2 mid = Vector2.Lerp(from, to, 0.35f) + Vector2.down * 140f;
+                Vector2 at = Vector2.Lerp(Vector2.Lerp(from, mid, e), Vector2.Lerp(mid, to, e), e);
+                float size = Mathf.Lerp(22f, 12f, e);
+                UIKit.Circle(at, size * 1.8f, new Color(sp.Color.r, sp.Color.g, sp.Color.b, 0.3f));
+                UIKit.Circle(at, size, sp.Color);
+                UIKit.Circle(at + new Vector2(-size * 0.18f, -size * 0.18f), size * 0.35f, new Color(1f, 1f, 1f, 0.9f));
+            }
+        }
+
+        void DrawCallout()
+        {
+            var s = Game.Score;
+            if (s == null || s.Callout == null) return;
+            float age = s.CalloutAge;
+            float grow = UIKit.EaseOutBack(Mathf.Clamp01(age / 0.25f));
+            float a = Mathf.Clamp01((1.6f - age) / 0.3f);
+            int size = Mathf.RoundToInt(58f * Mathf.Max(0.05f, grow));
+            float wob = Mathf.Sin(age * 14f) * 3f * Mathf.Clamp01(1f - age);
+            var c = s.CalloutColor;
+            var r = new Rect(0f, UIKit.Height * 0.22f + wob - age * 20f, UIKit.Width, 80f);
+            UIKit.Label(r, s.Callout, UIKit.Style(size, true, TextAnchor.MiddleCenter, new Color(c.r, c.g, c.b, a)), true);
+        }
+
         void UpdateVisibility(float dt)
         {
             var level = Game.Level;
@@ -229,7 +316,10 @@ namespace Patchwork
                 DrawGrabPrompt(kb);
                 if (scoreA > 0.001f) Shifted((1f - UIKit.EaseOutCubic(scoreA)) * 340f, 0f, DrawScore);
                 DrawPopups();
+                DrawSparks();
+                DrawCallout();
                 DrawPrizeCard();
+                if (Game.PrizeTimer <= 0f) DrawGetCard();
                 DrawToast();
                 DrawTitle();
                 DrawRaceTimer();
@@ -756,6 +846,14 @@ namespace Patchwork
             UIKit.Circle(new Vector2(r.x + 34f, r.y + h * 0.5f - 7f), 12f, new Color(1f, 1f, 1f, 0.85f));
             UIKit.Label(new Rect(r.x + 72f, r.y + 6f, w - 86f, h - 12f), Num(s.Shown),
                 UIKit.Style(Mathf.RoundToInt(34 * pop), true, TextAnchor.MiddleRight, UIKit.Ink));
+            // The chain: how many, and how long until it runs out.
+            if (s.Chain >= 2 && s.ChainAlive)
+            {
+                var bar = new Rect(r.x + 14f, r.yMax + 6f, s.Multiplier > 1 ? w - 146f : w - 28f, 30f);
+                UIKit.Fill(bar, new Color(0.13f, 0.11f, 0.19f, 0.7f), 15f);
+                UIKit.Fill(new Rect(bar.x + 4f, bar.y + 4f, (bar.width - 8f) * s.ChainLeft, bar.height - 8f), s.Multiplier > 1 ? new Color(1f, 0.72f, 0.25f) : new Color(0.6f, 0.85f, 1f), 11f);
+                UIKit.Label(bar, "chain " + s.Chain, UIKit.Style(17, true, TextAnchor.MiddleCenter, Color.white), true);
+            }
             if (s.Multiplier > 1 && s.ChainAlive)
             {
                 var chip = new Rect(r.xMax - 118f, r.yMax + 8f, 118f, 44f);

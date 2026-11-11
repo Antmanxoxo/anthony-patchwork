@@ -52,6 +52,16 @@ namespace Patchwork
             }
             var trees = things.FindAll(x => x.Tree);
             int removed = 0, moved = 0;
+            // Many props aren't solid themselves: an invisible box (a "Solid", see TownKit.Solid)
+            // was put down beside them. When a prop is moved or taken out, its box has to go with
+            // it, or it's left behind as an invisible wall (a gate you can't walk through, a tree
+            // that isn't there but still stops you).
+            var boxes = new List<Transform>();
+            for (int i = 0; i < root.childCount; i++)
+            {
+                var t = root.GetChild(i);
+                if (t.name == "Solid" && t.GetComponent<Collider>() != null && t.GetComponent<Renderer>() == null) boxes.Add(t);
+            }
 
             // 1. Trees growing into each other.
             for (int i = 0; i < trees.Count; i++)
@@ -65,6 +75,9 @@ namespace Patchwork
                     if (Landmarks.Contains(go.T.name) || !go.Pure) go = go == a ? b : a;
                     if (Landmarks.Contains(go.T.name) || !go.Pure) continue;
                     go.T.gameObject.SetActive(false);
+                    // (Only its trunk's box: the canopy may well spread over other things' boxes.)
+                    foreach (var box in BoxesOf(go, boxes))
+                        if (Flat(box.position - go.T.position) < Mathf.Max(1f, Mathf.Max(go.B.size.x, go.B.size.z) * 0.15f)) box.gameObject.SetActive(false);
                     removed++;
                 }
 
@@ -111,12 +124,83 @@ namespace Patchwork
                     }
                     if (push.sqrMagnitude < 0.0004f) continue;
                     if (push.magnitude > MaxMove) push = push.normalized * MaxMove;
+                    foreach (var box in BoxesOf(s, boxes)) box.position += push;
                     s.T.position += push;
                     s.B.center += push;
                     moved++;
                 }
-            if (removed > 0 || moved > 0)
-                Debug.Log("Patchwork: tidied the level (" + removed + " crowded trees taken out, " + moved + " nudges to keep props out of each other).");
+            int orphans = RemoveOrphanBoxes(root, boxes);
+            if (removed > 0 || moved > 0 || orphans > 0)
+                Debug.Log("Patchwork: tidied the level (" + removed + " crowded trees taken out, " + moved + " nudges to keep props out of each other, "
+                    + orphans + " invisible walls with nothing there taken away).");
+        }
+
+        // A box that makes a prop solid, with no prop where it stands (the prop was never built
+        // there, was taken out, or was moved by something else): an invisible wall. Take it away.
+        static int RemoveOrphanBoxes(Transform root, List<Transform> boxes)
+        {
+            const float Cell = 8f;
+            var grid = new Dictionary<long, List<Bounds>>();
+            var big = new List<Bounds>();     // batched meshes spread over a big area (checked for every box)
+            foreach (var r in root.GetComponentsInChildren<MeshRenderer>())
+            {
+                if (!r.enabled) continue;
+                var b = r.bounds;
+                if (b.size.x > 20f && b.size.z > 20f && b.size.y < 1f) continue;   // the ground, paths and rugs
+                int x0 = Mathf.FloorToInt(b.min.x / Cell), x1 = Mathf.FloorToInt(b.max.x / Cell);
+                int z0 = Mathf.FloorToInt(b.min.z / Cell), z1 = Mathf.FloorToInt(b.max.z / Cell);
+                if ((x1 - x0 + 1) * (z1 - z0 + 1) > 16) { big.Add(b); continue; }
+                for (int x = x0; x <= x1; x++)
+                    for (int z = z0; z <= z1; z++)
+                    {
+                        long key = ((long)x << 32) ^ (uint)z;
+                        List<Bounds> list;
+                        if (!grid.TryGetValue(key, out list)) grid[key] = list = new List<Bounds>();
+                        list.Add(b);
+                    }
+            }
+            int gone = 0;
+            foreach (var box in boxes)
+            {
+                if (box == null || !box.gameObject.activeSelf) continue;
+                var col = box.GetComponent<Collider>();
+                if (col == null) continue;
+                var test = col.bounds;
+                // Only prop-sized boxes (the big ones are walls and floors that are meant to be
+                // invisible, like the edges of the toybox).
+                if (Mathf.Max(test.size.x, test.size.z) > 6f) continue;
+                test.Expand(0.2f);
+                bool seen = false;
+                foreach (var b in big) if (b.Intersects(test)) { seen = true; break; }
+                int x0 = Mathf.FloorToInt(test.min.x / Cell), x1 = Mathf.FloorToInt(test.max.x / Cell);
+                int z0 = Mathf.FloorToInt(test.min.z / Cell), z1 = Mathf.FloorToInt(test.max.z / Cell);
+                for (int x = x0; x <= x1 && !seen; x++)
+                    for (int z = z0; z <= z1 && !seen; z++)
+                    {
+                        List<Bounds> list;
+                        if (!grid.TryGetValue(((long)x << 32) ^ (uint)z, out list)) continue;
+                        foreach (var b in list) if (b.Intersects(test)) { seen = true; break; }
+                    }
+                if (seen) continue;
+                box.gameObject.SetActive(false);
+                gone++;
+            }
+            return gone;
+        }
+
+        // The invisible boxes standing inside a prop's footprint (its own, that is).
+        static List<Transform> BoxesOf(Thing th, List<Transform> boxes)
+        {
+            var mine = new List<Transform>();
+            var b = th.B;
+            foreach (var box in boxes)
+            {
+                if (box == null || !box.gameObject.activeSelf) continue;
+                Vector3 p = box.position;
+                if (p.x < b.min.x || p.x > b.max.x || p.z < b.min.z || p.z > b.max.z || p.y < b.min.y - 0.5f || p.y > b.max.y + 0.5f) continue;
+                mine.Add(box);
+            }
+            return mine;
         }
 
         // Plain decoration: nothing on it but spinning, swaying or blinking.

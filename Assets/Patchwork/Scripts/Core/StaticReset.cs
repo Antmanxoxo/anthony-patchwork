@@ -19,6 +19,7 @@ namespace Patchwork
             ToyNpc.Focus = null;
             FrayBodies.ResetStatics();
             GreyStain.ResetStatics();
+            PatchworkHUD.ResetStatics();
             TitleSequence.ResetStatics();
             LevelSelectMenu.ResetStatics();
             UseSpot.ResetStatics();
