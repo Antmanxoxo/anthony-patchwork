@@ -22,7 +22,7 @@ namespace Patchwork
         public const string SeenKey = "L1_intro_seen";
         public const string ReplayPref = "Patchwork_ReplayToyboxIntro";   // editor only: play it again once
         public Level1Director Director;
-        public Transform Crack, Blob, Streak;
+        public Transform Crack, Blob, Streak, Master;
 
         bool active, finished;
         float t = -1f, wait;
@@ -150,6 +150,14 @@ namespace Patchwork
                     if (!Crack.gameObject.activeSelf) { Crack.gameObject.SetActive(true); Sfx.Play(SfxId.Unravel, 0.7f); }
                     Crack.localScale = crackScale * UIKit.EaseOutBack(Mathf.Clamp01((t - TCrack) / 0.7f));
                 }
+                // The Unpicker lowers himself through it, head first, and has a long look.
+                if (Master != null)
+                {
+                    float lowered = Mathf.Clamp01((t - TCrack - 0.5f) / 1.4f);
+                    if (lowered > 0f && !Master.gameObject.activeSelf) Master.gameObject.SetActive(true);
+                    Master.localScale = new Vector3(3f, 3f * Mathf.SmoothStep(0f, 1f, lowered), 3f);
+                    if (t > TCrack + 1.6f) Caption(game, "Something on the other side of the cloth had been listening. It did not care for the tune.");
+                }
                 Vector3 above = band + new Vector3(0f, 7f, 0f);
                 blobHover = above;
                 Vector3 bp = CrackPos + Vector3.back * 2f;
@@ -174,7 +182,14 @@ namespace Patchwork
                 // The Fray over the bandstand: the music stops.
                 Hover();
                 if (!snapped && t > TSnap + 0.5f) Snap(game);
-                Caption(game, "The Fray. It has never cared for music.");
+                Caption(game, "So it sent the Fray: the grey things that eat colour. They have never cared for music either.");
+                // ...and draws himself back up out of sight.
+                if (Master != null && Master.gameObject.activeSelf)
+                {
+                    float left = 1f - Mathf.Clamp01((t - TSnap) / 1.2f);
+                    Master.localScale = new Vector3(3f, 3f * left, 3f);
+                    if (left <= 0f) Master.gameObject.SetActive(false);
+                }
                 game.SetCutsceneCamera(Vector3.Lerp(new Vector3(0f, 5.5f, -5.5f), new Vector3(1.5f, 6.5f, -7.5f), Ease((t - TSnap) / (THill - TSnap))), band + Vector3.up * 3.6f);
             }
             else if (t < TDye)
@@ -336,6 +351,7 @@ namespace Patchwork
         {
             finished = true;
             active = false;
+            if (Master != null) Master.gameObject.SetActive(false);
             if (Blob != null) Blob.gameObject.SetActive(false);
             if (Streak != null) Streak.gameObject.SetActive(false);
             if (Crack != null) { Crack.gameObject.SetActive(true); Crack.localScale = crackScale; }

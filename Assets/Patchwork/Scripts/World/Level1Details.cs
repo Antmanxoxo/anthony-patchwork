@@ -98,6 +98,13 @@ namespace Patchwork
             blob.gameObject.SetActive(false);
             intro.Blob = blob;
 
+            // The Unpicker, who lets himself down head-first through the crack to have a look.
+            var master = kit.Group("TheUnpicker_Intro", new Vector3(3f, 40.8f, Half - 1.2f));
+            master.rotation = Quaternion.Euler(0f, 180f, 180f);   // hanging upside down, facing the town
+            FrayBodies.Unpicker(master);
+            master.gameObject.SetActive(false);
+            intro.Master = master;
+
             var streak = kit.Group("LuteString", Vector3.zero);
             var gold = PatchworkAssets.Glow(new Color(1f, 0.82f, 0.4f), 1.4f);
             for (int i = 0; i < 6; i++)

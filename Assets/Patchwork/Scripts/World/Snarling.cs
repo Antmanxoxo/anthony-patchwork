@@ -2,9 +2,9 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    // A little creature of the Fray: a scuttling grey tangle with two glowing eyes (or, in a
-    // toy world, a grey wind-up tin beetle - see FrayTheme). It patrols back
-    // and forth, turns to chase Patch when he's close, and pushes him away if he walks into it.
+    // A little creature of the Fray: a dome of ash-grey fur striding about on two long scaly
+    // legs, with its eyes out on stalks (what it looks like is in FrayBodies.Walker). It patrols
+    // back and forth, turns to chase Patch when he's close, and nips him if he walks into it.
     // Land on its head (or crash into it fast) to unravel it.
     public class Snarling : MonoBehaviour
     {
@@ -16,7 +16,8 @@ namespace Patchwork
         float t;
         float phase;
         float bumpCooldown;
-        Transform body, eyeL, eyeR, key;
+        Transform body, eyeL, eyeR, legL, legR;
+        Vector3 eyeSize;
         Vector3 pos;
         Vector3 facing = Vector3.forward;
         const float ChaseRange = 7f;
@@ -46,42 +47,8 @@ namespace Patchwork
             body = new GameObject("Body").transform;
             body.SetParent(transform, false);
             body.localPosition = new Vector3(0f, 0.7f, 0f);
-            if (FrayTheme.Style == FrayStyle.Toy)
-            {
-                FrayTheme.ToySnarling(transform, body, out eyeL, out eyeR, out key);
-                return;
-            }
-            var grey = PatchworkAssets.Yarn(SnarlKnot.FrayGrey);
-            var dark = PatchworkAssets.Yarn(SnarlKnot.FrayDark);
-            Part(PrimitiveType.Sphere, body, Vector3.zero, new Vector3(1.2f, 1f, 1.1f), dark, Vector3.zero);
-            for (int i = 0; i < 9; i++)
-            {
-                float ang = i * 40f;
-                Part(PrimitiveType.Capsule, body, Quaternion.Euler(i * 23f, ang, 0f) * new Vector3(0f, 0f, 0.42f),
-                    new Vector3(0.12f, 0.45f, 0.12f), grey, new Vector3(i * 31f, ang, i * 17f));
-            }
-            var glow = PatchworkAssets.Glow(SnarlKnot.FrayGlow, 1.4f);
-            eyeL = Part(PrimitiveType.Sphere, body, new Vector3(-0.2f, 0.12f, 0.5f), new Vector3(0.18f, 0.24f, 0.1f), glow, Vector3.zero);
-            eyeR = Part(PrimitiveType.Sphere, body, new Vector3(0.2f, 0.12f, 0.5f), new Vector3(0.18f, 0.24f, 0.1f), glow, Vector3.zero);
-            // Stubby legs.
-            for (int i = 0; i < 4; i++)
-            {
-                float x = (i % 2 == 0 ? -1f : 1f) * 0.32f, z = (i < 2 ? -1f : 1f) * 0.25f;
-                Part(PrimitiveType.Capsule, transform, new Vector3(x, 0.15f, z), new Vector3(0.16f, 0.18f, 0.16f), dark, Vector3.zero);
-            }
-        }
-
-        static Transform Part(PrimitiveType type, Transform parent, Vector3 p, Vector3 s, Material m, Vector3 e)
-        {
-            var go = GameObject.CreatePrimitive(type);
-            Object.Destroy(go.GetComponent<Collider>());
-            go.layer = 2;
-            go.transform.SetParent(parent, false);
-            go.transform.localPosition = p;
-            go.transform.localRotation = Quaternion.Euler(e);
-            go.transform.localScale = s;
-            go.GetComponent<Renderer>().sharedMaterial = m;
-            return go.transform;
+            FrayBodies.Walker(transform, body, out eyeL, out eyeR, out legL, out legR, phase * 7f);
+            eyeSize = eyeL.localScale;
         }
 
         void Update()
@@ -112,10 +79,12 @@ namespace Patchwork
             transform.position = pos + Vector3.up * Mathf.Abs(Mathf.Sin(t * 9f)) * 0.08f;
             transform.rotation = Quaternion.LookRotation(new Vector3(facing.x, 0f, facing.z).normalized, Vector3.up);
             body.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * 9f) * 6f);
-            if (key != null) key.Rotate(0f, 300f * dt, 0f, Space.Self);
-            float blink = Mathf.Repeat(t, 3.3f) < 0.12f ? 0.2f : 1f;
-            eyeL.localScale = new Vector3(0.18f, 0.24f * blink, 0.1f);
-            eyeR.localScale = new Vector3(0.18f, 0.24f * blink, 0.1f);
+            // Long strides (faster when it's after him), and eyes that never blink together.
+            float stride = Mathf.Sin(t * 9f) * Mathf.Clamp01(step.magnitude / Mathf.Max(0.0001f, dt) / speed) * 30f;
+            legL.localRotation = Quaternion.Euler(stride, 0f, 0f);
+            legR.localRotation = Quaternion.Euler(-stride, 0f, 0f);
+            eyeL.localScale = new Vector3(eyeSize.x, eyeSize.y * (Mathf.Repeat(t + phase * 3f, 3.3f) < 0.12f ? 0.15f : 1f), eyeSize.z);
+            eyeR.localScale = new Vector3(eyeSize.x, eyeSize.y * (Mathf.Repeat(t * 0.83f + phase * 5f, 4.1f) < 0.12f ? 0.15f : 1f), eyeSize.z);
 
             if (player == null) return;
             Vector3 d = player.Motor.Center - Center;

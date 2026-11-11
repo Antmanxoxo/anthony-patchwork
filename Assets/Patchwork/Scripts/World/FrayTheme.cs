@@ -6,8 +6,10 @@ namespace Patchwork
     // but it takes on whatever the world is made of.
     //   Thread - the original: grey tangles of frayed yarn (the Skiff, the practice room).
     //   Toy    - Toybox Town: toys with the colour drained out of them. Knots stuffed with gears,
-    //            springs and wind-up keys; Snarlings are grey wind-up tin beetles; tendrils are
-    //            sprung jack-in-the-boxes; tears are holes ripped in wrapping paper.
+    //            springs and wind-up keys; tendrils are sprung jack-in-the-boxes; tears are holes
+    //            ripped in wrapping paper.
+    // (The creatures themselves look the same everywhere: they're from the Underside, not from
+    // any of these worlds. See FrayBodies.)
     public enum FrayStyle { Thread, Toy }
 
     public static class FrayTheme
@@ -38,6 +40,8 @@ namespace Patchwork
             }
             for (int i = 0; i < 3; i++)
                 kit.Deco(PrimitiveType.Sphere, Quaternion.Euler(i * 120f, i * 70f, 0f) * new Vector3(0f, 0f, 0.5f * size), Vector3.one * 0.18f * size, GlowM, default(Vector3), parent);
+            // Eyes on stalks poking out of it, looking every which way.
+            FrayBodies.KnotEyes(parent, size);
             if (Style != FrayStyle.Toy) return;
 
             // Broken toy bits caught in the tangle, poking out all round.
@@ -169,46 +173,6 @@ namespace Patchwork
             sway.Amount = 25f;
             sway.Speed = 0.8f;
             return g;
-        }
-
-        // ------------------------------------------------------------------ Snarlings
-
-        // Builds a toy-world Snarling: a grey wind-up tin beetle with a key turning in its back.
-        public static void ToySnarling(Transform root, Transform body, out Transform eyeL, out Transform eyeR, out Transform key)
-        {
-            Part(PrimitiveType.Sphere, body, Vector3.zero, new Vector3(1.15f, 0.85f, 1.3f), Tin, Vector3.zero);
-            Part(PrimitiveType.Cylinder, body, new Vector3(0f, -0.05f, 0f), new Vector3(1.18f, 0.05f, 1.33f), DullRed, Vector3.zero);
-            Part(PrimitiveType.Cube, body, new Vector3(0f, 0.36f, 0f), new Vector3(0.06f, 0.06f, 1.1f), DarkTin, new Vector3(-8f, 0f, 0f));
-            for (int i = 0; i < 6; i++)
-            {
-                float a = i / 6f * Mathf.PI * 2f;
-                Part(PrimitiveType.Sphere, body, new Vector3(Mathf.Cos(a) * 0.42f, 0.22f, Mathf.Sin(a) * 0.5f), Vector3.one * 0.07f, DarkTin, Vector3.zero);
-            }
-            Part(PrimitiveType.Sphere, body, new Vector3(0f, -0.04f, 0.62f), new Vector3(0.72f, 0.6f, 0.55f), DarkTin, Vector3.zero);
-            var glow = PatchworkAssets.Glow(SnarlKnot.FrayGlow, 1.4f);
-            eyeL = Part(PrimitiveType.Sphere, body, new Vector3(-0.17f, 0.06f, 0.86f), new Vector3(0.18f, 0.24f, 0.1f), glow, Vector3.zero);
-            eyeR = Part(PrimitiveType.Sphere, body, new Vector3(0.17f, 0.06f, 0.86f), new Vector3(0.18f, 0.24f, 0.1f), glow, Vector3.zero);
-            // Bent antennae with glowing tips.
-            for (int s = -1; s <= 1; s += 2)
-            {
-                Part(PrimitiveType.Capsule, body, new Vector3(s * 0.18f, 0.32f, 0.72f), new Vector3(0.04f, 0.2f, 0.04f), DarkTin, new Vector3(30f, 0f, -s * 25f));
-                Part(PrimitiveType.Sphere, body, new Vector3(s * 0.28f, 0.5f, 0.84f), Vector3.one * 0.09f, glow, Vector3.zero);
-            }
-            // The wind-up key on its back.
-            key = new GameObject("Key").transform;
-            key.SetParent(body, false);
-            key.localPosition = new Vector3(0f, 0.38f, -0.42f);
-            key.localRotation = Quaternion.Euler(-40f, 0f, 0f);
-            Part(PrimitiveType.Cylinder, key, new Vector3(0f, 0.15f, 0f), new Vector3(0.08f, 0.15f, 0.08f), DarkTin, Vector3.zero);
-            Part(PrimitiveType.Sphere, key, new Vector3(-0.16f, 0.36f, 0f), new Vector3(0.26f, 0.2f, 0.06f), Tin, Vector3.zero);
-            Part(PrimitiveType.Sphere, key, new Vector3(0.16f, 0.36f, 0f), new Vector3(0.26f, 0.2f, 0.06f), Tin, Vector3.zero);
-            // Clockwork wheels instead of legs.
-            for (int i = 0; i < 4; i++)
-            {
-                float x = (i % 2 == 0 ? -1f : 1f) * 0.42f, z = (i < 2 ? -1f : 1f) * 0.32f;
-                Part(PrimitiveType.Cylinder, root, new Vector3(x, 0.17f, z), new Vector3(0.32f, 0.04f, 0.32f), DarkTin, new Vector3(0f, 0f, 90f));
-                Part(PrimitiveType.Cylinder, root, new Vector3(x * 1.1f, 0.17f, z), new Vector3(0.12f, 0.03f, 0.12f), DullRed, new Vector3(0f, 0f, 90f));
-            }
         }
 
         public static Transform Part(PrimitiveType type, Transform parent, Vector3 p, Vector3 s, Material m, Vector3 e)

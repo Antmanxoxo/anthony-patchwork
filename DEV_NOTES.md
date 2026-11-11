@@ -405,6 +405,19 @@ Stuff I need to remember about how Patchwork is put together.
 - The editor is set to recompile after you stop playing (`PatchworkStoryMenu` sets
   `ScriptCompilationDuringPlay`): recompiling mid-play leaves the code-built level broken.
 
+## The Fray (FrayKin.cs)
+- `FrayBodies` builds every creature's look (`Walker`, `Hopper`, `Flit`, `Gawp`), knot eyes and
+  the Unpicker. The behaviour scripts (Snarling.cs, Monsters.cs) only move the parts they're
+  handed back (legs, eyes, mouth, wings). Shared pieces: `EyeStalk`, `Leg`, `Fuzz`.
+- `GreyStain` (one per level, added in `Level1Builder.Creatures`) leaves grey blots under
+  everything in `FrayCreature.All`, and calls `LevelLook.SetDrain(amount, flash)` from how
+  near the nearest creature or knot is. `Monsters.Popped` calls `GreyStain.Restore`.
+- `UnpickerWatch` shows the Unpicker on top of whatever is highest at one of its `Spots`
+  (x, z), 42 to 100 m from Patch; he folds away if Patch comes within 26 m. Hint-seen keys
+  `L1_unpicker_seen` / `L1_unpicker_named` are the Storyteller's two remarks.
+- The creature designs are original. The museum pieces were inspiration for the feel only:
+  don't copy a particular sculpture.
+
 ## Habits
 - Test every change with Play and check the Console.
 - Keep it to C# 9 and older Unity APIs so it compiles everywhere.

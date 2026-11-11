@@ -10,6 +10,20 @@ namespace Patchwork
     public static class LevelLook
     {
         static DepthOfField miniature;
+        static ColorAdjustments colours;
+        static float baseSaturation, baseContrast;
+
+        // The Fray drains the colour out of things. amount: 0 (the level's own colours) to 1
+        // (nearly grey, flatter and a touch dimmer). flash: a moment of extra colour as it comes
+        // back (when a creature is unravelled).
+        public static void SetDrain(float amount, float flash = 0f)
+        {
+            if (colours == null) return;
+            amount = Mathf.Clamp01(amount);
+            colours.saturation.Override(Mathf.Lerp(baseSaturation, -82f, amount * 0.9f) + flash * 22f);
+            colours.contrast.Override(Mathf.Lerp(baseContrast, baseContrast - 12f, amount));
+            colours.postExposure.Override(0.1f - amount * 0.18f + flash * 0.08f);
+        }
 
         // Switch the soft-focus distance off for a while (a cutscene that shows the whole town
         // from far away wants it sharp), and back on afterwards.
@@ -21,6 +35,7 @@ namespace Patchwork
         public static Volume Apply(LevelInfo level)
         {
             miniature = null;
+            colours = null;
             var go = new GameObject("Look");
             var vol = go.AddComponent<Volume>();
             vol.isGlobal = true;
@@ -42,6 +57,9 @@ namespace Patchwork
             adjust.postExposure.Override(0.1f);
             adjust.contrast.Override(level.Contrast);
             adjust.saturation.Override(level.Saturation);
+            colours = adjust;
+            baseSaturation = level.Saturation;
+            baseContrast = level.Contrast;
 
             // Warm sunny highlights, slightly cool violet shadows: a painted, storybook feel.
             var smh = p.Add<ShadowsMidtonesHighlights>(true);

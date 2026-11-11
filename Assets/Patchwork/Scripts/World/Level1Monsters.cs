@@ -4,8 +4,9 @@ namespace Patchwork
 {
     // The Fray's creatures roaming Toybox Town (away from the square where you start), and felt
     // hearts to patch Patch up. Three nips and Patch unravels back to the last checkpoint.
-    //   Snarlings      - scuttle back and forth, chase you when you're close
-    //   Tangle Hoppers - springy yarn balls that bounce after you
+    // (What they look like, the grey they leave and the Unpicker who sends them: FrayKin.cs.)
+    //   Snarlings      - stride back and forth, chase you when you're close
+    //   Tangle Hoppers - one-legged things that bounce after you
     //   Static Moths   - flutter overhead and swoop down at you
     //   Static Spitters - sit still and lob fuzzballs at you from a distance
     // Stomp them, swing into them as Yarn, or blow them away with Wind's gust. Stomping several
@@ -16,6 +17,17 @@ namespace Patchwork
         {
             Physics.SyncTransforms();
             var root = kit.Group("Creatures", Vector3.zero);
+            // The grey they leave behind them, and the one who sent them, watching from a
+            // long way off (rooftops, hilltops, the tops of towers: wherever is highest there).
+            root.gameObject.AddComponent<GreyStain>();
+            var watch = root.gameObject.AddComponent<UnpickerWatch>();
+            watch.DoneScene = SceneName;
+            watch.Spots = new[]
+            {
+                new Vector2(13f, -26f), new Vector2(-13f, -26f), new Vector2(64f, 8f), new Vector2(107.5f, -20f), new Vector2(-64f, -12f),
+                new Vector2(0f, 27f), new Vector2(-70f, 36f), new Vector2(-84f, -20f), new Vector2(50f, -92f), new Vector2(20f, 72f),
+                new Vector2(-30f, 60f), new Vector2(84f, 60f), new Vector2(-100f, 30f), new Vector2(40f, -40f),
+            };
 
             Vector3[] snarlings =
             {

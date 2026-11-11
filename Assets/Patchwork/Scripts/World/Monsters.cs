@@ -43,6 +43,8 @@ namespace Patchwork
                 if (game != null) game.ShowToast("Stomp combo x" + combo + "!");
                 Sfx.PlayPitched(SfxId.Collect, 0.5f, 1f + combo * 0.08f);
             }
+            // The grey it left goes, and the colour comes back.
+            if (GreyStain.Instance != null) GreyStain.Instance.Restore(at);
             if (game != null && game.Hearts < PatchworkGame.MaxHearts && Random.value < 0.4f)
                 HeartPickup.Spawn(at + Vector3.up * 0.3f, true);
         }
@@ -174,7 +176,8 @@ namespace Patchwork
         }
     }
 
-    // A Static Moth: a grey felt moth that flutters about, and every few seconds swoops down at
+    // A Static Moth: a one-eyed puff of grey fur on ragged wings (see FrayBodies.Flit) that
+    // flutters about, and every few seconds swoops down at
     // Patch. Jump on it (or gust it, or swing into it) to unravel it.
     public class StaticMoth : MonoBehaviour
     {
@@ -196,22 +199,14 @@ namespace Patchwork
             go.transform.position = m.pos;
             m.body = new GameObject("Body").transform;
             m.body.SetParent(go.transform, false);
-            Monsters.Part(PrimitiveType.Sphere, m.body, Vector3.zero, new Vector3(0.45f, 0.42f, 0.8f), Monsters.Dark);
-            Monsters.Part(PrimitiveType.Sphere, m.body, new Vector3(0f, 0.05f, 0.42f), Vector3.one * 0.38f, Monsters.Grey);
-            Monsters.Part(PrimitiveType.Sphere, m.body, new Vector3(-0.1f, 0.1f, 0.58f), new Vector3(0.12f, 0.15f, 0.08f), Monsters.Glow);
-            Monsters.Part(PrimitiveType.Sphere, m.body, new Vector3(0.1f, 0.1f, 0.58f), new Vector3(0.12f, 0.15f, 0.08f), Monsters.Glow);
-            for (int s = -1; s <= 1; s += 2)
-                Monsters.Part(PrimitiveType.Cylinder, m.body, new Vector3(s * 0.1f, 0.3f, 0.6f), new Vector3(0.03f, 0.18f, 0.03f), Monsters.Dark, new Vector3(-40f, 0f, s * -20f));
-            var wing = PatchworkAssets.Felt(new Color(0.62f, 0.6f, 0.66f));
             m.wingL = new GameObject("WingL").transform;
             m.wingL.SetParent(m.body, false);
-            Monsters.Part(PrimitiveType.Sphere, m.wingL, new Vector3(-0.55f, 0f, 0f), new Vector3(1f, 0.06f, 0.75f), wing);
+            m.wingR = new GameObject("WingR").transform;
+            m.wingR.SetParent(m.body, false);
+            FrayBodies.Flit(m.body, m.wingL, m.wingR, m.t);
             var fc = go.AddComponent<FrayCreature>();
             fc.Center = () => m.pos;
             fc.Pop = p => m.Pop(p);
-            m.wingR = new GameObject("WingR").transform;
-            m.wingR.SetParent(m.body, false);
-            Monsters.Part(PrimitiveType.Sphere, m.wingR, new Vector3(0.55f, 0f, 0f), new Vector3(1f, 0.06f, 0.75f), wing);
             return m;
         }
 
@@ -285,7 +280,8 @@ namespace Patchwork
         }
     }
 
-    // A Tangle Hopper: a springy grey yarn ball that bounces after Patch when he's near.
+    // A Tangle Hopper: a striped sock of a thing on one fat leg (see FrayBodies.Hopper) that
+    // bounces after Patch when he's near.
     public class TangleHopper : MonoBehaviour
     {
         Vector3 home, pos, hopFrom, hopTo;
@@ -308,14 +304,7 @@ namespace Patchwork
             var fc = go.AddComponent<FrayCreature>();
             fc.Center = () => h.pos + Vector3.up * 0.55f;
             fc.Pop = p => h.Pop(p, h.pos + Vector3.up * 0.55f);
-            Monsters.Part(PrimitiveType.Sphere, h.body, Vector3.zero, Vector3.one * 1f, Monsters.Dark);
-            for (int i = 0; i < 7; i++)
-                Monsters.Part(PrimitiveType.Capsule, h.body, Quaternion.Euler(i * 31f, i * 51f, 0f) * new Vector3(0f, 0f, 0.38f), new Vector3(0.1f, 0.4f, 0.1f), Monsters.Grey, new Vector3(i * 31f, i * 51f, i * 17f));
-            Monsters.Part(PrimitiveType.Sphere, h.body, new Vector3(-0.18f, 0.12f, 0.45f), new Vector3(0.16f, 0.22f, 0.1f), Monsters.Glow);
-            Monsters.Part(PrimitiveType.Sphere, h.body, new Vector3(0.18f, 0.12f, 0.45f), new Vector3(0.16f, 0.22f, 0.1f), Monsters.Glow);
-            // A spring underneath.
-            for (int i = 0; i < 4; i++)
-                Monsters.Part(PrimitiveType.Cylinder, go.transform, new Vector3(0f, 0.06f + i * 0.1f, 0f), new Vector3(0.36f, 0.02f, 0.36f), PatchworkAssets.Plain(new Color(0.7f, 0.72f, 0.76f), 0.8f));
+            FrayBodies.Hopper(go.transform, h.body, h.rest * 5f);
             return h;
         }
 
@@ -387,12 +376,13 @@ namespace Patchwork
         }
     }
 
-    // A Static Spitter: a grumpy grey knot on a little cushion that lobs crackly fuzzballs at
+    // A Static Spitter: nearly all mouth, with hands for feet (see FrayBodies.Gawp). It lobs crackly fuzzballs at
     // Patch from a distance. Dodge them, then stomp it.
     public class StaticSpitter : MonoBehaviour
     {
         Vector3 pos;
         Transform body, mouth;
+        Vector3 mouthSize;
         float t, cooldown = 2f, charge;
         bool popped;
 
@@ -403,19 +393,14 @@ namespace Patchwork
             var s = go.AddComponent<StaticSpitter>();
             s.pos = ground;
             go.transform.position = ground;
-            Monsters.Part(PrimitiveType.Cylinder, go.transform, new Vector3(0f, 0.18f, 0f), new Vector3(1.4f, 0.18f, 1.4f), PatchworkAssets.Felt(new Color(0.45f, 0.42f, 0.5f)));
             s.body = new GameObject("Body").transform;
             s.body.SetParent(go.transform, false);
             s.body.localPosition = Vector3.up * 0.95f;
-            Monsters.Part(PrimitiveType.Sphere, s.body, Vector3.zero, new Vector3(1.2f, 1.1f, 1.2f), Monsters.Dark);
-            for (int i = 0; i < 10; i++)
-                Monsters.Part(PrimitiveType.Capsule, s.body, Quaternion.Euler(i * 27f, i * 37f, 0f) * new Vector3(0f, 0f, 0.48f), new Vector3(0.12f, 0.5f, 0.12f), Monsters.Grey, new Vector3(i * 27f, i * 37f, i * 13f));
-            Monsters.Part(PrimitiveType.Sphere, s.body, new Vector3(-0.22f, 0.2f, 0.52f), new Vector3(0.2f, 0.12f, 0.1f), Monsters.Glow, new Vector3(0f, 0f, -15f));
-            Monsters.Part(PrimitiveType.Sphere, s.body, new Vector3(0.22f, 0.2f, 0.52f), new Vector3(0.2f, 0.12f, 0.1f), Monsters.Glow, new Vector3(0f, 0f, 15f));
+            s.mouth = FrayBodies.Gawp(go.transform, s.body, ground.x + ground.z);
+            s.mouthSize = s.mouth.localScale;
             var fc = go.AddComponent<FrayCreature>();
             fc.Center = () => s.pos + Vector3.up * 0.95f;
             fc.Pop = p => s.Pop(p);
-            s.mouth = Monsters.Part(PrimitiveType.Sphere, s.body, new Vector3(0f, -0.15f, 0.55f), new Vector3(0.3f, 0.12f, 0.1f), PatchworkAssets.Plain(new Color(0.08f, 0.06f, 0.1f), 0.2f));
             return s;
         }
 
@@ -449,7 +434,7 @@ namespace Patchwork
             else charge = Mathf.MoveTowards(charge, 0f, dt * 3f);
             float puff = 1f + charge * 0.25f + Mathf.Sin(t * 3f) * 0.03f;
             body.localScale = Vector3.one * puff;
-            mouth.localScale = new Vector3(0.3f, 0.12f + charge * 0.2f, 0.1f);
+            mouth.localScale = new Vector3(mouthSize.x * (1f - charge * 0.25f), mouthSize.y * (1f + charge * 0.9f), mouthSize.z);
 
             Vector3 dd = player.Motor.Center - c;
             if (new Vector2(dd.x, dd.z).magnitude < 1.2f && Mathf.Abs(dd.y) < 1.4f)

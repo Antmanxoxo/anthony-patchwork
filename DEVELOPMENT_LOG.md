@@ -1,5 +1,30 @@
 # Development Log
 
+## The Fray, redesigned: things from the Underside, and the Unpicker
+- New story for the Fray: it isn't from Patch's world. It comes from the Underside, the back
+  of the cloth, where nothing has ever had a colour. Its creatures eat colour.
+- All four creatures have new, uncanny bodies (my own designs, inspired by museum photos of
+  furry long-legged creature sculptures): ash-grey fur, legs that are too long with feet that
+  are too big, eyes out on stalks that sway and blink out of time with each other, mouths
+  that are too wide with too few teeth, and a pink tongue (the only colour on them).
+  - Snarling: a fur dome striding on two long scaly legs.
+  - Tangle Hopper: a striped sock on one fat leg, its mouth on top.
+  - Static Moth: a one-eyed puff with feelers, ragged wings and dangling legs.
+  - Static Spitter: nearly all mouth, eyes up on top, hands for feet.
+  Knots of the Fray have eye stalks too.
+- The world goes grey where they go: each creature leaves grey blots on the ground where it
+  walks (they fade a while after it moves on), and the nearer Patch is to any of them the
+  more the whole picture drains towards grey. Unravel one and its blots shrink away in a
+  burst of coloured pompoms, with a little flash of extra colour.
+- The Unpicker, the one behind the Fray: five and a half metres tall, thin as a needle, a
+  thimble for a hat, a seam ripper for a staff, a mouth sewn shut, five eyes on stalks, and
+  the stolen colours hanging from his coat in glowing jars. In the opening he lowers himself
+  head-first through the crack in the lid to look at the town before sending the Fray in.
+  During the level he stands on rooftops and hilltops a long way off, watching; get near and
+  he folds away like an umbrella and turns up somewhere else later. The Storyteller notices
+  him the first two times. He stops coming once the town is mended.
+- Removed the old tin-beetle Snarling.
+
 ## Pod and Toybox Town fixes, funny pictures, a detailed planet
 - Fixed the invisible wall in the Button Box doorway. Furniture made of parts spread apart
   (the pinwheel pots either side of the door) got one solid box round the lot, right across
