@@ -30,7 +30,7 @@ namespace Patchwork
             Playable = true
         };
 
-        // The levels on the globe, in order. The last two are still being made.
+        // The levels on the globe, in order. The last one is still being made.
         public static readonly LevelEntry[] Levels =
         {
             new LevelEntry
@@ -48,12 +48,14 @@ namespace Patchwork
             },
             new LevelEntry
             {
-                Scene = "",
+                Scene = Level2Builder.SceneName,
                 Number = "Level 2",
-                Title = "???",
-                Blurb = "Still being stitched. Check back soon!",
-                Tint = new Color(0.55f, 0.6f, 0.85f),
-                Playable = false,
+                Title = "The Oceanic Museum",
+                Blurb = "A grand old museum built round an aquarium the size of a sea. Wander the fossil halls, cross the kelp galleries, brave the deep tunnels and the sunken ruins, and ride the lift up to the Observatory.",
+                Tint = new Color(0.3f, 0.42f, 0.75f),
+                Playable = true,
+                Collectibles = Level2Builder.CollectibleIds,
+                Heartstrings = Level2Builder.HeartstringIds,
                 Longitude = 95f,
                 Latitude = -12f
             },
@@ -86,7 +88,10 @@ namespace Patchwork
             "Spam the D-pad faces and see what happens...",
             "Hats stay on in every form. Find them all to show off in your Pod.",
             "Threads come in rows. Follow them and they'll usually show you the way.",
-            "Fell off? Checkpoint pins stitch your progress as you pass them."
+            "Fell off? Checkpoint pins stitch your progress as you pass them.",
+            "In the Oceanic Museum, stand by a brass plaque and press Ability to read it. Every word is true.",
+            "Only Water Form can swim. Everyone else needs something to stand on.",
+            "The music in the museum grows as you find Heartstrings. Listen for the flute."
         };
 
         public static LevelEntry ForScene(string scene)

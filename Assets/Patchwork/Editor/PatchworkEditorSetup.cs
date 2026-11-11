@@ -16,6 +16,7 @@ namespace Patchwork.EditorTools
     {
         public const string HubPath = "Assets/Patchwork/Scenes/Hub.unity";
         public const string Level1Path = "Assets/Patchwork/Scenes/Level1.unity";
+        public const string Level2Path = "Assets/Patchwork/Scenes/Level2.unity";
         const string StartFromHubKey = "Patchwork.PlayFromHub";
         const string OpenedHubKey = "Patchwork.OpenedHubOnce";
         const string MaterialFolder = "Assets/Patchwork/Resources";
@@ -40,7 +41,7 @@ namespace Patchwork.EditorTools
             {
                 SessionState.SetBool(OpenedHubKey, true);
                 var active = EditorSceneManager.GetActiveScene();
-                bool inPatchworkScene = active.path == HubPath || active.path == Level1Path;
+                bool inPatchworkScene = active.path == HubPath || active.path == Level1Path || active.path == Level2Path;
                 if (!inPatchworkScene && !EditorApplication.isPlayingOrWillChangePlaymode && !active.isDirty
                     && AssetDatabase.LoadAssetAtPath<SceneAsset>(HubPath) != null)
                 {
@@ -226,6 +227,13 @@ namespace Patchwork.EditorTools
         {
             if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
                 EditorSceneManager.OpenScene(Level1Path);
+        }
+
+        [MenuItem("Patchwork/Open Level 2 Scene", false, 3)]
+        static void OpenLevel2()
+        {
+            if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                EditorSceneManager.OpenScene(Level2Path);
         }
 
         [MenuItem("Patchwork/Play From Hub (toggle)", false, 20)]

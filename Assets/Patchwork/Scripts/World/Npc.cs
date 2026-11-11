@@ -9,6 +9,8 @@ namespace Patchwork
         public virtual Color NameColor { get { return new Color(0.62f, 0.27f, 0.3f); } }
         public abstract Vector3 HeadPosition { get; }
         public bool Talking { get; set; }
+        // The word on the floating prompt ("Talk" for people, "Read" for a museum plaque).
+        public virtual string PromptVerb { get { return "Talk"; } }
 
         // What they say this time (one card per line).
         public abstract string[] NextLines();

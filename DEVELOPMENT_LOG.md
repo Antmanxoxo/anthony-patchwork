@@ -1,5 +1,37 @@
 # Development Log
 
+## Level 2: The Oceanic Museum
+- A whole new level, bigger than Toybox Town and walked more like a visit: one way round,
+  with side trips. It's night, the museum is closed, and it's all yours.
+  - The Forecourt: the Pod lands on a moonlit quay in front of the museum's doors.
+  - The Grand Atrium: a blue whale's skeleton overhead, a turning brass armillary, the grand
+    staircase, and the Great Window: a reef behind glass as tall as a house.
+  - The Hall of Deep Time: an obelisk, a mummy case, a T. rex, a swinging pendulum, and a
+    Viking longship hung in the rafters (climb the painters' scaffold, swing over from the
+    gallery, or ride the pump as Water).
+  - The Kelp Galleries: the middle of the hall is an open pool with a kelp forest growing up
+    out of it. Four ways over: star-patch platforms (two glide), lanterns to swing on, warm
+    vents to glide between, or swim it as Water.
+  - The Deepsea Tunnel: a glass tube on stilts through the biggest tank, sharks, rays and a
+    whale with stars on her back going over, and the Bell (a glass dome) half way along.
+  - The Sunken Ruins: a drowned temple hall. Hop the broken columns, walk the fallen one,
+    climb the wreck's mast, and find the lift in the dry corner.
+  - The Orrery Bridge: cross the gap by riding the planets round (or take the stairs below).
+  - The Observatory: under a glass dome on the sea floor. Look through the great telescope
+    to finish the level. The balcony looks down over the whole atrium.
+- 6 Heartstrings (3 open the Observatory lift), 4 golden buttons, 3 secret marbles.
+- Brass plaques beside the exhibits: stand by one and press Ability to read it. Everything
+  on them is real history (the Antikythera mechanism, Mary Anning, Foucault's pendulum, the
+  Vasa, the Trieste's dive and so on).
+- The light changes as you walk: golden lamps in the halls, teal in the kelp, deep blue and
+  nearly dark in the tunnel, green in the ruins, violet in the Observatory.
+- New music: an original dreamy orchestral waltz. Harp and celesta to begin with; strings
+  join when you find a Heartstring (or reach the aquarium), flute when the lift opens, and
+  horns and timpani in the Observatory. In the tunnel it goes soft, as if heard through water.
+- New background sounds: the hush of a big stone hall, and the deep rumble of the tanks with
+  a whale singing far off.
+- Level 2 is on the Pod's globe now.
+
 ## Polish: invisible walls gone for good, and collecting feels better
 - Found the cause of the invisible walls: lots of props aren't solid themselves but have an
   invisible box beside them. When the level tidy-up nudged a prop (or took out a crowded

@@ -301,7 +301,7 @@ namespace Patchwork
                 // Very old saves lived in PlayerPrefs; clear those too, or they'd come back.
                 foreach (var key in new[] { "pw_current_form", "pw_unlocked_forms", "pw_cosmetic_hat" }) PlayerPrefs.DeleteKey(key);
                 foreach (var id in Level1Builder.CollectibleIds) PlayerPrefs.DeleteKey("pw_collect_" + id);
-                foreach (var level in new[] { HubBuilder.SceneName, Level1Builder.SceneName }) PlayerPrefs.DeleteKey("pw_complete_" + level);
+                foreach (var level in new[] { HubBuilder.SceneName, Level1Builder.SceneName, Level2Builder.SceneName }) PlayerPrefs.DeleteKey("pw_complete_" + level);
                 PlayerPrefs.Save();
             }
             catch (System.Exception e)

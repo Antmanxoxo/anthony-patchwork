@@ -126,7 +126,7 @@ namespace Patchwork
         {
             Instance = this;
             currentLevel = levelId;
-            MusicPlayer.SetTrack(levelId == LevelId.Level1 ? MusicTrack.Toybox : MusicTrack.Pod);
+            MusicPlayer.SetTrack(levelId == LevelId.Level1 ? MusicTrack.Toybox : levelId == LevelId.Level2 ? MusicTrack.Museum : MusicTrack.Pod);
             Time.timeScale = 1f;
             // VSync is on in Quality settings; this cap only matters if a graphics driver forces it off,
             // so the game never runs at hundreds of frames per second and heats up people's computers.
@@ -163,6 +163,7 @@ namespace Patchwork
             switch (levelId)
             {
                 case LevelId.Level1: Level = Level1Builder.Build(kit); break;
+                case LevelId.Level2: Level = Level2Builder.Build(kit); break;
                 default: Level = HubBuilder.Build(kit); break;
             }
             SetupEnvironment(cam);
@@ -374,7 +375,7 @@ namespace Patchwork
                         // Stay and keep exploring the mended town (head home from the Pod later).
                         SetMode(UIMode.Gameplay, 1f);
                         Sfx.Play(SfxId.MenuConfirm, 0.5f);
-                        ShowToast("Enjoy the party! Walk back to your Pod whenever you're ready to go home.");
+                        ShowToast(Level.Id == Level1Builder.SceneName ? "Enjoy the party! Walk back to your Pod whenever you're ready to go home." : "Take your time. Walk back to your Pod whenever you're ready to go home.");
                     }
                     break;
                 case UIMode.Intro:

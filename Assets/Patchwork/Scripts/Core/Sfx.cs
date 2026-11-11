@@ -249,7 +249,7 @@ namespace Patchwork
         public static float LoopCutoff { get { return loopCutoff; } }
 
         // Clips for sounds that play from a spot in the world (AmbientEmitter, NPC voices).
-        public enum AmbientClip { Propeller, Flag, Creak, Balloon, Clock, Fountain, Vent, Space, Woods, Meadow }
+        public enum AmbientClip { Propeller, Flag, Creak, Balloon, Clock, Fountain, Vent, Space, Woods, Meadow, Deep, Hall }
         static readonly Dictionary<AmbientClip, AudioClip> ambient = new Dictionary<AmbientClip, AudioClip>();
 
         public static AudioClip Ambient(AmbientClip which)
@@ -266,6 +266,8 @@ namespace Patchwork
                 case AmbientClip.Space: c = SpaceLoop(); break;
                 case AmbientClip.Meadow: c = MeadowLoop(); break;
                 case AmbientClip.Woods: c = WoodsLoop(); break;
+                case AmbientClip.Deep: c = DeepLoop(); break;
+                case AmbientClip.Hall: c = HallLoop(); break;
                 case AmbientClip.Fountain: c = bubbleClip != null ? bubbleClip : (bubbleClip = BubbleLoop()); break;
                 default: c = airClip != null ? airClip : (airClip = AirLoop()); break;
             }
@@ -974,6 +976,118 @@ namespace Patchwork
                 data[i] = tickT < 0.04f ? Mathf.Sin(2f * Mathf.PI * (tock ? 1500f : 1900f) * tickT) * Mathf.Exp(-tickT * 140f) * 0.6f : 0f;
             }
             return ToClip("clock", data);
+        }
+
+        // Behind the aquarium glass: the deep, slow rumble of a great weight of water, bubbles
+        // trickling up now and then, and twice in the loop a whale singing a long way off.
+        // Loops seamlessly (16 s).
+        static AudioClip DeepLoop()
+        {
+            const float duration = 16f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var data = new float[n];
+            var rng = new System.Random(31);
+            float lp = 0f, lp2 = 0f, lp3 = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                float white = (float)(rng.NextDouble() * 2.0 - 1.0);
+                lp += (white - lp) * 0.006f;
+                lp2 += (lp - lp2) * 0.012f;
+                lp3 += (white - lp3) * 0.04f;
+                float swell = 0.7f + 0.3f * Mathf.Sin(2f * Mathf.PI * t / 8f);
+                // Whole numbers of cycles in 16 s, so the hum has no seam.
+                float hum = Mathf.Sin(2f * Mathf.PI * 46f * t) * 0.05f + Mathf.Sin(2f * Mathf.PI * 69f * t) * 0.02f;
+                data[i] = lp2 * 9f * swell + hum * swell + lp3 * 0.012f;
+            }
+            // Bubbles: little rising chirps in loose clusters.
+            var br = new System.Random(7);
+            for (int k = 0; k < 26; k++)
+            {
+                float at = (float)br.NextDouble() * duration;
+                float f0 = 500f + (float)br.NextDouble() * 900f;
+                float vol = 0.012f + (float)br.NextDouble() * 0.02f;
+                int start = Mathf.RoundToInt(at * Rate), len = Mathf.RoundToInt(0.09f * Rate);
+                float ph = 0f;
+                for (int j = 0; j < len; j++)
+                {
+                    float kk = j / (float)len;
+                    ph += 2f * Mathf.PI * f0 * (1f + kk * 0.9f) / Rate;
+                    data[(start + j) % n] += Mathf.Sin(ph) * Mathf.Sin(kk * Mathf.PI) * vol;
+                }
+            }
+            // Whale song: a long note that slides up, hangs and falls away, with a faint echo.
+            float[] callAt = { 2.5f, 10.5f };
+            float[] callFrom = { 150f, 210f }, callTo = { 290f, 170f };
+            for (int c = 0; c < callAt.Length; c++)
+            {
+                for (int echo = 0; echo < 3; echo++)
+                {
+                    int start = Mathf.RoundToInt((callAt[c] + echo * 0.55f) * Rate), len = Mathf.RoundToInt(3.2f * Rate);
+                    float ph = 0f, gain = 0.05f * Mathf.Pow(0.4f, echo);
+                    for (int j = 0; j < len; j++)
+                    {
+                        float kk = j / (float)len;
+                        float bend = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(kk * 1.6f));
+                        float f = Mathf.Lerp(callFrom[c], callTo[c], bend) * (1f + 0.012f * Mathf.Sin(kk * 60f)) - kk * kk * 30f;
+                        ph += 2f * Mathf.PI * f / Rate;
+                        float env = Mathf.Sin(kk * Mathf.PI);
+                        env *= env;
+                        data[(start + j) % n] += (Mathf.Sin(ph) + 0.3f * Mathf.Sin(ph * 2f) + 0.12f * Mathf.Sin(ph * 3f)) * env * gain;
+                    }
+                }
+            }
+            LowPass(data, 2600f);
+            return ToClip("deep", data);
+        }
+
+        // A great stone hall after closing time: the hush of a big room, a clock somewhere
+        // ticking very slowly, and a far-off footstep or two echoing. Loops seamlessly (12 s).
+        static AudioClip HallLoop()
+        {
+            const float duration = 12f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var data = new float[n];
+            var rng = new System.Random(57);
+            float lp = 0f, lp2 = 0f;
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                float white = (float)(rng.NextDouble() * 2.0 - 1.0);
+                lp += (white - lp) * 0.015f;
+                lp2 += (lp - lp2) * 0.03f;
+                data[i] = lp2 * 2.2f * (0.8f + 0.2f * Mathf.Sin(2f * Mathf.PI * t / 6f));
+            }
+            // The clock: a soft tock every two seconds, with the room answering.
+            for (int k = 0; k < 6; k++)
+            {
+                for (int echo = 0; echo < 4; echo++)
+                {
+                    int start = Mathf.RoundToInt((k * 2f + 0.3f + echo * 0.17f) * Rate), len = Mathf.RoundToInt(0.06f * Rate);
+                    float gain = 0.03f * Mathf.Pow(0.45f, echo);
+                    for (int j = 0; j < len; j++)
+                    {
+                        float tt = j / (float)Rate;
+                        data[(start + j) % n] += Mathf.Sin(2f * Mathf.PI * (k % 2 == 0 ? 900f : 700f) * tt) * Mathf.Exp(-tt * 90f) * gain;
+                    }
+                }
+            }
+            // Footsteps a long way down a corridor.
+            foreach (float at in new[] { 4.6f, 5.2f, 5.8f, 9.9f })
+            {
+                for (int echo = 0; echo < 5; echo++)
+                {
+                    int start = Mathf.RoundToInt((at + echo * 0.21f) * Rate), len = Mathf.RoundToInt(0.12f * Rate);
+                    float gain = 0.02f * Mathf.Pow(0.5f, echo);
+                    for (int j = 0; j < len; j++)
+                    {
+                        float tt = j / (float)Rate;
+                        data[(start + j) % n] += Mathf.Sin(2f * Mathf.PI * 160f * tt) * Mathf.Exp(-tt * 45f) * gain;
+                    }
+                }
+            }
+            LowPass(data, 3200f);
+            return ToClip("hall", data);
         }
 
         // Drifting through space: a warm low hum (the pod's engine), a soft airy wash that breathes

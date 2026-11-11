@@ -965,7 +965,7 @@ namespace Patchwork
 
         // ================================================================ The toys of Toybox Town
 
-        static ToyNpc Toy(LevelKit kit, Vector3 feet, float yaw, ToyNpc.Kind kind, string name, Color main, Color accent, ToyNpc.Instrument inst, float pitch, Color tag, bool talk = true)
+        internal static ToyNpc Toy(LevelKit kit, Vector3 feet, float yaw, ToyNpc.Kind kind, string name, Color main, Color accent, ToyNpc.Instrument inst, float pitch, Color tag, bool talk = true)
         {
             var npc = ToyNpc.Create(kit, feet, yaw, kind, name, main, accent, inst);
             npc.VoicePitch = pitch;
@@ -1111,7 +1111,7 @@ namespace Patchwork
         }
 
         // A Heartstring at pos. Hidden ones appear when their challenge is done.
-        static Heartstring MakeHeartstring(LevelKit kit, string id, string title, Vector3 pos, bool hidden)
+        internal static Heartstring MakeHeartstring(LevelKit kit, string id, string title, Vector3 pos, bool hidden)
         {
             kit.Info.HeartstringIds.Add(id);
             var h = kit.Volume<Heartstring>(pos, new Vector3(2.2f, 2.8f, 2.2f), "Heartstring_" + id);

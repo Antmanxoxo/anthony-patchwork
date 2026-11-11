@@ -6,7 +6,8 @@ namespace Patchwork
     public enum LevelId
     {
         Hub = 0,
-        Level1 = 1
+        Level1 = 1,
+        Level2 = 2
     }
 
     public class LevelInfo

@@ -771,7 +771,7 @@ namespace Patchwork
         void DrawTalkPrompt(bool kb)
         {
             if (Game.Mode != UIMode.Gameplay || Game.Talker == null || Game.Talker.Npc == null || Game.Helm != null) return;
-            DrawWorldPrompt(Game.Talker.Npc.HeadPosition + Vector3.up * 1.3f, "Talk", kb, PromptAction.Ability);
+            DrawWorldPrompt(Game.Talker.Npc.HeadPosition + Vector3.up * 1.3f, Game.Talker.Npc.PromptVerb, kb, PromptAction.Ability);
         }
 
         // Floating prompt over the level-select station (the Pod's controller) while you're at it.

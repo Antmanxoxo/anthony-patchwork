@@ -429,6 +429,29 @@ Stuff I need to remember about how Patchwork is put together.
 - `PatchworkHUD.ShowGet(title, line, colour, icon)` shows the big "got it" card (icon 0 a
   button, 1 a heart). `PrizeLeap` makes a picked-up thing leap over Patch's head.
 
+## Level 2 (The Oceanic Museum)
+- Files: `Level2Builder.cs` (plan, moods, Forecourt, Atrium), `Level2History.cs`,
+  `Level2Aquarium.cs` (Kelp Galleries, Great Deep, tunnel, Bell), `Level2Ruins.cs` (Ruins,
+  lift, Orrery Bridge, Observatory), `Level2Kit.cs` (all the building blocks),
+  `MuseumLife.cs` (the moving things and the director), `MusicMuseum.cs`.
+- The scene is `Scenes/Level2.unity` (same as Level 1's, with Level = 2). `LevelId.Level2`.
+- Room sizes are the constants at the top of `Level2Builder` (AtriumHalf, HistX0, KelpZ0...).
+- `Level2Mood` zones set the light, fog, backdrop colour and how "underwater" the music is
+  for each hall. The first box that contains Patch wins. No sun shadows in this level
+  (`ShadowStrength = 0`): it's lit by point lights and glowing materials.
+- Tanks: `Tank(...)` makes the glass, frame, glowing back wall, surface and light shafts and
+  returns a `TankSpace`; put things in it with `Kelp`, `Reef`, `TankSwim`, `TankShoal`,
+  `Bubbles`. In tank space x runs along the glass, y up from the tank floor, z back.
+  Swimmers are stitched by `StitchSwimmer` (Fish, Tall, Shark, Ray, Turtle, Whale, Angler).
+- `Plaque(kit, foot, yaw, title, lines...)` is a readable plaque (an `ExhibitPlaque`, which
+  is an `Npc` whose prompt says "Read"). Keep what's on them true.
+- `Pool(...)` = water surface + `WaterBody`. `RoundPlatform(...)` = a round solid platform;
+  add `Glider` + `Carrier` to make it move. `Stump(...)` = a broken column to stand on.
+- The lift is a `RoundPlatform` with a `Glider`; `Level2Director` switches the gate off at
+  3 Heartstrings, sets the music's layers and runs the telescope ending.
+- Music layers: `MusicPlayer.SetMuseumLayers(strings, winds, grand)` and
+  `SetMuseumDepth(0..1)`.
+
 ## Habits
 - Test every change with Play and check the Console.
 - Keep it to C# 9 and older Unity APIs so it compiles everywhere.

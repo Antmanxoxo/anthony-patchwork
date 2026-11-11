@@ -212,7 +212,7 @@ namespace Patchwork
                 master *= 1f - 0.22f * dread;
             }
             // Level soundtracks (like Toybox Town) crossfade with the Skiff's music.
-            float skiff = UpdateLevelTrack(udt) * UpdatePodTrack(udt);
+            float skiff = UpdateLevelTrack(udt) * UpdatePodTrack(udt) * UpdateMuseumTrack(udt);
 
             for (int i = 0; i < StemCount; i++)
             {
