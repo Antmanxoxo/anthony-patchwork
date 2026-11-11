@@ -711,7 +711,14 @@ namespace Patchwork
                 slab.rotation = Quaternion.LookRotation(dir, Vector3.up);
                 NoShadow(kit.Deco(PrimitiveType.Cube, C + dir * 22.9f + Vector3.up * 5.02f, new Vector3(3.4f, 0.03f, 3.6f), i % 2 == 0 ? StarCloth : PlumStars, new Vector3(0f, 90f - deg, 0f)));
                 kit.Deco(PrimitiveType.Cylinder, C + dir * 20.5f + Vector3.up * 5.5f, new Vector3(0.1f, 0.5f, 0.1f), Brass);
-                if (i != 3) Bookcase(kit, C + dir * 24.6f + Vector3.up * 5f, 270f - deg, 3.6f, 2.6f, i + 20);
+                
+            }
+            // Bookcases between the columns (which stand every 15 degrees, from 142.5).
+            int bc = 0;
+            foreach (float deg in new[] { 150f, 165f, 195f, 210f })
+            {
+                float a = deg * Mathf.Deg2Rad;
+                Bookcase(kit, C + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * 24.6f + Vector3.up * 5f, 270f - deg, 3.6f, 2.6f, 20 + bc++);
             }
             kit.GoldenButton("L2_b_library", C + new Vector3(Mathf.Cos(204f * Mathf.Deg2Rad) * 22.6f, 6.6f, Mathf.Sin(204f * Mathf.Deg2Rad) * 22.6f));
             kit.ThreadLine(C + new Vector3(Mathf.Cos(150f * Mathf.Deg2Rad) * 22.6f, 6.3f, Mathf.Sin(150f * Mathf.Deg2Rad) * 22.6f), C + new Vector3(Mathf.Cos(170f * Mathf.Deg2Rad) * 22.6f, 6.3f, Mathf.Sin(170f * Mathf.Deg2Rad) * 22.6f), 4);
@@ -733,8 +740,8 @@ namespace Patchwork
             NoShadow(kit.Deco(PrimitiveType.Cylinder, desk + new Vector3(-1.1f, 1.3f, -0.2f), new Vector3(0.1f, 0.2f, 0.1f), Brass, new Vector3(0f, 0f, 60f)));
             kit.AddCheckpoint(C + new Vector3(0f, 0f, 22f), 180f);
             Trail(kit, 10, C + new Vector3(0f, 1.2f, 21f), C + new Vector3(0f, 1.2f, 17f), C + new Vector3(0f, 1.2f, 13f), C + new Vector3(0f, 1.2f, 9f));
-            Banner(kit, C + new Vector3(Mathf.Cos(52.5f * Mathf.Deg2Rad) * (R - 1.2f), 8.6f, Mathf.Sin(52.5f * Mathf.Deg2Rad) * (R - 1.2f)), 270f - 52.5f, 2.6f, 6f, StarCloth, 1);
-            Banner(kit, C + new Vector3(Mathf.Cos(127.5f * Mathf.Deg2Rad) * (R - 1.2f), 8.6f, Mathf.Sin(127.5f * Mathf.Deg2Rad) * (R - 1.2f)), 270f - 127.5f, 2.6f, 6f, PlumStars, 2);
+            Banner(kit, C + new Vector3(Mathf.Cos(60f * Mathf.Deg2Rad) * (R - 1.2f), 8.6f, Mathf.Sin(60f * Mathf.Deg2Rad) * (R - 1.2f)), 270f - 60f, 2.6f, 6f, StarCloth, 1);
+            Banner(kit, C + new Vector3(Mathf.Cos(120f * Mathf.Deg2Rad) * (R - 1.2f), 8.6f, Mathf.Sin(120f * Mathf.Deg2Rad) * (R - 1.2f)), 270f - 120f, 2.6f, 6f, PlumStars, 2);
 
             // ----- The balcony over the atrium -----
             kit.Block(new Vector3(0f, DeckY - 0.5f, -49f), new Vector3(20f, 1f, 7f), StoneCol, "OverlookBalcony", PaleStone);

@@ -132,6 +132,7 @@ namespace Patchwork
             ObservatoryHall(kit);
             HallOfArms(kit);
             Details(kit);
+            Life(kit);
 
             // The hush of the halls, and the deep rumble by the big tanks.
             var sounds = kit.Group("LevelSounds", Vector3.zero);
@@ -493,7 +494,7 @@ namespace Patchwork
                     win.R(0.6f, 1.1f), reefFish[i % reefFish.Length], i % 2 == 0 ? CreamCol : new Color(0.15f, 0.15f, 0.3f), i * 53f);
             for (int i = 0; i < 4; i++) Bubbles(kit, win.At(win.R(-20f, 20f), 0.5f, win.R(3f, 20f)), 20f);
             // Benches to sit and look, and a rope to keep noses off the glass.
-            RopeLine(kit, new Vector3(27.3f, 0f, -100f), new Vector3(27.3f, 0f, -56f), Plum);
+            RopeLine(kit, new Vector3(27.3f, 0f, -98.5f), new Vector3(27.3f, 0f, -59.5f), Plum);
             foreach (float z in new[] { -92f, -78f, -64f }) TownKit.Bench(kit, new Vector3(22f, 0f, z), 90f);
             Plaque(kit, new Vector3(25.6f, 0f, -85f), 270f, "The Great Window",
                 "One sheet of glass, as tall as a house, holding back a reef. Giant kelp can grow half a metre in a single day, which makes it one of the fastest-growing living things there is.",

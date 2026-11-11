@@ -346,6 +346,91 @@ namespace Patchwork
         }
     }
 
+    // A seal (or a fish) that every so often leaps out of the water in an arc and dives back
+    // in, with a splash at each end. Between leaps it's out of sight under the surface.
+    public class Leaper : MonoBehaviour
+    {
+        public Vector3 From, To;
+        public float Height = 2f, Every = 7f, Take = 1.3f, Offset, Splash = 0.3f;
+        bool wasOut;
+
+        void Update()
+        {
+            float t = Mathf.Repeat(Time.time + Offset, Every);
+            bool isOut = t < Take;
+            if (!isOut)
+            {
+                if (wasOut) Splosh(To);
+                wasOut = false;
+                transform.localScale = Vector3.zero;
+                return;
+            }
+            if (!wasOut) Splosh(From);
+            wasOut = true;
+            float k = t / Take;
+            Vector3 p = Vector3.Lerp(From, To, k) + Vector3.up * Height * 4f * k * (1f - k);
+            Vector3 v = (To - From) + Vector3.up * Height * 4f * (1f - 2f * k);
+            transform.position = p;
+            if (v.sqrMagnitude > 1e-4f) transform.rotation = Quaternion.LookRotation(v.normalized, Vector3.up);
+            transform.localScale = Vector3.one;
+        }
+
+        void Splosh(Vector3 at)
+        {
+            if (Splash <= 0f) return;
+            FxBurst.Spawn(FxBurst.Kind.Puff, at + Vector3.up * 0.2f, new Color(0.85f, 0.97f, 1f));
+            Sfx.PlayNear(SfxId.Splash, at, Splash, 22f);
+        }
+    }
+
+    // The horses (well, the sea creatures) of a carousel, rising and falling on their poles,
+    // each a little out of step with the next.
+    public class CarouselBob : MonoBehaviour
+    {
+        public Transform[] Mounts;
+        public float Height = 0.45f, Speed = 1.7f;
+        Vector3[] home;
+
+        void Start()
+        {
+            if (Mounts == null) return;
+            home = new Vector3[Mounts.Length];
+            for (int i = 0; i < Mounts.Length; i++) if (Mounts[i] != null) home[i] = Mounts[i].localPosition;
+        }
+
+        void Update()
+        {
+            if (Mounts == null || home == null) return;
+            float t = Time.time * Speed;
+            for (int i = 0; i < Mounts.Length; i++)
+                if (Mounts[i] != null) Mounts[i].localPosition = home[i] + Vector3.up * Mathf.Sin(t + i * 2.1f) * Height;
+        }
+    }
+
+    // A bird's wings beating, with a long glide now and then.
+    public class WingFlap : MonoBehaviour
+    {
+        public Transform Left, Right;
+        public float Angle = 30f, Speed = 7f, Phase;
+
+        void Update()
+        {
+            float t = Time.time + Phase;
+            // Flap for a few seconds, then hold the wings out and glide.
+            float gliding = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(Mathf.Sin(t * 0.45f) * 3f));
+            float a = Mathf.Sin(t * Speed) * Angle * (1f - gliding) + 4f * gliding;
+            if (Left != null) Left.localRotation = Quaternion.Euler(0f, 0f, a);
+            if (Right != null) Right.localRotation = Quaternion.Euler(0f, 0f, -a);
+        }
+    }
+
+    // Someone having a quiet nap. Stand by them and press Ability to give them a nudge.
+    public class SleepyNpc : ExhibitPlaque
+    {
+        public override string PromptVerb { get { return "Nudge"; } }
+        public override Color NameColor { get { return new Color(0.3f, 0.35f, 0.6f); } }
+    }
+
     // A brass plaque beside an exhibit. Stand by it and press Ability to read what it says.
     public class ExhibitPlaque : Npc
     {

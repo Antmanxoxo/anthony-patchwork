@@ -1,5 +1,31 @@
 # Development Log
 
+## Level 2: life and grandeur
+- The museum has people in it now, and they all have a reason to be there after hours:
+  - a night watchman doing his rounds of the Hall of Deep Time with a lantern (its light
+    moves with him), and another asleep at his post by the front doors (nudge him)
+  - Mrs. Sudsbury mopping the atrium, with her bucket and a wet-floor sign
+  - Dabble on the north gallery, painting the whale (badly)
+  - a teacher duck leading six ducklings round and round the armillary
+  - Keeper Coral feeding the seals, Squire Pim polishing armour, a busker on the quay
+- And animals: gulls wheeling over the quay (two perched on the railings), ducks by the
+  fountains, a cat asleep on the crates, mice, an owl asleep on a bookcase, two seals
+  leaping in the kelp pool, fish jumping in the Ruins, a heron that watches you, a turtle
+  sunning on the temple steps, glowing jellyfish, a diver cleaning the tunnel glass,
+  two mantas dancing over the Bell, glowing lanternfish, and a hound asleep by the horseman.
+- Grand set pieces:
+  - a sea-creature carousel on the quay (you can ride it): fish, turtles, whales, rays,
+    sharks and seahorses rising and falling, a striped canopy with chasing lights
+  - a slowly turning crystal chandelier over the front doors
+  - two great stone Keepers either side of the Great Window, holding up a pearl and a star
+  - a gilded wave frieze round the top of the atrium walls, and lights along the gallery rails
+- Things that make it feel like a real museum: the Whale's Tail Café under the west
+  gallery (tables, cake stand, dessert trolley, chalk board), signs over every doorway
+  showing what's through it, oars on the longship, a helmet table with candles.
+- A wave of light runs along the tunnel floor.
+- Fixes from the level check: palms, bookcases and banners that were sunk into columns,
+  and a palm on top of a marble.
+
 ## Level 2: depth, detail, a new hall and new music
 - The pole in the atrium's west doorway is gone (a wall pier was standing in the arch).
 - The atrium's ceiling is now the showpiece: twinkling stars and a milky way, six

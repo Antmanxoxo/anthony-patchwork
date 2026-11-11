@@ -554,7 +554,7 @@ namespace Patchwork
             }
             // Compass roses let into the cobbles each side.
             var gold = PatchworkAssets.Felt(new Color(1f, 0.82f, 0.4f));
-            foreach (float x in new[] { -38f, 38f })
+            foreach (float x in new[] { 38f })   // (the carousel stands where the other one was)
             {
                 Vector3 c = new Vector3(x, 0.02f, -134f);
                 NoShadow(kit.Deco(PrimitiveType.Cylinder, c, new Vector3(9f, 0.02f, 9f), PatchworkAssets.Felt(Navy)));
@@ -598,7 +598,7 @@ namespace Patchwork
         {
             // Palms in the corners and by the stairs.
             int n = 0;
-            foreach (var p in new[] { new Vector3(-27f, 0f, -105f), new Vector3(26.5f, 0f, -105.5f), new Vector3(-21f, 0f, -57.5f), new Vector3(9f, 0f, -68.5f), new Vector3(-9f, 0f, -68.5f), new Vector3(27f, 0f, -51f) })
+            foreach (var p in new[] { new Vector3(-21f, 0f, -61f), new Vector3(10f, 0f, -63.5f), new Vector3(-10f, 0f, -63.5f) })
                 Palm(kit, p, 3.2f + (n % 3) * 0.7f, n++);
             Palm(kit, new Vector3(-27.5f, 8f, -51f), 2.4f, 7);
             Palm(kit, new Vector3(28f, 8f, -52.6f), 2.4f, 8);
@@ -733,7 +733,7 @@ namespace Patchwork
             Crate(kit, new Vector3(-42.6f, 0f, -25.6f), 1.5f, 10f);
             Crate(kit, new Vector3(-41f, 0f, -24.6f), 1.1f, 40f);
             Crate(kit, new Vector3(-42.4f, 1.5f, -25.6f), 1f, -15f);
-            Palm(kit, new Vector3(-86f, 0f, -100f), 3.4f, 3);
+            Palm(kit, new Vector3(-85.5f, 0f, -90f), 3.4f, 3);
             Palm(kit, new Vector3(-36f, 0f, -12f), 3f, 5);
             // A row of ship models on the gallery, and a great hanging map of the winds.
             for (int i = 0; i < 3; i++)
@@ -1172,9 +1172,9 @@ namespace Patchwork
             foreach (var p in new[] { C + new Vector3(8f, 0f, -14f), C + new Vector3(-18f, 0f, 9f), C + new Vector3(18.5f, 0f, -4f) })
                 for (int k = 0; k < 5; k++)
                     kit.Deco(PrimitiveType.Cube, p + Vector3.up * (0.16f + k * 0.3f), new Vector3(1.2f - (k % 2) * 0.2f, 0.28f, 0.9f), PatchworkAssets.Fabric(covers[(k + Mathf.RoundToInt(p.x)) % 4 < 0 ? 0 : Mathf.Abs(k + Mathf.RoundToInt(p.x)) % 4]), new Vector3(0f, k * 23f, 0f));
-            Palm(kit, C + new Vector3(20f, 0f, 12f), 3f, 31);
-            Palm(kit, C + new Vector3(-20f, 0f, 13f), 3f, 32);
-            Palm(kit, C + new Vector3(12f, 0f, -20f), 2.6f, 33);
+            Palm(kit, C + new Vector3(17f, 0f, 12f), 3f, 31);
+            Palm(kit, C + new Vector3(-15f, 0f, 11f), 3f, 32);
+            Palm(kit, C + new Vector3(10f, 0f, -15f), 2.6f, 33);
             // Constellations drawn in light on the inside of the dome, and marine snow outside it.
             Vector3 domeBase = C + Vector3.up * 9.4f;
             var domeStars = new MeshBatch();

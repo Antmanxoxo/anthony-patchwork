@@ -458,6 +458,10 @@ Stuff I need to remember about how Patchwork is put together.
   `DriftMotes`, `StarMobile`, `SeaBob`, `WatchPlayer`. Helpers: `Twinkling`, `Motes`,
   `Shooting`, `Painting`, `Palm`, `Crate`, `Vine`, `Boat`.
 - The museum's piano and violins are `AddPiano` / `AddViolins` in `MusicMuseum.cs`.
+- `Level2Life.cs` is the third pass: people, animals and the big set pieces (Carousel,
+  chandelier, Keepers, frieze, café, door signs). Components for it are in `MuseumLife.cs`:
+  `Leaper` (seals and jumping fish), `CarouselBob`, `WingFlap`, `SleepyNpc` (an Npc whose
+  prompt says "Nudge"). Walking figures use `PathMover`; they can't be talked to.
 
 ## Habits
 - Test every change with Play and check the Console.
