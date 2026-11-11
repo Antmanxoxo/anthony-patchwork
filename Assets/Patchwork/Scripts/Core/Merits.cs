@@ -140,14 +140,17 @@ namespace Patchwork
         }
 
         // The "Merit Patch earned!" card.
-        public static void DrawToast()
+        // top: up at the top of the screen (over the Level Complete card it would sit on its
+        // buttons), instead of near the bottom.
+        public static void DrawToast(bool top = false)
         {
             if (toastId < 0) return;
             float t = toastTime;
             float a = Mathf.Clamp01(t / 0.25f) * Mathf.Clamp01((3.6f - t) / 0.4f);
             float slide = UIKit.EaseOutBack(Mathf.Clamp01(t / 0.45f));
             float W = UIKit.Width;
-            var r = new Rect((W - 560f) * 0.5f, UIKit.Height - 250f + (1f - slide) * 80f, 560f, 120f);
+            var r = top ? new Rect((W - 560f) * 0.5f, 36f - (1f - slide) * 80f, 560f, 120f)
+                        : new Rect((W - 560f) * 0.5f, UIKit.Height - 250f + (1f - slide) * 80f, 560f, 120f);
             UIKit.Panel(r, new Color(1f, 0.97f, 0.9f, 0.96f * a), new Color(d(toastId).r, d(toastId).g, d(toastId).b, 0.95f * a), 24f);
             float spin = Mathf.Sin(t * 6f) * 6f * Mathf.Clamp01(1f - t);
             DrawPatch(new Vector2(r.x + 66f, r.y + 60f + spin), 88f, toastId, true, a);

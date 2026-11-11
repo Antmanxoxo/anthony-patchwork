@@ -213,7 +213,9 @@ namespace Patchwork
                 Narrator.Draw(Game.CutsceneCaption, Mathf.SmoothStep(0f, 1f, ck), true);
             }
             else if (Game.Mode == UIMode.Gameplay) Narrator.Draw(null, 1f, false);
-            if (Game.Mode != UIMode.Loading && Game.Mode != UIMode.Dance && Game.Mode != UIMode.LevelSelect && Game.Mode != UIMode.Talk && Game.Mode != UIMode.Cutscene)
+            // (Not under the Level Complete card either: the hint card, score and toasts all
+            // showed through it and piled up on top of each other.)
+            if (Game.Mode != UIMode.Loading && Game.Mode != UIMode.Dance && Game.Mode != UIMode.LevelSelect && Game.Mode != UIMode.Talk && Game.Mode != UIMode.Cutscene && Game.Mode != UIMode.Complete)
             {
                 DrawHelmPrompt(kb);
                 DrawTalkPrompt(kb);
@@ -234,7 +236,7 @@ namespace Patchwork
                 DrawTapeBall();
                 DrawBossBar();
             }
-            if (Game.Mode != UIMode.Loading) Merits.DrawToast();
+            if (Game.Mode != UIMode.Loading) Merits.DrawToast(Game.Mode == UIMode.Complete);
 
             switch (Game.Mode)
             {
@@ -572,13 +574,14 @@ namespace Patchwork
             UIKit.Fill(new Rect(r.x + 24f, r.yMax - 8f, (r.width - 48f) * remain, 3f), new Color(stitch.r, stitch.g, stitch.b, 0.5f), 1.5f);
         }
 
-        void DrawToast()
+        // y: where its top goes (by default about two thirds of the way down).
+        void DrawToast(float y = -1f)
         {
             if (Game.ToastTimer <= 0f || string.IsNullOrEmpty(Game.ToastText)) return;
             float a = Mathf.Clamp01(Game.ToastTimer / 0.4f);
             var style = UIKit.Style(24, true, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, a));
-            float w = UIKit.TextWidth(Game.ToastText, style) + 60f;
-            var r = new Rect((UIKit.Width - w) * 0.5f, UIKit.Height * 0.68f, w, 54f);
+            float w = Mathf.Min(UIKit.TextWidth(Game.ToastText, style) + 60f, UIKit.Width - 80f);
+            var r = new Rect((UIKit.Width - w) * 0.5f, y >= 0f ? y : UIKit.Height * 0.68f, w, 54f);
             UIKit.Fill(r, new Color(0.13f, 0.11f, 0.19f, 0.82f * a), 27f);
             UIKit.Label(r, Game.ToastText, style);
         }
@@ -917,31 +920,44 @@ namespace Patchwork
             var ink = UIKit.Ink;
             UIKit.Label(new Rect(panel.x, panel.y + 40f, panel.width, 60f), "Level Complete!", UIKit.Style(48, true, TextAnchor.MiddleCenter, ink));
             UIKit.Label(new Rect(panel.x, panel.y + 100f, panel.width, 36f), Game.Level.Title, UIKit.Style(22, false, TextAnchor.MiddleCenter, ink));
-            UIKit.Icon(new Rect(panel.x + 200f, panel.y + 150f, 90f, 90f), PatchworkAssets.IconButton, Color.white);
-            UIKit.Label(new Rect(panel.x + 305f, panel.y + 150f, 200f, 90f),
-                Game.Level.CollectedCount() + " / " + Game.Level.CollectibleIds.Count, UIKit.Style(44, true, TextAnchor.MiddleLeft, ink));
-            if (Game.Level.HeartstringIds.Count > 0)
+            // What was found, as a row of evenly spaced tiles (an icon over its count), only for
+            // the kinds of thing this level has.
+            var tiles = new System.Collections.Generic.List<int>();
+            tiles.Add(0);
+            if (Game.Level.HeartstringIds.Count > 0) tiles.Add(1);
+            if (Game.Level.ThreadTotal > 0) tiles.Add(2);
+            if (Game.Level.SecretIds.Count > 0) tiles.Add(3);
+            float tileW = (panel.width - 80f) / tiles.Count;
+            var count = UIKit.Style(30, true, TextAnchor.MiddleCenter, ink);
+            var what = UIKit.Style(16, false, TextAnchor.MiddleCenter, new Color(ink.r, ink.g, ink.b, 0.7f));
+            for (int i = 0; i < tiles.Count; i++)
             {
-                UIKit.Heart(new Vector2(panel.x + 140f, panel.y + 195f), 70f, new Color(1f, 0.72f, 0.3f));
-                UIKit.Label(new Rect(panel.x + 90f, panel.y + 240f, 110f, 40f), Game.Level.HeartstringCount() + "/" + Game.Level.HeartstringIds.Count,
-                    UIKit.Style(28, true, TextAnchor.MiddleCenter, ink));
-            }
-            if (Game.Level.ThreadTotal > 0)
-            {
-                UIKit.Icon(new Rect(panel.x + 210f, panel.y + 236f, 70f, 70f), PatchworkAssets.IconYarn, Color.white);
-                UIKit.Label(new Rect(panel.x + 305f, panel.y + 236f, 260f, 70f),
-                    Game.ThreadsCollected + " / " + Game.Level.ThreadTotal + " threads", UIKit.Style(30, true, TextAnchor.MiddleLeft, ink));
-            }
-            if (Game.Level.SecretIds.Count > 0)
-            {
-                DrawMarbleIcon(new Vector2(panel.xMax - 110f, panel.y + 195f), 70f, Time.unscaledTime * 0.3f);
-                UIKit.Label(new Rect(panel.xMax - 170f, panel.y + 240f, 120f, 40f), Game.Level.SecretCount() + "/" + Game.Level.SecretIds.Count,
-                    UIKit.Style(28, true, TextAnchor.MiddleCenter, ink));
+                var tile = new Rect(panel.x + 40f + i * tileW + 6f, panel.y + 146f, tileW - 12f, 156f);
+                UIKit.Fill(tile, new Color(1f, 1f, 1f, 0.45f), 16f);
+                Vector2 ic = new Vector2(tile.center.x, tile.y + 48f);
+                string num, label;
+                switch (tiles[i])
+                {
+                    case 0:
+                        UIKit.Icon(new Rect(ic.x - 34f, ic.y - 34f, 68f, 68f), PatchworkAssets.IconButton, Color.white);
+                        num = Game.Level.CollectedCount() + " / " + Game.Level.CollectibleIds.Count; label = "golden buttons"; break;
+                    case 1:
+                        UIKit.Heart(ic, 60f, new Color(1f, 0.72f, 0.3f));
+                        num = Game.Level.HeartstringCount() + " / " + Game.Level.HeartstringIds.Count; label = "Heartstrings"; break;
+                    case 2:
+                        UIKit.Icon(new Rect(ic.x - 32f, ic.y - 32f, 64f, 64f), PatchworkAssets.IconYarn, Color.white);
+                        num = Game.ThreadsCollected + " / " + Game.Level.ThreadTotal; label = "threads"; break;
+                    default:
+                        DrawMarbleIcon(ic, 60f, Time.unscaledTime * 0.3f);
+                        num = Game.Level.SecretCount() + " / " + Game.Level.SecretIds.Count; label = "secret marbles"; break;
+                }
+                UIKit.Label(new Rect(tile.x, tile.y + 88f, tile.width, 36f), num, count);
+                UIKit.Label(new Rect(tile.x, tile.y + 122f, tile.width, 24f), label, what);
             }
             // Score: counts up, then the medal stamps on.
             float ct = Game.CompleteTime;
             float shown = Mathf.Lerp(0f, Game.Score.Total, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((ct - 0.3f) / 1.4f)));
-            var scoreRow = new Rect(panel.x + 40f, panel.y + 320f, panel.width - 80f, 110f);
+            var scoreRow = new Rect(panel.x + 40f, panel.y + 322f, panel.width - 80f, 110f);
             UIKit.Fill(scoreRow, new Color(1f, 1f, 1f, 0.55f), 18f);
             UIKit.Label(new Rect(scoreRow.x + 24f, scoreRow.y + 10f, 300f, 30f), "Score", UIKit.Style(22, true, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.75f)));
             UIKit.Label(new Rect(scoreRow.x + 24f, scoreRow.y + 40f, 320f, 60f), Num(shown), UIKit.Style(46, true, TextAnchor.MiddleLeft, ink));
@@ -970,6 +986,8 @@ namespace Patchwork
             float x = panel.center.x - (w1 + 50f + w2) * 0.5f;
             x += UIKit.PromptLabel(x, panel.yMax - 80f, 44f, PromptAction.Confirm, "Back to the Pod", kb, ink) + 50f;
             UIKit.PromptLabel(x, panel.yMax - 80f, 44f, PromptAction.Cancel, "Stay and explore", kb, ink);
+            // A toast (a new hat, a new best) goes just above the card, under any Merit card.
+            DrawToast(panel.y - 64f);
         }
     }
 }

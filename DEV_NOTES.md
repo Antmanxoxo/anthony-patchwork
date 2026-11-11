@@ -392,6 +392,19 @@ Stuff I need to remember about how Patchwork is put together.
 - `MusicPlayer.PodBands(float[])` gives the Pod song's loudness from low to high notes and
   `PodBeat` its beat count; `SoundRing` (in PodDreams.cs) draws the ring from them.
 
+## The planet, the pictures and the Merit Quilt
+- `World/GlobeDetail.cs`: the planet's map is `GlobeDetail.Paint(lon, lat)` (used by
+  `PatchworkTextures.BuildGlobe`), wrapped on `GlobeDetail.Sphere()`, a sphere laid out by
+  longitude and latitude the same way `LevelGlobe.Direction` places pins. `Height(dir)` says
+  what's land; `Dress` stands trees, cottages and mountains on it and adds the clouds.
+- `World/PodPictures.cs`: the four wall pictures, built flat inside their frames. Add a scene
+  by adding a case to `Build`.
+- `HubBuilder.MeritWall` draws every Merit's square; unearned ones are dashed rings.
+- Hub furniture collisions: `TidyRoom` gives wide items a box per part (`BumpBox`).
+- `ToyNpc.Focus`: set a point and every toy not playing turns to watch it; clear it after.
+- The editor is set to recompile after you stop playing (`PatchworkStoryMenu` sets
+  `ScriptCompilationDuringPlay`): recompiling mid-play leaves the code-built level broken.
+
 ## Habits
 - Test every change with Play and check the Console.
 - Keep it to C# 9 and older Unity APIs so it compiles everywhere.

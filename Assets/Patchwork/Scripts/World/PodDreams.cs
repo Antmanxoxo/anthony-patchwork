@@ -252,26 +252,29 @@ namespace Patchwork
             for (int i = -2; i <= 2; i++)
                 kit.Deco(PrimitiveType.Sphere, new Vector3(0.05f + i * 0.24f, 0.26f, -0.95f - Mathf.Abs(i) * 0.02f), Vector3.one * 0.11f, trim, default(Vector3), g);
 
-            // The kitten, curled up nose to tail.
+            // The kitten, curled up in a loaf on the throw: head resting on the front of its
+            // body, ears up, eyes shut and tail wrapped round its paws. It faces +x before turning.
             var cat = new GameObject("Kitten").transform;
             cat.SetParent(g, false);
-            cat.localPosition = new Vector3(0.05f, 0.92f, -0.12f);
-            cat.localRotation = Quaternion.Euler(0f, 35f, 0f);
+            cat.localPosition = new Vector3(0.05f, 0.93f, -0.2f);
+            cat.localRotation = Quaternion.Euler(0f, -30f, 0f);
             var fur = PatchworkAssets.Knit(new Color(0.95f, 0.62f, 0.32f));
             var pale = PatchworkAssets.Felt(new Color(0.99f, 0.94f, 0.86f));
-            var body = kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.13f, 0f), new Vector3(0.62f, 0.3f, 0.5f), fur, default(Vector3), cat);
-            kit.Deco(PrimitiveType.Sphere, new Vector3(0.26f, 0.15f, 0.14f), new Vector3(0.28f, 0.24f, 0.26f), fur, default(Vector3), cat);            // head, tucked in
-            kit.Deco(PrimitiveType.Sphere, new Vector3(0.36f, 0.11f, 0.18f), new Vector3(0.13f, 0.1f, 0.12f), pale, default(Vector3), cat);              // muzzle
-            kit.Deco(PrimitiveType.Sphere, new Vector3(0.41f, 0.12f, 0.2f), Vector3.one * 0.035f, PatchworkAssets.Felt(new Color(1f, 0.6f, 0.65f)), default(Vector3), cat);
-            foreach (float ez in new[] { 0.06f, 0.22f })
-                kit.Deco(PrimitiveType.Cube, new Vector3(0.24f, 0.28f, ez), new Vector3(0.09f, 0.11f, 0.03f), fur, new Vector3(0f, 0f, 45f), cat);       // ears
-            foreach (float ez in new[] { 0.09f, 0.21f })
-                kit.Deco(PrimitiveType.Cube, new Vector3(0.345f, 0.185f, ez + 0.04f), new Vector3(0.012f, 0.012f, 0.07f), PatchworkAssets.Felt(new Color(0.2f, 0.15f, 0.15f)), new Vector3(0f, 60f, 0f), cat);   // closed eyes
-            for (int i = 0; i < 6; i++)
+            var ink = PatchworkAssets.Felt(new Color(0.2f, 0.15f, 0.15f));
+            var body = kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.14f, 0f), new Vector3(0.6f, 0.28f, 0.48f), fur, default(Vector3), cat);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0.25f, 0.21f, 0f), Vector3.one * 0.26f, fur, default(Vector3), cat);                           // head
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0.355f, 0.17f, 0f), new Vector3(0.09f, 0.08f, 0.13f), pale, default(Vector3), cat);           // muzzle
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0.4f, 0.19f, 0f), Vector3.one * 0.035f, PatchworkAssets.Felt(new Color(1f, 0.6f, 0.65f)), default(Vector3), cat);   // nose
+            foreach (float ez in new[] { -0.055f, 0.055f })
             {
-                // The tail, wrapped round to the nose.
-                float a = Mathf.Lerp(200f, 20f, i / 5f) * Mathf.Deg2Rad;
-                kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 0.3f, 0.06f, Mathf.Sin(a) * 0.27f + 0.02f), Vector3.one * (0.12f - i * 0.008f), i == 5 ? pale : fur, default(Vector3), cat);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0.365f, 0.235f, ez), new Vector3(0.01f, 0.012f, 0.05f), ink, default(Vector3), cat);         // eyes, shut
+                kit.Deco(PrimitiveType.Cube, new Vector3(0.23f, 0.33f, ez * 1.4f), new Vector3(0.03f, 0.08f, 0.08f), fur, new Vector3(45f, 0f, 0f), cat);   // ears
+            }
+            for (int i = 0; i < 7; i++)
+            {
+                // The tail, from the back right round the bottom to the front paws.
+                float a = Mathf.Lerp(180f, 30f, i / 6f) * Mathf.Deg2Rad;
+                kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 0.31f, 0.05f, -Mathf.Sin(a) * 0.26f), Vector3.one * (0.11f - i * 0.006f), i == 6 ? pale : fur, default(Vector3), cat);
             }
             var breath = cat.gameObject.AddComponent<SleepyBreath>();
             breath.Body = body;

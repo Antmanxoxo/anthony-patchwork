@@ -71,7 +71,13 @@ namespace Patchwork
             if (Guardian != null)
             {
                 Guardian.gameObject.SetActive(true);
-                Guardian.position = player.transform.position;
+                // It bursts out of the needle a few steps in front of Patch, towards the pool
+                // (not right on top of him).
+                Vector3 toPool = Center - player.transform.position;
+                toPool.y = 0f;
+                toPool = toPool.sqrMagnitude > 0.01f ? toPool.normalized : Vector3.forward;
+                Guardian.position = player.transform.position + toPool * 2.6f + Vector3.up * 0.2f;
+                Guardian.rotation = Quaternion.LookRotation(-toPool, Vector3.up);
                 Guardian.localScale = Vector3.one * 0.1f;
             }
         }

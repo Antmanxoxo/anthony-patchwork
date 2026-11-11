@@ -1,5 +1,34 @@
 # Development Log
 
+## Pod and Toybox Town fixes, funny pictures, a detailed planet
+- Fixed the invisible wall in the Button Box doorway. Furniture made of parts spread apart
+  (the pinwheel pots either side of the door) got one solid box round the lot, right across
+  the doorway; now each part gets its own.
+- Sky Hoops can be finished: two rest clouds along the course, each with a puff of steam to
+  ride back up, the later hoops a little higher, and 50 seconds instead of 40.
+- The kitten on the bean bag is rebuilt as a neat curled-up loaf (it was poking through itself).
+- The four pictures on the Pod's walls are now funny snapshots of Patch and his gang (his
+  Water and Wind selves): Windy Hair Day, Bath Time, The Cake Thief and Group Photo.
+- The Merit Patches hang on a little Merit Quilt: a square for every one, earned ones in
+  colour and the rest as empty dashed rings, at a height you can see.
+- The planet outside the window has a new, detailed map (quilted fields with stitched seams,
+  beaches, shallows, wave stitches, lilac mountains with snowy tops, ragged ice caps, every
+  level's pin on land), little felt trees, cottages and mountains stood on it, and cotton-wool
+  clouds drifting round it.
+- The Level Complete card no longer has the hint card, score and toasts showing through it;
+  the toast and the Merit card now sit above it, and the counts are laid out as even tiles
+  (the thread count used to run into the marble count).
+- The wedding: Patch steps aside to stand with the guests instead of blocking the aisle, and
+  everyone turns to watch the couple instead of staring at him. (Toys no longer turn to look
+  at Patch during any cutscene.)
+- The moonlight fox in the Moonglow Glade bursts out a few steps in front of Patch, not on top
+  of him.
+- The toy soldier's tent was built upside down (a V instead of an A): fixed.
+- The ladder in the Button Orchard now leans against a real tree (and goes with it if that
+  tree is ever cleared away); before, it could be left standing against nothing.
+- The burst of red errors after changing scripts while playing: Unity is now set to wait until
+  you stop playing before it recompiles. Also cleared a compiler warning in Secrets.cs.
+
 ## The Pod's soundwave moved out to the backdrop
 - The ring of light now sits far out on the horizon (170 m away, well beyond the planets),
   drawn nine times bigger, with 144 bars, so it reads as a band of aurora light all the way

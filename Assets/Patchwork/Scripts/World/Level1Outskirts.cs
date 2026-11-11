@@ -650,15 +650,27 @@ namespace Patchwork
             Color[] leaves = { new Color(0.45f, 0.7f, 0.4f), new Color(0.55f, 0.75f, 0.42f), new Color(0.4f, 0.62f, 0.45f) };
             Color[] buttons = { new Color(0.95f, 0.35f, 0.4f), new Color(1f, 0.8f, 0.3f), new Color(0.45f, 0.65f, 1f), new Color(0.95f, 0.55f, 0.75f), new Color(0.6f, 0.85f, 0.5f) };
             // Rows of knitted trees, with a grassy aisle down the middle.
+            var planted = new List<Transform>();
             for (int row = 0; row < 3; row++)
                 for (int col = 0; col < 7; col++)
                 {
                     Vector3 near = new Vector3(-34f + col * 8.5f + (row % 2) * 4f, 0f, -109f + row * 7.5f);
                     if (!Spot(near, 2f, out Vector3 p)) continue;
-                    ButtonTree(kit, p, 5f + (float)rng.NextDouble() * 1.5f, leaves[(row + col) % leaves.Length], buttons, rng);
+                    planted.Add(ButtonTree(kit, p, 5f + (float)rng.NextDouble() * 1.5f, leaves[(row + col) % leaves.Length], buttons, rng));
                 }
-            // A ladder against one tree, baskets of buttons, fallen buttons, a cart and a bench.
-            Ladder(kit, new Vector3(-16.5f, 0f, -101.5f), 20f);
+            // A ladder against one tree (the one nearest where it was meant to go, wherever that
+            // ended up; it belongs to the tree, so if the tree is ever taken out it goes too),
+            // baskets of buttons, fallen buttons, a cart and a bench.
+            Transform pick = null;
+            Vector3 want = new Vector3(-16.5f, 0f, -101.5f);
+            foreach (var t in planted)
+                if (pick == null || (t.position - want).sqrMagnitude < (pick.position - want).sqrMagnitude) pick = t;
+            if (pick != null)
+            {
+                Vector3 dir = Quaternion.Euler(0f, 200f, 0f) * Vector3.forward;   // out on its south-west side
+                var ladder = Ladder(kit, pick.position + dir * 1.35f, Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg);
+                ladder.SetParent(pick, true);
+            }
             for (int i = 0; i < 4; i++)
             {
                 Vector3 near = new Vector3(-30f + i * 13f, 0f, (i % 2 == 0 ? -99.6f : -95.4f));
@@ -678,7 +690,7 @@ namespace Patchwork
                 "The town's buttons grow here! The trail west leads to the Whispering Wood... if you dare.");
         }
 
-        static void ButtonTree(LevelKit kit, Vector3 feet, float h, Color leaf, Color[] buttons, System.Random rng)
+        static Transform ButtonTree(LevelKit kit, Vector3 feet, float h, Color leaf, Color[] buttons, System.Random rng)
         {
             var g = kit.Group("ButtonTree", feet);
             g.rotation = Quaternion.Euler(0f, (float)rng.NextDouble() * 360f, 0f);
@@ -716,6 +728,7 @@ namespace Patchwork
                 sway.Speed = 1.2f + k * 0.13f;
             }
             Trunk(g, 0.3f, h);
+            return g;
         }
 
         static void FlatButton(LevelKit kit, Vector3 pos, float size, Color col, Vector3 euler)
@@ -727,7 +740,9 @@ namespace Patchwork
                 kit.Deco(PrimitiveType.Cylinder, new Vector3((h - 0.5f) * size * 0.3f, 0.005f, 0f), new Vector3(size * 0.12f, 0.03f, size * 0.12f), PatchworkAssets.Plain(new Color(0.15f, 0.12f, 0.15f), 0.4f), default(Vector3), b);
         }
 
-        static void Ladder(LevelKit kit, Vector3 feet, float yaw)
+        // A ladder standing at feet and leaning back (towards whatever's behind it, the way yaw
+        // faces) at its top.
+        static Transform Ladder(LevelKit kit, Vector3 feet, float yaw)
         {
             var g = kit.Group("Ladder", feet);
             g.rotation = Quaternion.Euler(0f, yaw, 0f) * Quaternion.Euler(-16f, 0f, 0f);
@@ -736,6 +751,7 @@ namespace Patchwork
                 kit.Deco(PrimitiveType.Cube, new Vector3(s * 0.35f, 1.7f, 0f), new Vector3(0.1f, 3.4f, 0.1f), wood, default(Vector3), g);
             for (int k = 0; k < 7; k++)
                 kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.3f + k * 0.45f, 0f), new Vector3(0.06f, 0.36f, 0.06f), wood, new Vector3(0f, 0f, 90f), g);
+            return g;
         }
 
         static void Basket(LevelKit kit, Vector3 feet, Color[] buttons, int seed)
@@ -1239,7 +1255,7 @@ namespace Patchwork
             var canvas = PatchworkAssets.Print(PatchworkAssets.PrintKind.Stripes, new Color(0.35f, 0.55f, 0.4f), new Color(0.95f, 0.9f, 0.75f));
             // The tent: two sloped panels and a dark doorway.
             for (int s = -1; s <= 1; s += 2)
-                kit.Deco(PrimitiveType.Cube, new Vector3(s * 0.85f, 1f, 3f), new Vector3(0.06f, 2.3f, 3f), canvas, new Vector3(0f, 0f, -s * 36f), g);
+                kit.Deco(PrimitiveType.Cube, new Vector3(s * 0.85f, 1f, 3f), new Vector3(0.06f, 2.3f, 3f), canvas, new Vector3(0f, 0f, s * 36f), g);   // leaning in to meet at the ridge
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.75f, 1.52f), new Vector3(1.2f, 1.4f, 0.04f), PatchworkAssets.Plain(new Color(0.1f, 0.08f, 0.1f), 0.2f), new Vector3(0f, 0f, 0f), g);
             Rod(kit, new Vector3(0f, 0f, 1.45f), new Vector3(0f, 1.95f, 1.45f), PatchworkAssets.Wood(new Color(0.6f, 0.45f, 0.32f)), 0.06f, g);
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 2.15f, 1.4f), new Vector3(0.02f, 0.3f, 0.4f), PatchworkAssets.Felt(new Color(0.9f, 0.3f, 0.35f)), default(Vector3), g);

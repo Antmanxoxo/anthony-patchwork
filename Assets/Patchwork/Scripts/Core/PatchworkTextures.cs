@@ -61,7 +61,7 @@ namespace Patchwork
             Paint = Build(256, PaintHeight, 0.92f, 0.08f, 1.1f, new Color(1f, 1f, 1f), 0.15f, 0.05f, 3);
             CraftWater = BuildCraftWater(256);
             PaintMarble = BuildMarble(256);
-            GlobeMap = BuildGlobe(256, 128);
+            GlobeMap = BuildGlobe(640, 320);
             BalloonQuilt = BuildBalloon(256, 128);
         }
 
@@ -473,37 +473,23 @@ namespace Patchwork
         }
 
         // A quilted world map: sea patches and land patches, each square edged with stitches.
+        // The patchwork planet's map, laid out by longitude (across) and latitude (up). What's
+        // drawn where is worked out in GlobeDetail.Paint.
         static Texture2D BuildGlobe(int w, int h)
         {
-            Color[] sea = { new Color(0.45f, 0.62f, 0.85f), new Color(0.5f, 0.68f, 0.88f), new Color(0.4f, 0.56f, 0.8f) };
-            Color[] land = { new Color(0.62f, 0.78f, 0.5f), new Color(0.75f, 0.84f, 0.52f), new Color(0.98f, 0.86f, 0.55f),
-                             new Color(0.95f, 0.7f, 0.6f), new Color(0.78f, 0.7f, 0.9f), new Color(0.55f, 0.72f, 0.48f) };
-            var t = NewColourTex(w, h);
-            t.wrapMode = TextureWrapMode.Clamp;
-            var px = new Color[w * h];
-            const int cellsX = 24, cellsY = 12;
+            var map = NewColourTex(w, h);
+            map.wrapModeU = TextureWrapMode.Repeat;
+            map.wrapModeV = TextureWrapMode.Clamp;
+            var all = new Color[w * h];
             for (int y = 0; y < h; y++)
+            {
+                float lat = -90f + 180f * (y + 0.5f) / h;
                 for (int x = 0; x < w; x++)
-                {
-                    float u = x / (float)w, v = y / (float)h;
-                    int cx = Mathf.FloorToInt(u * cellsX), cy = Mathf.FloorToInt(v * cellsY);
-                    float landness = ValueNoise((cx + 0.5f) / cellsX, (cy + 0.5f) / cellsY, 6, 41);
-                    bool isLand = landness > 0.52f && cy > 0 && cy < cellsY - 1;
-                    Color c = isLand ? land[(cx * 7 + cy * 3) % land.Length] : sea[(cx + cy) % sea.Length];
-                    if (cy == 0 || cy == cellsY - 1) c = new Color(0.96f, 0.93f, 0.88f); // felt ice caps
-                    c *= 0.94f + Hash(x, y) * 0.08f;
-                    // Stitches around each patch: dashes just inside the edge.
-                    float fu = u * cellsX - cx, fv = v * cellsY - cy;
-                    bool nearV = fu < 0.08f || fu > 0.92f, nearH = fv < 0.08f || fv > 0.92f;
-                    bool dashV = Mathf.Repeat(fv * 6f, 1f) < 0.55f, dashH = Mathf.Repeat(fu * 6f, 1f) < 0.55f;
-                    if ((nearV && dashV && !nearH) || (nearH && dashH && !nearV)) c = Color.Lerp(c, new Color(1f, 0.97f, 0.9f), 0.75f);
-                    if (fu < 0.02f || fv < 0.02f) c *= 0.75f; // seam shadow
-                    c.a = 1f;
-                    px[y * w + x] = c;
-                }
-            t.SetPixels(px);
-            t.Apply(true);
-            return t;
+                    all[y * w + x] = GlobeDetail.Paint(-180f + 360f * (x + 0.5f) / w, lat);
+            }
+            map.SetPixels(all);
+            map.Apply(true);
+            return map;
         }
 
         // Long patchwork panels (like balloon gores) in soft colours, with stitched seams.

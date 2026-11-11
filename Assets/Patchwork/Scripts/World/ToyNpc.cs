@@ -18,6 +18,9 @@ namespace Patchwork
         public System.Action TalkEnded;
         public bool Playing;            // performing (bobs to the beat, plays the instrument)
         public bool LookAtPatch = true;
+        // While something's happening (a wedding, say), everyone not busy playing turns to
+        // watch it instead of staring at Patch.
+        public static Vector3? Focus;
 
         float height = 1.6f;
         Transform body, head, instrumentRoot, arm;
@@ -390,7 +393,13 @@ namespace Patchwork
 
             float want = baseYaw;
             var game = PatchworkGame.Instance;
-            if (LookAtPatch && !Playing && game != null && game.Player != null)
+            if (Focus.HasValue && !Playing)
+            {
+                Vector3 to = Focus.Value - transform.position;
+                to.y = 0f;
+                if (to.sqrMagnitude < 40f * 40f && to.sqrMagnitude > 0.01f) want = Mathf.Atan2(to.x, to.z) * Mathf.Rad2Deg;
+            }
+            else if (LookAtPatch && !Playing && game != null && game.Player != null && game.Mode == UIMode.Gameplay)
             {
                 Vector3 to = game.Player.transform.position - transform.position;
                 to.y = 0f;

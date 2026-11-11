@@ -7,7 +7,7 @@ namespace Patchwork
     // stay saved; going back shows a pale "already found" one worth a few points.
     public class SecretMarble : PlayerVolume
     {
-        public static readonly List<SecretMarble> All = new List<SecretMarble>();
+        public static new readonly List<SecretMarble> All = new List<SecretMarble>();
         public string Id;
         Transform visual, swirl;
         Vector3 home;

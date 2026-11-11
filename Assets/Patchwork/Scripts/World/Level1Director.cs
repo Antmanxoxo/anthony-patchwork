@@ -95,7 +95,7 @@ namespace Patchwork
         public static void ResetStatics() { Instance = null; }
 
         void Awake() { Instance = this; }
-        void OnDestroy() { if (Instance == this) Instance = null; }
+        void OnDestroy() { if (Instance == this) Instance = null; ToyNpc.Focus = null; }
 
         bool Done { get { return GameState.IsLevelComplete(Level1Builder.SceneName); } }
 
@@ -272,6 +272,13 @@ namespace Patchwork
                 FxBurst.Spawn(FxBurst.Kind.Puff, g.transform.position + Vector3.up, Color.white);
             }
             game.CutsceneCaption = "The Toybox Wedding";
+            // Patch steps aside to watch with the guests (he was standing right in the aisle,
+            // between the camera and the couple), and everyone turns to the arch.
+            Vector3 seat = ArchCenter + new Vector3(-5.4f, 0.06f, -4.2f);
+            Vector3 look = ArchCenter - seat;
+            game.Player.Motor.Teleport(seat, Mathf.Atan2(look.x, look.z) * Mathf.Rad2Deg);
+            FxBurst.Spawn(FxBurst.Kind.Poof, seat + Vector3.up, Color.white);
+            ToyNpc.Focus = ArchCenter + new Vector3(0f, 0f, -0.4f);
             game.StartCutscene(ArchCenter + new Vector3(0f, 0f, 3f), 15f, 5f, 180f);
             SetBandPlaying(true);
             foreach (var c in Crowd) if (c != null) c.Playing = true;
@@ -386,6 +393,7 @@ namespace Patchwork
             if (weddingT > 14.6f)
             {
                 weddingT = -1f;
+                ToyNpc.Focus = null;
                 foreach (var g in ExtraGuests) if (g != null) g.Playing = false;
                 foreach (var c in Crowd) if (c != null) c.Playing = false;
                 if (game != null)

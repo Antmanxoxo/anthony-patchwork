@@ -175,21 +175,32 @@ namespace Patchwork
             kit.Updraft(towerFeet, 22f, LevelKit.UpdraftStyle.Vent);
             var game = kit.Volume<SkyHoopChallenge>(towerFeet + new Vector3(-3.5f, 1f, -1f), new Vector3(1.8f, 2f, 1.8f), "SkyHoops");
             game.Title = "Sky Hoops";
-            game.Duration = 40f;
+            game.Duration = 50f;
             var btnRoot = kit.Group("SkyHoopsButton", towerFeet + new Vector3(-3.5f, 0f, -1f));
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.06f, 0f), new Vector3(1.6f, 0.06f, 1.6f), PatchworkAssets.Felt(new Color(0.99f, 0.95f, 0.88f)), default(Vector3), btnRoot);
             game.Button = kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.18f, 0f), new Vector3(1.1f, 0.12f, 1.1f), PatchworkAssets.Plain(new Color(0.4f, 0.7f, 1f), 0.7f), default(Vector3), btnRoot);
 
-            // Eight hoops gliding north, gently descending.
+            // Eight hoops gliding north, gently descending. Nobody can glide that far in one go,
+            // so there are two rest clouds along the way, each with a puff of steam to ride back
+            // up: drop onto one, float up again and carry on.
+            float[] heights = { 19f, 17f, 15f, 18f, 16f, 14f, 17f, 15f };
             for (int i = 0; i < 8; i++)
             {
                 float z = -8f + i * 9f;
-                Vector3 p = new Vector3(103f + Mathf.Sin(i * 0.9f) * 6f, 19f - i * 2f, z);
+                Vector3 p = new Vector3(103f + Mathf.Sin(i * 0.9f) * 6f, heights[i], z);
                 var hoop = SkyHoop.Create(kit, p, threads[i % threads.Length], game);
                 game.Hoops.Add(hoop);
             }
+            foreach (int after in new[] { 2, 5 })
+            {
+                float z = -8f + (after + 0.5f) * 9f;
+                float x = 103f + (Mathf.Sin(after * 0.9f) + Mathf.Sin((after + 1) * 0.9f)) * 3f;
+                Vector3 c = new Vector3(x, heights[after] - 4f, z);
+                QuestCloud(kit, c, 3.2f);
+                kit.Updraft(c, heights[after + 1] - c.y + 4f, LevelKit.UpdraftStyle.Steam);
+            }
             kit.Hint(towerFeet + new Vector3(-3.5f, 1.5f, -3.5f), new Vector3(5f, 3f, 3f), "Sky Hoops",
-                "Step on the button, then float up the updraft as Wind and glide through all eight hoops before time runs out! Tap {Ability} for a gust if you're dropping too fast.", HintTheme.Wind);
+                "Step on the button, then float up the updraft as Wind and glide through all eight hoops before time runs out! Too low? Land on a rest cloud and ride its steam back up. Tap {Ability} for a gust if you're dropping too fast.", HintTheme.Wind);
         }
     }
 
