@@ -1,5 +1,36 @@
 # Development Log
 
+## Level 2: depth, detail, a new hall and new music
+- The pole in the atrium's west doorway is gone (a wall pier was standing in the arch).
+- The atrium's ceiling is now the showpiece: twinkling stars and a milky way, six
+  constellations of the sea (whale, turtle, ship, anchor, seahorse, lighthouse) that light
+  up one after another, a brass zodiac and a ring of moon phases turning round the middle,
+  paper stars on threads all down the hall, star dust falling through the moonbeams, and
+  shooting stars.
+- Outside: a lighthouse sweeping its beam, boats bobbing at anchor, a far ship strung with
+  lights, islands, the northern lights, shooting stars, fairy lights, a ticket booth,
+  bronze statues, an anchor, compass roses, flower boxes, flags and a clock over the door.
+- New hall: the Hall of Arms, through a new doorway on the south terrace of the Sunken
+  Ruins. Eight armours from round the world (knight, hoplite, legionary, Norse raider,
+  samurai, terracotta soldier, steppe archer, eagle warrior) whose helmets turn to watch
+  you, a knight on horseback, stained glass, a long embroidery, a wall of weapons, a model
+  Japanese castle and a model castle you can climb (golden button on top, marble behind).
+- More in every hall: palms, pictures, a gift cart, turnstiles, a narwhal tusk and a clock
+  in the atrium; a pterosaur, an ichthyosaur slab, crystals and dinosaur footprints in the
+  Hall of Deep Time; otters, a touch pool, seahorse tanks, nets and hanging weed in the
+  Kelp Galleries; a bathysphere, a giant squid, black smokers and crabs in the Great Deep;
+  waterfalls, vines, a stone hand, lotus lamps and a mosaic in the Ruins; hanging planets
+  and the Moon on the bridge; armchairs, a star globe and dome constellations in the
+  Observatory. Drifting motes of light in most halls.
+- New music: the waltz was rewritten from scratch. It's now a sweeping carousel waltz led
+  by a piano (a new instrument), in a minor key, that opens into a soaring major section and
+  comes home again. The strings play from the start now; accordion, flute and bells join at
+  the first Heartstring; horns and drums when the lift opens.
+- Small fixes from the first run: Patch no longer starts inside the Pod's crater rim, a
+  few threads and one golden button were inside solid things, and two lamps were sunk into
+  the portico's columns.
+- Now 5 golden buttons and 4 marbles in Level 2.
+
 ## Level 2: The Oceanic Museum
 - A whole new level, bigger than Toybox Town and walked more like a visit: one way round,
   with side trips. It's night, the museum is closed, and it's all yours.

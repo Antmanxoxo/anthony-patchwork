@@ -451,6 +451,13 @@ Stuff I need to remember about how Patchwork is put together.
   3 Heartstrings, sets the music's layers and runs the telescope ending.
 - Music layers: `MusicPlayer.SetMuseumLayers(strings, winds, grand)` and
   `SetMuseumDepth(0..1)`.
+- `Level2Details.cs` is the second pass (decor only, plus the atrium's `StarCeiling`);
+  `Level2Arms.cs` is the Hall of Arms (ArmsX0.. constants). `Armour(kit, foot, yaw,
+  Warrior.X)` makes one suit; its helmet has a `WatchPlayer`.
+- Little effects in `MuseumLife.cs`: `StarTwinkle`, `ConstellationShow`, `ShootingStar`,
+  `DriftMotes`, `StarMobile`, `SeaBob`, `WatchPlayer`. Helpers: `Twinkling`, `Motes`,
+  `Shooting`, `Painting`, `Palm`, `Crate`, `Vine`, `Boat`.
+- The museum's piano and violins are `AddPiano` / `AddViolins` in `MusicMuseum.cs`.
 
 ## Habits
 - Test every change with Play and check the Console.

@@ -20,23 +20,25 @@ namespace Patchwork
     //                                Bell in the middle with its jellyfish
     //   The Sunken Ruins (E)       - a drowned temple: broken columns to hop, channels to swim,
     //                                a wreck to climb, and the lift at the far end
+    //   The Hall of Arms (SE)      - knights and samurai, legionaries and hoplites, a castle
+    //                                to climb; a side hall off the ruins' south terrace
     //   The Orrery Bridge          - planets going round on brass arms over a starry drop
     //   The Observatory (middle)   - under a glass dome on the sea floor, the great telescope,
     //                                and a balcony looking down over the whole atrium
     //
     // Ground level is y = 0. The main way round is walkable by every form; Water Form and Yarn
     // Form get the most extra routes (pools, fountains and drains; lanterns and knots to swing on).
-    // 6 Heartstrings (3 open the Observatory lift), 4 golden buttons and 3 secret marbles.
+    // 6 Heartstrings (3 open the Observatory lift), 5 golden buttons and 4 secret marbles.
     public static partial class Level2Builder
     {
         public const string SceneName = "Level2";
-        public static readonly string[] CollectibleIds = { "L2_b_obelisk", "L2_b_catwalk", "L2_b_crowsnest", "L2_b_library" };
+        public static readonly string[] CollectibleIds = { "L2_b_obelisk", "L2_b_catwalk", "L2_b_crowsnest", "L2_b_library", "L2_b_keep" };
         public static readonly string[] HeartstringIds = { "L2_hs_balcony", "L2_hs_longship", "L2_hs_kelp", "L2_hs_bell", "L2_hs_temple", "L2_hs_orrery" };
-        public static readonly string[] MarbleIds = { "L2_marble_desk", "L2_marble_sarcophagus", "L2_marble_seabed" };
+        public static readonly string[] MarbleIds = { "L2_marble_desk", "L2_marble_sarcophagus", "L2_marble_seabed", "L2_marble_armoury" };
         public const int HeartstringsNeeded = 3;
 
         static readonly Vector3 PodLanding = new Vector3(0f, 0f, -151f);
-        static readonly Vector3 SpawnPoint = new Vector3(0f, 0f, -143f);
+        static readonly Vector3 SpawnPoint = new Vector3(0f, 0f, -145.6f);
 
         // The museum's plan (see each part's own file for what's in it).
         const float AtriumHalf = 30f, AtriumZ0 = -108f, AtriumZ1 = -48f, AtriumTop = 30f;
@@ -45,6 +47,7 @@ namespace Patchwork
         const float DeepX0 = -30f, DeepX1 = 42f, DeepZ0 = 20f, DeepZ1 = 100f, DeepFloor = -7f, DeepTop = 26f;
         const float TunnelZ = 66f;
         const float RuinX0 = 44f, RuinX1 = 100f, RuinZ0 = 6f, RuinZ1 = 100f, RuinTop = 24f;
+        const float ArmsX0 = 60f, ArmsX1 = 100f, ArmsZ0 = -52f, ArmsZ1 = 4f, ArmsTop = 20f;
         const float DeckY = 14f;
         static readonly Vector3 Observatory = new Vector3(0f, DeckY, -20f);
         const float ObsRadius = 26f;
@@ -108,6 +111,7 @@ namespace Patchwork
             P.Add(new MapPin("Drowned Temple", new Vector3(72f, 0f, 58f)));
             P.Add(new MapPin("The Wreck", new Vector3(91f, 0f, 40f)));
             P.Add(new MapPin("Observatory Lift", new Vector3(50f, 0f, 12f), MapPin.Kind.Shop));
+            P.Add(new MapPin("Hall of Arms", new Vector3(80f, 0f, -24f), MapPin.Kind.Area));
 
             var moodGo = new GameObject("Level2Mood");
             moodGo.transform.SetParent(kit.Root, false);
@@ -126,6 +130,8 @@ namespace Patchwork
             Ruins(kit);
             OrreryBridge(kit);
             ObservatoryHall(kit);
+            HallOfArms(kit);
+            Details(kit);
 
             // The hush of the halls, and the deep rumble by the big tanks.
             var sounds = kit.Group("LevelSounds", Vector3.zero);
@@ -186,6 +192,13 @@ namespace Patchwork
                 Box = Box(KelpX0 - 2f, KelpX1 + 0.5f, -12f, 40f, HistZ1 + 3f, KelpZ1 + 2f),
                 AmbientSky = new Color(0.24f, 0.5f, 0.52f), AmbientSide = new Color(0.18f, 0.36f, 0.42f), AmbientGround = new Color(0.08f, 0.17f, 0.24f),
                 Fog = new Color(0.04f, 0.2f, 0.27f), Backdrop = new Color(0.02f, 0.12f, 0.18f), SunColor = new Color(0.6f, 0.95f, 0.9f), FogStart = 16f, FogEnd = 125f, Sun = 0.35f, Depth = 0.3f
+            });
+            Z.Add(new Level2Mood.Zone
+            {
+                Name = "The Hall of Arms", Line = "The Hall of Arms. Everybody in here is standing very still, and you can't help feeling they've only just stopped moving.",
+                Box = Box(ArmsX0 - 2f, ArmsX1 + 2f, -3f, 40f, ArmsZ0 - 2f, ArmsZ1 + 0.6f),
+                AmbientSky = new Color(0.58f, 0.42f, 0.38f), AmbientSide = new Color(0.5f, 0.34f, 0.3f), AmbientGround = new Color(0.28f, 0.18f, 0.17f),
+                Fog = new Color(0.22f, 0.1f, 0.1f), Backdrop = new Color(0.06f, 0.03f, 0.04f), SunColor = new Color(1f, 0.8f, 0.6f), FogStart = 40f, FogEnd = 220f, Sun = 0.6f
             });
             Z.Add(new Level2Mood.Zone
             {
@@ -293,7 +306,7 @@ namespace Patchwork
             // ----- The quay -----
             // A star-cloth runner from the Pod to the doors.
             Rug(kit, new Vector3(0f, 0f, -127f), new Vector2(5f, 30f), StarCloth, 0f, PatchworkAssets.Felt(new Color(1f, 0.82f, 0.4f)));
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 3; i++)
                 for (int s = -1; s <= 1; s += 2)
                     FloorLamp(kit, new Vector3(s * 5.5f, 0f, -139f + i * 8.4f), i % 2 == 0);
             for (int s = -1; s <= 1; s += 2)
@@ -376,7 +389,19 @@ namespace Patchwork
                 float s = 0.9f + (float)rng.NextDouble() * 2.2f;
                 batches[i % 3].Ball(p, Vector3.one * s, 2, 5);
             }
-            for (int i = 0; i < 3; i++) batches[i].Build(kit.Root, "Stars", stars[i]);
+            // (Each third of the sky twinkles to its own time.)
+            Color[] starTints = { new Color(1f, 0.97f, 0.9f), new Color(0.7f, 0.82f, 1f), new Color(1f, 0.85f, 0.55f) };
+            for (int i = 0; i < 3; i++) Twinkling(batches[i], kit.Root, "Stars", starTints[i], 1.3f, 3.2f, 0.8f + i * 0.45f, i * 2.1f);
+            // The milky way: a band of fainter stars right across the sky.
+            var band = new MeshBatch();
+            for (int i = 0; i < 700; i++)
+            {
+                float a = (float)rng.NextDouble() * Mathf.PI;
+                float off = ((float)rng.NextDouble() + (float)rng.NextDouble() - 1f) * 0.22f;
+                Vector3 d = Quaternion.Euler(0f, 35f, 0f) * new Vector3(Mathf.Cos(a), Mathf.Sin(a) * 0.9f + 0.1f, off).normalized;
+                band.Ball(mid + d * 335f, Vector3.one * (0.6f + (float)rng.NextDouble() * 0.9f), 2, 4);
+            }
+            Twinkling(band, kit.Root, "MilkyWay", new Color(0.8f, 0.82f, 1f), 1f, 2f, 0.5f, 1f);
             // The moon, with a button's four holes in it.
             Vector3 moon = new Vector3(-150f, 170f, 60f);
             var m = kit.Group("Moon", moon);
@@ -432,7 +457,10 @@ namespace Patchwork
                 Arc(kit, new Vector3(-AtriumHalf, 20f, z), new Vector3(AtriumHalf, 20f, z), 8.4f, 0.16f, 0.9f, Brass, 18);
                 for (int s = -1; s <= 1; s += 2)
                 {
-                    kit.Deco(PrimitiveType.Cube, new Vector3(s * (AtriumHalf - 0.6f), 12f, z), new Vector3(1.2f, 20f, 1.6f), PaleStone);
+                    // A stone pier under each rib, except where there's a doorway (west, middle)
+                    // or the Great Window (east) to stand in front of.
+                    bool clear = s < 0 ? Mathf.Abs(z + 78f) < 1f : z > -103f && z < -53f;
+                    if (!clear) kit.Deco(PrimitiveType.Cube, new Vector3(s * (AtriumHalf - 0.6f), 11f, z), new Vector3(1.2f, 22f, 1.6f), PaleStone);
                     kit.Deco(PrimitiveType.Cube, new Vector3(s * (AtriumHalf - 0.8f), 21.6f, z), new Vector3(1.8f, 0.8f, 2.2f), Ashlar);
                 }
             }
@@ -445,7 +473,7 @@ namespace Patchwork
                 NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, H - 0.1f, z), new Vector3(9f, 0.2f, 0.2f), rib));
                 NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(-4f, H * 0.5f, z), new Vector3(6f, H * 1.04f, 0.04f), moonShaft, new Vector3(0f, 20f, 15f)));
             }
-            PaintedStars(kit, new Vector3(0f, H - 0.06f, -78f), 58f, 58f, 260, 5);
+            StarCeiling(kit, H);
 
             // ----- The Great Window -----
             var win = Tank(kit, new Vector3(AtriumHalf, 0f, -78f), 270f, 48f, 22f, 30f, 8, 4, new Color(0.02f, 0.1f, 0.3f), new Color(0.2f, 0.72f, 0.85f), 0f, true, true, 11);

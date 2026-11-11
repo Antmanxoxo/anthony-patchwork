@@ -72,7 +72,8 @@ namespace Patchwork
             Wall(kit, new Vector3(43f, 0f, 96f), new Vector3(43f, 0f, 102f), -8f, T + 8f, 2f, stone);
             Wall(kit, new Vector3(42f, 0f, 101f), new Vector3(102f, 0f, 101f), -8f, T + 8f, 2f, stone);
             Wall(kit, new Vector3(101f, 0f, 4f), new Vector3(101f, 0f, 102f), -8f, T + 8f, 2f, stone);
-            Wall(kit, new Vector3(42f, 0f, 5f), new Vector3(102f, 0f, 5f), -8f, T + 8f, 2f, stone);
+            // South wall, with the doorway through to the Hall of Arms.
+            WallWithDoor(kit, new Vector3(42f, 0f, 5f), new Vector3(102f, 0f, 5f), -8f, T + 8f, 2f, stone, 38f, 8f, 7.5f);
             kit.Block(new Vector3(72f, T + 0.5f, 53f), new Vector3(60f, 1f, 98f), Navy, "RuinsCeiling", PatchworkAssets.Felt(new Color(0.05f, 0.14f, 0.13f)));
             // Light falling through cracks in the roof.
             var crack = PatchworkAssets.Glow(new Color(0.6f, 1f, 0.85f), 1.2f);
@@ -188,8 +189,9 @@ namespace Patchwork
                 "Never mind. They've had worse. They've had the whole sea sitting on them.",
                 "The lift's in the corner, behind the brass gate. It opens for three Heartstrings. There's one on the temple altar, if you're short."
             });
-            foreach (float x in new[] { 56f, 68f, 80f, 92f }) Sconce(kit, new Vector3(x, 4.4f, 6f), 0f, x == 68f || x == 92f);
-            Banner(kit, new Vector3(82f, 17f, 6.1f), 0f, 3.2f, 9f, StarCloth, 3);
+            foreach (float x in new[] { 56f, 68f, 96f }) Sconce(kit, new Vector3(x, 4.4f, 6f), 0f, x == 68f || x == 96f);
+            Banner(kit, new Vector3(90f, 18f, 6.1f), 0f, 3.2f, 8f, StarCloth, 3);
+            Banner(kit, new Vector3(74f, 18f, 6.1f), 0f, 3.2f, 8f, PatchworkAssets.Print(PatchworkAssets.PrintKind.Stripes, Wine, new Color(1f, 0.82f, 0.4f)), 0);
             Banner(kit, new Vector3(66f, 17f, 6.1f), 0f, 3.2f, 9f, PlumStars, 1);
             TrailLine(kit, new Vector3(64f, 1.2f, 22f), new Vector3(53f, 1.2f, 12f), 6);
         }
@@ -287,7 +289,7 @@ namespace Patchwork
             }
             var hoop = kit.Group("NestRail", mast + Vector3.up * 9.4f);
             Hoop(kit, hoop, 1.85f, 0.14f, DarkWood, 16);
-            kit.GoldenButton("L2_b_crowsnest", mast + Vector3.up * 9.9f);
+            kit.GoldenButton("L2_b_crowsnest", mast + new Vector3(1.05f, 9.9f, 0f));
             // From the temple: one stump to hop, or the lantern to swing on.
             Stump(kit, 84.5f, 52f, 1.7f, 1.3f, true);
             kit.Deco(PrimitiveType.Cube, new Vector3(85f, RuinTop - 1f, 47f), new Vector3(0.5f, 0.5f, 5f), IronMat);
@@ -515,7 +517,7 @@ namespace Patchwork
             kit.AddCheckpoint(new Vector3(39f, DeckY, 12f), 270f);
             Trail(kit, 10, new Vector3(40f, DeckY + 1.2f, 11f), new Vector3(36f, DeckY + 1.2f, 12f), new Vector3(32f, DeckY + 1.2f, 12.6f));
             Trail(kit, 10, new Vector3(11f, DeckY + 1.2f, 12.6f), new Vector3(7f, DeckY + 1.2f, 11.6f), new Vector3(3f, DeckY + 1.2f, 10f), new Vector3(0f, DeckY + 1.2f, 7.6f));
-            kit.ThreadLine(new Vector3(8f, low + 1.3f, 12f), new Vector3(34f, low + 1.3f, 12f), 9);
+            kit.ThreadLine(new Vector3(15.5f, low + 1.3f, 10.2f), new Vector3(26.5f, low + 1.3f, 10.2f), 6);
             kit.Hint(new Vector3(36f, DeckY + 1.5f, 12f), new Vector3(10f, 4f, 10f), "The Orrery Bridge",
                 "Step onto a planet as it comes round, ride it to the hub in the middle, and take another across to the far side. If you fall, the stairs are at either end of the floor below.");
             Plaque(kit, new Vector3(33f, DeckY, 16.4f), 180f, "The Orrery",

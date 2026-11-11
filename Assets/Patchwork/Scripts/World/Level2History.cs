@@ -48,7 +48,7 @@ namespace Patchwork
             Trail(kit, 10, new Vector3(-36f, 1.2f, -78f), new Vector3(-41f, 1.2f, -78f), new Vector3(-46f, 1.2f, -76f), new Vector3(-48.5f, 1.2f, -71f), new Vector3(-49f, 1.2f, -65f),
                 new Vector3(-49f, 1.2f, -59f), new Vector3(-49f, 1.2f, -53f));
             Trail(kit, 10, new Vector3(-50f, 1.2f, -45f), new Vector3(-53f, 1.2f, -40f), new Vector3(-56f, 1.2f, -35f), new Vector3(-58f, 1.2f, -29f), new Vector3(-60f, 1.2f, -23f), new Vector3(-60f, 1.2f, -17f));
-            kit.ThreadLine(new Vector3(-70f, 1.3f, -86f), new Vector3(-52f, 1.3f, -86f), 6);
+            kit.ThreadLine(new Vector3(-70f, 1.3f, -84f), new Vector3(-55f, 1.3f, -84f), 6);
             kit.Hint(new Vector3(-42f, 1.5f, -78f), new Vector3(8f, 4f, 10f), "The Hall of Deep Time",
                 "The Kelp Galleries are through the arch at the far north end. There's a Heartstring on the longship hanging in the rafters: climb the painters' scaffold beside it, or swing across from the upper gallery.");
             Person(kit, new Vector3(-51f, 0f, -80f), 100f, ToyNpc.Kind.TinSoldier, "Sergeant Stanchion", new Color(0.7f, 0.2f, 0.25f), new Color(1f, 0.82f, 0.4f), 0.8f, () => new[]

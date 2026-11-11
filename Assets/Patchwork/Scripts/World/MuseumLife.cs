@@ -162,6 +162,190 @@ namespace Patchwork
         }
     }
 
+    // A whole sheet of stars breathing brighter and dimmer together (several sheets, each at its
+    // own pace, make a sky that twinkles).
+    public class StarTwinkle : MonoBehaviour
+    {
+        public Material Mat;
+        public Color Tint = Color.white;
+        public float Low = 1f, High = 2.6f, Speed = 1f, Phase;
+
+        void Update()
+        {
+            if (Mat == null) return;
+            float k = 0.5f + 0.5f * Mathf.Sin(Time.time * Speed + Phase);
+            Mat.SetColor("_EmissionColor", Tint * Mathf.Lerp(Low, High, k * k));
+        }
+    }
+
+    // The constellations on the atrium's ceiling take turns to blaze: one lights up, holds,
+    // and fades as the next begins.
+    public class ConstellationShow : MonoBehaviour
+    {
+        public Material[] Figures;
+        public Color[] Tints;
+        public float Dim = 0.45f, Bright = 3.4f, Each = 6f;
+        float[] level;
+
+        void Update()
+        {
+            if (Figures == null || Figures.Length == 0) return;
+            if (level == null || level.Length != Figures.Length) level = new float[Figures.Length];
+            float t = Time.time / Each;
+            int now = Mathf.FloorToInt(t) % Figures.Length;
+            float within = t - Mathf.Floor(t);
+            for (int i = 0; i < Figures.Length; i++)
+            {
+                float want = i == now ? Mathf.Sin(within * Mathf.PI) : 0f;
+                level[i] = Mathf.MoveTowards(level[i], want, Time.deltaTime * 1.5f);
+                if (Figures[i] == null) continue;
+                float shimmer = 1f + 0.12f * Mathf.Sin(Time.time * 7f + i);
+                Figures[i].SetColor("_EmissionColor", Tints[i % Tints.Length] * Mathf.Lerp(Dim, Bright, level[i]) * shimmer);
+            }
+        }
+    }
+
+    // A shooting star: every so often it streaks across from one side to the other, a little
+    // differently each time, and is gone.
+    public class ShootingStar : MonoBehaviour
+    {
+        public Vector3 From, To, Scatter;
+        public float Every = 8f, Take = 0.8f, Offset, Length = 5f, Thickness = 0.14f;
+
+        void Update()
+        {
+            float clock = Time.time + Offset;
+            float t = Mathf.Repeat(clock, Every);
+            if (t > Take)
+            {
+                transform.localScale = Vector3.zero;
+                return;
+            }
+            int turn = Mathf.FloorToInt(clock / Every);
+            float ra = Mathf.Repeat(Mathf.Sin(turn * 12.9898f) * 43758.5f, 1f) - 0.5f;
+            float rb = Mathf.Repeat(Mathf.Sin(turn * 78.233f) * 12543.1f, 1f) - 0.5f;
+            Vector3 shift = new Vector3(Scatter.x * ra, Scatter.y * rb, Scatter.z * rb);
+            Vector3 a = From + shift, b = To + new Vector3(Scatter.x * rb, Scatter.y * ra, Scatter.z * ra);
+            float k = t / Take;
+            Vector3 dir = (b - a).normalized;
+            transform.position = Vector3.Lerp(a, b, k * k * (3f - 2f * k));
+            transform.rotation = Quaternion.LookRotation(dir, Mathf.Abs(dir.y) > 0.95f ? Vector3.forward : Vector3.up);
+            float fade = Mathf.Sin(k * Mathf.PI);
+            transform.localScale = new Vector3(Thickness * fade, Thickness * fade, Length * (0.3f + fade));
+        }
+    }
+
+    // Motes of light drifting through a box of air (or water), wrapping round when they leave
+    // it: star dust in the atrium, fireflies on the quay, marine snow outside the tunnel.
+    public class DriftMotes : MonoBehaviour
+    {
+        public Transform[] Motes;
+        public Vector3 Size = new Vector3(20f, 10f, 20f);
+        public Vector3 Drift = new Vector3(0.1f, -0.25f, 0.05f);
+        public float Wander = 0.6f, MoteSize = 0.12f, Flicker = 2f;
+
+        void Update()
+        {
+            if (Motes == null) return;
+            float time = Time.time;
+            for (int i = 0; i < Motes.Length; i++)
+            {
+                if (Motes[i] == null) continue;
+                float sx = Mathf.Repeat(i * 0.6180339f, 1f), sy = Mathf.Repeat(i * 0.3819660f + 0.37f, 1f), sz = Mathf.Repeat(i * 0.7548777f + 0.11f, 1f);
+                float speed = 0.6f + sx * 0.8f;
+                Vector3 p = new Vector3(
+                    Mathf.Repeat(sx * Size.x + Drift.x * time * speed, Size.x) - Size.x * 0.5f,
+                    Mathf.Repeat(sy * Size.y + Drift.y * time * speed, Size.y) - Size.y * 0.5f,
+                    Mathf.Repeat(sz * Size.z + Drift.z * time * speed, Size.z) - Size.z * 0.5f);
+                p.x += Mathf.Sin(time * 0.5f + i * 1.3f) * Wander;
+                p.z += Mathf.Cos(time * 0.4f + i * 2.1f) * Wander;
+                Motes[i].localPosition = p;
+                // Fade in and out near the top and bottom of the box, and glimmer.
+                float edge = Mathf.Clamp01((Size.y * 0.5f - Mathf.Abs(p.y)) / (Size.y * 0.15f));
+                float glim = 0.55f + 0.45f * Mathf.Sin(time * Flicker * (0.6f + sy) + i * 4.7f);
+                Motes[i].localScale = Vector3.one * MoteSize * (0.6f + sz * 0.8f) * edge * glim;
+            }
+        }
+    }
+
+    // Paper stars (or planets, or lamps) hung on threads: each turns slowly and bobs a little.
+    public class StarMobile : MonoBehaviour
+    {
+        public Transform[] Stars;
+        public float Turn = 18f, Bob = 0.14f, Tilt = 7f;
+        Vector3[] home;
+
+        void Start()
+        {
+            if (Stars == null) return;
+            home = new Vector3[Stars.Length];
+            for (int i = 0; i < Stars.Length; i++) if (Stars[i] != null) home[i] = Stars[i].localPosition;
+        }
+
+        void Update()
+        {
+            if (Stars == null || home == null) return;
+            float t = Time.time;
+            for (int i = 0; i < Stars.Length; i++)
+            {
+                if (Stars[i] == null) continue;
+                Stars[i].localPosition = home[i] + Vector3.up * Mathf.Sin(t * 0.6f + i * 1.7f) * Bob;
+                Stars[i].localRotation = Quaternion.Euler(Mathf.Sin(t * 0.5f + i) * Tilt, t * Turn * (0.6f + (i % 4) * 0.25f) * (i % 2 == 0 ? 1f : -1f) + i * 47f, 0f);
+            }
+        }
+    }
+
+    // Something afloat: bobs and rocks gently on the swell.
+    public class SeaBob : MonoBehaviour
+    {
+        public float Height = 0.12f, Rock = 3f, Speed = 0.8f, Phase;
+        Vector3 home;
+        Quaternion homeRot;
+
+        void Start()
+        {
+            home = transform.localPosition;
+            homeRot = transform.localRotation;
+        }
+
+        void Update()
+        {
+            float t = Time.time * Speed + Phase;
+            transform.localPosition = home + Vector3.up * Mathf.Sin(t) * Height;
+            transform.localRotation = homeRot * Quaternion.Euler(Mathf.Sin(t * 0.8f + 1f) * Rock, 0f, Mathf.Cos(t * 0.65f) * Rock);
+        }
+    }
+
+    // A suit of armour's helmet (or a statue's head) that turns, slowly, to follow Patch when
+    // he comes close, and turns back to the front when he's gone.
+    public class WatchPlayer : MonoBehaviour
+    {
+        public float Range = 11f, MaxTurn = 55f, Speed = 1.6f;
+        Quaternion home;
+        float yaw;
+
+        void Start() { home = transform.localRotation; }
+
+        void Update()
+        {
+            var game = PatchworkGame.Instance;
+            float want = 0f;
+            if (game != null && game.Player != null)
+            {
+                Vector3 to = game.Player.Motor.Center - transform.position;
+                to.y = 0f;
+                if (to.sqrMagnitude < Range * Range && to.sqrMagnitude > 0.5f)
+                {
+                    Vector3 fwd = (transform.parent != null ? transform.parent.rotation : Quaternion.identity) * home * Vector3.forward;
+                    fwd.y = 0f;
+                    want = Mathf.Clamp(Vector3.SignedAngle(fwd, to, Vector3.up), -MaxTurn, MaxTurn);
+                }
+            }
+            yaw = Mathf.Lerp(yaw, want, 1f - Mathf.Exp(-Speed * Time.deltaTime));
+            transform.localRotation = home * Quaternion.Euler(0f, yaw, 0f);
+        }
+    }
+
     // A brass plaque beside an exhibit. Stand by it and press Ability to read what it says.
     public class ExhibitPlaque : Npc
     {
@@ -310,7 +494,7 @@ namespace Patchwork
                 }
             }
             bool inObservatory = Mood != null && Mood.Current != null && Mood.Current.Name == ObservatoryZone;
-            MusicPlayer.SetMuseumLayers(hearts >= 1 || reachedAquarium, open, inObservatory || GameState.IsLevelComplete(Level2Builder.SceneName));
+            MusicPlayer.SetMuseumLayers(true, hearts >= 1 || reachedAquarium, open || inObservatory || GameState.IsLevelComplete(Level2Builder.SceneName));
         }
 
         void Update()
