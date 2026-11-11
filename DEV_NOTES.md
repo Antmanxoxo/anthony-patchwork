@@ -486,6 +486,11 @@ Stuff I need to remember about how Patchwork is put together.
   holds Ability to dive, floats up when let go, Jump kicks up. `PlayerMotor.Submerged` /
   `WasSubmerged`; while submerged the camera may go under the surface, and `Level2Mood`
   turns the fog and ambient blue-green and calls `LevelLook.SetUnderwater`.
+- Editor menu: Patchwork > Replay Level 2 Moments (keep what you found) forgets the
+  cutscenes, cards, Storyteller lines and map for Level 2; Patchwork > Reset Level 2
+  (first visit) also puts back everything found there. Both use `GameState.ForgetLevel`
+  with the prefixes `L2_`, `Level2_` and `map_cp_Level2_`, so new Level 2 save keys
+  should start with one of those.
 - `Level2Undersea.cs`: the kelp pool floor (Sea Gate, anemones, boat, giant clam with
   marble `L2_marble_clam`), the Drowned Colonnade along the Ruins' east wall (x 93.5..100,
   z 72..100, roofed at y -1.5) with a `TreasureChest` that opens for a swimmer and shows

@@ -291,6 +291,35 @@ namespace Patchwork
             }
         }
 
+        // Makes one level feel like the first visit again (used by the editor's Patchwork menu):
+        // forgets the cards, the Storyteller's lines, the camera moments and the map it has
+        // seen (anything saved under one of the prefixes), and if keepFinds is false, also
+        // everything found there and whether it was finished.
+        public static void ForgetLevel(string levelId, string[] prefixes, bool keepFinds)
+        {
+            ResetStatics();   // read the file fresh
+            var d = Data;
+            System.Predicate<string> match = s =>
+            {
+                foreach (var p in prefixes) if (s.StartsWith(p)) return true;
+                return false;
+            };
+            d.hintsSeen.RemoveAll(match);
+            if (!keepFinds)
+            {
+                d.collected.RemoveAll(match);
+                d.completedLevels.Remove(levelId);
+                d.bestScores.RemoveAll(s => s.StartsWith(levelId + "="));
+                d.bestThreads.RemoveAll(s => s.StartsWith(levelId + "="));
+                PlayerPrefs.DeleteKey("pw_complete_" + levelId);
+            }
+            PlayerPrefs.DeleteKey("pw_map_" + levelId);
+            PlayerPrefs.Save();
+            dirty = true;
+            Save();
+            ResetStatics();
+        }
+
         // Clears all progress (used by the editor's Reset Save Data).
         public static void DeleteSave()
         {

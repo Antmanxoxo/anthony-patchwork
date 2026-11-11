@@ -1,5 +1,10 @@
 # Development Log
 
+## Replaying Level 2 from the editor
+- Patchwork menu: "Replay Level 2 Moments (keep what you found)" makes every cutscene,
+  card, Storyteller line and the map play fresh again; "Reset Level 2 (first visit)" also
+  puts every Heartstring, golden button and marble back. Other levels are left alone.
+
 ## Level 2: light, moments, and the world under the water
 - Water Form can dive in the museum's pools: hold Ability to swim down, let go to float
   back up, Jump to kick for the surface. The camera follows him under, the water turns a
