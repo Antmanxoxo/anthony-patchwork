@@ -29,6 +29,13 @@ namespace Patchwork
 
         // Switch the soft-focus distance off for a while (a cutscene that shows the whole town
         // from far away wants it sharp), and back on afterwards.
+        // Under the water: everything goes a little blue-green (0 = dry, 1 = right under).
+        public static void SetUnderwater(float k)
+        {
+            if (colours == null) return;
+            colours.colorFilter.Override(Color.Lerp(Color.white, new Color(0.68f, 0.92f, 1f), Mathf.Clamp01(k)));
+        }
+
         public static void SetMiniature(bool on)
         {
             if (miniature != null) miniature.active = on;

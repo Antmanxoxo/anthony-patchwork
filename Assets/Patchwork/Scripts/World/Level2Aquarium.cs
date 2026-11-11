@@ -64,6 +64,7 @@ namespace Patchwork
             NoShadow(kit.Deco(PrimitiveType.Cube, c + Vector3.down * 1.2f, new Vector3(w, 0.05f, d), PatchworkAssets.Bubble(new Color(tint.r * 0.5f, tint.g * 0.5f, tint.b * 0.6f, 0.4f))));
             var body = kit.Volume<WaterBody>(new Vector3(c.x, (bottom + surface + 0.6f) * 0.5f, c.z), new Vector3(w, surface + 0.6f - bottom, d), name);
             body.SurfaceY = surface;
+            body.Divable = true;
             return body;
         }
 

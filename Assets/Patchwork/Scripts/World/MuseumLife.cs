@@ -526,8 +526,34 @@ namespace Patchwork
                 var cam = game.CameraRig.GetComponent<Camera>();
                 if (cam != null) cam.backgroundColor = back;
             }
-            MusicPlayer.SetMuseumDepth(z.Depth);
+            // Under the water (Water Form diving, with the camera gone down after him): a deep
+            // blue-green, the far side lost in the murk, the music far away.
+            bool camUnder = false;
+            if (game.CameraRig != null)
+            {
+                Vector3 cp = game.CameraRig.transform.position;
+                foreach (var v in PlayerVolume.All)
+                {
+                    var wb = v as WaterBody;
+                    if (wb != null && wb.Divable && cp.y < wb.SurfaceY && wb.Contains(cp)) { camUnder = true; break; }
+                }
+            }
+            under = Mathf.MoveTowards(under, camUnder ? 1f : 0f, Time.unscaledDeltaTime * 2.5f);
+            if (under > 0.001f)
+            {
+                float u = Mathf.SmoothStep(0f, 1f, under);
+                RenderSettings.fogColor = Color.Lerp(fog, new Color(0.05f, 0.26f, 0.3f), u);
+                RenderSettings.fogStartDistance = Mathf.Lerp(fogStart, 0.5f, u);
+                RenderSettings.fogEndDistance = Mathf.Lerp(fogEnd, 34f, u);
+                RenderSettings.ambientSkyColor = Color.Lerp(sky, new Color(0.3f, 0.6f, 0.65f), u * 0.7f);
+                RenderSettings.ambientEquatorColor = Color.Lerp(side, new Color(0.18f, 0.42f, 0.48f), u * 0.7f);
+            }
+            if (under != lastUnder) LevelLook.SetUnderwater(under);
+            lastUnder = under;
+            MusicPlayer.SetMuseumDepth(Mathf.Max(z.Depth, under * 0.85f));
         }
+
+        float under, lastUnder = -1f;
     }
 
     // Runs the museum: opens the Observatory lift when enough Heartstrings are found, brings
@@ -536,6 +562,10 @@ namespace Patchwork
     {
         public Level2Mood Mood;
         public GameObject LiftGate;
+        public CinematicShot LiftShot;
+        bool gateFalling;
+        Vector3 gateHome;
+        Quaternion gateRot;
         public Vector3 LiftSpot;
         public string ObservatoryZone = "The Observatory";
         public Vector3 TelescopeEye, TelescopeLook;
@@ -571,7 +601,8 @@ namespace Patchwork
             if (open && !liftOpen)
             {
                 liftOpen = true;
-                if (LiftGate != null) LiftGate.SetActive(false);
+                if (LiftGate != null && (quiet || LiftShot == null)) LiftGate.SetActive(false);
+                else if (LiftGate != null) WakeTheLift();
                 if (!quiet)
                 {
                     game.ShowToast("The Observatory lift is open! Find it at the far end of the Sunken Ruins.");
@@ -580,6 +611,45 @@ namespace Patchwork
             }
             bool inObservatory = Mood != null && Mood.Current != null && Mood.Current.Name == ObservatoryZone;
             MusicPlayer.SetMuseumLayers(true, hearts >= 1 || reachedAquarium, open || inObservatory || GameState.IsLevelComplete(Level2Builder.SceneName));
+        }
+
+        // The third Heartstring: a "meanwhile" shot of the lift, the "out of order" sign
+        // dropping off, the lamps coming up and the doors sliding open with a ding.
+        void WakeTheLift()
+        {
+            gateHome = LiftGate.transform.position;
+            gateRot = LiftGate.transform.rotation;
+            bool dinged = false;
+            LiftShot.Tick = k =>
+            {
+                float fall = Mathf.Clamp01((k - 0.3f) / 0.22f);
+                if (LiftGate != null && LiftGate.activeSelf)
+                {
+                    float drop = fall * fall;
+                    LiftGate.transform.position = gateHome + new Vector3(0.5f * fall, -1.7f * drop, 0f);
+                    LiftGate.transform.rotation = gateRot * Quaternion.Euler(fall * 25f, 0f, -fall * 75f);
+                    if (fall >= 1f)
+                    {
+                        LiftGate.SetActive(false);
+                        Sfx.PlayNear(SfxId.PlatformThunk, gateHome, 0.5f, 40f);
+                    }
+                }
+                CardboardLift.ShowOff = k > 0.62f && k < 0.97f;
+                if (!dinged && k > 0.66f)
+                {
+                    dinged = true;
+                    var ding = MusicPlayer.LiftDing();
+                    if (ding != null) AudioSource.PlayClipAtPoint(ding, PatchworkGame.Instance != null && PatchworkGame.Instance.CameraRig != null ? PatchworkGame.Instance.CameraRig.transform.position : gateHome, Mathf.Max(0.3f, MusicPlayer.Volume / 10f));
+                }
+            };
+            LiftShot.Done = () =>
+            {
+                CardboardLift.ShowOff = false;
+                if (LiftGate != null) LiftGate.SetActive(false);
+            };
+            LiftShot.Trigger();
+            // If the shot has been seen before (an old save), just take the sign down.
+            if (GameState.IsHintSeen(LiftShot.Key)) LiftGate.SetActive(false);
         }
 
         void Update()

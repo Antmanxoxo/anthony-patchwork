@@ -9,7 +9,10 @@ namespace Patchwork
     {
         public float SurfaceY;
         public float SwimBoost = 0.9f;   // +90% speed while swimming
-        float splashCooldown, trail;
+        // Deep enough to dive in: Water Form holds Ability to swim down, lets go to float back
+        // up, and Jump kicks up towards the surface.
+        public bool Divable;
+        float splashCooldown, trail, bubbleTimer;
 
         protected override void OnPlayerStay(PatchworkPlayer player, float dt)
         {
@@ -25,11 +28,39 @@ namespace Patchwork
                 // Ride high in the water so Patch's face (and the camera) stay above the surface.
                 float centreTarget = SurfaceY + 0.12f;
                 float c = m.Center.y;
+                var game = player.Game;
+                bool dive = Divable && game != null && game.Mode == UIMode.Gameplay && game.Input.Ability.IsPressed();
+                bool under = Divable && c < SurfaceY - 0.45f;
                 if (m.Velocity.y < 3f)
                 {
                     m.HasLift = true;
-                    m.LiftTargetSpeed = Mathf.Clamp((centreTarget - c) * 5f, -4f, 5f);
-                    m.LiftAcceleration = 40f;
+                    if (dive)
+                    {
+                        // Down, down: a steady glide towards the bottom.
+                        m.LiftTargetSpeed = -3.8f;
+                        m.LiftAcceleration = 16f;
+                    }
+                    else if (under)
+                    {
+                        // Let go and Patch drifts back up to the surface.
+                        m.LiftTargetSpeed = 2.4f;
+                        m.LiftAcceleration = 12f;
+                    }
+                    else
+                    {
+                        m.LiftTargetSpeed = Mathf.Clamp((centreTarget - c) * 5f, -4f, 5f);
+                        m.LiftAcceleration = 40f;
+                    }
+                }
+                if (under)
+                {
+                    m.Submerged = true;
+                    bubbleTimer -= dt;
+                    if (bubbleTimer <= 0f)
+                    {
+                        bubbleTimer = 0.35f;
+                        FxBurst.Spawn(FxBurst.Kind.Steam, m.Center + Vector3.up * 0.4f, new Color(0.8f, 0.95f, 1f));
+                    }
                 }
                 m.Swimming = true;
                 m.SwimSurface = SurfaceY;
@@ -37,7 +68,7 @@ namespace Patchwork
                 // A little wake while moving.
                 Vector3 flat = new Vector3(m.Velocity.x, 0f, m.Velocity.z);
                 trail -= dt;
-                if (flat.sqrMagnitude > 4f && trail <= 0f)
+                if (flat.sqrMagnitude > 4f && trail <= 0f && !under)
                 {
                     trail = 0.18f;
                     FxBurst.Spawn(FxBurst.Kind.Splash, new Vector3(m.Center.x, SurfaceY + 0.05f, m.Center.z), new Color(0.75f, 0.9f, 1f));

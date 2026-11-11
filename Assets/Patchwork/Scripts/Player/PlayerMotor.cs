@@ -40,6 +40,10 @@ namespace Patchwork
         [System.NonSerialized] public float SwimSurface;
         // Whether Patch was swimming last frame (Swimming itself resets every frame), for the camera.
         public bool WasSwimming { get; private set; }
+        // Diving: Patch is right under the water (Water Form, in water that's deep enough to
+        // dive in). Resets every frame like Swimming.
+        [System.NonSerialized] public bool Submerged;
+        public bool WasSubmerged { get; private set; }
         // Face this way this frame instead of the way he's moving (holding a crate). Zero = unused.
         [System.NonSerialized] public Vector3 FacingOverride;
         // Sideways speed kept through the air after a launch (see-saw), on top of steering.
@@ -277,6 +281,8 @@ namespace Patchwork
         void ClearFrameModifiers()
         {
             WasSwimming = Swimming;
+            WasSubmerged = Submerged;
+            Submerged = false;
             FallSpeedCap = -1f;
             HasLift = false;
             SpeedBoost = 0f;

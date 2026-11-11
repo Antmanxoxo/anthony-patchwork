@@ -11,10 +11,12 @@ namespace Patchwork
     {
         // 0 = at the bottom, 1 = at the top. Every floor dial points at this.
         public static float Dial;
-        public static void ResetStatics() { Dial = 0f; Riding = false; MusicPlayer.LiftHush = false; }
+        public static void ResetStatics() { Dial = 0f; Riding = false; ShowOff = false; MusicPlayer.LiftHush = false; }
 
         void OnDestroy() { Riding = false; Dial = 0f; MusicPlayer.LiftHush = false; }
         public static bool Riding { get; private set; }
+        // Set while the "lift wakes up" shot plays: the bottom doors open for the camera.
+        public static bool ShowOff;
 
         public Vector3 LowerCenter, UpperCenter;     // the middle of each car's floor
         public Vector3 CameraOffset, LookOffset;     // the camera's corner of the car
@@ -92,7 +94,7 @@ namespace Patchwork
                 Vector3 p = game.Player.Motor.Center;
                 bool nearLow = (p - LowerDoorPoint).sqrMagnitude < 30f || Inside(p, LowerCenter);
                 bool nearHigh = (p - UpperDoorPoint).sqrMagnitude < 30f || Inside(p, UpperCenter);
-                SetDoors(LowerDoors, nearLow && Unlocked());
+                SetDoors(LowerDoors, (nearLow && Unlocked()) || ShowOff);
                 SetDoors(UpperDoors, nearHigh);
                 dialShown = Mathf.MoveTowards(dialShown, atTop ? 1f : 0f, dt * 0.5f);
                 Dial = dialShown;

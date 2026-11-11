@@ -473,6 +473,23 @@ Stuff I need to remember about how Patchwork is put together.
 - `Level2Grandeur.cs` is the fourth pass (sky lanterns over the sea, the atrium's river of
   stars, kelp moonbeams, the whale calf, fireflies, the Hall of Arms' pennants).
   `SkyLantern` lives there too.
+- `Level2Light.cs`: `Lighting` (spot lights: caustic cookies via `CausticLight`, a few with
+  soft shadows: the Great Window, the Observatory moon, the kelp pool) and `Cinematics`
+  (one `CinematicShot` per hall). Spot lights fall off with distance squared, so a spot
+  20-40 m from what it lights needs an intensity of roughly 30-110.
+- `CinematicShot` (CinematicShot.cs): a PlayerVolume that plays a camera move once (save key
+  `L2_cine_<name>`), waits for gameplay / no loading / no lift ride, hold Confirm to skip.
+  `Tick(k)` and `Done` hooks; a zero-size one is started by `Trigger()` (the "lift wakes"
+  shot, run by `Level2Director.WakeTheLift`, which drops the sign and opens the doors via
+  `CardboardLift.ShowOff`).
+- Diving: `WaterBody.Divable` (all Level 2 pools; Level 1's water is unchanged). Water Form
+  holds Ability to dive, floats up when let go, Jump kicks up. `PlayerMotor.Submerged` /
+  `WasSubmerged`; while submerged the camera may go under the surface, and `Level2Mood`
+  turns the fog and ambient blue-green and calls `LevelLook.SetUnderwater`.
+- `Level2Undersea.cs`: the kelp pool floor (Sea Gate, anemones, boat, giant clam with
+  marble `L2_marble_clam`), the Drowned Colonnade along the Ruins' east wall (x 93.5..100,
+  z 72..100, roofed at y -1.5) with a `TreasureChest` that opens for a swimmer and shows
+  marble `L2_marble_treasure`, and the Ruins' pool floor (sun mosaic, sphinx, coins).
 
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);

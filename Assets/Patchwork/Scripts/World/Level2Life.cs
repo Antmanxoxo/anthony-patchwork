@@ -26,6 +26,9 @@ namespace Patchwork
             ArmsLife(kit);
             Signs(kit);
             Grandeur(kit);
+            Undersea(kit);
+            Lighting(kit);
+            Cinematics(kit);
         }
 
         // ------------------------------------------------------------------ Little figures

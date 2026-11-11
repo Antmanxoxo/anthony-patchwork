@@ -1,5 +1,31 @@
 # Development Log
 
+## Level 2: light, moments, and the world under the water
+- Water Form can dive in the museum's pools: hold Ability to swim down, let go to float
+  back up, Jump to kick for the surface. The camera follows him under, the water turns a
+  deep blue-green, the far side fades into the murk and the music goes far away.
+- Under the kelp pool: the Sea Gate (a drowned stone arch with glowing runes and bubbles
+  to swim through), a garden of glowing anemones, starfish, urchins and sand ripples, an
+  upturned rowing boat with its lantern still lit, and a giant clam that slowly opens and
+  shuts over a secret marble.
+- Under the Ruins: the Drowned Colonnade along the east wall, roofed over just under the
+  surface so you can only get in by swimming, lit by crystals all the way to a treasure
+  chest that creaks open when you swim up to it (another secret marble). Also a sun mosaic
+  on the pool floor, a fallen sphinx, and coins and broken pots in the silt.
+  Six secret marbles in the museum now.
+- Lighting: the reef's light now pours through the Great Window across the atrium floor,
+  with dancing water patterns and the shadows of kelp and passing sharks, visible beams
+  and specks in the light. Moonlight falls through the Observatory dome with real shadows.
+  Rippling light on the kelp pool's bed, on the tunnel under the Great Deep and on the
+  Ruins' water; coloured window light in the Hall of Arms; a moon wash over the museum's
+  front.
+- Cinematic moments, once each (hold Confirm to skip): arriving on the quay, walking into
+  the Grand Atrium, the Hall of Deep Time, the Kelp Galleries, the tunnel, the Sunken
+  Ruins, the Hall of Arms, and stepping out of the lift onto the Orrery Bridge. And when
+  you find the third Heartstring: "Meanwhile, in the corner of the Sunken Ruins..." The
+  "out of order" sign drops off the cardboard lift, the doors slide open, ding.
+- The map has two new places: the Sea Gate and the Drowned Colonnade.
+
 ## Level 2: the cardboard lift, a new map, a new waltz, and more wonder
 - The Observatory lift is now the Observatory Express: a huge cardboard box wedged in the
   corner of the Sunken Ruins and vanishing up through the ceiling, covered in parcel tape,

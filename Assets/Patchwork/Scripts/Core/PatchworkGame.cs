@@ -467,7 +467,8 @@ namespace Patchwork
                 CameraRig.TargetHeight = Mathf.MoveTowards(CameraRig.TargetHeight, wantHeight, udt * 2.5f);
                 CameraRig.TargetGrounded = Player.Motor.Grounded || Player.Motor.WasSwimming;
                 // While swimming, keep the camera up above the water.
-                CameraRig.MinY = Player.Motor.WasSwimming ? Player.Motor.SwimSurface + 1.1f : float.NegativeInfinity;
+                // (Unless he's diving: then the camera goes down with him.)
+                CameraRig.MinY = Player.Motor.WasSwimming && !Player.Motor.WasSubmerged ? Player.Motor.SwimSurface + 1.1f : float.NegativeInfinity;
                 CameraRig.TargetVelocity = Player.Motor.Velocity;
                 var yarn = Player.Forms.Ability as YarnAbility;
                 CameraRig.Swinging = yarn != null && yarn.Attached;

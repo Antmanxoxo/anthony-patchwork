@@ -28,13 +28,14 @@ namespace Patchwork
     //
     // Ground level is y = 0. The main way round is walkable by every form; Water Form and Yarn
     // Form get the most extra routes (pools, fountains and drains; lanterns and knots to swing on).
-    // 6 Heartstrings (3 open the Observatory lift), 5 golden buttons and 4 secret marbles.
+    // 6 Heartstrings (3 open the Observatory lift), 5 golden buttons and 6 secret marbles
+    // (two of them under the water, for Water Form to dive for).
     public static partial class Level2Builder
     {
         public const string SceneName = "Level2";
         public static readonly string[] CollectibleIds = { "L2_b_obelisk", "L2_b_catwalk", "L2_b_crowsnest", "L2_b_library", "L2_b_keep" };
         public static readonly string[] HeartstringIds = { "L2_hs_balcony", "L2_hs_longship", "L2_hs_kelp", "L2_hs_bell", "L2_hs_temple", "L2_hs_orrery" };
-        public static readonly string[] MarbleIds = { "L2_marble_desk", "L2_marble_sarcophagus", "L2_marble_seabed", "L2_marble_armoury" };
+        public static readonly string[] MarbleIds = { "L2_marble_desk", "L2_marble_sarcophagus", "L2_marble_seabed", "L2_marble_armoury", "L2_marble_clam", "L2_marble_treasure" };
         public const int HeartstringsNeeded = 3;
 
         static readonly Vector3 PodLanding = new Vector3(0f, 0f, -151f);
@@ -112,6 +113,8 @@ namespace Patchwork
             P.Add(new MapPin("The Wreck", new Vector3(91f, 0f, 40f)));
             P.Add(new MapPin("Observatory Express", new Vector3(48f, 0f, 10f), MapPin.Kind.Shop));
             P.Add(new MapPin("Hall of Arms", new Vector3(80f, 0f, -24f), MapPin.Kind.Area));
+            P.Add(new MapPin("The Sea Gate", new Vector3(-72f, 0f, 27f)));
+            P.Add(new MapPin("Drowned Colonnade", new Vector3(97f, 0f, 86f)));
 
             var moodGo = new GameObject("Level2Mood");
             moodGo.transform.SetParent(kit.Root, false);
