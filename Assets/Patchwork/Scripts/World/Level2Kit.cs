@@ -35,7 +35,7 @@ namespace Patchwork
         static Material Bone { get { return PatchworkAssets.Felt(BoneCol); } }
         static Material StarCloth { get { return PatchworkAssets.Print(PatchworkAssets.PrintKind.Stars, Navy, new Color(1f, 0.82f, 0.4f)); } }
         static Material PlumStars { get { return PatchworkAssets.Print(PatchworkAssets.PrintKind.Stars, Plum, new Color(1f, 0.85f, 0.5f)); } }
-        static Material GlassMat { get { return PatchworkAssets.Bubble(new Color(0.6f, 0.85f, 0.95f, 0.13f)); } }
+        static Material GlassMat { get { return Glass(new Color(0.6f, 0.85f, 0.95f, 0.13f), false); } }
         static Material CaseGlass { get { return PatchworkAssets.Bubble(new Color(0.85f, 0.95f, 1f, 0.12f)); } }
 
         static Quaternion Rot(float yaw) { return Quaternion.Euler(0f, yaw, 0f); }
@@ -108,23 +108,35 @@ namespace Patchwork
             m.SetTexture("_BaseMap", null);
             m.SetColor("_EmissionColor", c * 0.85f);
             m.SetFloat("_Smoothness", 0f);
+            m.SetFloat("_EnvironmentReflections", 0f);
+            m.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
+            m.SetFloat("_SpecularHighlights", 0f);
+            m.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
             m.SetFloat("_Cull", 0f);
             special[key] = m;
             return m;
         }
 
-        // Glass you can see from both sides (domes).
-        static Material DomeGlass(Color c)
+        // Tank and tunnel glass. It doesn't mirror the room (the game keeps one snapshot of the
+        // level for shiny things to reflect, taken in the atrium, and gold lamplight sliding
+        // over the glass of a tunnel on the sea bed would look very wrong).
+        static Material Glass(Color c, bool bothSides)
         {
-            string key = "dome" + ColorUtility.ToHtmlStringRGBA(c);
+            string key = "glass" + ColorUtility.ToHtmlStringRGBA(c) + (bothSides ? "2" : "1");
             Material m;
             if (special.TryGetValue(key, out m) && m != null) return m;
             m = PatchworkAssets.Unique(PatchworkAssets.Bubble(c));
             m.name = "PW_" + key;
-            m.SetFloat("_Cull", 0f);
+            m.SetFloat("_Smoothness", 0.8f);
+            m.SetFloat("_EnvironmentReflections", 0f);
+            m.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
+            if (bothSides) m.SetFloat("_Cull", 0f);
             special[key] = m;
             return m;
         }
+
+        // Glass you can see from both sides (domes).
+        static Material DomeGlass(Color c) { return Glass(c, true); }
 
         // ------------------------------------------------------------------ Walls, doors, floors
 
