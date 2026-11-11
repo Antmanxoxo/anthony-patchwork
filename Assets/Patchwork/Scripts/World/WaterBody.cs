@@ -28,8 +28,8 @@ namespace Patchwork
                 // Ride high in the water so Patch's face (and the camera) stay above the surface.
                 float centreTarget = SurfaceY + 0.12f;
                 float c = m.Center.y;
-                var game = player.Game;
-                bool dive = Divable && game != null && game.Mode == UIMode.Gameplay && game.Input.Ability.IsPressed();
+                var g = player.Game;
+                bool dive = Divable && g != null && g.Mode == UIMode.Gameplay && g.Input.Ability.IsPressed();
                 bool under = Divable && c < SurfaceY - 0.45f;
                 if (m.Velocity.y < 3f)
                 {
