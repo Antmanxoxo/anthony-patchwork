@@ -1,5 +1,31 @@
 # Development Log
 
+## Level 2: the cardboard lift, a new map, a new waltz, and more wonder
+- The Observatory lift is now the Observatory Express: a huge cardboard box wedged in the
+  corner of the Sunken Ruins and vanishing up through the ceiling, covered in parcel tape,
+  "this way up" arrows and a felt label. Walk in, press Ability, and the doors slide shut;
+  the camera sits in the corner of the little room (rug, lamp, potted palm, a picture of a
+  whale, a dial over the buttons and a bunny bellhop in a pillbox hat), the dial creeps
+  round, the lift plays its own bossa nova, and the captions get less and less sure how
+  far up it goes. Ding: the doors on the other side open onto the Orrery Bridge. Works
+  both ways. Until three Heartstrings are found the doors stay shut behind an "out of
+  order" sign with three empty hearts.
+- A new map screen for every level: a big map with a quilted frame and a sidebar. Places
+  you haven't been stay under a cloud of parchment until you walk there (and it remembers),
+  region names and place numbers appear as you find them, checkpoints you've reached are
+  marked with flags, and you can fast-travel to them or the Pod. Zoom in and out, move a
+  cursor (or the mouse) for names, and a "you are in" line, progress bars for everything
+  left to find and how much you've explored. Dark indoor levels get a brighter
+  hand-tinted plan instead of the felt look so the halls read clearly.
+- The museum's music again, "The Star Carousel": a D major waltz on harp, celesta and
+  violins over a bass walking down the scale (the night sky), turning into a B minor
+  carousel for piano and accordion that whirls faster and climbs (the merry-go-round), then
+  back to the star tune with the whole orchestra. An original piece in that style.
+- More wonder: paper lanterns rising off the sea beyond the quay, a slow river of stars
+  winding up through the atrium with stardust falling, moonbeams through the kelp, a whale
+  calf swimming with its mother in the Great Deep, fireflies over the Ruins, and pennants
+  of the old houses under the Hall of Arms' roof.
+
 ## Level 2: life and grandeur
 - The museum has people in it now, and they all have a reason to be there after hours:
   - a night watchman doing his rounds of the Hall of Deep Time with a lantern (its light

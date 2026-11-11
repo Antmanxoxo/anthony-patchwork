@@ -1,74 +1,105 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Patchwork
 {
-    // The Oceanic Museum's soundtrack: a sweeping carousel waltz for piano and orchestra. It
-    // begins wistful, in a minor key, the piano turning its little tune over on its own; the
-    // orchestra takes it up; then the key lifts into the major and the strings soar, the way
-    // the roof of a great hall opens over you; and it comes home to the minor at full sail.
+    // The Oceanic Museum's soundtrack: "The Star Carousel", a waltz in two moods that keep
+    // turning into each other.
+    //   The first is the night sky over the atrium: D major, a harp rippling under a long,
+    //   wide-stepping tune for celesta and violins, the bass walking gently down the scale.
+    //   The second is the merry-go-round on the quay: the same pulse slips into B minor and
+    //   the piano and accordion whirl through a ring of chords, faster and faster on its feet.
+    //   Then a drum roll, and the first tune comes back with the whole orchestra under it.
     // (An original piece, written in the spirit of the grand film and game waltzes.)
     //
     // The layers:
-    //   Bed     - always on: the piano, the plucked oom-pah-pah, harp, and a soft cushion
-    //   Strings - always on in the halls: violins singing the tune, cellos answering
-    //   Winds   - accordion, flute and glockenspiel, once you've found a Heartstring (or
+    //   Bed     - always on: harp, celesta, piano, plucked basses and a soft cushion
+    //   Strings - always on in the halls: violins singing the tune, cellos underneath
+    //   Winds   - flute, accordion and glockenspiel, once you've found a Heartstring (or
     //             reached the aquarium)
     //   Grand   - horns, timpani and the big swells, once the lift is open (and always in the
     //             Observatory)
     // In the glass tunnels on the sea bed the whole thing goes soft and far away, as if you
     // were hearing it through the water.
     //
-    // 3/4 at 138 BPM, 72 bars:
-    //   Intro (1-8)    the piano alone, G minor
-    //   A  (9-24)      the carousel tune
-    //   A' (25-40)     again, violins on top, turning towards the major at the end
-    //   B  (41-56)     B flat major: long soaring notes, harp running underneath
-    //   A" (57-72)     the tune once more with everything, and home
+    // 3/4 at 152 BPM (felt one-in-a-bar), 80 bars:
+    //   Intro (1-8)     harp and celesta alone
+    //   A  (9-24)       the star tune, D major
+    //   A' (25-40)      again, violins an octave up, a horn answering; turns to the minor
+    //   B  (41-64)      the carousel, B minor, round the ring of chords and climbing
+    //   A" (65-80)      the star tune with everything, and home
     public partial class MusicPlayer
     {
         enum MuseumStem { Bed, Strings, Winds, Grand }
         const int MuseumStemCount = 4;
-        const float MuseumBpm = 138f;
+        const float MuseumBpm = 152f;
 
         static readonly string[] MuseumChords =
         {
-            "Gm", "Gm", "Cm", "Cm", "D7", "D7", "Gm", "D7",
+            "D", "D", "G", "G", "D", "D", "Asus4", "A7",
 
-            "Gm", "Gm", "Cm", "Cm", "F", "F", "Bb", "Bb",
-            "Eb", "Eb", "Cm", "Cm", "D7", "D7", "Gm", "D7",
+            "D", "A", "Bm", "F#m", "G", "D", "Em7", "A7",
+            "D", "A", "Bm", "F#m", "G", "Gm", "D", "A7",
 
-            "Gm", "Gm", "Cm", "Cm", "F", "F", "Bb", "Bb",
-            "Eb", "Eb", "Cm", "Cm", "D7", "D7", "Gm", "F7",
+            "D", "A", "Bm", "F#m", "G", "D", "Em7", "A7",
+            "D", "A", "Bm", "F#m", "G", "Gm", "D", "F#7",
 
-            "Bb", "Dm", "Eb", "F", "Gm", "Eb", "Cm7", "F7",
-            "Bb", "Dm", "Eb", "F", "Eb", "Ebm", "Bb", "D7",
+            "Bm", "Bm", "Em", "Em", "A7", "A7", "D", "D",
+            "G", "G", "Em", "C#dim", "F#7", "F#7", "Bm", "F#7",
+            "Bm", "Em", "A7", "D", "G", "Em", "F#7", "A7",
 
-            "Gm", "Gm", "Cm", "Cm", "F", "F", "Bb", "Bb",
-            "Eb", "Eb", "Cm", "Cm", "D7", "D7", "Gm", "Gm",
+            "D", "A", "Bm", "F#m", "G", "D", "Em7", "A7",
+            "D", "A", "Bm", "F#m", "G", "Gm", "D", "D",
+        };
+
+        // The note the basses play under each bar (the star tune's bass walks down the scale).
+        static readonly string[] MuseumBass =
+        {
+            "D", "D", "D", "D", "D", "D", "A", "A",
+
+            "D", "C#", "B", "A", "G", "F#", "E", "A",
+            "D", "C#", "B", "A", "G", "G", "A", "A",
+
+            "D", "C#", "B", "A", "G", "F#", "E", "A",
+            "D", "C#", "B", "A", "G", "G", "A", "F#",
+
+            "B", "B", "E", "E", "A", "A", "D", "D",
+            "G", "G", "E", "C#", "F#", "F#", "B", "F#",
+            "B", "E", "A", "D", "G", "E", "F#", "A",
+
+            "D", "C#", "B", "A", "G", "F#", "E", "A",
+            "D", "C#", "B", "A", "G", "G", "A", "D",
         };
 
         // One bar per entry, lengths in beats (3 a bar).
         static readonly string[] MuseumTune =
         {
-            "Bb5:2 A5:1", "G5:3", "Eb6:2 D6:1", "C6:3", "D6:1 C6:1 A5:1", "F#5:3", "G5:3", "r:1 D5:1 F#5:1",
+            "r:1 A5:1 D6:1", "F#6:3", "r:1 B5:1 D6:1", "G6:3", "r:1 A5:1 D6:1", "F#6:2 A6:1", "E6:3", "r:2 E5:1",
 
-            "Bb5:2 A5:1", "G5:1 D5:1 G5:1", "Eb6:2 D6:1", "C6:1 G5:1 C6:1", "A5:2 G5:1", "F5:1 C5:1 F5:1", "D6:2 C6:1", "Bb5:3",
-            "G6:2 F6:1", "Eb6:1 Bb5:1 Eb6:1", "F6:1.5 Eb6:0.5 D6:1", "C6:2 Eb6:1", "D6:1 F#5:1 A5:1", "C6:2 A5:1", "Bb5:1 A5:1 G5:1", "F#5:2 D5:1",
+            "A5:2 F#5:1", "E5:2 A5:1", "D6:2 C#6:1", "A5:3", "B5:2 G5:1", "F#5:2 A5:1", "G5:1 F#5:1 E5:1", "E5:2 E5:1",
+            "A5:2 F#5:1", "E5:2 A5:1", "D6:2 E6:1", "F#6:2 C#6:1", "D6:2 B5:1", "Bb5:2 D6:1", "A5:1.5 G5:0.5 F#5:1", "E5:2 C#5:1",
 
-            "Bb5:2 A5:1", "G5:1 D5:1 G5:1", "Eb6:2 D6:1", "C6:1 G5:1 C6:1", "A5:2 G5:1", "F5:1 C5:1 F5:1", "D6:2 C6:1", "Bb5:3",
-            "G6:2 F6:1", "Eb6:1 Bb5:1 Eb6:1", "F6:1.5 Eb6:0.5 D6:1", "C6:2 Eb6:1", "D6:1 F#5:1 A5:1", "C6:1 Bb5:1 A5:1", "G5:3", "r:1 F5:1 A5:1",
+            "A5:2 F#5:1", "E5:2 A5:1", "D6:2 C#6:1", "A5:3", "B5:2 G5:1", "F#5:2 A5:1", "G5:1 F#5:1 E5:1", "E5:2 E5:1",
+            "A5:2 F#5:1", "E5:2 A5:1", "D6:2 E6:1", "F#6:2 C#6:1", "D6:2 B5:1", "Bb5:2 D6:1", "F#5:1 A5:1 D6:1", "C#6:2 A#5:1",
 
-            "F5:1 Bb5:1 D6:1", "F6:3", "G6:2 F6:1", "Eb6:1 D6:1 C6:1", "D6:2 Bb5:1", "G5:1 Bb5:1 Eb6:1", "D6:2 C6:1", "A5:1 C6:1 Eb6:1",
-            "D6:1 F6:1 Bb6:1", "A6:3", "G6:1.5 F6:0.5 Eb6:1", "F6:2 A6:1", "Bb6:2 G6:1", "Gb6:2 Eb6:1", "D6:3", "C6:1 A5:1 F#5:1",
+            "F#5:1 B5:1 D6:1", "C#6:0.5 D6:0.5 C#6:1 B5:1", "G5:1 B5:1 E6:1", "D6:0.5 E6:0.5 D6:1 B5:1", "C#6:1 E6:1 G6:1", "F#6:0.5 G6:0.5 F#6:1 E6:1", "F#6:2 D6:1", "A5:1 D6:1 F#6:1",
+            "G6:2 F#6:1", "E6:1 D6:1 B5:1", "E6:2 D6:1", "C#6:1 B5:1 G5:1", "A#5:1 C#6:1 E6:1", "F#6:2 E6:1", "D6:1.5 C#6:0.5 B5:1", "F#5:1 A#5:1 C#6:1",
+            "D6:1 F#6:1 B6:1", "G6:2 E6:1", "E6:1 G6:1 A6:1", "F#6:3", "B6:2 G6:1", "G6:1 F#6:1 E6:1", "F#6:2 C#6:1", "E6:1 C#6:1 A5:1",
 
-            "Bb5:2 A5:1", "G5:1 D5:1 G5:1", "Eb6:2 D6:1", "C6:1 G5:1 C6:1", "A5:2 G5:1", "F5:1 C5:1 F5:1", "D6:2 C6:1", "Bb5:3",
-            "G6:2 F6:1", "Eb6:1 Bb5:1 Eb6:1", "F6:1.5 Eb6:0.5 D6:1", "C6:2 Eb6:1", "D6:1 F#5:1 A5:1", "C6:1 Bb5:1 A5:1", "G5:3", "r:3",
+            "A5:2 F#5:1", "E5:2 A5:1", "D6:2 C#6:1", "A5:3", "B5:2 G5:1", "F#5:2 A5:1", "G5:1 F#5:1 E5:1", "E5:2 E5:1",
+            "A5:2 F#5:1", "E5:2 A5:1", "D6:2 E6:1", "F#6:2 C#6:1", "D6:2 B5:1", "Bb5:2 D6:1", "A5:1.5 G5:0.5 F#5:1", "D5:3",
         };
 
-        // 0 intro, 1 A, 2 A', 3 B, 4 A".
+        // The horn's answer under the star tune: one long note a bar.
+        static readonly string[] MuseumHorn =
+        {
+            "F#4", "E4", "F#4", "C#4", "D4", "D4", "B3", "C#4",
+            "F#4", "E4", "F#4", "A4", "B4", "Bb4", "F#4", "E4",
+        };
+
+        // 0 intro, 1 A, 2 A', 3 B (the carousel), 4 A".
         static int MuseumSection(int bar)
         {
-            return bar < 8 ? 0 : bar < 24 ? 1 : bar < 40 ? 2 : bar < 56 ? 3 : 4;
+            return bar < 8 ? 0 : bar < 24 ? 1 : bar < 40 ? 2 : bar < 64 ? 3 : 4;
         }
 
         // A piano: a struck string. Bright at the hammer, then each overtone dies away at its
@@ -246,86 +277,107 @@ namespace Patchwork
             for (int b = 0; b < bars; b++)
             {
                 int section = MuseumSection(b);
-                bool intro = section == 0, major = section == 3, last = section == 4;
-                bool sectionEnd = b == 7 || b == 23 || b == 39 || b == 55 || b == bars - 1;
+                bool intro = section == 0, whirl = section == 3, last = section == 4;
+                bool climb = whirl && b >= 56;
+                bool sectionEnd = b == 7 || b == 23 || b == 39 || b == 63 || b == bars - 1;
+                int inSection = b - (section == 0 ? 0 : section == 1 ? 8 : section == 2 ? 24 : section == 3 ? 40 : 64);
                 float b0 = b * 3f;
                 string name = MuseumChords[b];
                 string next = MuseumChords[(b + 1) % bars];
-                bool sameAsBefore = b > 0 && MuseumChords[b - 1] == name;
-                var ch = Ch(name, 55);
-                int root = Root(name, 31);
-                int bassNote = sameAsBefore ? root + 7 : root;
+                var ch = Ch(name, 57);
+                int bassNote = NoteNum(MuseumBass[b] + "2");
+                if (bassNote < 38) bassNote += 12;   // keep the basses between D2 and C#3
 
-                // ----- Bed: the waltz -----
-                if (intro)
+                // ----- Bed -----
+                if (!whirl)
                 {
-                    // The piano on its own: a low note, and the chord spread gently after it.
-                    AddPiano(bed, b0 * beat, bar * 0.95f, Freq(root + 12), 0.11f);
-                    for (int c = 0; c < 3; c++)
-                        AddPiano(bed, (b0 + 1f + c * 0.5f) * beat, beat * 1.4f, Freq(ch[c % ch.Length] + (c == 2 ? 12 : 0)), 0.05f, false);
+                    // The night sky: a harp rippling up the chord and back in quavers, each bar
+                    // a little different so it never sounds like a machine.
+                    for (int e8 = 0; e8 < 6; e8++)
+                    {
+                        int step = (b % 2 == 0) ? (e8 < 4 ? e8 : 6 - e8) : (e8 < 3 ? e8 + 1 : 5 - e8);
+                        int note = ch[step % ch.Length] + 12 * (step / ch.Length);
+                        float v = (e8 == 0 ? 0.05f : 0.036f) * (intro ? 1.15f : 1f);
+                        AddPluck(bed, (b0 + e8 * 0.5f) * beat, beat * 1.6f, Freq(note), v, 5000 + b * 8 + e8);
+                    }
+                    // A plucked bass on the one, and a deep note under it once the tune is in.
+                    AddPluck(bed, b0 * beat, bar * 0.9f, Freq(bassNote + 12), 0.06f, 5090 + b);
+                    if (!intro) AddBass(bed, b0 * beat, bar * 0.85f, Freq(bassNote), 0.05f);
+                    // Celesta stars, high up, on the off beats of every other bar.
+                    if (b % 2 == 1 || intro)
+                    {
+                        var g = Ch(name, 81);
+                        AddCelesta(bed, (b0 + 1f) * beat, beat, Freq(g[(b / 2) % g.Length]), 0.014f);
+                        AddCelesta(bed, (b0 + 2f) * beat, beat, Freq(g[(b / 2 + 1) % g.Length] + (b % 4 == 3 ? 12 : 0)), 0.012f);
+                    }
                 }
                 else
                 {
-                    // Oom: plucked basses and the piano's left hand.
-                    AddPizz(bed, b0 * beat, Freq(bassNote + 12), 0.2f, 5000 + b * 3);
-                    AddPiano(bed, b0 * beat, beat * 0.9f, Freq(bassNote + 12), 0.085f, false);
-                    AddBass(bed, b0 * beat, beat * 0.8f, Freq(bassNote), 0.05f);
-                    // Pah-pah: the chord, short, on two and three.
+                    // The carousel: oom on the basses and the piano's left hand...
+                    AddPizz(bed, b0 * beat, Freq(bassNote + 12), 0.2f, 5100 + b * 3);
+                    AddPiano(bed, b0 * beat, beat * 0.9f, Freq(bassNote + 12), 0.09f, false);
+                    AddPiano(bed, b0 * beat, beat * 0.9f, Freq(bassNote), 0.05f, false);
+                    AddBass(bed, b0 * beat, beat * 0.8f, Freq(bassNote), 0.055f);
+                    // ...pah-pah on the chord, short and bright.
                     for (int k = 1; k <= 2; k++)
-                    {
                         for (int c = 0; c < 3; c++)
-                            AddPiano(bed, (b0 + k) * beat + c * 0.006f, beat * 0.42f, Freq(ch[c % ch.Length]), major ? 0.03f : 0.038f, false);
-                        AddPluck(bed, (b0 + k) * beat, beat * 0.8f, Freq(ch[(k + b) % 3] + 12), 0.034f, 5200 + b * 4 + k);
-                    }
+                            AddPiano(bed, (b0 + k) * beat + c * 0.005f, beat * 0.4f, Freq(ch[c % ch.Length]), climb ? 0.044f : 0.038f, false);
+                    // While it climbs the harp runs under it in quavers.
+                    if (climb)
+                        for (int e8 = 0; e8 < 6; e8++)
+                        {
+                            int note = ch[e8 % ch.Length] + 12 * (e8 / ch.Length);
+                            AddPluck(bed, (b0 + e8 * 0.5f) * beat, beat * 1.2f, Freq(note), 0.034f, 5300 + b * 8 + e8);
+                        }
                 }
-                // In the major section the harp runs up and down the chord in quavers.
-                if (major)
-                    for (int e8 = 0; e8 < 6; e8++)
-                    {
-                        int step = e8 < 4 ? e8 : 6 - e8;
-                        int note = ch[step % ch.Length] + 12 * (step / ch.Length) + 12;
-                        AddPluck(bed, (b0 + e8 * 0.5f) * beat, beat * 1.2f, Freq(note), 0.04f, 5400 + b * 8 + e8);
-                    }
                 foreach (int c in ch) AddPad(bed, b0 * beat, bar, Freq(c - 12), intro ? 0.008f : 0.011f);
 
-                // ----- Strings: the cushion, and the cellos' slow answer under the tune -----
-                foreach (int c in ch) AddPad(strings, b0 * beat, bar, Freq(c), major || last ? 0.015f : 0.011f);
-                if (section >= 2)
+                // ----- Strings: the cushion, and the cellos -----
+                foreach (int c in ch) AddPad(strings, b0 * beat, bar, Freq(c), last || climb ? 0.016f : 0.011f);
+                if (!intro)
                 {
-                    // One long note a bar, walking through the thirds of the chords.
-                    int third = ch[1] - 12;
-                    AddViolins(strings, b0 * beat - 0.03f, bar * 0.96f, Freq(third), 0.026f, 3);
-                    if (major || last) AddViolins(strings, b0 * beat - 0.03f, bar * 0.96f, Freq(ch[0] - 12), 0.02f, 3);
+                    // Cellos hold the walking bass an octave up, so you hear it stepping down.
+                    AddViolins(strings, b0 * beat - 0.03f, bar * 0.97f, Freq(bassNote + 12), whirl ? 0.022f : 0.03f, 3);
+                    if (section == 2 || last) AddViolins(strings, b0 * beat - 0.03f, bar * 0.97f, Freq(ch[1] - 12), 0.02f, 3);
                 }
-                if (!intro) AddBass(strings, b0 * beat, bar * 0.9f, Freq(root + 12), 0.04f);
+                if (whirl)
+                {
+                    // Short bowed chords on two and three, pushing the waltz along.
+                    for (int k = 1; k <= 2; k++)
+                        AddViolins(strings, (b0 + k) * beat, beat * 0.35f, Freq(ch[(k + b) % 3]), 0.022f, 3);
+                }
 
                 // ----- Winds: sparkle -----
-                if (major && b % 2 == 0)
-                {
-                    var g = Ch(name, 84);
-                    for (int i = 0; i < 3; i++) AddCelesta(winds, (b0 + 0.5f + i) * beat, beat * 0.8f, Freq(g[i % g.Length]), 0.02f);
-                }
                 if (sectionEnd)
                 {
                     // A harp glissando sweeping into each new section.
-                    var into = Ch(next, 55);
+                    var into = Ch(next, 57);
                     var run = new int[14];
                     for (int i = 0; i < run.Length; i++) run[i] = into[i % 3] + 12 * (i / 3);
                     AddGliss(winds, (b0 + 1.5f) * beat, run, beat * 1.45f, 0.055f, 5600 + b * 14);
                 }
+                if (last && b % 2 == 0)
+                {
+                    var g = Ch(name, 86);
+                    for (int i = 0; i < 3; i++) AddGlock(winds, (b0 + i) * beat, Freq(g[i % g.Length]), 0.012f);
+                }
 
                 // ----- Grand: horns, drums, swells -----
-                if (major || last)
+                if (section == 2 || last)
                 {
-                    int r = Root(name, 43);
-                    AddBrass(grand, b0 * beat - BrassLead, bar * 0.94f, Freq(r), 0.034f);
-                    AddBrass(grand, b0 * beat - BrassLead, bar * 0.94f, Freq(r + 7), 0.024f);
-                    if (last || b >= 48) AddBrass(grand, b0 * beat - BrassLead, bar * 0.94f, Freq(ch[1]), 0.022f);
-                    AddTimpani(grand, b0 * beat, Freq(Root(name, 36)), last ? 0.12f : 0.07f);
+                    // The horn's long answer under the tune.
+                    float hf = Freq(NoteNum(MuseumHorn[inSection % MuseumHorn.Length]));
+                    AddBrass(grand, b0 * beat - BrassLead, bar * 0.95f, hf, last ? 0.04f : 0.03f);
+                    if (last) AddBrass(grand, b0 * beat - BrassLead, bar * 0.95f, Freq(bassNote + 12), 0.03f);
                 }
-                else if (section == 2 && b % 2 == 0)
-                    AddTimpani(grand, b0 * beat, Freq(Root(name, 36)), 0.06f);
-                if (!intro)
+                if (climb)
+                {
+                    AddBrass(grand, b0 * beat - BrassLead, bar * 0.94f, Freq(bassNote + 12), 0.034f);
+                    AddBrass(grand, b0 * beat - BrassLead, bar * 0.94f, Freq(ch[1]), 0.024f);
+                }
+                if (last || climb) AddTimpani(grand, b0 * beat, Freq(bassNote), last ? 0.11f : 0.08f);
+                else if ((whirl || section == 2) && b % 2 == 0) AddTimpani(grand, b0 * beat, Freq(bassNote), 0.055f);
+                if (whirl || last)
                 {
                     // A soft brushed lilt on two and three.
                     AddBrush(grand, (b0 + 1f) * beat, beat * 0.5f, 0.012f, 5800 + b * 2);
@@ -334,7 +386,8 @@ namespace Patchwork
                 if (sectionEnd && b != 7)
                 {
                     // A drum roll and a breath of cymbal into the next section.
-                    int roll = Root(next, 36);
+                    int roll = NoteNum(MuseumBass[(b + 1) % bars] + "2");
+                    if (roll < 38) roll += 12;
                     for (int s16 = 0; s16 < 9; s16++) AddTimpani(grand, (b0 + 0.75f + s16 * 0.25f) * beat, Freq(roll), 0.02f + s16 * 0.011f);
                     AddAirPad(grand, (b0 + 1f) * beat, beat * 2.6f, 0.05f, 5900 + b);
                 }
@@ -344,30 +397,44 @@ namespace Patchwork
             for (int b = 0; b < bars; b++)
             {
                 int section = MuseumSection(b);
-                bool major = section == 3, last = section == 4;
+                bool whirl = section == 3, last = section == 4;
+                bool climb = whirl && b >= 56;
                 foreach (var nt in Line(MuseumTune[b], b * 3f))
                 {
                     float t = nt.Beat * beat;
                     float len = nt.Len * beat;
                     float f = Freq(nt.Midi);
-                    // The piano always has it (in octaves once the orchestra is in).
-                    AddPiano(bed, t, len, f, section == 0 ? 0.15f : 0.12f);
-                    if (section >= 1) AddPiano(bed, t, len, f * 0.5f, 0.06f, false);
-                    if (section == 0) AddCelesta(bed, t, len + 0.3f, f * 2f, 0.012f);
-                    // Violins from the second time round; an octave higher as well where it soars.
-                    if (section >= 2)
+                    if (section == 0)
                     {
-                        AddViolins(strings, t - 0.04f, len * 0.98f, f, major || last ? 0.06f : 0.05f);
-                        if (major || last) AddViolins(strings, t - 0.04f, len * 0.98f, f * 2f, 0.03f, 3);
+                        // The intro's rising figure: celesta, with a harp note under it.
+                        AddCelesta(bed, t, len + 0.4f, f, 0.05f);
+                        AddPluck(bed, t, len + 0.3f, f * 0.5f, 0.03f, 6000 + b * 4 + (int)(nt.Beat * 2f));
+                        continue;
                     }
-                    else if (section == 1 && nt.Len >= 2f)
-                        AddViolins(strings, t - 0.04f, len * 0.98f, f, 0.024f);   // just leaning on the long notes
-                    // Accordion in the minor sections (the carousel); flute and bells in the major.
-                    if (section == 1 || section == 2 || last) AddAccordion(winds, t, len * 0.92f, f, section == 1 ? 0.03f : 0.038f);
-                    if (major || last) AddFlute(winds, t - FluteLead, len * 0.95f, f * (major ? 2f : 1f), 0.05f);
-                    if (major) AddGlock(winds, t, f * 2f, 0.016f);
-                    // Horns join the tune for the last time through.
-                    if (last && nt.Len >= 1f) AddBrass(grand, t - BrassLead, len * 0.9f, f * 0.5f, 0.03f);
+                    if (whirl)
+                    {
+                        // The carousel belongs to the piano (in octaves) and the accordion.
+                        AddPiano(bed, t, len, f, 0.13f);
+                        AddPiano(bed, t, len, f * 0.5f, 0.06f, false);
+                        AddAccordion(winds, t, len * 0.92f, f, climb ? 0.042f : 0.036f);
+                        if (b >= 48) AddViolins(strings, t - 0.04f, len * 0.98f, f, climb ? 0.06f : 0.045f);
+                        if (climb)
+                        {
+                            AddFlute(winds, t - FluteLead, len * 0.95f, f * 2f, 0.04f);
+                            if (nt.Len >= 1f) AddBrass(grand, t - BrassLead, len * 0.9f, f * 0.5f, 0.026f);
+                        }
+                        continue;
+                    }
+                    // The star tune: celesta and a quiet piano always have it...
+                    AddCelesta(bed, t, len + 0.4f, f, 0.045f);
+                    AddPiano(bed, t, len, f, 0.07f);
+                    // ...the violins sing it (an octave up the second time and at the end)...
+                    AddViolins(strings, t - 0.04f, len * 0.98f, f, section == 1 ? 0.05f : 0.058f);
+                    if (section == 2 || last) AddViolins(strings, t - 0.04f, len * 0.98f, f * 2f, 0.03f, 3);
+                    // ...a flute doubles it, and bells pick out the long notes.
+                    AddFlute(winds, t - FluteLead, len * 0.95f, f * (section == 1 ? 1f : 2f), 0.045f);
+                    if (nt.Len >= 2f) AddGlock(winds, t, f * 2f, 0.014f);
+                    if (last && nt.Len >= 2f) AddBrass(grand, t - BrassLead, len * 0.9f, f * 0.5f, 0.028f);
                 }
             }
 

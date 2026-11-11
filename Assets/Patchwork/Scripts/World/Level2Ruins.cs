@@ -13,7 +13,6 @@ namespace Patchwork
     public static partial class Level2Builder
     {
         const float RuinSurface = -0.6f, RuinBed = -5f;
-        static readonly Vector3 LiftFoot = new Vector3(47.7f, 0f, 10f);
         static readonly Color MossCol = new Color(0.3f, 0.55f, 0.45f);
 
         static Material RuinStone { get { return PatchworkAssets.Plaster(new Color(0.82f, 0.84f, 0.78f)); } }
@@ -187,7 +186,7 @@ namespace Patchwork
             {
                 "Careful! Every one of those stones is priceless. ...You hopped on all of them, didn't you.",
                 "Never mind. They've had worse. They've had the whole sea sitting on them.",
-                "The lift's in the corner, behind the brass gate. It opens for three Heartstrings. There's one on the temple altar, if you're short."
+                "The lift's that big cardboard box in the corner. Don't laugh, it's perfectly safe. It opens for three Heartstrings. There's one on the temple altar, if you're short."
             });
             foreach (float x in new[] { 56f, 68f, 96f }) Sconce(kit, new Vector3(x, 4.4f, 6f), 0f, x == 68f || x == 96f);
             Banner(kit, new Vector3(90f, 18f, 6.1f), 0f, 3.2f, 8f, StarCloth, 3);
@@ -374,67 +373,6 @@ namespace Patchwork
             PointLight(kit, f + new Vector3(0f, 2.4f, 0f), new Color(0.5f, 0.9f, 1f), 7f, 1.6f);
             SecretMarble.Place(kit, f + new Vector3(-1f, 1f, 0.6f), "L2_marble_seabed", new Color(0.5f, 0.9f, 0.5f));
             kit.Hint(foot + new Vector3(0f, 1.5f, -4.6f), new Vector3(7f, 4f, 3f), "The Pump House", "Only Water Form can slip through the drain.", HintTheme.Water);
-        }
-
-        // The Observatory lift: a round brass platform in the corner of the south terrace that
-        // rides up to the bridge and back. A gate shuts it off until three Heartstrings are found.
-        static void Lift(LevelKit kit)
-        {
-            Vector3 f = LiftFoot;
-            // The shaft: four brass rails up the wall, and a pad of star cloth at the bottom.
-            foreach (var o in new[] { new Vector3(-2.6f, 0f, -2.6f), new Vector3(-2.6f, 0f, 2.6f), new Vector3(2.6f, 0f, -2.6f) })
-                kit.Deco(PrimitiveType.Cylinder, f + o + Vector3.up * 10f, new Vector3(0.16f, 10f, 0.16f), Brass);
-            NoShadow(kit.Deco(PrimitiveType.Cylinder, f + Vector3.up * 0.02f, new Vector3(5.6f, 0.02f, 5.6f), PlumStars));
-            // The car.
-            var car = RoundPlatform(kit, f + Vector3.up * 0.25f, 2.3f, 0.3f, StarCloth, Brass);
-            for (int i = 0; i < 6; i++)
-            {
-                if (i == 3 || i == 0) continue;   // open on the west (bridge) and east (terrace) sides
-                float a = i * 60f * Mathf.Deg2Rad;
-                kit.Deco(PrimitiveType.Cylinder, new Vector3(Mathf.Cos(a) * 2.15f, 1.3f, Mathf.Sin(a) * 2.15f), new Vector3(0.08f, 1.3f, 0.08f), Brass, default(Vector3), car);
-            }
-            var top = new GameObject("CarTop").transform;
-            top.SetParent(car, false);
-            top.localPosition = new Vector3(0f, 2.6f, 0f);
-            Hoop(kit, top, 2.15f, 0.12f, Brass, 20);
-            NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 2.9f, 0f), Vector3.one * 0.5f, PatchworkAssets.Glow(LampGold, 2.4f), default(Vector3), car));
-            var glide = car.gameObject.AddComponent<Glider>();
-            glide.A = f + Vector3.up * 0.25f;
-            glide.B = new Vector3(f.x, DeckY, f.z);
-            glide.Travel = 5f;
-            glide.Rest = 3f;
-            car.gameObject.AddComponent<Carrier>();
-            // The landing at the top, by the doorway to the bridge.
-            kit.Block(new Vector3(44.65f, DeckY - 0.2f, 10f), new Vector3(1.3f, 0.4f, 6f), StoneCol, "LiftLanding", PaleStone);
-            PointLight(kit, new Vector3(47f, DeckY + 3f, 10f), LampGold, 12f, 1.2f);
-            // The gate: brass lattice across the two open sides, and a heart-shaped lock.
-            var gate = kit.Group("LiftGate", f);
-            for (int side = 0; side < 2; side++)
-            {
-                var panel = new GameObject("Panel").transform;
-                panel.SetParent(gate, false);
-                panel.localPosition = side == 0 ? new Vector3(0.3f, 0f, 3.3f) : new Vector3(3.3f, 0f, 0.3f);
-                panel.localRotation = Quaternion.Euler(0f, side == 0 ? 0f : 90f, 0f);
-                for (int i = 0; i <= 12; i++)
-                    kit.Deco(PrimitiveType.Cylinder, new Vector3(-3.3f + i * 0.55f, 2f, 0f), new Vector3(0.07f, 2f, 0.07f), Brass, default(Vector3), panel);
-                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 3.95f, 0f), new Vector3(6.8f, 0.14f, 0.14f), Brass, default(Vector3), panel);
-                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.3f, 0f), new Vector3(6.8f, 0.14f, 0.14f), Brass, default(Vector3), panel);
-                var col = panel.gameObject.AddComponent<BoxCollider>();
-                col.center = new Vector3(0f, 3f, 0f);
-                col.size = new Vector3(7f, 6f, 0.3f);
-                // The lock: a felt heart with a keyhole.
-                var heart = PatchworkAssets.Glow(new Color(1f, 0.6f, 0.4f), 0.9f);
-                kit.Deco(PrimitiveType.Sphere, new Vector3(-0.28f, 2.25f, 0.12f), new Vector3(0.7f, 0.7f, 0.3f), heart, default(Vector3), panel);
-                kit.Deco(PrimitiveType.Sphere, new Vector3(0.28f, 2.25f, 0.12f), new Vector3(0.7f, 0.7f, 0.3f), heart, default(Vector3), panel);
-                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.95f, 0.12f), new Vector3(0.62f, 0.62f, 0.26f), heart, new Vector3(0f, 0f, 45f), panel);
-                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 2.15f, 0.27f), Vector3.one * 0.16f, IronMat, default(Vector3), panel);
-            }
-            director.LiftGate = gate.gameObject;
-            director.LiftSpot = f;
-            kit.Hint(f + new Vector3(5.5f, 1.5f, 4f), new Vector3(7f, 4f, 7f), "The Observatory Lift",
-                "The gate opens once you've found three Heartstrings. Then step onto the brass platform and it will carry you up.");
-            Plaque(kit, f + new Vector3(4.6f, 0f, -2.4f), 60f, "The Lift",
-                "Built by the museum's founders and never once serviced. It goes up. It comes down. It asks for Heartstrings. Nobody remembers installing that part.");
         }
 
         // ================================================================ The Orrery Bridge

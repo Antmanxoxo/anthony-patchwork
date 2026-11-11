@@ -110,7 +110,7 @@ namespace Patchwork
             P.Add(new MapPin("The Bell", new Vector3(6f, 0f, TunnelZ)));
             P.Add(new MapPin("Drowned Temple", new Vector3(72f, 0f, 58f)));
             P.Add(new MapPin("The Wreck", new Vector3(91f, 0f, 40f)));
-            P.Add(new MapPin("Observatory Lift", new Vector3(50f, 0f, 12f), MapPin.Kind.Shop));
+            P.Add(new MapPin("Observatory Express", new Vector3(48f, 0f, 10f), MapPin.Kind.Shop));
             P.Add(new MapPin("Hall of Arms", new Vector3(80f, 0f, -24f), MapPin.Kind.Area));
 
             var moodGo = new GameObject("Level2Mood");

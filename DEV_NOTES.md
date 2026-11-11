@@ -447,8 +447,16 @@ Stuff I need to remember about how Patchwork is put together.
   is an `Npc` whose prompt says "Read"). Keep what's on them true.
 - `Pool(...)` = water surface + `WaterBody`. `RoundPlatform(...)` = a round solid platform;
   add `Glider` + `Carrier` to make it move. `Stump(...)` = a broken column to stand on.
-- The lift is a `RoundPlatform` with a `Glider`; `Level2Director` switches the gate off at
-  3 Heartstrings, sets the music's layers and runs the telescope ending.
+- The lift is the Observatory Express (`Level2Lift.cs` builds it, `CardboardLift.cs` runs
+  it): a cardboard tower in the Ruins' south-west corner (x 44..52.4, z 6..14) with two
+  identical cars, one at y 0 (doors east) and one at DeckY (doors west, onto the bridge).
+  Riding is a scripted cutscene: doors shut, the camera sits in the car's corner, the lift
+  music plays (`MusicPlayer.LiftMusic()`, `LiftDing()` in `MusicLift.cs`; `LiftHush` drops
+  the other music), and halfway through Patch is teleported to the other car. The two
+  cars must stay exactly alike or the swap shows. `LiftDoor` = a sliding door leaf,
+  `LiftDial` = a floor dial's needle (reads `CardboardLift.Dial`). The bottom doors stay
+  shut until 3 Heartstrings; `Level2Director` hides the "out of order" sign then.
+- `Level2Director` sets the music's layers and runs the telescope ending.
 - Music layers: `MusicPlayer.SetMuseumLayers(strings, winds, grand)` and
   `SetMuseumDepth(0..1)`.
 - `Level2Details.cs` is the second pass (decor only, plus the atrium's `StarCeiling`);
@@ -462,6 +470,21 @@ Stuff I need to remember about how Patchwork is put together.
   chandelier, Keepers, frieze, café, door signs). Components for it are in `MuseumLife.cs`:
   `Leaper` (seals and jumping fish), `CarouselBob`, `WingFlap`, `SleepyNpc` (an Npc whose
   prompt says "Nudge"). Walking figures use `PathMover`; they can't be talked to.
+- `Level2Grandeur.cs` is the fourth pass (sky lanterns over the sea, the atrium's river of
+  stars, kelp moonbeams, the whale calf, fireflies, the Hall of Arms' pennants).
+  `SkyLantern` lives there too.
+
+## The map (MapScreen.cs)
+- Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
+  levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark
+  picture and keeps the real colours.
+- Exploring: a 96x96 grid over the map, uncovered within ~16 m of Patch (checked every
+  0.3 s in `Tick`), saved in PlayerPrefs as `pw_map_<level id>` and wiped by
+  `GameState.DeleteSave`. Region names and place numbers only show once explored.
+- Checkpoints you've stood at are remembered as hint ids `map_cp_<level>_<x>_<z>`; you can
+  fast-travel to them (and to the Pod) from the map.
+- Controls: stick / WASD / mouse moves the cursor, L1 / R1 (Z / X, mouse wheel) zooms,
+  Triangle / F finds Patch, Confirm (or a click) travels.
 
 ## Habits
 - Test every change with Play and check the Console.

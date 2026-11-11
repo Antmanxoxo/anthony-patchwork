@@ -25,6 +25,7 @@ namespace Patchwork
             RuinsLife(kit);
             ArmsLife(kit);
             Signs(kit);
+            Grandeur(kit);
         }
 
         // ------------------------------------------------------------------ Little figures
@@ -1054,7 +1055,7 @@ namespace Patchwork
             DoorSign(kit, new Vector3(80f, 9.4f, 6.08f), 0f, 4);         // Ruins -> Hall of Arms
             DoorSign(kit, new Vector3(80f, 9.4f, 3.92f), 180f, 3);       // Hall of Arms -> back to the Ruins
             DoorSign(kit, new Vector3(-60f, 9.4f, -3.92f), 0f, 0);       // Kelp Galleries -> back to the Hall of Deep Time
-            DoorSign(kit, new Vector3(47.7f, 7f, 6.08f), 0f, 5);         // the lift
+            DoorSign(kit, new Vector3(52.48f, 5.4f, 10f), 90f, 5);       // the lift
             DoorSign(kit, new Vector3(0f, 12.8f, -107.92f), 0f, 6);      // over the front doors, inside
         }
     }

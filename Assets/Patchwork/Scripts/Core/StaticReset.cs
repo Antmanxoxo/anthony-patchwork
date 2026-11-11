@@ -23,6 +23,7 @@ namespace Patchwork
             TitleSequence.ResetStatics();
             LevelSelectMenu.ResetStatics();
             UseSpot.ResetStatics();
+            CardboardLift.ResetStatics();
             PodTheme.ResetStatics();
             PodLaunch.ResetStatics();
             PodDecor.ResetStatics();

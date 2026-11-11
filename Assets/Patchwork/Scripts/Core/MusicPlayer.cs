@@ -58,6 +58,11 @@ namespace Patchwork
         // Creatures of the Fray close by (0 none, 1 right on top of Patch): the music goes a
         // little muffled and quieter, as if the colour were draining out of it too.
         public static float FrayDread;
+
+        // Riding the museum's cardboard lift: the lift's own music takes over, so the rest
+        // drops right back.
+        public static bool LiftHush;
+        float liftHush;
         float dread;
 
         // Paused / Satchel: quieter and "behind glass". Form Wheel: muffled. Normal: clear.
@@ -205,6 +210,8 @@ namespace Patchwork
             float spookyDuck = UpdateSpookyTrack(udt);
             float realMaster = master, realCutoff = cutoff;
             master *= spookyDuck;
+            liftHush = Mathf.MoveTowards(liftHush, LiftHush ? 1f : 0f, udt * 1.2f);
+            master *= 1f - 0.9f * liftHush;
             dread = Mathf.MoveTowards(dread, Mathf.Clamp01(FrayDread), udt * 0.8f);
             if (dread > 0.001f)
             {
