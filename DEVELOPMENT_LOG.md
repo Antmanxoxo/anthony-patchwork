@@ -1,5 +1,45 @@
 # Development Log
 
+## Behind the Glass: the keepers' side of the aquarium
+- Fixed the compile error (an old Unity call the flicker fixer used).
+- A new part of the museum through a KEEPERS ONLY door at the far end of the Kelp Galleries:
+  - The Keepers' Room: named lockers (one left open), wetsuits and flippers on pegs, a brass
+    diving helmet, a work table with fish-food buckets, a steaming kettle and mugs, a tank of
+    glowing baby brine shrimp, the feeding times chalked on the board, nets and a hose, and
+    old Keeper Marlow to talk to. A checkpoint.
+  - The Tank Hall: a great dim hall with four tanks sunk into the floor and open at the top,
+    so Water Form can dive straight in. Catwalks and feeding platforms overhead, with a
+    diving board out over every tank, pipes, valve wheels and gauges along the walls,
+    moonlit roof-lights, and a second checkpoint.
+  - The Undercroft: a stair down between the first two tanks to a dry corridor with windows
+    into the Coral Nursery on one side and the Lantern Deep on the other.
+  - The Coral Nursery: a sunlit reef with the keepers' coral "trees", seagrass and seahorses,
+    clownfish in anemones, a moray that slides out of its crevice to gape, a cleaning
+    station (in front of the Undercroft window), a rock arch, a message in a bottle, and a
+    little cave behind a curtain of sea fans with a lost toy submarine and a secret marble.
+  - The Lantern Deep: a dark shaft 24 metres deep where everything makes its own light:
+    rainbow comb jellies, a long siphonophore, lanternfish, anglerfish with glowing lures, a
+    vampire squid, a dumbo octopus, black smokers with tube worms and crabs at the bottom,
+    ledges on the way down, June's dropped torch still shining, and the Bathysphere, with a
+    secret marble by its open hatch.
+  - The Frozen Sea: ice floes to walk on with snow on top and icicles under, a penguin
+    colony with chicks, a seal, penguins flying through the water, brinicles, a narwhal,
+    krill, giant sea spiders, and an ice cave with an explorer's sledge, a lantern and a
+    secret marble. Snow falls over it.
+  - The Mangrove: trees standing on their roots in the water, mudbanks with mudskippers and
+    fiddler crabs, a boardwalk, baby sharks, upside-down jellyfish, archerfish, a horseshoe
+    crab, fireflies, and a hollow under the far bank behind a curtain of roots, with a secret
+    marble.
+  - The old keepers' pipes join the tanks underwater (Coral to Frozen Sea, Lantern Deep to
+    Mangrove, Frozen Sea to Mangrove), each lined with copper and brass rings, lit, labelled
+    with where it goes, and with bubbles to collect.
+  - Plaques with true stories: the coral nursery, clownfish, cleaner shrimp, comb jellies,
+    black smokers, the Bathysphere, emperor penguins, the narwhal, the Endurance, mangroves,
+    archerfish and the horseshoe crab.
+  - Each tank has its own underwater colour and light, its own line from the Storyteller,
+    and its own pin on the map. Four new secret marbles.
+- Swimmers can now dive below the old depth limit without being sent back to a checkpoint.
+
 ## Weathered stone, embroidery-hoop checkpoints, and the flicker hunt
 - The museum's stone is now old dressed stone: long blocks in courses, each its own shade
   of honey, cream or grey, with worn and chipped edges, pitted faces, soft rain streaks

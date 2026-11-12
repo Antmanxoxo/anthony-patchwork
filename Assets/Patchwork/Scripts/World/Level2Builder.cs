@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Patchwork
@@ -35,7 +35,7 @@ namespace Patchwork
         public const string SceneName = "Level2";
         public static readonly string[] CollectibleIds = { "L2_b_obelisk", "L2_b_catwalk", "L2_b_crowsnest", "L2_b_library", "L2_b_keep" };
         public static readonly string[] HeartstringIds = { "L2_hs_balcony", "L2_hs_longship", "L2_hs_kelp", "L2_hs_bell", "L2_hs_temple", "L2_hs_orrery" };
-        public static readonly string[] MarbleIds = { "L2_marble_desk", "L2_marble_sarcophagus", "L2_marble_seabed", "L2_marble_armoury", "L2_marble_clam", "L2_marble_treasure" };
+        public static readonly string[] MarbleIds = { "L2_marble_desk", "L2_marble_sarcophagus", "L2_marble_seabed", "L2_marble_armoury", "L2_marble_clam", "L2_marble_treasure", "L2_marble_coral", "L2_marble_abyss", "L2_marble_ice", "L2_marble_mangrove" };
         public const int HeartstringsNeeded = 3;
 
         static readonly Vector3 PodLanding = new Vector3(0f, 0f, -151f);
@@ -65,7 +65,7 @@ namespace Patchwork
             info.Subtitle = "After hours in the grandest museum under the sea. Find three Heartstrings to open the Observatory lift.";
             info.Spawn = SpawnPoint + Vector3.up * 0.1f;
             info.SpawnYaw = 0f;
-            info.KillY = -30f;
+            info.KillY = -45f;   // (the Lantern Deep goes down a long way)
             info.FailY = -12f;   // the pools are real places Water Form swims in
             // Night outside; each hall sets its own light as you walk in (see Level2Mood).
             info.Sky = new Color(0.05f, 0.07f, 0.18f);
@@ -88,8 +88,8 @@ namespace Patchwork
             info.Miniature = 0f;
             info.HeartstringsNeeded = HeartstringsNeeded;
             // (Centred on the atrium, so the one snapshot shiny things reflect is taken in there.)
-            info.Area.SetMinMax(new Vector3(-110f, -10f, -262f), new Vector3(110f, 70f, 106f));
-            info.MapArea = new Bounds(new Vector3(5f, 0f, -30f), new Vector3(210f, 10f, 276f));
+            info.Area.SetMinMax(new Vector3(-110f, -30f, -262f), new Vector3(110f, 70f, 190f));
+            info.MapArea = new Bounds(new Vector3(5f, 0f, 2f), new Vector3(210f, 10f, 372f));
             info.MapCameraHeight = 13f;   // under the ceilings, so the map shows the floor plan
             info.MapTitle = "The Oceanic Museum";
             info.MapNote = "Three Heartstrings open the lift to the Observatory. The plaques are worth reading: everything on them is true.";
@@ -116,6 +116,13 @@ namespace Patchwork
             P.Add(new MapPin("Star Corridor", new Vector3(44f, 0f, -22f), MapPin.Kind.Area));
             P.Add(new MapPin("The Sea Gate", new Vector3(-72f, 0f, 27f)));
             P.Add(new MapPin("Drowned Colonnade", new Vector3(97f, 0f, 86f)));
+            P.Add(new MapPin("Behind the Glass", new Vector3(-60f, 0f, 140f), MapPin.Kind.Area));
+            P.Add(new MapPin("Keepers' Room", new Vector3(-60f, 0f, 86f)));
+            P.Add(new MapPin("Coral Nursery", new Vector3(-74.5f, 0f, 112f)));
+            P.Add(new MapPin("Lantern Deep", new Vector3(-46.5f, 0f, 112f)));
+            P.Add(new MapPin("Frozen Sea", new Vector3(-74.5f, 0f, 154f)));
+            P.Add(new MapPin("The Mangrove", new Vector3(-46.5f, 0f, 154f)));
+            P.Add(new MapPin("The Undercroft", new Vector3(-60f, 0f, 117f)));
 
             var moodGo = new GameObject("Level2Mood");
             moodGo.transform.SetParent(kit.Root, false);
@@ -136,6 +143,7 @@ namespace Patchwork
             StarCorridor(kit);
             ObservatoryHall(kit);
             HallOfArms(kit);
+            KeepersWing(kit);
             Details(kit);
             Life(kit);
 
@@ -167,6 +175,7 @@ namespace Patchwork
                 Fog = info.FogColor, Backdrop = info.Sky, SunColor = info.SunColor, FogStart = info.FogStart, FogEnd = info.FogEnd, Sun = info.SunIntensity
             };
             var Z = mood.Zones;
+            KwMoods(Z);   // (Behind the Glass: the tanks first, then the hall round them)
             // (The first box that holds Patch wins, so the small ones come first.)
             Z.Add(new Level2Mood.Zone
             {

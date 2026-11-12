@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Patchwork
 {
@@ -102,7 +102,8 @@ namespace Patchwork
             Wall(kit, new Vector3(-89f, 0f, 20f), new Vector3(-89f, 0f, 56f), 18f, T + 4f, 2f, stone);
             Wall(kit, new Vector3(-88.6f, 0f, 20f), new Vector3(-88.6f, 0f, 56f), -8f, 0f, 1.2f, stone);
             // North.
-            Wall(kit, new Vector3(-90f, 0f, 77f), new Vector3(-30f, 0f, 77f), -8f, T + 4f, 2f, stone);
+            // (With the door through to the keepers' side, Behind the Glass.)
+            WallWithDoor(kit, new Vector3(-90f, 0f, 77f), new Vector3(-30f, 0f, 77f), -8f, T + 4f, 2f, stone, 30f, 5f, 6f);
             // East: stone, a long window onto the Great Deep, and the door to the tunnel.
             Wall(kit, new Vector3(-31f, 0f, -4f), new Vector3(-31f, 0f, 22f), -8f, T + 4f, 2f, stone);
             Wall(kit, new Vector3(-31f, 0f, 22f), new Vector3(-31f, 0f, 56f), 16f, T + 4f, 2f, stone);

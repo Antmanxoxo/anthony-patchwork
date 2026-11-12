@@ -567,6 +567,14 @@ Stuff I need to remember about how Patchwork is put together.
   decorations popped as the camera turned).
 - ZFightFix: up to 4 passes, includes transparent cubes, one move per block per axis per pass.
 - RopeLine adds a solid box along the whole line.
+- Behind the Glass (Level2Keepers.cs), x -88..-34, z 78..178. Keepers' Room z 78..94 (ceiling 8),
+  Tank Hall z 95..178 (roof 24, catwalks at y 8). Tanks (x0,x1,z0,z1,bed): Coral -86,-63,98,126,-9;
+  Lantern -57,-36,98,126,-24; Frozen -86,-63,134,175,-12; Mangrove -57,-36,134,175,-7; water top -0.6.
+  Undercroft in the spine x -63..-57, floor -8. Pipes are WaterBody volumes through the rock.
+- Hooks for the narration and enemy parts: empty objects under "KeepersWing_Markers"
+  (Narration_*, EnemyPatrol_*, EnemyLair_*, EnemyArena_*, Secret_*, Dive_*, Pipe_*).
+- Level2Mood.Zone has UnderFog / UnderFogEnd for each tank's own underwater look.
+- FailY no longer respawns a swimmer; Level 2 KillY is -45.
 
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);

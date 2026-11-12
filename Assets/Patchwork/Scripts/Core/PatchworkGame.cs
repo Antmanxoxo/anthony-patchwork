@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
@@ -427,7 +427,8 @@ namespace Patchwork
                 }
                 Player.Tick(frame, dt);
 
-                if (Player.transform.position.y < Level.KillY || (Player.Motor.Center.y < Level.FailY && !Swinging())) Respawn(true);
+                // (FailY is for falling into the dark; a swimmer diving down a deep tank is fine.)
+                if (Player.transform.position.y < Level.KillY || (Player.Motor.Center.y < Level.FailY && !Swinging() && !Player.Motor.WasSwimming && !Player.Motor.Swimming)) Respawn(true);
             }
 
             if (Dance.Update(udt) && Mode == UIMode.Dance) Haptics.Pulse(0.15f, 0.05f, 0.08f);

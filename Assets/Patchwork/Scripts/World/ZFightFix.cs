@@ -104,7 +104,7 @@ namespace Patchwork
                 }
             }
 
-            var moved = new HashSet<long>();   // (each block moves at most once per axis per pass)
+            var moved = new Dictionary<Transform, int>();   // (each block moves at most once per axis per pass: a bit per axis)
             int fixedCount = 0;
             foreach (var kv in faces)
             {
@@ -127,13 +127,14 @@ namespace Patchwork
                             if (ox <= 0.02f || oy <= 0.02f || ox * oy < MinOverlap) continue;
                             // Move the smaller one outward (towards where its face looks).
                             Face small = a.Area <= c.Area ? a : c;
-                            long mk = ((long)small.T.GetInstanceID() << 2) | (long)small.Axis;
-                            if (moved.Contains(mk)) continue;
+                            int bits;
+                            moved.TryGetValue(small.T, out bits);
+                            if ((bits & (1 << small.Axis)) != 0) continue;
                             Vector3 dir = Vector3.zero;
                             dir[small.Axis] = small.Side;
                             if (small.Axis != 1) dir = Quaternion.Euler(0f, small.Frame * 0.5f, 0f) * dir;
                             small.T.position += dir * Nudge;
-                            moved.Add(mk);
+                            moved[small.T] = bits | (1 << small.Axis);
                             fixedCount++;
                         }
                 }

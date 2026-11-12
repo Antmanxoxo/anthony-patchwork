@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Patchwork
@@ -460,6 +460,8 @@ namespace Patchwork
             public Color Fog, Backdrop, SunColor;
             public float FogStart = 40f, FogEnd = 300f, Sun = 0.5f;
             public float Depth;              // how "underwater" the music sounds (0-1)
+            public Color UnderFog;           // the colour of the water when you dive here (none: the usual blue-green)
+            public float UnderFogEnd;        // how far you can see under it (0: the usual)
         }
 
         public readonly List<Zone> Zones = new List<Zone>();
@@ -542,9 +544,10 @@ namespace Patchwork
             if (under > 0.001f)
             {
                 float u = Mathf.SmoothStep(0f, 1f, under);
-                RenderSettings.fogColor = Color.Lerp(fog, new Color(0.05f, 0.26f, 0.3f), u);
+                bool own = z.UnderFog.a > 0.01f;
+                RenderSettings.fogColor = Color.Lerp(fog, own ? z.UnderFog : new Color(0.05f, 0.26f, 0.3f), u);
                 RenderSettings.fogStartDistance = Mathf.Lerp(fogStart, 0.5f, u);
-                RenderSettings.fogEndDistance = Mathf.Lerp(fogEnd, 34f, u);
+                RenderSettings.fogEndDistance = Mathf.Lerp(fogEnd, z.UnderFogEnd > 0f ? z.UnderFogEnd : 34f, u);
                 RenderSettings.ambientSkyColor = Color.Lerp(sky, new Color(0.3f, 0.6f, 0.65f), u * 0.7f);
                 RenderSettings.ambientEquatorColor = Color.Lerp(side, new Color(0.18f, 0.42f, 0.48f), u * 0.7f);
             }
