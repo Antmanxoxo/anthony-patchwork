@@ -17,10 +17,6 @@ namespace Patchwork
             // From high up at the back of the tank, so the kelp and the passing sharks throw
             // moving shadows across the atrium floor through the glass, netted with caustics.
             SpotLight(kit, new Vector3(AtriumHalf + 26f, 20f, -78f), new Vector3(-6f, 0f, -78f), ReefLight, 85f, 62f, 110f, true, true);
-            // Visible beams slanting in through the glass.
-            var beam = Shaft(new Color(0.55f, 0.85f, 1f), 0.045f);
-            foreach (float z in new[] { -96f, -86f, -76f, -66f, -58f })
-                NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(14f, 9f, z), new Vector3(36f, 0.04f, 4.5f), beam, new Vector3(0f, 0f, 24f + (z % 3f))));
             Motes(kit, new Vector3(14f, 7f, -78f), new Vector3(26f, 12f, 44f), 36, new Color(0.7f, 0.9f, 1f), 1.8f, 0.07f, new Vector3(0.03f, 0.05f, 0.04f));
 
             // ----- The Observatory: moonlight down through the dome -----
@@ -64,7 +60,11 @@ namespace Patchwork
             l.innerSpotAngle = angle * 0.55f;
             l.intensity = intensity;
             l.shadows = shadows ? LightShadows.Soft : LightShadows.None;
-            l.shadowStrength = 0.8f;
+            l.shadowStrength = 0.7f;
+            // Generous bias, so big floors lit at a low angle don't shimmer with shadow speckle.
+            l.shadowBias = 0.12f;
+            l.shadowNormalBias = 0.9f;
+            l.shadowNearPlane = 1f;
             l.renderMode = LightRenderMode.ForcePixel;
             if (caustic) go.AddComponent<CausticLight>().Lamp = l;
             return l;

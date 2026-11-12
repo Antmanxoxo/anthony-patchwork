@@ -85,13 +85,6 @@ namespace Patchwork
         // Sunbeams (moonbeams, at this hour) slanting down through the kelp from the skylights.
         static void KelpLight(LevelKit kit)
         {
-            var beam = Shaft(new Color(0.75f, 1f, 0.9f), 0.06f);
-            Vector3[] at = { new Vector3(-76f, 0f, 12f), new Vector3(-50f, 0f, 22f), new Vector3(-70f, 0f, 58f), new Vector3(-42f, 0f, 50f), new Vector3(-58f, 0f, 70f) };
-            for (int i = 0; i < at.Length; i++)
-            {
-                float h = KelpTop - 1f;
-                NoShadow(kit.Deco(PrimitiveType.Cylinder, at[i] + Vector3.up * h * 0.5f, new Vector3(2.4f + i % 2, h * 0.5f, 2.4f + i % 2), beam, new Vector3(6f + i * 2f, i * 40f, 4f)));
-            }
             // Plankton glittering in the beams.
             Motes(kit, new Vector3(-60f, 10f, 38f), new Vector3(50f, 18f, 72f), 40, new Color(0.6f, 1f, 0.85f), 2f, 0.08f, new Vector3(0.08f, 0.06f, 0.05f));
         }

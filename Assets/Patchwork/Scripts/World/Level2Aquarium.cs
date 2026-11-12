@@ -107,13 +107,10 @@ namespace Patchwork
             // The ceiling, with long skylights of "surface" over the pool.
             kit.Block(new Vector3(-60f, T + 0.5f, 36f), new Vector3(60f, 1f, 84f), Navy, "KelpCeiling", PatchworkAssets.Felt(new Color(0.04f, 0.12f, 0.16f)));
             var skin = PatchworkAssets.Glow(new Color(0.55f, 0.95f, 0.9f), 1.1f);
-            var beam = Shaft(new Color(0.6f, 1f, 0.9f), 0.06f);
             for (int i = 0; i < 4; i++)
             {
                 float x = -80f + i * 13.5f;
                 NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(x, T - 0.04f, 38f), new Vector3(7f, 0.1f, 36f), skin));
-                for (int k = 0; k < 3; k++)
-                    NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(x + 2f, T * 0.5f - 3f, 25f + k * 13f), new Vector3(2.4f, T + 7f, 0.04f), beam, new Vector3(0f, 30f + k * 40f, 14f)));
             }
             foreach (float z in new[] { 10f, 30f, 46f, 66f })
                 kit.Deco(PrimitiveType.Cube, new Vector3(-60f, T - 0.5f, z), new Vector3(56f, 1f, 1f), IronMat);
@@ -268,14 +265,7 @@ namespace Patchwork
             NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(cx, DeepFloor + h * 0.5f, DeepZ1 + 0.4f), new Vector3(W + 4f, h, 0.2f), far));
             NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(-15f, DeepFloor + h * 0.5f, DeepZ0 - 0.4f), new Vector3(34f, h, 0.2f), far));
             NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(cx, DeepTop + 0.05f, cz), new Vector3(W + 4f, 0.1f, D + 4f), PatchworkAssets.Glow(new Color(0.45f, 0.75f, 1f), 1.1f)));
-            var shaft = Shaft(new Color(0.55f, 0.8f, 1f), 0.055f);
             var rng = new System.Random(61);
-            for (int i = 0; i < 12; i++)
-            {
-                Vector3 p = new Vector3(DeepX0 + 6f + (float)rng.NextDouble() * (W - 12f), DeepFloor + h * 0.52f, DeepZ0 + 6f + (float)rng.NextDouble() * (D - 12f));
-                if (Mathf.Abs(p.z - TunnelZ) < 7f) p.z += 14f;
-                NoShadow(kit.Deco(PrimitiveType.Cube, p, new Vector3(2f + (float)rng.NextDouble() * 2.5f, h * 1.06f, 0.04f), shaft, new Vector3(0f, (float)rng.NextDouble() * 180f, 10f + (float)rng.NextDouble() * 10f)));
-            }
             foreach (var p in new[] { new Vector3(-10f, 12f, 44f), new Vector3(24f, 12f, 46f), new Vector3(-8f, 12f, 86f), new Vector3(26f, 12f, 86f) })
                 PointLight(kit, p, new Color(0.3f, 0.55f, 1f), 42f, 1.7f);
 

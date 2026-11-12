@@ -1,5 +1,21 @@
 # Development Log
 
+## Level 2: clean-up from the playtest videos
+- Removed every flat "beam of light" sheet: the atrium's skylight and window beams, the
+  haze under the star ceiling, the shafts in the tanks, the kelp galleries, the Great Deep
+  and the Ruins, and the lighthouse's long flat beam (now a real light sweeping round).
+  The aurora is soft glowing blobs instead of flat panels.
+- Every tank has a dark stone lid with an iron edge, so looking up through the glass you
+  no longer see over the top of the water.
+- The square piers that stood in the Keeper statues' corners by the Great Window are gone,
+  and the west gallery's wall lamps are moved off the piers they were buried in.
+- Flicker: the fountains' water no longer fights the stone basin, and their see-through
+  column, jet and bubbles draw in a fixed order; the dancing-water lights move smoothly
+  instead of swapping patterns; shadowed lights no longer speckle the floors; and a pass
+  after the build separates any surfaces that sit exactly on top of each other.
+- The treasure chest's marble sits just in front of the chest (it was being pushed up out
+  of the water when the level loaded).
+
 ## God Mode Halo (testing hat)
 - A new hat for testing, only in the editor: a ring of glowing gold beads and two little
   felt wings. Wearing it, Patch runs over three times as fast, jumps much higher, can jump

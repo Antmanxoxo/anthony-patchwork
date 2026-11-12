@@ -148,6 +148,9 @@ namespace Patchwork
 
             kit.Info.SecretIds.AddRange(MarbleIds);
             ScoreBubbles.Settle(kit);
+            // Last of all: settle any surfaces that sit exactly on top of each other (flicker).
+            int settled = ZFightFix.Run(kit.Root);
+            if (settled > 0) Debug.Log("[Level2] Settled " + settled + " flickering surfaces.");
             return info;
         }
 
@@ -463,19 +466,18 @@ namespace Patchwork
                 {
                     // A stone pier under each rib, except where there's a doorway (west, middle)
                     // or the Great Window (east) to stand in front of.
-                    bool clear = s < 0 ? Mathf.Abs(z + 78f) < 1f : z > -103f && z < -53f;
+                    // (None on the east side at all: the Keeper statues stand in those corners.)
+                    bool clear = s < 0 ? Mathf.Abs(z + 78f) < 1f : true;
                     if (!clear) kit.Deco(PrimitiveType.Cube, new Vector3(s * (AtriumHalf - 0.6f), 11f, z), new Vector3(1.2f, 22f, 1.6f), PaleStone);
                     kit.Deco(PrimitiveType.Cube, new Vector3(s * (AtriumHalf - 0.8f), 21.6f, z), new Vector3(1.8f, 0.8f, 2.2f), Ashlar);
                 }
             }
             var moonGlow = PatchworkAssets.Glow(new Color(0.72f, 0.82f, 1f), 1.3f);
-            var moonShaft = Shaft(new Color(0.75f, 0.85f, 1f), 0.05f);
             foreach (float z in new[] { -97.5f, -84.5f, -71.5f, -58.5f })
             {
                 NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, H - 0.04f, z), new Vector3(9f, 0.1f, 9f), moonGlow));
                 NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, H - 0.1f, z), new Vector3(0.2f, 0.2f, 9f), rib));
                 NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, H - 0.1f, z), new Vector3(9f, 0.2f, 0.2f), rib));
-                NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(-4f, H * 0.5f, z), new Vector3(6f, H * 1.04f, 0.04f), moonShaft, new Vector3(0f, 20f, 15f)));
             }
             StarCeiling(kit, H);
 
@@ -529,8 +531,9 @@ namespace Patchwork
             foreach (float x in new[] { -24.6f, -18.6f, 18.6f, 24.6f })
                 Column(kit, new Vector3(x, 0f, -54.6f), 7f, 0.55f);
             // Gallery furniture.
-            foreach (float z in new[] { -100f, -90f, -66f, -58f })
-                Sconce(kit, new Vector3(-30f, 10.6f, z), 90f, z == -100f || z == -66f);
+            // (Between the piers, not on them.)
+            foreach (float z in new[] { -97.5f, -84.5f, -71.5f, -58.5f })
+                Sconce(kit, new Vector3(-30f, 10.6f, z), 90f, z == -97.5f || z == -71.5f);
             Trail(kit, 10, new Vector3(-27f, 9.2f, -62f), new Vector3(-27f, 9.2f, -66f), new Vector3(-27f, 9.2f, -70f), new Vector3(-27f, 9.2f, -74f), new Vector3(-28f, 9.2f, -78f));
             kit.ThreadLine(new Vector3(-27f, 9.3f, -86f), new Vector3(-27f, 9.3f, -104f), 6);
             // The east balcony, right up against the Great Window: the first Heartstring.

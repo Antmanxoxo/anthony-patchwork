@@ -725,16 +725,10 @@ namespace Patchwork
             NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, h + 0.05f, depth * 0.5f), new Vector3(width + 1f, 0.1f, depth), PatchworkAssets.Glow(Color.Lerp(shallow, Color.white, 0.35f), 1.1f), new Vector3(0f, yaw, 0f)));
             // Sand.
             NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, -0.25f, depth * 0.5f), new Vector3(width + 1f, 0.5f, depth), PatchworkAssets.Felt(Color.Lerp(new Color(0.75f, 0.68f, 0.5f), deep, 0.45f)), new Vector3(0f, yaw, 0f)));
-            // Slanting shafts of light from the surface.
-            var shaft = Shaft(Color.Lerp(shallow, Color.white, 0.5f), 0.07f);
-            int shafts = Mathf.Max(3, Mathf.RoundToInt(width / 6f));
-            for (int i = 0; i < shafts; i++)
-            {
-                float x = -width * 0.5f + width * (i + 0.5f) / shafts + t.R(-1.2f, 1.2f);
-                float z = t.R(depth * 0.25f, depth * 0.8f);
-                var s = kit.Deco(PrimitiveType.Cube, t.At(x, h * 0.52f, z), new Vector3(t.R(1.2f, 2.6f), h * 1.08f, 0.03f), shaft, new Vector3(0f, yaw + t.R(-12f, 12f), t.R(10f, 20f)));
-                NoShadow(s);
-            }
+            // A lid on the tank: the dark stone roof above the water, so looking up through the
+            // glass you never see over the top of it.
+            NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, h + 0.65f, depth * 0.5f), new Vector3(width + 1.6f, 1f, depth + 0.6f), DarkStone, new Vector3(0f, yaw, 0f)));
+            NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, h + 0.22f, -0.05f), new Vector3(width + 1.6f, 0.44f, 0.5f), IronMat, new Vector3(0f, yaw, 0f)));
             // The glow that spills out through the glass onto the floor.
             PointLight(kit, t.At(0f, Mathf.Min(h * 0.45f, floorDrop + 6f), -2.5f), Color.Lerp(shallow, Color.white, 0.2f), Mathf.Max(14f, width * 0.5f), 1.5f);
             PointLight(kit, t.At(0f, h * 0.6f, depth * 0.45f), shallow, Mathf.Max(depth, width * 0.6f), 1.6f);

@@ -673,7 +673,8 @@ namespace Patchwork
                     var band = PatchworkAssets.Cobble(new Color(0.75f, 0.74f, 0.72f));
                     NoShadow(Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.3f, new Vector3(3.6f, 0.3f, 3.6f), stone));
                     Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.62f, new Vector3(3.9f, 0.06f, 3.9f), band);
-                    Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.63f, new Vector3(3.2f, 0.05f, 3.2f), surface);
+                    // (The water sits just above the carved band's top, so the two don't flicker.)
+                    Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.66f, new Vector3(3.2f, 0.05f, 3.2f), surface);
                     Deco(PrimitiveType.Cylinder, basePos + Vector3.up * 0.75f, new Vector3(0.9f, 0.15f, 0.9f), stone);
                     var fish = Group("Fish", basePos + Vector3.up * 1f);
                     var gold = PatchworkAssets.Plain(new Color(0.95f, 0.65f, 0.3f), 0.7f);
@@ -706,6 +707,13 @@ namespace Patchwork
                 drops[i] = Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 0.16f, glass, default(Vector3), current.transform);
                 drops[i].GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
+            // The column and the jet inside it are both see-through and share a middle, so the
+            // renderer can't decide which to draw first and they flicker: fix the order (inner
+            // jet first, then the glassy column round it, then the bubbles and drops).
+            jet.GetComponent<Renderer>().rendererPriority = 0;
+            column.GetComponent<Renderer>().rendererPriority = 1;
+            foreach (var b in bubbles) b.GetComponent<Renderer>().rendererPriority = 2;
+            foreach (var d in drops) d.GetComponent<Renderer>().rendererPriority = 2;
             current.SetupVisuals(column, jet, bubbles, crown, drops, height, style != FountainStyle.Spring && style != FountainStyle.Pipe ? 1.6f : 1.2f);
             AmbientEmitter.Create(current.transform, basePos + Vector3.up * 0.5f, Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.25f, 1.5f, 12f);
             return current;

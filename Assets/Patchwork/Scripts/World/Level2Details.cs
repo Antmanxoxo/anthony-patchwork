@@ -253,12 +253,6 @@ namespace Patchwork
             }
             for (int i = 0; i < sheets.Length; i++)
                 Twinkling(sheets[i], root, "CeilingStars", tints[i], 0.9f, 3f, 0.7f + i * 0.33f, i * 1.9f);
-            var haze = Shaft(new Color(0.6f, 0.6f, 1f), 0.05f);
-            for (int i = 0; i < 6; i++)
-            {
-                float k = (i + 0.5f) / 6f;
-                NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(-27f + k * 54f, y - 0.05f, -104f + k * 50f + Mathf.Sin(k * 5f) * 4f), new Vector3(11f, 0.02f, 7f), haze, new Vector3(0f, -42f, 0f)));
-            }
 
             // The constellations.
             Vector3[] spots = { new Vector3(-17f, y, -97f), new Vector3(17f, y, -99f), new Vector3(-19f, y, -64f), new Vector3(18f, y, -62f), new Vector3(-20f, y, -81f), new Vector3(20f, y, -80f) };
@@ -388,13 +382,17 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cylinder, lh + Vector3.up * 33.4f, new Vector3(5.6f, 0.4f, 5.6f), IronMat);
             NoShadow(kit.Deco(PrimitiveType.Cylinder, lh + Vector3.up * 35.6f, new Vector3(3.4f, 1.8f, 3.4f), PatchworkAssets.Glow(new Color(1f, 0.92f, 0.6f), 3f)));
             kit.Deco(PrimitiveType.Sphere, lh + Vector3.up * 38f, new Vector3(4.4f, 2.6f, 4.4f), PatchworkAssets.Shingle(Navy));
+            // The lamp glows, and its sweep is a real spot light turning round out over the sea.
             var lamp = kit.Group("LighthouseBeam", lh + Vector3.up * 35.6f);
-            var ray = Shaft(new Color(1f, 0.95f, 0.7f), 0.07f);
-            for (int s = -1; s <= 1; s += 2)
-            {
-                var b = NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0f, s * 62f), new Vector3(5f, 2.6f, 120f), ray, default(Vector3), lamp));
-                b.localRotation = Quaternion.Euler(s * -1.5f, 0f, 0f);
-            }
+            var sweep = new GameObject("Sweep").AddComponent<Light>();
+            sweep.transform.SetParent(lamp, false);
+            sweep.transform.localRotation = Quaternion.Euler(8f, 0f, 0f);
+            sweep.type = LightType.Spot;
+            sweep.color = new Color(1f, 0.92f, 0.7f);
+            sweep.range = 160f;
+            sweep.spotAngle = 14f;
+            sweep.intensity = 260f;
+            sweep.shadows = LightShadows.None;
             lamp.gameObject.AddComponent<Spinner>().Speed = 16f;
             // An island with a few lit windows to the east, and far hills behind.
             var isle = new MeshBatch();
@@ -431,14 +429,15 @@ namespace Patchwork
             // ----- In the sky -----
             // The northern lights, low over the sea to the south, and a shooting star or two.
             Color[] aurora = { new Color(0.3f, 1f, 0.7f), new Color(0.5f, 0.6f, 1f), new Color(0.8f, 0.5f, 1f) };
+            // (Soft glowing clouds of colour rather than flat sheets, so they never show an edge.)
             for (int band = 0; band < 3; band++)
             {
-                var veil = Shaft(aurora[band], 0.05f);
+                var veil = Shaft(aurora[band], 0.035f);
                 for (int i = 0; i < 12; i++)
                 {
                     float k = i / 11f;
                     Vector3 p = new Vector3(-230f + k * 460f, 70f + band * 16f + Mathf.Sin(k * 7f + band) * 12f, -380f - band * 20f + Mathf.Cos(k * 5f + band * 2f) * 24f);
-                    NoShadow(kit.Deco(PrimitiveType.Cube, p, new Vector3(46f, 50f + band * 8f, 0.2f), veil, new Vector3(0f, Mathf.Sin(k * 9f + band) * 28f, Mathf.Cos(k * 6f) * 7f)));
+                    NoShadow(kit.Deco(PrimitiveType.Sphere, p, new Vector3(60f, 36f + band * 6f, 14f), veil, new Vector3(0f, Mathf.Sin(k * 9f + band) * 28f, 0f)));
                 }
             }
             Shooting(kit, new Vector3(-180f, 190f, -260f), new Vector3(-40f, 120f, -330f), new Vector3(160f, 30f, 60f), 11f, 2f, 34f, 1.1f, new Color(1f, 0.97f, 0.85f));

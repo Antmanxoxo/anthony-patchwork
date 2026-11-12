@@ -111,12 +111,15 @@ namespace Patchwork
         void OnDestroy() { if (current == this) current = null; }
     }
 
-    // A spot light whose cookie is moving water: the dancing net of light you see on the
-    // floor of a pool, or on the walls next to a big aquarium window.
+    // A spot light whose cookie is moving water: the net of light you see on the floor of a
+    // pool, or on the walls next to a big aquarium window. One pattern, turning and swaying
+    // slowly and smoothly (swapping between patterns made everything it lit flicker).
     public class CausticLight : MonoBehaviour
     {
         public Light Lamp;
-        public float Fps = 11f, Turn = 2.5f, Phase;
+        public float Turn = 3f, Phase;
+        Quaternion home;
+        float baseIntensity = -1f;
         static Texture2D[] frames;
         const int Size = 96, Frames = 12;
 
@@ -126,14 +129,18 @@ namespace Patchwork
         {
             if (Lamp == null) Lamp = GetComponent<Light>();
             if (frames == null) frames = Make();
+            if (Lamp != null && frames != null) Lamp.cookie = frames[Mathf.Abs(Mathf.RoundToInt(Phase * 7f)) % Frames];
+            home = transform.localRotation;
+            if (Lamp != null) baseIntensity = Lamp.intensity;
         }
 
         void Update()
         {
-            if (Lamp == null || frames == null) return;
-            int f = Mathf.FloorToInt((Time.time + Phase) * Fps) % Frames;
-            Lamp.cookie = frames[f];
-            transform.Rotate(Vector3.forward, Turn * Time.deltaTime, Space.Self);
+            if (Lamp == null) return;
+            float t = Time.time + Phase * 10f;
+            // A slow turn plus a gentle sway, like light through a moving surface.
+            transform.localRotation = home * Quaternion.Euler(Mathf.Sin(t * 0.37f) * 1.6f, Mathf.Cos(t * 0.29f) * 1.6f, t * Turn);
+            if (baseIntensity > 0f) Lamp.intensity = baseIntensity * (0.92f + Mathf.Sin(t * 0.8f) * 0.05f + Mathf.Sin(t * 1.9f) * 0.03f);
         }
 
         // A looping set of caustic patterns: bright threads where the cells of a slowly

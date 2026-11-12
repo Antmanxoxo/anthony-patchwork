@@ -473,6 +473,15 @@ Stuff I need to remember about how Patchwork is put together.
 - `Level2Grandeur.cs` is the fourth pass (sky lanterns over the sea, the atrium's river of
   stars, kelp moonbeams, the whale calf, fireflies, the Hall of Arms' pennants).
   `SkyLantern` lives there too.
+- No see-through "light shaft" sheets any more (they read as flat grey panels and flickered
+  as they sorted against each other): light through windows is real spot lights only.
+  `Shaft()` is still used for the waterfall ribbon, soft aurora blobs and clouds.
+- `Tank()` puts a dark stone lid over every tank, so you can't see over the top.
+- `ZFightFix.Run(root)` (end of the Level 2 build) nudges apart blocks/discs whose faces sit
+  in the same place. Fountains: the stone basin's water sits above its band, and the
+  column/jet/bubbles have fixed `rendererPriority` so the see-through parts don't swap.
+- `CausticLight` now keeps one pattern and turns/sways it smoothly (swapping patterns made
+  lit things flicker). Shadowed spots use a large shadow bias.
 - `Level2Light.cs`: `Lighting` (spot lights: caustic cookies via `CausticLight`, a few with
   soft shadows: the Great Window, the Observatory moon, the kelp pool) and `Cinematics`
   (one `CinematicShot` per hall). Spot lights fall off with distance squared, so a spot

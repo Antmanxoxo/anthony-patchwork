@@ -187,7 +187,8 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, -0.6f), new Vector3(1.2f, 0.9f, 1.2f), wood, new Vector3(0f, 0f, 90f), lid);
             NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, -0.05f, -1.22f), new Vector3(0.3f, 0.35f, 0.08f), Brass, default(Vector3), lid));
             TownKit.Solid(kit, at + Vector3.up * 0.45f, new Vector3(1.8f, 0.9f, 1.2f), 0f);
-            var marble = SecretMarble.Place(kit, at + new Vector3(0f, 1.6f, 0f), ChestMarble, new Color(1f, 0.8f, 0.3f));
+            // (Just in front of the chest, clear of it and of the roof, so it stays where it's put.)
+            var marble = SecretMarble.Place(kit, at + new Vector3(0f, 1.1f, -1.5f), ChestMarble, new Color(1f, 0.8f, 0.3f));
             var tc = kit.Volume<TreasureChest>(at + new Vector3(0f, 1.2f, -1.5f), new Vector3(6f, 3.4f, 5f), "TreasureChestOpener");
             tc.Lid = lid;
             tc.Prize = marble != null ? marble.gameObject : null;

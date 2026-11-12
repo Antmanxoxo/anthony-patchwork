@@ -76,11 +76,9 @@ namespace Patchwork
             kit.Block(new Vector3(72f, T + 0.5f, 53f), new Vector3(60f, 1f, 98f), Navy, "RuinsCeiling", PatchworkAssets.Felt(new Color(0.05f, 0.14f, 0.13f)));
             // Light falling through cracks in the roof.
             var crack = PatchworkAssets.Glow(new Color(0.6f, 1f, 0.85f), 1.2f);
-            var beam = Shaft(new Color(0.6f, 1f, 0.82f), 0.07f);
             foreach (var p in new[] { new Vector3(75f, 0f, 58f), new Vector3(60f, 0f, 84f), new Vector3(90f, 0f, 42f), new Vector3(62f, 0f, 36f), new Vector3(88f, 0f, 80f) })
             {
                 NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(p.x + 4f, T - 0.04f, p.z), new Vector3(5f, 0.1f, 2.2f), crack, new Vector3(0f, p.x * 7f, 0f)));
-                NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(p.x + 1f, T * 0.5f - 2f, p.z), new Vector3(3.4f, T + 6f, 0.04f), beam, new Vector3(0f, p.z * 5f, 12f)));
                 PointLight(kit, new Vector3(p.x, 7f, p.z), green, 24f, 1.5f);
             }
 
