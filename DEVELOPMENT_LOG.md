@@ -1,5 +1,15 @@
 # Development Log
 
+## The Skyward Waltz sounds like its preview, and the camera starts outside the Pod
+- In the game, The Skyward Waltz now plays exactly the way the preview was made: on the
+  preview's own light, clear instruments, in the same soft room echo. The whole song plays
+  from the start, with no waiting for later layers to unlock the accordion, flute, horns
+  and drums. The two later layers just add a little sparkle of bells, and a deeper swell of
+  horns and cymbals.
+- When you arrive in a world, the camera no longer starts inside the landed Pod. It now
+  knows the Pod's real egg shape (the invisible block it used to stop at sits inside the
+  egg), and when a level starts it rises until it has a clear view of Patch.
+
 ## A third song for the museum: The Skyward Waltz
 - The Oceanic Museum now plays "The Skyward Waltz", an original waltz that takes off. It
   starts on its toes in G minor: the accordion has the tune, the bass steps down a half-step

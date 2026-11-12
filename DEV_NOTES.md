@@ -600,6 +600,13 @@ Stuff I need to remember about how Patchwork is put together.
   default), 1 The Star Carousel (ComposeCarousel) and 2 The Lantern Tide (ComposeTide).
   SkyBass sets the bass note for each bar separately from SkyChords, so the A tune's bass
   can walk down by half-steps under a chord that stays the same.
+- The Skyward Waltz has its own instruments (SkyPluck, SkyPianoNote, SkyBowed, SkyAccordion,
+  SkyFlute, SkyBrass, SkyBell, SkyTimp, SkyPadNote, SkyCymbal), a sparse 60-tap room echo
+  (SkyRoom), and folds the echo tail back onto the loop's start. The full song is in Bed
+  (everything but strings) plus Strings (every bowed part). Winds and Grand only add extras.
+- PlayerCamera.AddBlocker(transform, center, radii) lists egg shapes the camera stays outside
+  of (checked analytically each frame, on top of the SphereCast). LandedPod registers its egg.
+  SnapBehind raises the pitch in 4-degree steps from 18 up to 56 until the view of Patch is clear.
 
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);

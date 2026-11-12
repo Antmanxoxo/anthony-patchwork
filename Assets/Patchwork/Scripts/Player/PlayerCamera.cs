@@ -1,3 +1,4 @@
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Patchwork
@@ -11,6 +12,8 @@ namespace Patchwork
     // - backs out while swinging (and leans toward the anchor) or gliding, so you can see more
     // - after a few seconds without touching the camera, slowly swings round behind you
     // - camera zones in the level can add distance or tilt for a section
+    // - it stays out of round things it can't see through (the landed Pod's egg): see AddBlocker
+    // - when a level starts, it rises until it has a clear view of Patch over anything behind
     public class PlayerCamera : MonoBehaviour
     {
         public Transform Target;
@@ -76,6 +79,41 @@ namespace Patchwork
             obstacleMask = ~((1 << 2) | (1 << 5));
         }
 
+        // Round shapes the camera must stay outside of, as egg shapes (ellipsoids) on a transform.
+        struct Blocker { public Transform T; public Vector3 Center, Radii; }
+        static readonly List<Blocker> blockers = new List<Blocker>();
+
+        // Keeps the camera out of an egg shape: `center` and `radii` in `t`'s own frame. (For
+        // things whose solid box sits inside them, so the box alone would let the camera in.)
+        public static void AddBlocker(Transform t, Vector3 center, Vector3 radii)
+        {
+            blockers.RemoveAll(b => b.T == null);
+            blockers.Add(new Blocker { T = t, Center = center, Radii = radii });
+        }
+
+        // How far along a ray from `from` the first blocker is (or `max` if none is closer).
+        // A blocker the ray starts inside doesn't count (Patch is in the Pod).
+        static float BlockerDistance(Vector3 from, Vector3 dir, float max)
+        {
+            float best = max;
+            for (int i = 0; i < blockers.Count; i++)
+            {
+                var bl = blockers[i];
+                if (bl.T == null || !bl.T.gameObject.activeInHierarchy) continue;
+                Vector3 o = bl.T.InverseTransformPoint(from) - bl.Center;
+                Vector3 d = bl.T.InverseTransformDirection(dir);
+                o = new Vector3(o.x / bl.Radii.x, o.y / bl.Radii.y, o.z / bl.Radii.z);
+                d = new Vector3(d.x / bl.Radii.x, d.y / bl.Radii.y, d.z / bl.Radii.z);
+                float a = Vector3.Dot(d, d), b = 2f * Vector3.Dot(o, d), c = Vector3.Dot(o, o) - 1f;
+                if (c <= 0f || a < 1e-8f) continue;
+                float disc = b * b - 4f * a * c;
+                if (disc < 0f) continue;
+                float s = (-b - Mathf.Sqrt(disc)) / (2f * a);
+                if (s > 0f && s < best) best = s;
+            }
+            return best;
+        }
+
         public void SnapBehind(float targetYaw)
         {
             yaw = targetYaw;
@@ -84,6 +122,16 @@ namespace Patchwork
             {
                 heldGroundY = Target.position.y;
                 focus = Target.position + Vector3.up * TargetHeight;
+                // Rise until nothing big is between the camera and Patch (the Pod Patch has just
+                // climbed out of, a wall behind a checkpoint), so the first view is a clear one.
+                for (float p = 18f; p <= 56f; p += 4f)
+                {
+                    Vector3 back = Quaternion.Euler(p, yaw, 0f) * Vector3.back;
+                    RaycastHit h;
+                    bool blocked = BlockerDistance(focus, back, Distance) < Distance * 0.85f
+                        || Physics.SphereCast(focus, 0.3f, back, out h, Distance * 0.85f, obstacleMask, QueryTriggerInteraction.Ignore);
+                    if (!blocked) { pitch = p; break; }
+                }
             }
             lookAhead = Vector3.zero;
             idleLookTime = 0f;
@@ -172,6 +220,8 @@ namespace Patchwork
             RaycastHit hit;
             if (Physics.SphereCast(focus, 0.3f, back, out hit, dist, obstacleMask, QueryTriggerInteraction.Ignore))
                 wanted = Mathf.Max(1.2f, hit.distance - 0.1f);
+            float egg = BlockerDistance(focus, back, dist);
+            if (egg < dist) wanted = Mathf.Min(wanted, Mathf.Max(1.2f, egg - 0.4f));
 
             // Pull in instantly, ease back out.
             if (wanted < currentDistance) currentDistance = wanted;

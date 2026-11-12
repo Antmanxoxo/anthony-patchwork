@@ -20,10 +20,11 @@ namespace Patchwork
     //   Coda  - it lands in G major, bright, and settles
     // (An original piece, written in the spirit of the great soaring film and game waltzes.)
     //
-    // The same four layers as the other museum pieces, so the museum turns them on and off
-    // just the same:
-    //   Bed (harp, piano, plucked basses, celesta), Strings, Winds (accordion, flute, bells),
-    //   Grand (horns, timpani, cymbals).
+    // It's played on its own light, clear set of instruments (the Sky... ones at the bottom),
+    // in a soft room echo, and the whole song is there from the moment you walk in: the bed
+    // has the harp, piano, accordion, flute, bells, horns and drums, the strings layer has
+    // every violin and cello. The two later layers only add a little extra on top: Winds a
+    // sparkle of bells and music box, Grand a deeper swell of horns and cymbals.
     //
     // 3/4 at 156 BPM (felt one-in-a-bar), 96 bars:
     //   Intro (1-8)  A (9-24)  A2 (25-40)  B (41-56)  C (57-72)  A' (73-88)  Coda (89-96)
@@ -147,143 +148,94 @@ namespace Patchwork
             float beat = 60f / SkyBpm;
             float bar = beat * 3f;
             int bars = SkyChords.Length;
-            int n = Mathf.CeilToInt(bar * bars * Rate);
+            int n = Mathf.CeilToInt((bar * bars + 4f) * Rate);
             var data = new float[MuseumStemCount][];
             for (int i = 0; i < MuseumStemCount; i++) data[i] = new float[n];
             var bed = data[(int)MuseumStem.Bed];
             var strings = data[(int)MuseumStem.Strings];
             var winds = data[(int)MuseumStem.Winds];
             var grand = data[(int)MuseumStem.Grand];
+            skyNoise = new System.Random(156);
 
             for (int b = 0; b < bars; b++)
             {
                 int section = SkySection(b);
-                bool intro = section == 0, walking = section == 1 || section == 2, lift = section == 3, stars = section == 4, flying = section == 5, coda = section == 6;
-                bool sectionStart = b == 8 || b == 24 || b == 40 || b == 56 || b == 72 || b == 88;
-                bool sectionEnd = b == 7 || b == 23 || b == 39 || b == 55 || b == 71 || b == 87;
                 float b0 = b * 3f;
-                string name = SkyChords[b];
-                string next = SkyChords[(b + 1) % bars];
-                var ch = Ch(name, 55);
+                var ch = Ch(SkyChords[b], 55);
                 int bass = NoteNum(SkyBass[b]);
-                int root = Root(name, 43);
+                int root = Root(SkyChords[b], 43);
+                string next = SkyChords[(b + 1) % bars];
+                System.Func<float, float> T = x => (b0 + x) * beat;
 
-                // ----- Bed -----
-                if (walking || flying)
+                if (section == 1 || section == 2 || section == 5)
                 {
-                    // On its toes: a plucked bass on one, the piano's chord on two and three.
-                    AddPizz(bed, b0 * beat, Freq(bass), 0.2f, 9000 + b * 3);
-                    AddBass(bed, b0 * beat, beat * 0.9f, Freq(bass), 0.05f);
+                    // On its toes: the plucked bass on one, the piano's chord on two and three.
+                    SkyPluck(bed, T(0f), Freq(bass), 0.25f, 4f);
                     for (int k = 1; k <= 2; k++)
-                        foreach (int c in ch) AddPiano(bed, (b0 + k) * beat, beat * 0.45f, Freq(c), k == 1 ? 0.03f : 0.025f, false);
-                    // A little harp turn on the "and" of three every other bar, to keep it light.
-                    if (b % 2 == 1)
-                    {
-                        AddPluck(bed, (b0 + 2.5f) * beat, beat, Freq(ch[ch.Length - 1] + 12), 0.03f, 9100 + b);
-                        AddPluck(bed, (b0 + 2.75f) * beat, beat, Freq(ch[0] + 24), 0.026f, 9101 + b);
-                    }
+                        foreach (int c in ch) SkyPianoNote(bed, T(k), beat * 0.45f, Freq(c), 0.03f);
                 }
                 else
                 {
-                    // Harp rippling in quavers up the chord and back, the bass held under it.
-                    int[] shape = stars ? new[] { 0, 1, 2, 3, 4, 5 } : new[] { 0, 2, 4, 5, 4, 2 };
-                    for (int e8 = 0; e8 < 6; e8++)
+                    // The harp rippling up the chord in quavers, the bass held under it.
+                    int[] shape = section == 4 ? new[] { 0, 1, 2, 3, 4, 5 } : new[] { 0, 2, 4, 5, 4, 2 };
+                    for (int e = 0; e < 6; e++)
                     {
-                        int step = shape[(e8 + (stars && b % 2 == 1 ? 3 : 0)) % 6];
-                        int note = ch[step % ch.Length] + 12 * (step / ch.Length);
-                        float v = (e8 == 0 ? 0.05f : 0.034f) * (intro ? 1.1f : 1f);
-                        AddPluck(bed, (b0 + e8 * 0.5f) * beat, beat * 1.6f, Freq(note), v, 9200 + b * 8 + e8);
+                        int st = shape[(e + (section == 4 && b % 2 == 1 ? 3 : 0)) % 6];
+                        SkyPluck(bed, T(e * 0.5f), Freq(ch[st % ch.Length] + 12 * (st / ch.Length)), e == 0 ? 0.05f : 0.035f, 3f);
                     }
-                    AddPizz(bed, b0 * beat, Freq(bass), intro ? 0.12f : 0.17f, 9300 + b);
-                    AddBass(bed, b0 * beat, bar * 0.95f, Freq(bass), intro ? 0.035f : 0.05f);
-                    if (lift || coda)
-                        foreach (int c in ch) AddPiano(bed, (b0 + 1f) * beat, beat * 1.6f, Freq(c), 0.018f, false);
+                    SkyPluck(bed, T(0f), Freq(bass), 0.18f, 3f);
+                    SkyPadNote(bed, T(0f), 3f * beat, Freq(bass), 0.05f);
                 }
-                foreach (int c in ch) AddPad(bed, b0 * beat, bar, Freq(c - 12), intro ? 0.008f : 0.01f);
-                // The celesta's twinkle on top of the intro and the stars.
-                if (intro || stars)
+                foreach (int c in ch) SkyPadNote(bed, T(0f), 3f * beat, Freq(c), section >= 3 && section <= 5 ? 0.012f : 0.008f);
+                if (section == 3 || section == 4) SkyBowed(strings, T(0f), 3f * beat * 0.98f, Freq(root), 0.03f, 4);
+                if (section == 5 || section == 6) SkyBowed(strings, T(0f), 3f * beat * 0.97f, Freq(bass + 12), 0.025f, 3);
+                if (section == 4)
                 {
-                    var hi = Ch(name, 79);
-                    AddCelesta(bed, (b0 + 1f) * beat, beat * 1.2f, Freq(hi[b % hi.Length]), 0.022f);
-                    AddCelesta(bed, (b0 + 2f) * beat, beat * 1.2f, Freq(hi[(b + 1) % hi.Length]), 0.018f);
+                    var g = Ch(SkyChords[b], 84);
+                    for (int k = 0; k < 3; k++) SkyBell(bed, T(k), Freq(g[(b + k) % g.Length]), 0.012f, 2.5f);
                 }
-
-                // ----- Strings -----
-                foreach (int c in ch) AddPad(strings, b0 * beat, bar, Freq(c), lift || stars || flying ? 0.016f : 0.011f);
-                if (walking)
+                if (section == 0 || section == 4)
                 {
-                    // Soft strings holding the top of each chord, off the beat like a breath.
-                    AddViolins(strings, (b0 + 1f) * beat, beat * 1.9f, Freq(ch[ch.Length - 1] + 12), 0.012f, 3);
+                    var h = Ch(SkyChords[b], 79);
+                    SkyBell(bed, T(1f), Freq(h[b % h.Length]), 0.025f, 4f);
+                    SkyBell(bed, T(2f), Freq(h[(b + 1) % h.Length]), 0.02f, 4f);
                 }
-                if (lift || stars)
+                if (section == 2 || section == 5)
                 {
-                    // The cellos singing under the soaring tune, a step behind the bass.
-                    AddViolins(strings, b0 * beat - 0.04f, bar * 0.98f, Freq(root), 0.03f, 4);
-                    AddViolins(strings, b0 * beat - 0.04f, bar * 0.98f, Freq(ch[1]), 0.016f, 3);
+                    // The flute's counter-tune, floating up into the top of each chord.
+                    var g = Ch(SkyChords[b], 72);
+                    SkyFlute(bed, T(0f), beat * 0.95f, Freq(g[b % g.Length]), 0.02f);
+                    SkyFlute(bed, T(1f), beat * 1.9f, Freq(g[(b + 1) % g.Length]), 0.024f);
                 }
-                if (flying || coda)
-                {
-                    AddViolins(strings, b0 * beat - 0.04f, bar * 0.97f, Freq(bass + 12), 0.026f, 3);
-                    AddViolins(strings, (b0 + 1f) * beat, beat * 1.9f, Freq(ch[ch.Length - 1] + 12), 0.016f, 3);
-                }
-
-                // ----- Winds: bells and sparkle -----
-                if (intro)
-                {
-                    var g = Ch(name, 79);
-                    AddMusicBox(winds, b0 * beat, beat * 2f, Freq(g[0] + 12), 0.02f);
-                    AddMusicBox(winds, (b0 + 1.5f) * beat, beat * 1.5f, Freq(g[g.Length - 1]), 0.016f);
-                }
-                if (stars)
-                {
-                    var g = Ch(name, 84);
-                    for (int k = 0; k < 3; k++) AddGlock(winds, (b0 + k) * beat, Freq(g[(b + k) % g.Length]), 0.01f);
-                }
-                if (section == 2 || flying)
-                {
-                    // The flute's counter-tune: it rises into the top of each chord as the bar starts,
-                    // and floats there.
-                    var g = Ch(name, 72);
-                    AddFlute(winds, b0 * beat - FluteLead, beat * 0.95f, Freq(g[b % g.Length]), 0.022f);
-                    AddFlute(winds, (b0 + 1f) * beat - FluteLead, beat * 1.9f, Freq(g[(b + 1) % g.Length]), 0.026f);
-                }
-                if (sectionEnd)
-                {
-                    // A harp glissando sweeping up into each new part.
-                    var into = Ch(next, 55);
-                    var run = new int[18];
-                    for (int i = 0; i < run.Length; i++) run[i] = into[i % into.Length] + 12 * (i / into.Length);
-                    AddGliss(winds, (b0 + 1.2f) * beat, run, beat * 1.7f, 0.05f, 9600 + b * 18);
-                }
-
-                // ----- Grand: horns, timpani and cymbals -----
-                string horn = lift ? SkyHornB[b - 40] : stars ? SkyHornC[b - 56] : flying ? SkyHornA[b - 72] : null;
+                string horn = section == 3 ? SkyHornB[b - 40] : section == 4 ? SkyHornC[b - 56] : section == 5 ? SkyHornA[b - 72] : null;
                 if (horn != null)
-                    foreach (var nt in Line(horn, b0))
-                        AddBrass(grand, nt.Beat * beat - BrassLead, nt.Len * beat * 0.95f, Freq(nt.Midi), stars ? 0.032f : 0.028f);
-                if (flying)
+                    foreach (var nt in Line(horn, b0)) SkyBrass(bed, nt.Beat * beat, nt.Len * beat * 0.95f, Freq(nt.Midi), 0.03f);
+                if (section == 5) SkyTimp(bed, T(0f), Freq(bass + 12), 0.05f);
+                bool start = b == 8 || b == 24 || b == 40 || b == 56 || b == 72 || b == 88;
+                bool end = b == 23 || b == 39 || b == 55 || b == 71 || b == 87;
+                if (start) SkyTimp(bed, T(0f), Freq(root), 0.1f);
+                if (end)
                 {
-                    // The oom-pah-pah again, but with the timpani on one and the horns on two and three.
-                    AddTimpani(grand, b0 * beat, Freq(bass + 12), 0.05f);
-                    for (int k = 1; k <= 2; k++) AddBrass(grand, (b0 + k) * beat - BrassLead, beat * 0.4f, Freq(ch[1] - 12), 0.012f);
-                    AddBrush(grand, (b0 + 1f) * beat, beat * 0.4f, 0.008f, 9700 + b * 2);
-                    AddBrush(grand, (b0 + 2f) * beat, beat * 0.4f, 0.008f, 9701 + b * 2);
+                    // A drum roll and a swell of cymbal into the next part.
+                    int nr = Root(next, 43);
+                    for (int k = 0; k < 8; k++) SkyTimp(bed, T(1f + k * 0.25f), Freq(nr), 0.02f + k * 0.01f);
+                    SkyCymbal(bed, T(2f), beat * 2.5f, 0.05f);
                 }
-                if (lift && b % 4 == 0) AddTimpani(grand, b0 * beat, Freq(root), 0.06f);
-                if (stars && b % 2 == 0) AddAirPad(grand, b0 * beat, bar * 2f, 0.022f, 9800 + b);
-                if (sectionStart) AddTimpani(grand, b0 * beat, Freq(root), section == 1 ? 0.06f : 0.1f);
-                if (sectionEnd && b != 7)
+                if (end || b == 7)
                 {
-                    // A drum roll swelling into the next part, and a breath of cymbal.
-                    int roll = Root(next, 43);
-                    for (int s16 = 0; s16 < 8; s16++) AddTimpani(grand, (b0 + 1f + s16 * 0.25f) * beat, Freq(roll), 0.02f + s16 * 0.01f);
-                    AddAirPad(grand, (b0 + 2f) * beat, beat * 2.5f, 0.045f, 9900 + b);
+                    // And a harp glissando sweeping up into it.
+                    var into = Ch(next, 55);
+                    for (int i = 0; i < 18; i++) SkyPluck(bed, T(1.2f) + i * beat * 1.7f / 18f, Freq(into[i % into.Length] + 12 * (i / into.Length)), 0.04f, 3f);
                 }
-                if (coda)
-                {
-                    AddTimpani(grand, b0 * beat, Freq(root), 0.06f);
-                    foreach (int c in ch) AddBrass(grand, b0 * beat - BrassLead, bar * 0.95f, Freq(c - 12), b == bars - 1 ? 0.02f : 0.012f);
-                }
+
+                // ----- The extra layers -----
+                // Winds: a music box and bells glinting on the off-beats.
+                var sp = Ch(SkyChords[b], 84);
+                SkyBell(winds, T(1.5f), Freq(sp[b % sp.Length]), 0.012f, 3.5f);
+                if (b % 2 == 0) SkyBell(winds, T(2.5f), Freq(sp[(b + 2) % sp.Length]), 0.009f, 3.5f);
+                // Grand: a low swell of horns under every bar, and a cymbal on each new part.
+                if (section >= 3) SkyBrass(grand, T(0f), 3f * beat * 0.95f, Freq(root), 0.016f);
+                if (start) SkyCymbal(grand, T(0f) - beat * 0.5f, beat * 1.2f, 0.06f);
             }
 
             // ----- The tune -----
@@ -292,66 +244,215 @@ namespace Patchwork
                 int section = SkySection(b);
                 foreach (var nt in Line(SkyTune[b], b * 3f))
                 {
-                    float t = nt.Beat * beat;
-                    float len = nt.Len * beat;
-                    float f = Freq(nt.Midi);
+                    float t = nt.Beat * beat, len = nt.Len * beat, f = Freq(nt.Midi);
                     switch (section)
                     {
-                        case 0:
-                            // A glimpse of things to come, on the celesta and the music box.
-                            AddCelesta(bed, t, len + 0.4f, f, 0.03f);
-                            AddMusicBox(winds, t, len, f, 0.02f);
-                            break;
-                        case 1:
-                            // On its toes: the accordion, the piano doubling it lightly.
-                            AddAccordion(winds, t, len * 0.92f, f, 0.05f);
-                            AddPiano(bed, t, len * 0.8f, f, 0.05f);
-                            AddViolins(strings, t - 0.04f, len * 0.95f, f, 0.012f, 3);
-                            break;
-                        case 2:
-                            // The violins take it, the celesta glinting on it.
-                            AddViolins(strings, t - 0.04f, len * 0.97f, f, 0.05f);
-                            AddCelesta(bed, t, len + 0.3f, f, 0.025f);
-                            AddPiano(bed, t, len * 0.8f, f * 0.5f, 0.03f);
-                            break;
-                        case 3:
-                            // Lift-off: violins up high, an octave of violas under, the flute on top.
-                            AddViolins(strings, t - 0.04f, len * 0.98f, f, 0.055f);
-                            AddViolins(strings, t - 0.04f, len * 0.98f, f * 0.5f, 0.025f, 3);
-                            AddFlute(winds, t - FluteLead, len * 0.95f, f, 0.03f);
-                            AddPiano(bed, t, len, f * 0.5f, 0.04f);
-                            break;
-                        case 4:
-                            // Among the stars: violins and celesta, bells on the long notes.
-                            AddViolins(strings, t - 0.04f, len * 0.98f, f, 0.05f);
-                            AddViolins(strings, t - 0.04f, len * 0.98f, f * 0.5f, 0.022f, 3);
-                            AddCelesta(bed, t, len + 0.4f, f, 0.03f);
-                            AddFlute(winds, t - FluteLead, len * 0.95f, f * 0.5f, 0.028f);
-                            if (nt.Len >= 2f) AddGlock(winds, t, f * 2f, 0.012f);
-                            break;
-                        case 5:
-                            // Flying: violins an octave up, the accordion on the tune as it first was,
-                            // the piano under it, horns on the long notes.
-                            AddViolins(strings, t - 0.04f, len * 0.98f, f * 2f, 0.042f);
-                            AddViolins(strings, t - 0.04f, len * 0.98f, f, 0.035f, 3);
-                            AddAccordion(winds, t, len * 0.92f, f, 0.04f);
-                            AddPiano(bed, t, len * 0.8f, f, 0.045f);
-                            if (nt.Len >= 2f) AddBrass(grand, t - BrassLead, len * 0.9f, f * 0.5f, 0.024f);
-                            break;
-                        default:
-                            // Landing: everyone, warm and bright.
-                            AddViolins(strings, t - 0.04f, len * 0.98f, f, 0.05f);
-                            AddViolins(strings, t - 0.04f, len * 0.98f, f * 0.5f, 0.03f, 3);
-                            AddFlute(winds, t - FluteLead, len * 0.95f, f, 0.03f);
-                            AddCelesta(bed, t, len + 0.5f, f, 0.03f);
-                            AddPiano(bed, t, len, f * 0.5f, 0.05f);
-                            if (nt.Len >= 2f) AddBrass(grand, t - BrassLead, len * 0.9f, f * 0.5f, 0.026f);
-                            break;
+                        case 0: SkyBell(bed, t, f, 0.035f, 3f); break;
+                        case 1: SkyAccordion(bed, t, len * 0.92f, f, 0.05f); SkyPianoNote(bed, t, len * 0.8f, f, 0.04f); break;
+                        case 2: SkyBowed(strings, t, len * 0.97f, f, 0.05f, 4); SkyBell(bed, t, f, 0.02f, 3f); break;
+                        case 3: SkyBowed(strings, t, len * 0.98f, f, 0.055f, 4); SkyBowed(strings, t, len * 0.98f, f * 0.5f, 0.025f, 3); SkyFlute(bed, t, len * 0.95f, f, 0.03f); break;
+                        case 4: SkyBowed(strings, t, len * 0.98f, f, 0.05f, 4); SkyBell(bed, t, f, 0.03f, 3f); SkyFlute(bed, t, len * 0.95f, f * 0.5f, 0.028f); break;
+                        case 5: SkyBowed(strings, t, len * 0.98f, f * 2f, 0.04f, 4); SkyBowed(strings, t, len * 0.98f, f, 0.035f, 3); SkyAccordion(bed, t, len * 0.92f, f, 0.04f); SkyPianoNote(bed, t, len * 0.8f, f, 0.04f); break;
+                        default: SkyBowed(strings, t, len * 0.98f, f, 0.05f, 4); SkyFlute(bed, t, len * 0.95f, f, 0.03f); SkyBell(bed, t, f, 0.03f, 3f); SkyPianoNote(bed, t, len, f * 0.5f, 0.05f); break;
                     }
                 }
             }
 
-            return FinishStems(data, "pw_sky_", new[] { "bed", "strings", "winds", "grand" }, 7800f);
+            // The room: a soft echo on everything, the same on every layer.
+            for (int i = 0; i < MuseumStemCount; i++) SkyRoom(data[i]);
+            // (Only the faintest softening at the very top, as in the preview.)
+            int loopLen = Mathf.CeilToInt(bar * bars * Rate);
+            for (int i = 0; i < MuseumStemCount; i++)
+            {
+                // Fold the echo that rings past the end back onto the start, so the loop is seamless.
+                var d = data[i];
+                for (int s = loopLen; s < n; s++) d[s - loopLen] += d[s];
+                System.Array.Resize(ref data[i], loopLen);
+            }
+            return FinishStems(data, "pw_sky_", new[] { "bed", "strings", "winds", "grand" }, 10000f);
+        }
+
+        // ------------------------------------------------------------------ The Skyward instruments
+        // Simple, clear voices: a few sine partials each, with gentle envelopes.
+
+        static System.Random skyNoise = new System.Random(156);
+
+        static float SkyRand() { return (float)(skyNoise.NextDouble() * 2.0 - 1.0) * 1.7f; }
+
+        static void SkyPut(float[] d, float t0, int i, float v)
+        {
+            int k = Mathf.FloorToInt(t0 * Rate) + i;
+            if (k >= 0 && k < d.Length) d[k] += v;
+        }
+
+        // A harp string (or a plucked bass): bright for a moment, then ringing away.
+        static void SkyPluck(float[] d, float t0, float f, float v, float dec)
+        {
+            SkyRing(d, t0, f, 2f, 0.4f, 6f, v, dec);
+        }
+
+        // Two sine partials (the note, and another at `ratio` times it that fades `fade` times
+        // faster), dying away at `dec` per second. Worked out by turning a pair of phasors
+        // rather than calling Sin every sample, and stopped once it's too quiet to hear.
+        static void SkyRing(float[] d, float t0, float f, float ratio, float amp2, float fade, float v, float dec)
+        {
+            int start = Mathf.FloorToInt(t0 * Rate);
+            int count = Mathf.Min(2 * Rate, Mathf.CeilToInt(Mathf.Log(v * 2e4f + 1f) / dec * Rate) + 1);
+            double w1 = 2.0 * System.Math.PI * f / Rate, w2 = w1 * ratio;
+            double c1 = System.Math.Cos(w1), s1 = System.Math.Sin(w1), c2 = System.Math.Cos(w2), s2 = System.Math.Sin(w2);
+            double x1 = 1.0, y1 = 0.0, x2 = 1.0, y2 = 0.0;
+            double e = v, ek = System.Math.Exp(-dec / Rate), e2 = amp2, ek2 = System.Math.Exp(-fade / Rate);
+            for (int i = 0; i < count; i++)
+            {
+                int k = start + i;
+                if (k >= 0 && k < d.Length) d[k] += (float)((y1 + y2 * e2) * e);
+                double nx = x1 * c1 - y1 * s1; y1 = x1 * s1 + y1 * c1; x1 = nx;
+                nx = x2 * c2 - y2 * s2; y2 = x2 * s2 + y2 * c2; x2 = nx;
+                e *= ek; e2 *= ek2;
+            }
+        }
+
+        static void SkyPianoNote(float[] d, float t0, float dur, float f, float v)
+        {
+            int count = Mathf.CeilToInt((dur + 0.6f) * Rate);
+            float w = 2f * Mathf.PI * f / Rate, dec = 1.3f + f / 600f;
+            for (int i = 0; i < count; i++)
+            {
+                float t = i / (float)Rate;
+                float env = Mathf.Exp(-t * dec);
+                if (t > dur) env *= Mathf.Exp(-(t - dur) * 8f);
+                float s = (Mathf.Sin(w * i) + 0.5f * Mathf.Sin(2f * w * i) * env + 0.25f * Mathf.Sin(3f * w * i) * env) * env;
+                SkyPut(d, t0, i, s * v * Mathf.Clamp01(t / 0.003f));
+            }
+        }
+
+        // Violins (or cellos): a bowed note, its vibrato warming up once it's settled.
+        static void SkyBowed(float[] d, float t0, float dur, float f, float v, int harmonics)
+        {
+            int count = Mathf.CeilToInt((dur + 0.25f) * Rate);
+            float ph = 0f;
+            for (int i = 0; i < count; i++)
+            {
+                float t = i / (float)Rate;
+                float env = Mathf.Clamp01(t / 0.09f) * Mathf.Clamp01((dur + 0.25f - t) / 0.25f);
+                float vib = 1f + 0.0042f * Mathf.Clamp01((t - 0.12f) / 0.25f) * Mathf.Sin(2f * Mathf.PI * 5.6f * t);
+                ph += 2f * Mathf.PI * f * vib / Rate;
+                float s = 0f;
+                for (int k = 1; k <= harmonics; k++) s += (Mathf.Sin(ph * k) + Mathf.Sin(ph * k * 1.0045f)) / (k * 1.15f);
+                SkyPut(d, t0, i, s * 0.45f * env * v);
+            }
+        }
+
+        static void SkyAccordion(float[] d, float t0, float dur, float f, float v)
+        {
+            int count = Mathf.CeilToInt((dur + 0.08f) * Rate);
+            float w = 2f * Mathf.PI * f / Rate;
+            for (int i = 0; i < count; i++)
+            {
+                float t = i / (float)Rate;
+                float env = Mathf.Clamp01(t / 0.03f) * Mathf.Clamp01((dur + 0.08f - t) / 0.08f);
+                float s = 0f;
+                for (int k = 1; k <= 6; k++)
+                {
+                    float a = 1f / Mathf.Pow(k, 0.8f);
+                    s += Mathf.Sin(w * i * k) * a + 0.8f * Mathf.Sin(w * i * k * 1.006f) * a;
+                }
+                SkyPut(d, t0, i, s * 0.3f * env * v * (1f + 0.1f * Mathf.Sin(2f * Mathf.PI * 6f * t)));
+            }
+        }
+
+        static void SkyFlute(float[] d, float t0, float dur, float f, float v)
+        {
+            int count = Mathf.CeilToInt((dur + 0.1f) * Rate);
+            for (int i = 0; i < count; i++)
+            {
+                float t = i / (float)Rate;
+                float env = Mathf.Clamp01(t / 0.06f) * Mathf.Clamp01((dur + 0.1f - t) / 0.1f);
+                float ph = 2f * Mathf.PI * f * (t + 0.0025f * Mathf.Sin(2f * Mathf.PI * 5f * t) / (2f * Mathf.PI * 5f));
+                float s = Mathf.Sin(ph) + 0.2f * Mathf.Sin(2f * ph) + 0.02f * SkyRand();
+                SkyPut(d, t0, i, s * env * v);
+            }
+        }
+
+        static void SkyBrass(float[] d, float t0, float dur, float f, float v)
+        {
+            int count = Mathf.CeilToInt((dur + 0.15f) * Rate);
+            float w = 2f * Mathf.PI * f / Rate;
+            for (int i = 0; i < count; i++)
+            {
+                float t = i / (float)Rate;
+                float env = Mathf.Clamp01(t / 0.08f) * Mathf.Clamp01((dur + 0.15f - t) / 0.15f);
+                float s = 0f, a = 1f;
+                for (int k = 1; k <= 7; k++) { a *= 0.9f; s += Mathf.Sin(w * i * k) * a; }
+                SkyPut(d, t0, i, s * 0.35f * env * v);
+            }
+        }
+
+        // A bell, a celesta or a music box, depending on how quickly it dies away.
+        static void SkyBell(float[] d, float t0, float f, float v, float dec)
+        {
+            SkyRing(d, t0, f, 3.01f, 0.3f, 4f, v, dec);
+        }
+
+        static void SkyTimp(float[] d, float t0, float f, float v)
+        {
+            int count = Mathf.CeilToInt(1.5f * Rate);
+            for (int i = 0; i < count; i++)
+            {
+                float t = i / (float)Rate;
+                float s = Mathf.Sin(2f * Mathf.PI * f * t * (1f + 0.05f * Mathf.Exp(-t * 20f))) * Mathf.Exp(-t * 3f) + 0.3f * SkyRand() * Mathf.Exp(-t * 30f);
+                SkyPut(d, t0, i, s * v);
+            }
+        }
+
+        static void SkyPadNote(float[] d, float t0, float dur, float f, float v)
+        {
+            int count = Mathf.CeilToInt(dur * Rate);
+            int start = Mathf.FloorToInt(t0 * Rate);
+            double w = 2.0 * System.Math.PI * f / Rate, c = System.Math.Cos(w), sn = System.Math.Sin(w);
+            double x = 1.0, y = 0.0;
+            for (int i = 0; i < count; i++)
+            {
+                float t = i / (float)Rate;
+                float env = Mathf.Clamp01(t / 0.3f) * Mathf.Clamp01((dur - t) / 0.3f);
+                // (sin 2a = 2 sin a cos a)
+                int k = start + i;
+                if (k >= 0 && k < d.Length) d[k] += (float)((y + 0.3 * 2.0 * y * x) * env * v);
+                double nx = x * c - y * sn; y = x * sn + y * c; x = nx;
+            }
+        }
+
+        static void SkyCymbal(float[] d, float t0, float dur, float v)
+        {
+            int count = Mathf.CeilToInt(dur * Rate);
+            for (int i = 0; i < count; i++)
+            {
+                float t = i / (float)Rate;
+                float env = Mathf.Clamp01(t / (dur * 0.7f)) * Mathf.Clamp01((dur - t) / 0.2f);
+                SkyPut(d, t0, i, SkyRand() * env * v * 0.3f);
+            }
+        }
+
+        // A soft room: sixty faint echoes scattered through the next second and three quarters.
+        static void SkyRoom(float[] d)
+        {
+            var rng = new System.Random(1800);
+            const int taps = 60;
+            var at = new int[taps];
+            var gain = new float[taps];
+            for (int k = 0; k < taps; k++)
+            {
+                at[k] = (int)(0.02f * Rate) + rng.Next((int)(1.78f * Rate));
+                gain[k] = Mathf.Exp(-k / 18f) * (0.3f + 0.7f * (float)rng.NextDouble()) * 0.25f;
+            }
+            var dry = (float[])d.Clone();
+            int n = d.Length;
+            for (int k = 0; k < taps; k++)
+            {
+                int o = at[k];
+                float g = gain[k];
+                for (int s = o; s < n; s++) d[s] += dry[s - o] * g;
+            }
         }
     }
 }

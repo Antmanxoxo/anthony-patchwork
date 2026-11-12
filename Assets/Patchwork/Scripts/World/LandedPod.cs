@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Patchwork
 {
@@ -194,6 +194,8 @@ namespace Patchwork
             var solid = kit.Block(feet + g.rotation * new Vector3(0f, 3.6f, -0.5f), new Vector3(4f, 5.2f, 3.4f), Color.white, "PodSolid");
             solid.rotation = g.rotation;
             solid.GetComponent<Renderer>().enabled = false;
+            // (The box sits inside the egg, so the camera is told about the egg itself too.)
+            PlayerCamera.AddBlocker(g, new Vector3(0f, Cy, 0f), new Vector3(Rx + 0.25f, Ry + 0.25f, Rx + 0.25f));
             pod.Inside = feet + Quaternion.Euler(0f, yaw, 0f) * new Vector3(0f, 0.9f, 1.55f);
             pod.DoorStep = feet + Quaternion.Euler(0f, yaw, 0f) * new Vector3(0f, 0.95f, 2.7f);
             return pod;
