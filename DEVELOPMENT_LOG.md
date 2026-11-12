@@ -1,5 +1,19 @@
 # Development Log
 
+## Rippling light, dressed tank walls, and the Undercroft finished
+- Each tank throws dancing ripples of light up onto the Tank Hall's roof, like the ceiling
+  over a real pool, and the Coral Nursery's ripples play across the Undercroft through its
+  windows (with a fainter blue from the Lantern Deep on the other side).
+- The Frozen Sea's walls have rock along their feet and a crust of frost just under the
+  water; the Mangrove's are banked with mud and weed, with roots worming down into the
+  water; the Lantern Deep's rock has long cracks glowing faintly blue.
+- The Undercroft: brass handrails down the stair, pipes along its ceiling, and a framed
+  chart of who's who between each pair of windows.
+- The Keepers' Room: a corkboard of snapshots of the residents, and Keeper of the Month
+  (Gerald the penguin, with his rosette). Fixed the wall tiles running across both doorways.
+- Dust drifting in the lamplight in the Tank Hall, the Keepers' Room, the Hall of Arms, the
+  Night Sky Gallery and the Planet Walk.
+
 ## The fine detail: a working back-of-house, and living tanks
 - The Keepers' Room: white tiled walls with a teal edge, a clock, a deep sink under a mirror
   with a tap that drips, yellow raincoats, sou'westers and wellies by the door, the first-aid

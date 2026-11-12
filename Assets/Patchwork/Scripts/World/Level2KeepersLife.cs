@@ -24,7 +24,210 @@ namespace Patchwork
             KwHallLife(kit);
             KwTankLife(kit);
             KwSounds(kit);
+            KwAir(kit);
+            KwTankWalls(kit);
+            KwNoticeBoard(kit);
+            KwUndercroftLife(kit);
             AtriumFounder(kit);
+            HallAir(kit);
+        }
+
+        // ================================================================ Light and air
+
+        static void KwAir(LevelKit kit)
+        {
+            // Ripples of light thrown up off each tank's surface onto the roof, the way the
+            // ceiling over a real pool always dances.
+            foreach (var t in new[] { CoralTank, LanternTank, FrozenTank, MangroveTank })
+            {
+                float cx = (t[0] + t[1]) * 0.5f, cz = (t[2] + t[3]) * 0.5f;
+                bool dark = t == LanternTank;
+                Color c = t == CoralTank ? new Color(0.5f, 0.9f, 1f) : t == FrozenTank ? new Color(0.75f, 0.88f, 1f) : t == MangroveTank ? new Color(0.65f, 0.95f, 0.6f) : new Color(0.35f, 0.45f, 0.9f);
+                SpotLight(kit, new Vector3(cx, -0.2f, cz), new Vector3(cx, KwTop, cz), c, 30f, 95f, dark ? 70f : 190f, false, true);
+            }
+            // And through the Undercroft's windows: the reef's ripples on one wall, the deep's
+            // faint blue on the other.
+            SpotLight(kit, new Vector3(-71f, -5.6f, 116.5f), new Vector3(-58f, -6.2f, 116.5f), new Color(0.5f, 0.9f, 1f), 16f, 80f, 45f, false, true);
+            SpotLight(kit, new Vector3(-49f, -5.6f, 116.5f), new Vector3(-62f, -6.2f, 116.5f), new Color(0.35f, 0.5f, 1f), 16f, 80f, 18f, false, true);
+            // Specks of dust in the lamplight over the hall and the Keepers' Room.
+            Motes(kit, new Vector3(-60f, 9f, 136f), new Vector3(50f, 14f, 78f), 120, new Color(1f, 0.9f, 0.7f), 0.8f, 0.05f, new Vector3(0.03f, -0.02f, 0.02f));
+            Motes(kit, new Vector3(-60f, 3.5f, 86f), new Vector3(50f, 6f, 15f), 40, new Color(1f, 0.9f, 0.7f), 0.8f, 0.04f, new Vector3(0.02f, -0.01f, 0.02f));
+        }
+
+        // Dust in the air of the bigger rooms that didn't have any.
+        static void HallAir(LevelKit kit)
+        {
+            Motes(kit, new Vector3(80f, 8f, -24f), new Vector3(38f, 14f, 54f), 90, new Color(1f, 0.88f, 0.7f), 0.8f, 0.05f, new Vector3(0.03f, -0.02f, 0.02f));   // the Hall of Arms
+            Motes(kit, new Vector3(36f, DeckY + 3.4f, -25.5f), new Vector3(5f, 5f, 30f), 30, new Color(0.8f, 0.85f, 1f), 1.2f, 0.04f, new Vector3(0.01f, -0.02f, 0.03f));   // the Night Sky Gallery
+            Motes(kit, new Vector3(46.5f, DeckY + 3.4f, -13f), new Vector3(14f, 5f, 5f), 20, new Color(1f, 0.9f, 0.7f), 1.2f, 0.04f, new Vector3(0.03f, -0.01f, 0.01f));    // the Planet Walk
+        }
+
+        // ================================================================ Dressing the tanks' walls
+
+        static void KwTankWalls(LevelKit kit)
+        {
+            // The Frozen Sea: rock along the foot of every wall, and a crust of frost and hanging
+            // ice along the top, just under the water.
+            {
+                var T = FrozenTank;
+                float x0 = T[0], x1 = T[1], z0 = T[2], z1 = T[3], bed = T[4];
+                var rng = new System.Random(7171);
+                var rock = new MeshBatch();
+                var frost = new MeshBatch();
+                for (float z = z0 + 1f; z < z1 - 1f; z += 2.2f)
+                    foreach (float x in new[] { x0 + 0.5f, x1 - 0.5f })
+                    {
+                        if (x > -64f && z > 152.5f && z < 157.5f) continue;    // (the pipe to the Mangrove)
+                        if (x > -71f && z > 167f) continue;                     // (the ice cave)
+                        KwRocks(rock, new Vector3(x, bed, z), 0.9f + (float)rng.NextDouble() * 0.9f, rng);
+                        frost.Ball(new Vector3(x + (x < -70f ? -0.15f : 0.15f), -1.7f, z), new Vector3(0.7f, 0.9f + (float)rng.NextDouble() * 0.8f, 1.6f), 3, 6);
+                    }
+                for (float x = x0 + 1f; x < x1 - 1f; x += 2.2f)
+                    foreach (float z in new[] { z0 + 0.5f, z1 - 0.5f })
+                    {
+                        if (z < 140f && Mathf.Abs(x + 75f) < 2.5f) continue;   // (the pipe to the Coral Nursery)
+                        if (z > 170f && x > -71f) continue;
+                        KwRocks(rock, new Vector3(x, bed, z), 0.9f + (float)rng.NextDouble() * 0.9f, rng);
+                        frost.Ball(new Vector3(x, -1.7f, z + (z < 150f ? -0.15f : 0.15f)), new Vector3(1.6f, 0.9f + (float)rng.NextDouble() * 0.8f, 0.7f), 3, 6);
+                    }
+                rock.Build(kit.Root, "FrozenWallRocks", PatchworkAssets.Felt(new Color(0.38f, 0.42f, 0.52f)));
+                Twinkling(frost, kit.Root, "FrostCrust", new Color(0.82f, 0.93f, 1f), 0.4f, 0.7f, 0.3f, 0.7f);
+            }
+            // The Mangrove: dark mud banked up the walls, roots worming down into the water,
+            // and green weed on the mud.
+            {
+                var T = MangroveTank;
+                float x0 = T[0], x1 = T[1], z0 = T[2], z1 = T[3], bed = T[4];
+                var rng = new System.Random(7272);
+                var mud = new MeshBatch();
+                var weed = new MeshBatch();
+                var rootlets = new MeshBatch();
+                for (float z = z0 + 1f; z < z1 - 1f; z += 2f)
+                    foreach (float x in new[] { x0 + 0.5f, x1 - 0.5f })
+                    {
+                        if (x < -55f && z > 152.5f && z < 157.5f) continue;    // (the pipe to the Frozen Sea)
+                        if (x < -55f && z > 165.5f) continue;                   // (the bank and its hollow)
+                        if (x > -37f && z < 141.5f) continue;                   // (the other bank)
+                        mud.Ball(new Vector3(x, bed + 0.4f, z), new Vector3(1.4f, 1.6f + (float)rng.NextDouble(), 2.2f), 3, 6);
+                        if (rng.NextDouble() < 0.7) weed.Ball(new Vector3(x + (x < -46f ? 0.5f : -0.5f), bed + 1.4f, z), new Vector3(0.4f, 0.6f, 0.8f), 2, 5);
+                        for (int k = 0; k < 2; k++)
+                        {
+                            float zz = z + ((float)rng.NextDouble() - 0.5f) * 1.6f, len = 1.5f + (float)rng.NextDouble() * 3.5f;
+                            rootlets.Box(new Vector3(x + (x < -46f ? 0.06f : -0.06f), -0.8f - len * 0.5f, zz), new Vector3(0.06f, len, 0.06f), Quaternion.Euler(((float)rng.NextDouble() - 0.5f) * 10f, 0f, ((float)rng.NextDouble() - 0.5f) * 10f));
+                        }
+                    }
+                for (float x = x0 + 1f; x < x1 - 1f; x += 2f)
+                    foreach (float z in new[] { z0 + 0.5f, z1 - 0.5f })
+                    {
+                        if (z < 140f && Mathf.Abs(x + 46.5f) < 2.5f) continue;   // (the pipe to the Lantern Deep)
+                        if (z > 170f && x < -49.5f) continue;
+                        if (z < 140f && x > -42.5f) continue;
+                        mud.Ball(new Vector3(x, bed + 0.4f, z), new Vector3(2.2f, 1.6f + (float)rng.NextDouble(), 1.4f), 3, 6);
+                        if (rng.NextDouble() < 0.7) weed.Ball(new Vector3(x, bed + 1.4f, z + (z < 150f ? 0.5f : -0.5f)), new Vector3(0.8f, 0.6f, 0.4f), 2, 5);
+                    }
+                mud.Build(kit.Root, "MangroveWallMud", PatchworkAssets.Felt(new Color(0.3f, 0.25f, 0.18f)));
+                Twinkling(weed, kit.Root, "MangroveWeed", new Color(0.4f, 0.65f, 0.3f), 0.25f, 0.45f, 0.3f, 0.2f);
+                rootlets.Build(kit.Root, "WallRoots", PatchworkAssets.Wood(new Color(0.42f, 0.32f, 0.24f)));
+            }
+            // The Lantern Deep: a few long cracks in the rock glowing faintly blue, high and low.
+            {
+                var T = LanternTank;
+                var cracks = new MeshBatch();
+                var rng = new System.Random(7373);
+                for (int i = 0; i < 14; i++)
+                {
+                    bool eastWall = i % 2 == 0;
+                    float z = T[2] + 2f + (float)rng.NextDouble() * (T[3] - T[2] - 4f);
+                    float y = T[4] + 2f + (float)rng.NextDouble() * 14f;
+                    float x = eastWall ? T[1] - 0.04f : T[0] + 0.04f;
+                    if (!eastWall && y > -8f && z > 108f && z < 125f) continue;   // (the Undercroft windows)
+                    float len = 1.2f + (float)rng.NextDouble() * 2.6f;
+                    cracks.Box(new Vector3(x, y, z), new Vector3(0.04f, len, 0.08f), Quaternion.Euler(((float)rng.NextDouble() - 0.5f) * 60f, 0f, 0f));
+                }
+                Twinkling(cracks, kit.Root, "DeepCracks", new Color(0.35f, 0.75f, 1f), 0.2f, 1.6f, 0.6f, 0.9f);
+            }
+        }
+
+        // The Undercroft: handrails down the stair, pipes along the ceiling, and a framed chart
+        // of who's who between each pair of windows.
+        static void KwUndercroftLife(LevelKit kit)
+        {
+            foreach (float x in new[] { -61.9f, -58.1f })
+            {
+                Vector3 a = new Vector3(x, 0.9f, 98.4f), b = new Vector3(x, -7.1f, 108.2f);
+                Beam(kit, a, b, 0.08f, Brass);
+                for (int i = 0; i <= 4; i++)
+                {
+                    Vector3 p = Vector3.Lerp(a, b, i / 4f);
+                    Beam(kit, p, p + new Vector3(x < -60f ? -0.1f : 0.1f, -0.15f, 0f), 0.05f, IronMat);
+                }
+                // and on along the corridor at the same height
+                Beam(kit, new Vector3(x, -7.1f, 108.2f), new Vector3(x, -7.1f, 109.2f), 0.08f, Brass);
+            }
+            var pipe = PatchworkAssets.Plain(new Color(0.55f, 0.42f, 0.3f), 0.6f);
+            foreach (float x in new[] { -61.5f, -58.5f })
+            {
+                NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(x, -3.8f, 117f), new Vector3(0.2f, 9f, 0.2f), pipe, new Vector3(90f, 0f, 0f)));
+                for (float z = 109f; z < 126f; z += 3f)
+                    NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(x, -3.62f, z), new Vector3(0.06f, 0.24f, 0.06f), IronMat));
+            }
+            // The charts: a cream card in a dark frame with little felt fish on it.
+            Color[][] fish =
+            {
+                new[] { new Color(1f, 0.5f, 0.12f), new Color(0.25f, 0.45f, 1f), new Color(1f, 0.88f, 0.25f), new Color(0.3f, 0.8f, 0.6f) },
+                new[] { new Color(0.35f, 0.75f, 1f), new Color(0.2f, 0.18f, 0.25f), new Color(0.45f, 0.08f, 0.12f), new Color(1f, 0.7f, 0.7f) },
+            };
+            int n = 0;
+            foreach (float x in new[] { -61.97f, -58.03f })
+                foreach (float z in new[] { 113.75f, 119.25f })
+                {
+                    float into = x < -60f ? 1f : -1f;
+                    var cols = fish[x < -60f ? 0 : 1];
+                    Vector3 c = new Vector3(x, -6.4f, z);
+                    NoShadow(kit.Deco(PrimitiveType.Cube, c, new Vector3(0.04f, 0.95f, 1.3f), DarkWood));
+                    NoShadow(kit.Deco(PrimitiveType.Cube, c + Vector3.right * into * 0.025f, new Vector3(0.02f, 0.82f, 1.16f), PatchworkAssets.Felt(CreamCol)));
+                    for (int i = 0; i < 4; i++)
+                    {
+                        Vector3 fp = c + Vector3.right * into * 0.04f + new Vector3(0f, 0.18f - (i / 2) * 0.36f, -0.28f + (i % 2) * 0.56f);
+                        NoShadow(kit.Deco(PrimitiveType.Sphere, fp, new Vector3(0.02f, 0.14f, 0.3f), PatchworkAssets.Felt(cols[(i + n) % 4])));
+                        NoShadow(kit.Deco(PrimitiveType.Cube, fp + new Vector3(0f, 0f, -0.18f), new Vector3(0.02f, 0.12f, 0.08f), PatchworkAssets.Felt(cols[(i + n) % 4]), new Vector3(45f, 0f, 0f)));
+                        NoShadow(kit.Deco(PrimitiveType.Cube, fp + new Vector3(0f, -0.12f, 0f), new Vector3(0.01f, 0.015f, 0.26f), PatchworkAssets.Felt(new Color(0.3f, 0.3f, 0.35f))));
+                    }
+                    n++;
+                }
+        }
+
+        // A corkboard in the Keepers' Room with snapshots of the residents, and "keeper of the
+        // month" (who is, again, Gerald the penguin).
+        static void KwNoticeBoard(LevelKit kit)
+        {
+            Vector3 c = new Vector3(-54f, 2.9f, 78.06f);
+            kit.Deco(PrimitiveType.Cube, c, new Vector3(3f, 2f, 0.08f), DarkWood);
+            NoShadow(kit.Deco(PrimitiveType.Cube, c + new Vector3(0f, 0f, 0.05f), new Vector3(2.8f, 1.8f, 0.03f), PatchworkAssets.Felt(new Color(0.7f, 0.55f, 0.38f))));
+            Color[] snaps = { new Color(0.3f, 0.7f, 0.85f), new Color(0.2f, 0.25f, 0.5f), new Color(0.85f, 0.9f, 1f), new Color(0.35f, 0.6f, 0.35f), new Color(0.95f, 0.55f, 0.3f), new Color(0.55f, 0.5f, 0.75f) };
+            var white = PatchworkAssets.Felt(new Color(0.97f, 0.96f, 0.92f));
+            var pinMat = PatchworkAssets.Felt(new Color(0.9f, 0.25f, 0.25f));
+            for (int i = 0; i < 6; i++)
+            {
+                Vector3 p = c + new Vector3(-1.05f + (i % 3) * 1.05f, i < 3 ? 0.4f : -0.45f, 0.075f);
+                float tilt = (i * 37 % 13) - 6f;
+                NoShadow(kit.Deco(PrimitiveType.Cube, p, new Vector3(0.62f, 0.7f, 0.01f), white, new Vector3(0f, 0f, tilt)));
+                NoShadow(kit.Deco(PrimitiveType.Cube, p + new Vector3(0f, 0.06f, 0.006f), new Vector3(0.52f, 0.46f, 0.01f), PatchworkAssets.Felt(snaps[i]), new Vector3(0f, 0f, tilt)));
+                // A little shape of who's in it: a fish, a penguin, a jelly...
+                NoShadow(kit.Deco(PrimitiveType.Sphere, p + new Vector3(0f, 0.06f, 0.012f), new Vector3(i % 2 == 0 ? 0.26f : 0.16f, i % 2 == 0 ? 0.14f : 0.26f, 0.01f), PatchworkAssets.Felt(Color.Lerp(snaps[(i + 3) % 6], Color.white, 0.3f)), new Vector3(0f, 0f, tilt)));
+                NoShadow(kit.Deco(PrimitiveType.Sphere, p + new Vector3(0f, 0.32f, 0.015f), Vector3.one * 0.06f, pinMat));
+            }
+            // Keeper of the Month: a rosette, and Gerald.
+            Vector3 r = c + new Vector3(1.75f, 0.2f, 0.07f);
+            for (int k = 0; k < 2; k++)
+                NoShadow(kit.Deco(PrimitiveType.Cube, r + new Vector3((k - 0.5f) * 0.1f, -0.3f, 0f), new Vector3(0.1f, 0.4f, 0.01f), PatchworkAssets.Felt(new Color(0.25f, 0.4f, 0.85f)), new Vector3(0f, 0f, (k - 0.5f) * 20f)));
+            NoShadow(kit.Deco(PrimitiveType.Cylinder, r, new Vector3(0.34f, 0.01f, 0.34f), PatchworkAssets.Felt(new Color(1f, 0.8f, 0.3f)), new Vector3(90f, 0f, 0f)));
+            NoShadow(kit.Deco(PrimitiveType.Cylinder, r + new Vector3(0f, 0f, 0.01f), new Vector3(0.22f, 0.01f, 0.22f), PatchworkAssets.Felt(new Color(0.25f, 0.4f, 0.85f)), new Vector3(90f, 0f, 0f)));
+            var g = KwPenguin(kit, c + new Vector3(1.75f, -0.75f, 0.12f), 180f, 0.32f, false);
+            g.rotation = Quaternion.identity;
+            var lbl = new MeshBatch();
+            Letters(lbl, "KEEPER OF THE MONTH", c + new Vector3(0f, 1.15f, 0.04f), Vector3.forward, 0.026f, 0.006f);
+            lbl.Build(kit.Root, "BoardTitle", PatchworkAssets.Felt(new Color(0.95f, 0.92f, 0.85f)));
         }
 
         // ================================================================ The Keepers' Room
@@ -50,9 +253,10 @@ namespace Patchwork
                     grout.Box(alongX ? new Vector3(u, 0.65f, face + inward * 0.018f) : new Vector3(face + inward * 0.018f, 0.65f, u), alongX ? new Vector3(0.02f, 1.3f, 0.01f) : new Vector3(0.01f, 1.3f, 0.02f), Quaternion.identity);
                 edge.Box(alongX ? new Vector3(mid, 1.34f, face + inward * 0.03f) : new Vector3(face + inward * 0.03f, 1.34f, mid), alongX ? new Vector3(len, 0.1f, 0.07f) : new Vector3(0.07f, 0.1f, len), Quaternion.identity);
             };
-            tiles(KwX0 + 1.2f, KwX1, KwZ0, true);       // the south wall (the lockers stand in the corner)
-            tiles(KwX0 + 1.2f, -63f, 94f, true);        // the north wall, either side of the door
-            tiles(-57f, KwX1, 94f, true);
+            tiles(KwX0 + 1.2f, -62.9f, KwZ0, true);     // the south wall, either side of the door in from the Kelp Galleries
+            tiles(-57.1f, KwX1, KwZ0, true);
+            tiles(KwX0 + 1.2f, -63.4f, 94f, true);      // the north wall, either side of the door to the Tank Hall
+            tiles(-56.6f, KwX1, 94f, true);
             tiles(KwZ0, 94f, KwX1, false);              // the east wall
             grout.Build(kit.Root, "TileGrout", PatchworkAssets.Plain(new Color(0.62f, 0.66f, 0.66f), 0.2f));
             edge.Build(kit.Root, "TileEdge", PatchworkAssets.Plain(new Color(0.2f, 0.5f, 0.5f), 0.7f));
