@@ -608,10 +608,12 @@ namespace Patchwork
                 foreach (int side in new[] { -1, 1 })
                 {
                     Vector3 facing = side < 0 ? Vector3.right : Vector3.left;
-                    float x = side < 0 ? 61f : 99f;
-                    Vector3 at;
+                    // Straight onto the face of the pier (it's stone you can see, not a solid
+                    // wall, so the finder would only find the wall behind it, full).
+                    float x = side < 0 ? 61.01f : 98.99f;
+                    Vector3 at = new Vector3(x, 8.6f, z);
                     int k = n++;
-                    if (!RmWall("a painted shield", new Vector3(x, 8.6f, z), facing, new Vector3(1.1f, 1.5f, 0.2f), 0.4f, out at)) continue;
+                    rmPlaced++;
                     var g = RmGroup(kit, "Shield", at, Quaternion.LookRotation(facing));
                     var b = new RmBits(kit, g);
                     var field = RmFelt(fields[k, 0]);

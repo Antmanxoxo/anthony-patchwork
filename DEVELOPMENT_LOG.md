@@ -1,5 +1,12 @@
 # Development Log
 
+## The last room details find their places
+- 11 of the new room details couldn't find a spot when the level was built. They're all in now:
+  - The eight painted shields hang right on the stone piers of the Hall of Arms.
+  - The pigeons sit on top of the Tank Hall's temperature board.
+  - The Mangrove's spider's web is strung higher up, above the arching roots.
+  - The tree-climbing crabs cling to the bark above where the roots spring out.
+
 ## The Skyward Waltz sounds like its preview, and the camera starts outside the Pod
 - In the game, The Skyward Waltz now plays exactly the way the preview was made: on the
   preview's own light, clear instruments, in the same soft room echo. The whole song plays

@@ -259,11 +259,15 @@ namespace Patchwork
             ThDryingNet(kit);
         }
 
+        static Transform thBoard;
+
         static void ThTemperatures(LevelKit kit)
         {
+            thBoard = null;
             Vector3 at;
             if (!RmWall("the board of tank temperatures", new Vector3(-76f, 3.4f, 95f), Vector3.forward, new Vector3(3.6f, 1.6f, 0.25f), 8f, out at)) return;
             var g = RmGroup(kit, "TankTemperatures", at, Quaternion.LookRotation(Vector3.forward));
+            thBoard = g;
             var b = new RmBits(kit, g);
             b.Box(PatchworkAssets.Planks(new Color(0.2f, 0.28f, 0.3f)), new Vector3(0f, 0f, 0.03f), new Vector3(3.5f, 1.5f, 0.06f));
             b.Box(Brass, new Vector3(0f, 0.72f, 0.065f), new Vector3(3.5f, 0.05f, 0.04f));
@@ -450,7 +454,15 @@ namespace Patchwork
 
         static void ThPigeons(LevelKit kit)
         {
-            // Two pigeons who got in through a roof-light, sitting on the south catwalk's rail.
+            // Two pigeons who got in through a roof-light, sitting on top of the temperature board
+            // (or, if that isn't there, on the south catwalk's rail).
+            if (thBoard != null)
+            {
+                RmPigeon(kit, thBoard.TransformPoint(new Vector3(0.9f, 0.75f, 0.14f)), 82f, false);
+                RmPigeon(kit, thBoard.TransformPoint(new Vector3(0.35f, 0.75f, 0.14f)), 262f, true);
+                rmPlaced++;
+                return;
+            }
             float railTop = CatY + 1.09f;
             foreach (float x in new[] { -67.5f, -55.5f, -51f, -79f, -41f })
             {
@@ -1344,10 +1356,10 @@ namespace Patchwork
         static void MgSpiderWeb(LevelKit kit, float[] T)
         {
             // Strung between the far tree and the edge of the tank, beaded with drops that catch the light.
-            foreach (float z in new[] { 137.5f, 138.6f, 136.4f })
+            // (Up above the arching roots, where there's room to spin.)
+            foreach (var hub in new[] { new Vector3(-37.3f, 3.5f, 137.5f), new Vector3(-37.3f, 3.1f, 136.3f), new Vector3(-37.3f, 3.1f, 138.7f), new Vector3(-37.3f, 4f, 137.5f) })
             {
-                Vector3 hub = new Vector3(-37.5f, 1.9f, z);
-                if (!RmTry(hub, new Vector3(2.2f, 2f, 0.08f), 0f)) continue;
+                if (!RmTry(hub, new Vector3(1.9f, 1.8f, 0.06f), 0f)) continue;
                 var g = kit.Group("SpiderWeb", hub);
                 var silk = new MeshBatch();
                 var dew = new MeshBatch();
@@ -1367,7 +1379,7 @@ namespace Patchwork
                         if ((i + ring) % 3 == 0) dew.Ball((p0 + p1) * 0.5f, Vector3.one * 0.025f, 2, 4);
                     }
                 // Anchor threads out to the trunk and the wall.
-                RmTube(silk, new Vector3(-1f, 0f, 0f), new Vector3(-1.35f, 0.1f, 0f), 0.004f, 3);
+                RmTube(silk, new Vector3(-1f, 0f, 0f), new Vector3(-1.3f, 0.1f, 0f), 0.004f, 3);
                 RmTube(silk, new Vector3(1f, 0f, 0f), new Vector3(1.4f, -1.5f, 0f), 0.004f, 3);
                 silk.Build(g, "SpiderWeb", RmGlow(new Color(0.85f, 0.9f, 0.95f), 0.5f));
                 Twinkling(dew, g, "WebDew", new Color(0.8f, 0.95f, 1f), 0.6f, 2f, 0.8f, 0f);
@@ -1381,7 +1393,7 @@ namespace Patchwork
                 rmPlaced++;
                 return;
             }
-            RmMiss("the spider's web", new Vector3(-37.5f, 1.9f, 137.5f));
+            RmMiss("the spider's web", new Vector3(-37.3f, 3.5f, 137.5f));
         }
 
         static void MgClimbingCrabs(LevelKit kit, float[] T)
@@ -1397,9 +1409,10 @@ namespace Patchwork
                 {
                     float a = (t * 97f + k * 160f) * Mathf.Deg2Rad;
                     Vector3 outward = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
-                    float y0 = 0.6f + k * 0.5f, y1 = y0 + 0.9f;
-                    Vector3 low = trunks[t] + outward * 0.44f + Vector3.up * y0;
-                    if (!RmTry(low + Vector3.up * 0.45f, new Vector3(0.25f, 1.2f, 0.25f), 0f)) continue;
+                    // (On the bark itself, above where the prop roots spring out: no need to ask
+                    // for room, they're meant to be touching it.)
+                    float y0 = 1.6f + k * 0.7f, y1 = y0 + 1.1f;
+                    Vector3 low = trunks[t] + outward * 0.43f + Vector3.up * y0;
                     var g = RmGroup(kit, "TreeCrab", low, Quaternion.LookRotation(Vector3.up, outward));
                     var b = new RmBits(kit, g);
                     b.Ball(shell, new Vector3(0f, 0.02f, 0f), new Vector3(0.16f, 0.06f, 0.14f), 3, 7);
@@ -1412,7 +1425,7 @@ namespace Patchwork
                     b.Done("TreeCrab");
                     var climb = g.gameObject.AddComponent<Glider>();
                     climb.A = low;
-                    climb.B = trunks[t] + outward * 0.44f + Vector3.up * y1;
+                    climb.B = trunks[t] + outward * 0.43f + Vector3.up * y1;
                     climb.Travel = 6f + k * 2f;
                     climb.Rest = 3f;
                     climb.Offset = t * 2.3f + k * 4f;
