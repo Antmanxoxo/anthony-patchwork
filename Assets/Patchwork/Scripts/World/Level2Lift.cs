@@ -11,7 +11,10 @@ namespace Patchwork
         // The tower's footprint: x 44..52.4, z 6..14, in the south-west corner of the Ruins.
         const float TowerX0 = 44f, TowerX1 = 52.4f, TowerZ0 = 6f, TowerZ1 = 14f, TowerTop = 24f;
         static readonly Vector3 LiftLower = new Vector3(48.2f, 0f, 10f);
-        static readonly Vector3 LiftUpper = new Vector3(48.2f, DeckY, 10f);
+        // The top car isn't above the bottom one at all: it stands at the far end of the Star
+        // Corridor, south of the Orrery Bridge. (The ride swaps you between two identical
+        // rooms, so nobody can tell.)
+        static readonly Vector3 LiftUpper = new Vector3(52f, DeckY, -38f);
         const float LiftDoorW = 3.2f, LiftDoorH = 3.4f, CarHigh = 4.2f;
 
         static readonly Color Kraft = new Color(0.8f, 0.62f, 0.42f);
@@ -22,23 +25,12 @@ namespace Patchwork
         {
             var box = PatchworkAssets.Cardboard(Kraft);
             var boxIn = PatchworkAssets.Cardboard(KraftLight);
-            float zd0 = 10f - LiftDoorW * 0.5f, zd1 = 10f + LiftDoorW * 0.5f;
-            float[] floors = { 0f, DeckY };
-
-            // ----- The tower: four cardboard walls, holes for the doors at both floors -----
-            foreach (float x in new[] { TowerX0 + 0.2f, TowerX1 - 0.2f })
-            {
-                Wall(kit, new Vector3(x, 0f, TowerZ0), new Vector3(x, 0f, zd0), 0f, TowerTop, 0.4f, box, "LiftWall");
-                Wall(kit, new Vector3(x, 0f, zd1), new Vector3(x, 0f, TowerZ1), 0f, TowerTop, 0.4f, box, "LiftWall");
-                Wall(kit, new Vector3(x, 0f, zd0), new Vector3(x, 0f, zd1), LiftDoorH, DeckY, 0.4f, box, "LiftWall");
-                Wall(kit, new Vector3(x, 0f, zd0), new Vector3(x, 0f, zd1), DeckY + LiftDoorH, TowerTop, 0.4f, box, "LiftWall");
-            }
-            foreach (float z in new[] { TowerZ0 + 0.2f, TowerZ1 - 0.2f })
-                Wall(kit, new Vector3(TowerX0, 0f, z), new Vector3(TowerX1, 0f, z), 0f, TowerTop, 0.4f, box, "LiftWall");
-            // Ceilings, and the upper car's floor.
-            kit.Block(new Vector3(48.2f, CarHigh + 0.2f, 10f), new Vector3(7.6f, 0.4f, 7.2f), Kraft, "LiftCeiling", boxIn);
-            kit.Block(new Vector3(48.2f, DeckY - 0.2f, 10f), new Vector3(8.4f, 0.4f, 8f), Kraft, "LiftFloor", boxIn);
-            kit.Block(new Vector3(48.2f, DeckY + CarHigh + 0.2f, 10f), new Vector3(7.6f, 0.4f, 7.2f), Kraft, "LiftCeiling", boxIn);
+            // ----- The tower in the Ruins: the bottom car, and a lot of box going up -----
+            CarShell(kit, LiftLower, TowerTop, box, boxIn);
+            // ----- The top car, built into the end of the Star Corridor -----
+            CarShell(kit, LiftUpper, CarHigh + 0.4f, box, boxIn);
+            kit.Block(LiftUpper + new Vector3(0f, -0.2f, 0f), new Vector3(8.4f, 0.4f, 8f), Kraft, "LiftFloor", boxIn);
+            kit.Block(LiftUpper + new Vector3(0f, -4f, 0f), new Vector3(8.4f, 7.2f, 8f), StoneCol, "LiftFoot", DarkStone);
 
             // ----- The outside: tape, scribbles and arrows, ropes going up into the dark -----
             var tape = PatchworkAssets.Felt(TapeCol);
@@ -89,18 +81,18 @@ namespace Patchwork
             // ----- The cars: the same little room at the bottom and at the top -----
             var lowDoors = new System.Collections.Generic.List<LiftDoor>();
             var highDoors = new System.Collections.Generic.List<LiftDoor>();
-            foreach (float fy in floors)
+            foreach (var c in new[] { LiftLower, LiftUpper })
             {
-                Vector3 c = new Vector3(48.2f, fy, 10f);
-                bool top = fy > 1f;
+                bool top = c.y > 1f;
+                float fy = c.y;
                 // Doors on both sides; only one pair on each floor ever opens.
                 for (int side = -1; side <= 1; side += 2)
                 {
                     bool works = top ? side < 0 : side > 0;
-                    float x = side > 0 ? TowerX1 - 0.48f : TowerX0 + 0.48f;
+                    float x = c.x + side * 3.72f;
                     for (int leaf = -1; leaf <= 1; leaf += 2)
                     {
-                        var g = kit.Group("LiftDoor", new Vector3(x, fy, 10f + leaf * LiftDoorW * 0.25f));
+                        var g = kit.Group("LiftDoor", new Vector3(x, fy, c.z + leaf * LiftDoorW * 0.25f));
                         NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, LiftDoorH * 0.5f, 0f), new Vector3(0.14f, LiftDoorH, LiftDoorW * 0.5f + 0.02f), box, default(Vector3), g));
                         // A strip of tape down the meeting edge, and a round porthole doodle.
                         NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, LiftDoorH * 0.5f, -leaf * (LiftDoorW * 0.25f - 0.08f)), new Vector3(0.17f, LiftDoorH, 0.16f), tape, default(Vector3), g));
@@ -125,7 +117,7 @@ namespace Patchwork
             lift.CameraOffset = new Vector3(-3.25f, 3.45f, -3.05f);
             lift.LookOffset = new Vector3(1.6f, 1.2f, 2.2f);
             lift.LowerDoorPoint = new Vector3(TowerX1 + 1.5f, 1f, 10f);
-            lift.UpperDoorPoint = new Vector3(TowerX0 - 1.5f, DeckY + 1f, 10f);
+            lift.UpperDoorPoint = LiftUpper + new Vector3(-4.2f - 1.5f, 1f, 0f);
             lift.LowerDoors = lowDoors.ToArray();
             lift.UpperDoors = highDoors.ToArray();
             lift.HeartsNeeded = HeartstringsNeeded;
@@ -169,19 +161,36 @@ namespace Patchwork
 
             // Floor dials over both outer doors.
             FloorDial(kit, new Vector3(TowerX1 + 0.05f, LiftDoorH + 0.75f, 10f), 90f);
-            FloorDial(kit, new Vector3(TowerX0 - 0.05f, DeckY + LiftDoorH + 0.75f, 10f), 270f);
+            FloorDial(kit, LiftUpper + new Vector3(-4.25f, LiftDoorH + 0.75f, 0f), 270f);
             // A call button by the bottom door, and a lamp over it.
             NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(TowerX1 + 0.04f, 1.4f, 12.3f), new Vector3(0.06f, 0.7f, 0.42f), Brass));
             NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(TowerX1 + 0.09f, 1.55f, 12.3f), new Vector3(0.1f, 0.22f, 0.22f), PatchworkAssets.Glow(new Color(1f, 0.75f, 0.4f), 2f)));
             NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(TowerX1 + 0.09f, 1.25f, 12.3f), new Vector3(0.1f, 0.22f, 0.22f), PatchworkAssets.Glow(new Color(0.6f, 0.85f, 1f), 1.6f)));
             PointLight(kit, new Vector3(TowerX1 + 2.5f, 5.5f, 10f), LampGold, 12f, 1.1f);
-            PointLight(kit, new Vector3(TowerX0 - 1.2f, DeckY + 4.5f, 10f), LampGold, 9f, 0.9f);
+            PointLight(kit, LiftUpper + new Vector3(-5.4f, 4.5f, 0f), LampGold, 9f, 0.9f);
 
             kit.Hint(new Vector3(TowerX1 + 4f, 1.5f, 11f), new Vector3(6f, 4f, 8f), "The Observatory Express",
                 "The lift to the Observatory, finest cardboard. It wakes up once you've found three Heartstrings: then walk in and press {Ability}.");
             Plaque(kit, new Vector3(TowerX1 + 2.2f, 0f, 15.6f), 120f, "The Lift",
                 "Elisha Otis showed off his safety lift in New York in 1854. He rode the platform up high, then had the only rope cut in front of the crowd. The brakes caught, and he raised his hat.",
                 "Without lifts nobody would build tall buildings. This one is made of cardboard, which Mr. Otis never tried.");
+        }
+
+        // The cardboard box round one car: four walls from the car's floor up to `height`, with a
+        // door-sized hole low down on the east and west sides, and the car's ceiling.
+        static void CarShell(LevelKit kit, Vector3 c, float height, Material box, Material boxIn)
+        {
+            float zd0 = c.z - LiftDoorW * 0.5f, zd1 = c.z + LiftDoorW * 0.5f;
+            float z0 = c.z - 4f, z1 = c.z + 4f, y0 = c.y, y1 = c.y + height;
+            foreach (float x in new[] { c.x - 4f, c.x + 4f })
+            {
+                Wall(kit, new Vector3(x, 0f, z0), new Vector3(x, 0f, zd0), y0, y1, 0.4f, box, "LiftWall");
+                Wall(kit, new Vector3(x, 0f, zd1), new Vector3(x, 0f, z1), y0, y1, 0.4f, box, "LiftWall");
+                Wall(kit, new Vector3(x, 0f, zd0), new Vector3(x, 0f, zd1), y0 + LiftDoorH, y1, 0.4f, box, "LiftWall");
+            }
+            foreach (float z in new[] { z0 + 0.2f, z1 - 0.2f })
+                Wall(kit, new Vector3(c.x - 4.2f, 0f, z), new Vector3(c.x + 4.2f, 0f, z), y0, y1, 0.4f, box, "LiftWall");
+            kit.Block(c + new Vector3(0f, CarHigh + 0.2f, 0f), new Vector3(7.6f, 0.4f, 7.2f), Kraft, "LiftCeiling", boxIn);
         }
 
         // One car's interior: a rug, a ceiling lamp, a dial and a panel of buttons, a little

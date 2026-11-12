@@ -158,7 +158,7 @@ namespace Patchwork
             if (!dinged && t > CloseTime + RideTime)
             {
                 dinged = true;
-                game.CutsceneCaption = goingUp ? "Ding! Top floor: the Observatory." : "Ding! Ground floor: the Sunken Ruins.";
+                game.CutsceneCaption = goingUp ? "Ding! Top floor: the Star Corridor." : "Ding! Ground floor: the Sunken Ruins.";
                 var ding = MusicPlayer.LiftDing();
                 if (ding != null && Music != null) Music.PlayOneShot(ding, Mathf.Max(0.25f, MusicPlayer.Volume / 10f) * 0.9f);
                 SetDoors(atTop ? LowerDoors : UpperDoors, true);

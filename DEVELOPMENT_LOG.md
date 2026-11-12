@@ -1,5 +1,23 @@
 # Development Log
 
+## Level 2: the Star Corridor
+- The way to the Observatory is now much longer. The cardboard lift's top floor opens
+  into the Star Corridor, about a hundred metres winding round the back of the museum
+  before it comes out through a new arch onto the Orrery Bridge.
+  - The Hall of Clocks: clocks all over the walls, every one at a different time and all
+    going round, and John Harrison's sea clock.
+  - The Night Sky Gallery: a long gallery under painted stars with shooting stars across
+    the ceiling, tall night windows, star charts, turning celestial globes, a grandfather
+    clock ticking at the far end, Hipparchus and the Herschels, and Professor Hoot.
+  - The Planet Walk: the sun and all eight planets hung in order and slowly turning
+    (Saturn with its rings, the Earth with its moon), and how Neptune was found by sums.
+  - The Moon Steps: a moon overhead, moon dust, craters and footprints underfoot, and a
+    little model of the lander from 1969.
+  - The Comet Gallery: a great comet with a long glittering tail, night windows, star
+    charts, and Halley's comet; then out onto the bridge.
+- Its own checkpoint, a hint, a camera moment the first time, bubbles, a golden thread
+  line, its own lighting mood, and a place on the map.
+
 ## Level 2: third clean-up
 - Flicker: see-through things now draw in a fixed order (glass first, then what's inside or
   around it, then water surfaces, then light beams) instead of swapping as you move; the

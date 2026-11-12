@@ -473,6 +473,14 @@ Stuff I need to remember about how Patchwork is put together.
 - `Level2Grandeur.cs` is the fourth pass (sky lanterns over the sea, the atrium's river of
   stars, kelp moonbeams, the whale calf, fireflies, the Hall of Arms' pennants).
   `SkyLantern` lives there too.
+- The lift's two cars aren't stacked: the bottom one is in the Ruins tower (`LiftLower`),
+  the top one is at the far end of the Star Corridor (`LiftUpper` = (52, DeckY, -38)).
+  Both are built by `CarShell` + `CarInside` and must stay identical. The Ruins' old upper
+  doorway onto the bridge is walled up.
+- `Level2Corridor.cs`: the Star Corridor (x 32..55, z -42..4, floor DeckY, 6.5 high),
+  five rooms: Hall of Clocks, Night Sky Gallery, Planet Walk, Moon Steps, Comet Gallery.
+  It comes out through a new arch in the Orrery Bridge's south wall (x 34..38) onto the
+  bridge's east landing. Its own mood zone and map area.
 - See-through draw order is fixed, not left to distance sorting (that swaps big
   overlapping see-through things as you move: flicker). `Renderer.sortingOrder` (URP
   ignores `rendererPriority` for see-through things): pool haze -15, glass -20 (domes:

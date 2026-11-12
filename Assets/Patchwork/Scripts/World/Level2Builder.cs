@@ -113,6 +113,7 @@ namespace Patchwork
             P.Add(new MapPin("The Wreck", new Vector3(91f, 0f, 40f)));
             P.Add(new MapPin("Observatory Express", new Vector3(48f, 0f, 10f), MapPin.Kind.Shop));
             P.Add(new MapPin("Hall of Arms", new Vector3(80f, 0f, -24f), MapPin.Kind.Area));
+            P.Add(new MapPin("Star Corridor", new Vector3(44f, 0f, -22f), MapPin.Kind.Area));
             P.Add(new MapPin("The Sea Gate", new Vector3(-72f, 0f, 27f)));
             P.Add(new MapPin("Drowned Colonnade", new Vector3(97f, 0f, 86f)));
 
@@ -132,6 +133,7 @@ namespace Patchwork
             GreatDeep(kit);
             Ruins(kit);
             OrreryBridge(kit);
+            StarCorridor(kit);
             ObservatoryHall(kit);
             HallOfArms(kit);
             Details(kit);
@@ -172,6 +174,13 @@ namespace Patchwork
                 Box = Box(-ObsRadius - 4f, ObsRadius + 4f, DeckY - 1f, 70f, Observatory.z - ObsRadius - 1.4f, Observatory.z + ObsRadius + 2f),
                 AmbientSky = new Color(0.4f, 0.4f, 0.7f), AmbientSide = new Color(0.33f, 0.28f, 0.5f), AmbientGround = new Color(0.2f, 0.16f, 0.28f),
                 Fog = new Color(0.05f, 0.08f, 0.26f), Backdrop = new Color(0.03f, 0.06f, 0.2f), SunColor = new Color(0.75f, 0.8f, 1f), FogStart = 30f, FogEnd = 170f, Sun = 0.55f, Depth = 0.12f
+            });
+            Z.Add(new Level2Mood.Zone
+            {
+                Name = "The Star Corridor", Line = "The Star Corridor. The long way round, and the best one.",
+                Box = Box(31.5f, 55.5f, DeckY - 1f, DeckY + 8f, -42.5f, 4.5f),
+                AmbientSky = new Color(0.4f, 0.36f, 0.62f), AmbientSide = new Color(0.32f, 0.26f, 0.44f), AmbientGround = new Color(0.18f, 0.14f, 0.26f),
+                Fog = new Color(0.06f, 0.05f, 0.18f), Backdrop = new Color(0.03f, 0.04f, 0.14f), SunColor = new Color(0.8f, 0.8f, 1f), FogStart = 30f, FogEnd = 160f, Sun = 0.4f
             });
             Z.Add(new Level2Mood.Zone
             {

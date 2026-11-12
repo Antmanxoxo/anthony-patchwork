@@ -85,8 +85,8 @@ namespace Patchwork
             // ----- The shell of the hall -----
             // West wall: the upper doorway from the lift, the tunnel's doorway, and a window onto the Great Deep.
             Wall(kit, new Vector3(43f, 0f, 4f), new Vector3(43f, 0f, 7f), -8f, T + 8f, 2f, stone);
-            Wall(kit, new Vector3(43f, 0f, 7f), new Vector3(43f, 0f, 13f), -8f, DeckY, 2f, stone);
-            Wall(kit, new Vector3(43f, 0f, 7f), new Vector3(43f, 0f, 13f), DeckY + 6.5f, T + 8f, 2f, stone);
+            // (Solid here now: the lift's top car is out at the end of the Star Corridor.)
+            Wall(kit, new Vector3(43f, 0f, 7f), new Vector3(43f, 0f, 13f), -8f, T + 8f, 2f, stone);
             ArchTrim(kit, new Vector3(43f, DeckY, 10f), 90f, 6f, 6.5f, 2f, stone, PaleStone);
             WallWithDoor(kit, new Vector3(43f, 0f, 13f), new Vector3(43f, 0f, 76f), -8f, T + 8f, 2f, stone, TunnelZ - 13f, 8f, 7f);
             Wall(kit, new Vector3(43f, 0f, 76f), new Vector3(43f, 0f, 96f), -8f, 0.6f, 2f, stone);
@@ -410,7 +410,12 @@ namespace Patchwork
             Wall(kit, new Vector3(-8f, 0f, 19f), new Vector3(3f, 0f, 19f), DeckY + 0.9f, DeckY + 7.9f, 2f, stone);
             Wall(kit, new Vector3(39f, 0f, 19f), new Vector3(42f, 0f, 19f), DeckY + 0.9f, DeckY + 7.9f, 2f, stone);
             GlassWall(kit, new Vector3(21f, DeckY + 0.9f, 19f), 180f, 36f, 7f, 8, 2);
-            Wall(kit, new Vector3(8f, 0f, 5f), new Vector3(42f, 0f, 5f), 0f, top, 2f, stone);
+            // The south wall, with the doorway in from the Star Corridor near its east end.
+            Wall(kit, new Vector3(8f, 0f, 5f), new Vector3(34f, 0f, 5f), 0f, top, 2f, stone);
+            Wall(kit, new Vector3(38f, 0f, 5f), new Vector3(42f, 0f, 5f), 0f, top, 2f, stone);
+            Wall(kit, new Vector3(34f, 0f, 5f), new Vector3(38f, 0f, 5f), 0f, DeckY, 2f, stone);
+            Wall(kit, new Vector3(34f, 0f, 5f), new Vector3(38f, 0f, 5f), DeckY + 5.5f, top, 2f, stone);
+            ArchTrim(kit, new Vector3(36f, DeckY, 5f), 0f, 4f, 5.5f, 2f, stone, PaleStone);
             Wall(kit, new Vector3(-7f, 0f, 3f), new Vector3(-7f, 0f, 20f), 0f, top, 2f, stone);
             kit.Block(new Vector3(18f, top + 0.5f, 12f), new Vector3(52f, 1f, 16f), Navy, "BridgeCeiling", PatchworkAssets.Felt(new Color(0.06f, 0.06f, 0.2f)));
             PaintedStars(kit, new Vector3(18f, top - 0.06f, 12f), 46f, 11f, 120, 9);
