@@ -17,7 +17,7 @@ namespace Patchwork
         public static Pair Knit, Felt, Weave, Wicker, Grass, Wood, Wrap, Cardboard;
         // Town textures: cobblestones, brick, plaster, fish-scale roof shingles, wooden planks and
         // damask (the swirly Victorian wallpaper / upholstery pattern).
-        public static Pair Cobble, Brick, Plaster, Shingle, Planks, Damask;
+        public static Pair Cobble, Brick, Plaster, Shingle, Planks, Damask, AgedBrick;
         // Crafted water: rippling blue satin with stitched white wave lines and sequin sparkles
         // (full colour; tint it white).
         public static Pair CraftWater;
@@ -54,6 +54,7 @@ namespace Patchwork
             // Stone and brick: mossy green in the joints and worn, sunlit edges.
             Cobble = Build(256, CobbleHeight, 0.58f, 0.42f, 4.2f, new Color(0.62f, 0.74f, 0.5f), 0.9f, 0.14f, 3);
             Brick = Build(256, BrickHeight, 0.62f, 0.38f, 3.8f, new Color(0.7f, 0.76f, 0.6f), 0.8f, 0.12f, 3);
+            AgedBrick = BuildAgedBrick(512);
             Plaster = Build(256, PlasterHeight, 0.82f, 0.18f, 1.6f, new Color(0.92f, 0.88f, 0.82f), 0.2f, 0.12f, 2);
             Shingle = Build(256, ShingleHeight, 0.64f, 0.36f, 3.6f, new Color(0.7f, 0.72f, 0.66f), 0.8f, 0.12f, 3);
             Planks = Build(256, PlankHeight, 0.68f, 0.32f, 3f, new Color(0.62f, 0.5f, 0.42f), 0.6f, 0.12f, 3);
@@ -295,6 +296,93 @@ namespace Patchwork
             face = Mathf.SmoothStep(0f, 1f, face);
             int bx = Mathf.FloorToInt(ru);
             return face * (0.75f + Hash(bx * 7, row * 13) * 0.2f) + ValueNoise(u, v, 32, 9) * 0.08f * face + Hash(x, y) * 0.04f;
+        }
+
+        // Old dressed stone: long blocks laid in courses, a century of weather on them. Each
+        // block its own tone (some warmer, some greyer), the arrises worn round and chipped at
+        // the corners, the faces pitted, soft rain streaks running down from the joints, a
+        // little lichen in the mortar - but kept clean and pale enough to stay elegant.
+        const int AgedRows = 8, AgedCols = 3;
+
+        static void AgedCell(float u, float v, out int bx, out int row, out float fu, out float fv)
+        {
+            float rv = v * AgedRows;
+            row = Mathf.FloorToInt(rv);
+            float ru = u * AgedCols + (row % 2 == 0 ? 0f : 0.5f);
+            bx = Mathf.FloorToInt(ru);
+            fu = ru - bx;
+            fv = rv - row;
+            bx = ((bx % AgedCols) + AgedCols) % AgedCols;
+        }
+
+        static float AgedHeight(float u, float v, int x, int y)
+        {
+            int bx, row; float fu, fv;
+            AgedCell(u, v, out bx, out row, out fu, out fv);
+            // Distance to the block's edge, in "block heights", so joints are even all round.
+            float du = Mathf.Min(fu, 1f - fu) * (AgedRows / (float)AgedCols);
+            float dv = Mathf.Min(fv, 1f - fv);
+            float d = Mathf.Min(du, dv);
+            // Worn, uneven edges: the joint line wanders a little.
+            float wobble = (ValueNoise(u, v, 48, 31) - 0.5f) * 0.05f;
+            float face = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((d - 0.035f + wobble) / 0.09f));
+            // Chipped corners.
+            float cu = du, cv = dv;
+            float chip = Hash(bx * 31 + row * 7, row * 3 + 5);
+            if (cu < 0.22f && cv < 0.22f && chip > 0.45f) face *= Mathf.Clamp01((cu + cv) / 0.3f);
+            // A slightly domed, pitted face.
+            float dome = 0.82f + Mathf.Clamp01(d * 3f) * 0.1f;
+            float pits = ValueNoise(u, v, 64, 41);
+            float pit = pits < 0.22f ? (0.22f - pits) * 1.4f : 0f;
+            return face * (dome + Hash(bx * 11, row * 17) * 0.05f - pit) + ValueNoise(u, v, 96, 43) * 0.05f * face + Hash(x, y) * 0.025f;
+        }
+
+        static Pair BuildAgedBrick(int size)
+        {
+            var pair = Build(size, AgedHeight, 0.64f, 0.36f, 3.4f, new Color(0.66f, 0.68f, 0.58f), 0.75f, 0.08f, 3);
+            var px = pair.Albedo.GetPixels();
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float u = x / (float)size, v = y / (float)size;
+                    int bx, row; float fu, fv;
+                    AgedCell(u, v, out bx, out row, out fu, out fv);
+                    Color c = px[y * size + x];
+                    // Each block's own tone: honey, cream or a cooler grey.
+                    float t = Hash(bx * 13 + 3, row * 29 + 1);
+                    float k = 0.9f + Hash(bx * 5 + 1, row * 3 + 9) * 0.2f;
+                    Color tint = t < 0.33f ? new Color(1.04f, 0.98f, 0.9f) : t < 0.66f ? new Color(1f, 1f, 0.97f) : new Color(0.94f, 0.96f, 0.99f);
+                    c = new Color(c.r * tint.r * k, c.g * tint.g * k, c.b * tint.b * k, 1f);
+                    // Rain streaks: darker vertical runs below the joints, fading down each block.
+                    float streakU = ValueNoise1(Mathf.Repeat(u + (row * 7 % 40) / 40f, 1f), 40, 51);
+                    float streak = Mathf.Clamp01((streakU - 0.55f) * 3f) * fv * 0.18f;
+                    // Weathered tops: each block a touch darker along its upper edge, lighter at the
+                    // foot where the rain washes it.
+                    float wash = Mathf.Lerp(0.05f, -0.05f, fv);
+                    float g = 1f - streak + wash;
+                    c = new Color(c.r * g, c.g * g, c.b * g, 1f);
+                    // Lichen: a few soft grey-green speckles, mostly near the joints.
+                    float lich = ValueNoise(u, v, 32, 61);
+                    float nearJoint = 1f - Mathf.Clamp01(Mathf.Min(Mathf.Min(fu, 1f - fu) * 6f, Mathf.Min(fv, 1f - fv) * 3f));
+                    if (lich > 0.72f) c = Color.Lerp(c, new Color(c.r * 0.82f, c.g * 0.9f, c.b * 0.74f, 1f), Mathf.Clamp01((lich - 0.72f) * 5f) * (0.35f + nearJoint * 0.5f));
+                    c.r = Mathf.Clamp01(c.r); c.g = Mathf.Clamp01(c.g); c.b = Mathf.Clamp01(c.b);
+                    px[y * size + x] = c;
+                }
+            pair.Albedo.SetPixels(px);
+            pair.Albedo.Apply(true);
+            return pair;
+        }
+
+        // Smooth 1-D noise that tiles (for streaks).
+        static float ValueNoise1(float u, int cells, int seed)
+        {
+            float f = u * cells;
+            int i0 = Mathf.FloorToInt(f);
+            float t = f - i0;
+            t = t * t * (3f - 2f * t);
+            int i1 = (i0 + 1) % cells;
+            i0 %= cells;
+            return Mathf.Lerp(Hash(i0 + seed, 3), Hash(i1 + seed, 3), t);
         }
 
         // Smooth plaster with a soft trowelled texture.

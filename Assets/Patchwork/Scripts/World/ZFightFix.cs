@@ -28,7 +28,21 @@ namespace Patchwork
         // Faces are compared inside a "frame": tops and bottoms all share one (they're all
         // level), while the sides of a block turned to some angle are compared with the sides
         // of other blocks turned the same way.
+        // A block can share faces with several others (a trim flush with two walls, a wall flush
+        // with a ceiling and the next wall), so this goes round a few times until nothing's left.
         public static int Run(Transform root)
+        {
+            int total = 0;
+            for (int pass = 0; pass < 4; pass++)
+            {
+                int n = RunOnce(root);
+                total += n;
+                if (n == 0) break;
+            }
+            return total;
+        }
+
+        static int RunOnce(Transform root)
         {
             var faces = new Dictionary<long, List<Face>>();
             var renderers = root.GetComponentsInChildren<MeshRenderer>(true);
@@ -39,7 +53,7 @@ namespace Patchwork
                 var mf = r.GetComponent<MeshFilter>();
                 if (mf == null || mf.sharedMesh == null) continue;
                 var mat = r.sharedMaterial;
-                if (mat == null || mat.renderQueue >= 2500) continue;   // see-through things sort differently
+                if (mat == null) continue;   // (see-through glass counts too: glass flush with its frame flickers)
                 string mesh = mf.sharedMesh.name;
                 bool cube = mesh == "Cube", cyl = mesh == "Cylinder";
                 if (!cube && !cyl) continue;
@@ -90,7 +104,7 @@ namespace Patchwork
                 }
             }
 
-            var moved = new HashSet<Transform>();
+            var moved = new HashSet<long>();   // (each block moves at most once per axis per pass)
             int fixedCount = 0;
             foreach (var kv in faces)
             {
@@ -113,12 +127,13 @@ namespace Patchwork
                             if (ox <= 0.02f || oy <= 0.02f || ox * oy < MinOverlap) continue;
                             // Move the smaller one outward (towards where its face looks).
                             Face small = a.Area <= c.Area ? a : c;
-                            if (moved.Contains(small.T)) continue;
+                            long mk = ((long)small.T.GetInstanceID() << 2) | (long)small.Axis;
+                            if (moved.Contains(mk)) continue;
                             Vector3 dir = Vector3.zero;
                             dir[small.Axis] = small.Side;
                             if (small.Axis != 1) dir = Quaternion.Euler(0f, small.Frame * 0.5f, 0f) * dir;
                             small.T.position += dir * Nudge;
-                            moved.Add(small.T);
+                            moved.Add(mk);
                             fixedCount++;
                         }
                 }

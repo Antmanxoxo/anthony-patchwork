@@ -1,5 +1,24 @@
 # Development Log
 
+## Weathered stone, embroidery-hoop checkpoints, and the flicker hunt
+- The museum's stone is now old dressed stone: long blocks in courses, each its own shade
+  of honey, cream or grey, with worn and chipped edges, pitted faces, soft rain streaks
+  under the joints and a little lichen in the mortar. Weathered, but still pale and grand.
+- New checkpoints: an embroidery hoop on a little wooden easel, with a needle dangling on
+  gold thread. Reach it and a ring of gold stitches races round the hoop, a glowing heart
+  fills in stitch by stitch, the needle tucks itself into the cloth and a lamp warms up.
+  The map shows a hoop with a heart for them too.
+- Velvet rope barriers are solid now: you can't walk through them (you can hop over).
+- Flicker: small decorations were popping in and out as the camera turned (the far-away
+  culling measures straight ahead, so things at its edge kept switching). The museum no
+  longer culls them. The flush-face fixer now also handles glass against its frames, goes
+  round several times, and can fix a block on more than one side.
+- The Star Corridor: a moulded cornice where the walls meet the ceiling, a brass rail along
+  the panelling, and a dark beam on pale pilasters at each opening, so every room reads as
+  its own space.
+- Hanging lanterns hang on proper chains from plaster ceiling roses; wall lamps have brass
+  wall plates and a curl of bracket.
+
 ## Lettering, carving and a compass rose
 - The museum's front now carries its name: gilt letters reading THE OCEANIC MUSEUM across
   the portico, and the motto OPEN TO ALL WHO WONDER along the frieze under the cornice.

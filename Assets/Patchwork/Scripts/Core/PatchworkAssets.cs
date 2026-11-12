@@ -132,6 +132,14 @@ namespace Patchwork
             return Get("brick", color, t.Albedo, 0.08f, Color.black, t.Normal, 1.5f);
         }
 
+        // Weathered dressed stone, for grand old buildings.
+        public static Material AgedBrick(Color color)
+        {
+            EnsureInit();
+            var t = PatchworkTextures.AgedBrick;
+            return Get("agedbrick", color, t.Albedo, 0.1f, Color.black, t.Normal, 1.4f);
+        }
+
         public static Material Plaster(Color color)
         {
             EnsureInit();

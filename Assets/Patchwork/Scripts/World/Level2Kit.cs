@@ -25,7 +25,7 @@ namespace Patchwork
         static readonly Color[] WarmQuilt = { new Color(0.62f, 0.4f, 0.3f), new Color(0.72f, 0.52f, 0.36f), new Color(0.5f, 0.3f, 0.3f), new Color(0.66f, 0.46f, 0.4f), new Color(0.56f, 0.36f, 0.26f) };
         static readonly Color[] SeaQuilt = { new Color(0.1f, 0.2f, 0.34f), new Color(0.12f, 0.28f, 0.4f), new Color(0.08f, 0.16f, 0.3f), new Color(0.14f, 0.24f, 0.44f), new Color(0.12f, 0.33f, 0.38f) };
 
-        static Material Sandstone { get { return PatchworkAssets.Brick(StoneCol); } }
+        static Material Sandstone { get { return PatchworkAssets.AgedBrick(StoneCol); } }
         static Material Ashlar { get { return PatchworkAssets.Cobble(StoneCol); } }
         static Material DarkStone { get { return PatchworkAssets.Cobble(StoneDark); } }
         static Material PaleStone { get { return PatchworkAssets.Plaster(StonePale); } }
@@ -333,7 +333,16 @@ namespace Patchwork
         // A brass lantern hanging on a chain from "ceilingY".
         static void HangingLantern(LevelKit kit, Vector3 pos, float ceilingY, float range = 18f, float intensity = 1.5f, bool light = true)
         {
-            NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(pos.x, (pos.y + 0.6f + ceilingY) * 0.5f, pos.z), new Vector3(0.05f, (ceilingY - pos.y - 0.6f) * 0.5f, 0.05f), IronMat));
+            // Hung on a chain from a plaster rose in the ceiling.
+            var chain = new MeshBatch();
+            float top = ceilingY - 0.12f, bottom = pos.y + 0.85f;
+            int links = Mathf.Max(1, Mathf.FloorToInt((top - bottom) / 0.17f));
+            for (int i = 0; i < links; i++)
+                chain.Box(new Vector3(pos.x, top - (i + 0.5f) * (top - bottom) / links, pos.z), new Vector3(0.1f, 0.2f, 0.025f), Quaternion.Euler(0f, i % 2 == 0 ? 0f : 90f, 0f));
+            chain.Build(kit.Root, "LanternChain", IronMat);
+            NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(pos.x, ceilingY - 0.05f, pos.z), new Vector3(1.1f, 0.04f, 1.1f), PaleStone));
+            NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(pos.x, ceilingY - 0.1f, pos.z), new Vector3(0.6f, 0.03f, 0.6f), PaleStone));
+            NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(pos.x, ceilingY - 0.14f, pos.z), new Vector3(0.22f, 0.12f, 0.22f), Brass));
             NoShadow(kit.Deco(PrimitiveType.Cylinder, pos + Vector3.up * 0.55f, new Vector3(0.7f, 0.06f, 0.7f), Brass));
             NoShadow(kit.Deco(PrimitiveType.Sphere, pos + Vector3.up * 0.75f, new Vector3(0.36f, 0.3f, 0.36f), Brass));
             NoShadow(kit.Deco(PrimitiveType.Sphere, pos, new Vector3(0.8f, 0.95f, 0.8f), PatchworkAssets.Glow(LampGold, 2.2f)));
@@ -350,7 +359,9 @@ namespace Patchwork
         static void Sconce(LevelKit kit, Vector3 wallPos, float yaw, bool light = true, float range = 13f)
         {
             var r = Rot(yaw);
+            NoShadow(kit.Deco(PrimitiveType.Cylinder, wallPos + r * new Vector3(0f, 0f, 0.03f), new Vector3(0.36f, 0.03f, 0.36f), Brass, new Vector3(90f, yaw, 0f)));   // the wall plate
             NoShadow(kit.Deco(PrimitiveType.Cube, wallPos + r * new Vector3(0f, 0f, 0.3f), new Vector3(0.08f, 0.08f, 0.6f), Brass, new Vector3(0f, yaw, 0f)));
+            NoShadow(kit.Deco(PrimitiveType.Cube, wallPos + r * new Vector3(0f, -0.22f, 0.2f), new Vector3(0.05f, 0.05f, 0.5f), Brass, new Vector3(-45f, yaw, 0f)));   // a curl of bracket underneath
             NoShadow(kit.Deco(PrimitiveType.Cylinder, wallPos + r * new Vector3(0f, 0.05f, 0.6f), new Vector3(0.36f, 0.05f, 0.36f), Brass));
             NoShadow(kit.Deco(PrimitiveType.Sphere, wallPos + r * new Vector3(0f, 0.4f, 0.6f), new Vector3(0.5f, 0.6f, 0.5f), PatchworkAssets.Glow(LampGold, 2f)));
             if (light) PointLight(kit, wallPos + r * new Vector3(0f, 0.4f, 1.1f), LampGold, range, 1.2f);
@@ -454,6 +465,8 @@ namespace Patchwork
             Vector3 d = b - a;
             int n = Mathf.Max(1, Mathf.RoundToInt(d.magnitude / 2.4f));
             var velvet = PatchworkAssets.Yarn(rope);
+            // The whole line is a barrier: you can't walk through the rope (you can hop it).
+            TownKit.Solid(kit, (a + b) * 0.5f + Vector3.up * 0.6f, new Vector3(0.36f, 1.2f, d.magnitude + 0.5f), Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg);
             for (int i = 0; i <= n; i++)
             {
                 Vector3 p = a + d * (i / (float)n);

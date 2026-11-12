@@ -51,7 +51,8 @@ namespace Patchwork
             d[MediumLayer] = Mathf.Min(cullFar, 180f * CullScale);
             d[GrassLayer] = Mathf.Min(cullFar, 70f * CullScale);
             cullCamera.layerCullDistances = d;
-            cullCamera.layerCullSpherical = true;
+            // (No spherical culling under URP: distances are measured straight ahead, so things
+            // near the limit pop in and out as the camera turns. Indoor levels switch it off.)
         }
 
         public static void Run(Transform root, Camera cam, float farClip, bool distanceCull)
@@ -151,6 +152,7 @@ namespace Patchwork
                 PatchworkAssets.Brick(Color.white);   // makes sure the textures exist
                 System.Action<PatchworkTextures.Pair, float> add = (pair, s) => { if (pair != null && pair.Albedo != null) tileSize[pair.Albedo] = s; };
                 add(PatchworkTextures.Brick, 3f);     // 8 courses a repeat: stone blocks about 0.4 m tall
+                add(PatchworkTextures.AgedBrick, 3.6f);   // 8 courses: blocks 0.45 m tall, 1.2 m long
                 add(PatchworkTextures.Cobble, 3f);
                 add(PatchworkTextures.Plaster, 4f);
                 add(PatchworkTextures.Planks, 1.6f);

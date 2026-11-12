@@ -559,6 +559,14 @@ Stuff I need to remember about how Patchwork is put together.
   door fanlight, atrium compass rose and skirting boards. Called from Flourish.
 - WorldTiling divides by the material's baked `_BaseMap` scale (LevelKit.Block bakes a repeat
   count into a material copy), so the world repeat is the only one.
+- Sandstone (and the Hall of Arms' stone) use `PatchworkAssets.AgedBrick` (PatchworkTextures
+  .AgedBrick, 512px, 8 courses x 3 blocks, one repeat per 3.6 m under WorldTiling).
+- Checkpoint = embroidery hoop (LevelKit.AddCheckpoint builds it; Checkpoint.Setup takes the
+  hoop, needle, ring stitches and heart stitches). Used by every level.
+- Level 2 is built with distance culling off (URP has no spherical layer culling, so culled
+  decorations popped as the camera turned).
+- ZFightFix: up to 4 passes, includes transparent cubes, one move per block per axis per pass.
+- RopeLine adds a solid box along the whole line.
 
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);

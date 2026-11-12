@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Patchwork
@@ -429,69 +429,94 @@ namespace Patchwork
             var cp = Volume<Checkpoint>(feet + Vector3.up * 1.5f, new Vector3(12f, 4f, 3f), "Checkpoint");
             cp.SpawnPoint = feet + Vector3.up * 0.1f;
             cp.SpawnYaw = yaw;
-            // A sewing station beside the spot: a tomato pincushion bristling with pins, a wooden
-            // cotton reel on top of it, and a needle asleep across the reel (see Checkpoint).
+            // An embroidery hoop on a little easel beside the spot (see Checkpoint).
             var turn = Quaternion.Euler(0f, yaw, 0f);
-            Vector3 at = feet + turn * new Vector3(-1.7f, 0f, 0f);
-            var look = new GameObject("Sewing").transform;
+            Vector3 at = feet + turn * new Vector3(-1.8f, 0f, 0.2f);
+            var look = new GameObject("Hoop").transform;
             look.SetParent(cp.transform, false);   // (under the checkpoint, so it stays movable)
             look.position = at;
-            look.rotation = turn;
-            var red = PatchworkAssets.Felt(new Color(0.86f, 0.24f, 0.26f));
-            var leaf = PatchworkAssets.Felt(new Color(0.35f, 0.62f, 0.32f));
-            var wood = PatchworkAssets.Planks(new Color(0.78f, 0.58f, 0.36f));
+            look.rotation = turn * Quaternion.Euler(0f, 125f, 0f);   // turned to face the spot, and back the way you came
+            var wood = PatchworkAssets.Wood(new Color(0.74f, 0.54f, 0.34f));
+            var dark = PatchworkAssets.Wood(new Color(0.46f, 0.32f, 0.2f));
+            var brass = PatchworkAssets.Plain(new Color(0.9f, 0.72f, 0.36f), 0.75f);
             var steel = PatchworkAssets.Plain(new Color(0.86f, 0.87f, 0.92f), 0.85f);
-            // The pincushion, with its segments stitched in and a leafy top.
-            Deco(PrimitiveType.Sphere, new Vector3(0f, 0.32f, 0f), new Vector3(1.35f, 0.64f, 1.35f), red, default(Vector3), look);
-            for (int i = 0; i < 6; i++)
-                Deco(PrimitiveType.Cube, new Vector3(0f, 0.34f, 0f), new Vector3(1.37f, 0.5f, 0.04f), PatchworkAssets.Felt(new Color(0.7f, 0.16f, 0.2f)), new Vector3(0f, i * 30f, 0f), look);
-            for (int i = 0; i < 5; i++)
-                Deco(PrimitiveType.Cube, new Vector3(0f, 0.63f + i * 0.015f, 0f) + Quaternion.Euler(0f, i * 72f, 0f) * new Vector3(0f, 0f, 0.2f), new Vector3(0.16f, 0.04f, 0.4f), leaf, new Vector3(0f, i * 72f, 0f), look);   // (each a little higher: they cross)
-            // Pins stuck in round the sides, each with a coloured head.
-            Color[] heads = { Palette.Gold, Palette.Rose, new Color(0.4f, 0.7f, 1f), new Color(0.6f, 0.9f, 0.5f), Palette.Cream };
-            for (int i = 0; i < 7; i++)
+            // The easel: two legs leaning in, a back leg, a crossbar and a little ledge.
+            for (int s = -1; s <= 1; s += 2)
+                Deco(PrimitiveType.Cube, new Vector3(s * 0.48f, 1.05f, 0.02f), new Vector3(0.1f, 2.15f, 0.1f), dark, new Vector3(-6f, 0f, s * -9f), look);
+            Deco(PrimitiveType.Cube, new Vector3(0f, 0.95f, -0.42f), new Vector3(0.09f, 2f, 0.09f), dark, new Vector3(20f, 0f, 0f), look);
+            Deco(PrimitiveType.Cube, new Vector3(0f, 0.42f, 0.06f), new Vector3(1.2f, 0.08f, 0.1f), dark, default(Vector3), look);
+            Deco(PrimitiveType.Cube, new Vector3(0f, 0.6f, 0.12f), new Vector3(0.9f, 0.05f, 0.22f), wood, default(Vector3), look);
+            // A tin of pins and a reel of thread on the ledge.
+            Deco(PrimitiveType.Cylinder, new Vector3(-0.25f, 0.68f, 0.14f), new Vector3(0.2f, 0.05f, 0.2f), brass, default(Vector3), look);
+            Deco(PrimitiveType.Cylinder, new Vector3(0.25f, 0.71f, 0.14f), new Vector3(0.14f, 0.07f, 0.14f), PatchworkAssets.Fabric(new Color(0.9f, 0.4f, 0.45f)), default(Vector3), look);
+            Deco(PrimitiveType.Cylinder, new Vector3(0.25f, 0.71f, 0.14f), new Vector3(0.18f, 0.01f, 0.18f), wood, default(Vector3), look);
+
+            // The hoop itself (its cloth faces local +z), held at the top of the easel.
+            var hoop = new GameObject("Frame").transform;
+            hoop.SetParent(look, false);
+            hoop.localPosition = new Vector3(0f, 1.62f, 0.1f);
+            const float R = 0.72f;
+            for (int i = 0; i < 36; i++)
             {
-                float a = i * 51f + 20f;
-                var dir = Quaternion.Euler(0f, a, 0f) * new Vector3(0f, 0.45f, 1f);
-                Vector3 p = new Vector3(0f, 0.3f, 0f) + dir.normalized * 0.62f;
-                Deco(PrimitiveType.Cylinder, p, new Vector3(0.03f, 0.22f, 0.03f), steel, Quaternion.FromToRotation(Vector3.up, dir).eulerAngles, look);
-                Deco(PrimitiveType.Sphere, p + dir.normalized * 0.24f, Vector3.one * 0.12f, PatchworkAssets.Felt(heads[i % heads.Length]), default(Vector3), look);
+                float a = i / 36f * Mathf.PI * 2f;
+                var p = new Vector3(Mathf.Cos(a) * R, Mathf.Sin(a) * R, 0f);
+                float deg = a * Mathf.Rad2Deg + 90f;
+                Deco(PrimitiveType.Cube, p, new Vector3(2f * Mathf.PI * R / 36f + 0.02f, 0.09f, 0.11f), wood, new Vector3(0f, 0f, deg), hoop);
+                Deco(PrimitiveType.Cube, p * 1.075f + new Vector3(0f, 0f, -0.035f), new Vector3(2f * Mathf.PI * R * 1.075f / 36f + 0.02f, 0.05f, 0.07f), dark, new Vector3(0f, 0f, deg), hoop);
             }
-            // The cotton reel: flanges, and the thread wound round the middle (it lights up).
-            var reel = new GameObject("Reel").transform;
-            reel.SetParent(look, false);
-            reel.localPosition = new Vector3(0f, 0.62f, 0f);
-            Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.05f, 0f), new Vector3(0.95f, 0.05f, 0.95f), wood, default(Vector3), reel);
-            Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.95f, 0f), new Vector3(0.95f, 0.05f, 0.95f), wood, default(Vector3), reel);
-            var t1 = Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.5f, 0f), new Vector3(0.74f, 0.4f, 0.74f), PatchworkAssets.Fabric(Palette.Cream), default(Vector3), reel);
-            // Bands of wound thread, and a tail of thread hanging off the side.
-            var t2 = Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.3f, 0f), new Vector3(0.78f, 0.05f, 0.78f), PatchworkAssets.Fabric(Palette.Cream), default(Vector3), reel);
-            var t3 = Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.7f, 0f), new Vector3(0.78f, 0.05f, 0.78f), PatchworkAssets.Fabric(Palette.Cream), default(Vector3), reel);
-            var t4 = Deco(PrimitiveType.Cylinder, new Vector3(0.39f, 0.25f, 0f), new Vector3(0.035f, 0.32f, 0.035f), PatchworkAssets.Fabric(Palette.Cream), new Vector3(0f, 0f, 12f), reel);
-            Deco(PrimitiveType.Cylinder, new Vector3(0f, 1f, 0f), new Vector3(0.18f, 0.02f, 0.18f), PatchworkAssets.Plain(new Color(0.35f, 0.24f, 0.16f), 0.3f), default(Vector3), reel);
-            // The needle, hinged at the top of the reel: lying down asleep, standing up awake.
+            // The brass screw at the top.
+            Deco(PrimitiveType.Cube, new Vector3(0f, R + 0.1f, 0f), new Vector3(0.16f, 0.14f, 0.16f), brass, default(Vector3), hoop);
+            Deco(PrimitiveType.Cylinder, new Vector3(0f, R + 0.2f, 0f), new Vector3(0.12f, 0.03f, 0.12f), brass, default(Vector3), hoop);
+            // The linen, stretched tight.
+            Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(R * 2f - 0.04f, 0.006f, R * 2f - 0.04f), PatchworkAssets.Fabric(new Color(0.95f, 0.92f, 0.84f)), new Vector3(90f, 0f, 0f), hoop);
+            // A ring of running stitches just inside the hoop.
+            const int n = 22;
+            var stitchR = new Renderer[n];
+            var felt = PatchworkAssets.Felt(new Color(0.72f, 0.7f, 0.68f));
+            for (int i = 0; i < n; i++)
+            {
+                float a = Mathf.PI * 0.5f - i / (float)n * Mathf.PI * 2f;   // from the top, clockwise
+                var p = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * (R - 0.13f) + new Vector3(0f, 0f, 0.012f);
+                var st = Deco(PrimitiveType.Cube, p, new Vector3(0.11f, 0.03f, 0.012f), felt, new Vector3(0f, 0f, a * Mathf.Rad2Deg + 90f), hoop);
+                stitchR[i] = st.GetComponent<Renderer>();
+            }
+            // The heart, one cross-stitch at a time, from its point upwards.
+            string[] art = { "...#...", "..###..", ".#####.", "#######", "#######", ".##.##." };
+            var heartParts = new System.Collections.Generic.List<Transform>();
+            var red = PatchworkAssets.Glow(new Color(1f, 0.36f, 0.42f), 1.3f);
+            var redDark = PatchworkAssets.Glow(new Color(0.85f, 0.2f, 0.3f), 1.1f);
+            const float px = 0.105f;
+            for (int row = 0; row < art.Length; row++)
+                for (int col = 0; col < 7; col++)
+                {
+                    if (art[row][col] != '#') continue;
+                    var p = new Vector3((col - 3f) * px, (row - 2.4f) * px, 0.02f);
+                    var x = new GameObject("Stitch").transform;
+                    x.SetParent(hoop, false);
+                    x.localPosition = p;
+                    // A cross: two little bars.
+                    Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(px * 1.15f, px * 0.3f, 0.014f), (row + col) % 2 == 0 ? red : redDark, new Vector3(0f, 0f, 45f), x);
+                    Deco(PrimitiveType.Cube, new Vector3(0f, 0f, 0.004f), new Vector3(px * 1.15f, px * 0.3f, 0.014f), (row + col) % 2 == 0 ? red : redDark, new Vector3(0f, 0f, -45f), x);
+                    heartParts.Add(x);
+                }
+            // The needle, on a length of gold thread.
             var needle = new GameObject("Needle").transform;
-            needle.SetParent(look, false);
-            needle.localPosition = new Vector3(0f, 1.64f, 0f);
-            Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.6f, 0f), new Vector3(0.07f, 0.6f, 0.07f), steel, default(Vector3), needle);
-            Deco(PrimitiveType.Sphere, new Vector3(0f, 1.2f, 0f), new Vector3(0.07f, 0.12f, 0.07f), steel, default(Vector3), needle);
-            Deco(PrimitiveType.Cube, new Vector3(0f, 1.08f, 0f), new Vector3(0.02f, 0.12f, 0.08f), PatchworkAssets.Plain(new Color(0.2f, 0.2f, 0.25f), 0.3f), default(Vector3), needle);
-            var t5 = Deco(PrimitiveType.Cylinder, new Vector3(0.1f, 0.95f, 0f), new Vector3(0.03f, 0.18f, 0.03f), PatchworkAssets.Fabric(Palette.Cream), new Vector3(0f, 0f, -35f), needle);
+            needle.SetParent(hoop, false);
+            Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.18f, 0f), new Vector3(0.035f, 0.18f, 0.035f), steel, default(Vector3), needle);
+            Deco(PrimitiveType.Sphere, new Vector3(0f, 0.37f, 0f), new Vector3(0.05f, 0.07f, 0.05f), steel, default(Vector3), needle);
+            Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.48f, 0f), new Vector3(0.015f, 0.12f, 0.015f), PatchworkAssets.Glow(new Color(1f, 0.8f, 0.32f), 0.6f), default(Vector3), needle);
             // A little warm lamp that comes on when it's stitched.
             var lampGo = new GameObject("Glow");
-            lampGo.transform.SetParent(look, false);
-            lampGo.transform.localPosition = new Vector3(0f, 1.8f, 0f);
+            lampGo.transform.SetParent(hoop, false);
+            lampGo.transform.localPosition = new Vector3(0f, 0.2f, 0.9f);
             var lamp = lampGo.AddComponent<Light>();
             lamp.type = LightType.Point;
-            lamp.color = new Color(1f, 0.82f, 0.5f);
+            lamp.color = new Color(1f, 0.78f, 0.55f);
             lamp.range = 7f;
             lamp.intensity = 0f;
             lamp.shadows = LightShadows.None;
             lamp.enabled = false;
-            var threads = new[] { t1, t2, t3, t4, t5 };
-            var rends = new Renderer[threads.Length];
-            for (int i = 0; i < threads.Length; i++) rends[i] = threads[i].GetComponent<Renderer>();
-            cp.Setup(look, reel, needle, rends, lamp);
+            cp.Setup(look, hoop, needle, stitchR, heartParts.ToArray(), lamp);
             return cp;
         }
 

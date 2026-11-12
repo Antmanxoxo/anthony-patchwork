@@ -16,7 +16,7 @@ namespace Patchwork
 
         static void HallOfArms(LevelKit kit)
         {
-            var stone = PatchworkAssets.Brick(new Color(0.62f, 0.5f, 0.46f));
+            var stone = PatchworkAssets.AgedBrick(new Color(0.62f, 0.5f, 0.46f));
             float T = ArmsTop, cx = (ArmsX0 + ArmsX1) * 0.5f;
             Color[] quilt = { new Color(0.4f, 0.16f, 0.18f), new Color(0.3f, 0.14f, 0.2f), new Color(0.46f, 0.24f, 0.2f), new Color(0.26f, 0.16f, 0.26f), new Color(0.5f, 0.3f, 0.22f) };
             Floor(kit, ArmsX0, ArmsX1, ArmsZ0, 6f, 0f, quilt, 4f, "ArmsFloor");

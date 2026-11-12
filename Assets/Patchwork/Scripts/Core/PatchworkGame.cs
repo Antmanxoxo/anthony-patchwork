@@ -173,7 +173,9 @@ namespace Patchwork
             // Lighter meshes for small round things, no shadows from tiny ones, and distance
             // culling for small decorations (not in the Pod, where the stars outside need to show).
             RenderOptimizer.WorldTiling = levelId == LevelId.Level2;
-            RenderOptimizer.Run(kit.Root, cam, Level.FarClip, !Level.IsHub);
+            // (Not in the museum: it's all indoors, and small things popping in and out at the
+            // culling distance as the camera turned looked like flickering.)
+            RenderOptimizer.Run(kit.Root, cam, Level.FarClip, !Level.IsHub && levelId != LevelId.Level2);
             if (!Level.IsHub)
             {
                 Physics.SyncTransforms();

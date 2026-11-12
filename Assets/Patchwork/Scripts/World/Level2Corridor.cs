@@ -46,6 +46,8 @@ namespace Patchwork
             float w0 = Y - 1f, w1 = Y + CorH + 0.8f;
             var dado = new MeshBatch();
             var gilt = new MeshBatch();
+            var cove = new MeshBatch();     // a moulded cornice where the walls meet the ceiling
+            var rail = new MeshBatch();     // the rail along the top of the panelling
             System.Action<Vector3, Vector3, float, float> W = (a0, b0, y0, y1) =>
             {
                 Wall(kit, a0, b0, y0, y1, 1f, stone);
@@ -57,8 +59,13 @@ namespace Patchwork
                     Vector3 off = alongX ? new Vector3(0f, 0f, s2 * 0.54f) : new Vector3(s2 * 0.54f, 0f, 0f);
                     Vector3 size = alongX ? new Vector3(len, 1f, 0.08f) : new Vector3(0.08f, 1f, len);
                     if (y0 <= Y)
+                    {
                         dado.Box(new Vector3(mid.x, Y + 0.55f, mid.z) + off, new Vector3(size.x, 1.1f, size.z), Quaternion.identity);
-                    gilt.Box(new Vector3(mid.x, Y + CorH - 0.25f, mid.z) + off * 1.02f, new Vector3(size.x, 0.12f, size.z * 1.2f), Quaternion.identity);
+                        rail.Box(new Vector3(mid.x, Y + 1.14f, mid.z) + off * 1.04f, new Vector3(size.x, 0.08f, size.z * 1.6f), Quaternion.identity);
+                    }
+                    gilt.Box(new Vector3(mid.x, Y + CorH - 0.5f, mid.z) + off * 1.02f, new Vector3(size.x, 0.1f, size.z * 1.2f), Quaternion.identity);
+                    cove.Box(new Vector3(mid.x, Y + CorH - 0.13f, mid.z) + off * 1.12f, new Vector3(size.x, 0.26f, size.z * 3f), Quaternion.identity);
+                    cove.Box(new Vector3(mid.x, Y + CorH - 0.3f, mid.z) + off * 1.05f, new Vector3(size.x, 0.1f, size.z * 1.8f), Quaternion.identity);
                 }
             };
             // (Laid end to end without overlapping, each corner belonging to just one wall, so no
@@ -78,6 +85,34 @@ namespace Patchwork
             // Over the lift's doors (the lift is lower than the corridor's ceiling).
             Wall(kit, new Vector3(48.2f, 0f, -41f), new Vector3(48.2f, 0f, -35f), Y + CarHigh + 0.4f, w1, 0.8f, stone);
             dado.Build(kit.Root, "CorridorDado", DarkWood);
+            rail.Build(kit.Root, "CorridorRail", Brass);
+            cove.Build(kit.Root, "CorridorCornice", PaleStone);
+            // Where one room opens into the next: a beam across the ceiling, carried on a pair
+            // of pale pilasters, so each room reads as its own space.
+            var beams = new MeshBatch();
+            var pil = new MeshBatch();
+            System.Action<Vector3, Vector3> Opening = (a0, b0) =>
+            {
+                bool alongX = Mathf.Abs(b0.x - a0.x) > Mathf.Abs(b0.z - a0.z);
+                Vector3 mid = (a0 + b0) * 0.5f;
+                float len = alongX ? Mathf.Abs(b0.x - a0.x) : Mathf.Abs(b0.z - a0.z);
+                beams.Box(new Vector3(mid.x, Y + CorH - 0.4f, mid.z), alongX ? new Vector3(len, 0.8f, 0.7f) : new Vector3(0.7f, 0.8f, len), Quaternion.identity);
+                foreach (var end in new[] { a0, b0 })
+                {
+                    Vector3 inward = (mid - end).normalized;
+                    Vector3 c = new Vector3(end.x, 0f, end.z) + inward * 0.17f;
+                    Vector3 sz = alongX ? new Vector3(0.34f, CorH - 0.8f, 0.8f) : new Vector3(0.8f, CorH - 0.8f, 0.34f);
+                    pil.Box(new Vector3(c.x, Y + (CorH - 0.8f) * 0.5f, c.z), sz, Quaternion.identity);
+                    pil.Box(new Vector3(c.x, Y + CorH - 0.9f, c.z) + inward * 0.04f, sz * 1f + new Vector3(0.1f, -(CorH - 1f), 0.1f), Quaternion.identity);
+                    pil.Box(new Vector3(c.x, Y + 0.15f, c.z) + inward * 0.04f, new Vector3(sz.x + 0.1f, 0.3f, sz.z + 0.1f), Quaternion.identity);
+                }
+            };
+            Opening(new Vector3(39f, 0f, -41f), new Vector3(39f, 0f, -35f));     // Clocks into the Gallery
+            Opening(new Vector3(39f, 0f, -16f), new Vector3(39f, 0f, -10f));     // Gallery into the Planets
+            Opening(new Vector3(48f, 0f, -10f), new Vector3(54f, 0f, -10f));     // Planets onto the Moon Steps
+            Opening(new Vector3(48f, 0f, -3f), new Vector3(54f, 0f, -3f));       // Moon Steps into the Comets
+            beams.Build(kit.Root, "CorridorBeams", DarkWood, true);
+            pil.Build(kit.Root, "CorridorPilasters", PaleStone, true);
             gilt.Build(kit.Root, "CorridorGilt", PatchworkAssets.Glow(new Color(1f, 0.82f, 0.45f), 0.9f));
 
             HallOfClocks(kit, Y);
