@@ -237,7 +237,7 @@ namespace Patchwork
 
         // Lays out a line of text centred on `centre`, on a wall facing `facing`, each dot `px`
         // across and standing `depth` proud of the wall. Rows of dots are merged into strips.
-        static void Letters(MeshBatch mb, string text, Vector3 centre, Vector3 facing, float px, float depth)
+        internal static void Letters(MeshBatch mb, string text, Vector3 centre, Vector3 facing, float px, float depth)
         {
             var q = Quaternion.LookRotation(-facing, Vector3.up);   // local x runs left to right as you read it
             int cols = text.Length * 6 - 1;

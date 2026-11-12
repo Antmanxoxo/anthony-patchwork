@@ -1,5 +1,39 @@
 # Development Log
 
+## The landed Pod, lived in
+The Pod you arrive in at each level now looks well-travelled and lived-in, and Patch has made a
+little yard round it in the crater.
+- On the shell:
+  - rivets down every seam and round the middle band
+  - a shipping label with an airmail border, a barcode and a stamp
+  - FRAGILE in red with a broken glass, and THIS WAY UP (upside down, since it landed on
+    its side)
+  - a tally of landings chalked by the door
+  - stickers: a smiling sun, stars and a rainbow
+  - dents, a sticking plaster and a darned patch
+- Windows and door:
+  - two more little portholes with gingham curtains, and curtains and a plant on the sill in
+    the big one
+  - a window box of flowers, a brass PATCH name plate over the door, and a doorbell
+  - a lantern on a hook, with two moths flying round it
+  - a warm lamplit hallway just inside the hatch (a coat and scarf on a hook, a picture, a rag
+    rug), seen when the door opens
+- Lights and pipes:
+  - fairy lights round the middle, twinkling in four colours
+  - a pressure gauge whose needle never settles, and two exhausts glowing and puffing smoke
+- Legs and roof:
+  - a mounting plate and a blinking landing light on every leg
+  - grass caught in the feet, and a splint tied on the bent leg
+  - a pinwheel, a little dish and a weathervane on the roof
+- A snail very slowly climbing the side, leaving a shiny trail.
+- The yard:
+  - a WELCOME doormat and small footprints leading off into the level
+  - pot plants either side of the step, and a letterbox with its flag up
+  - a signpost saying HOME and THAT WAY
+  - a washing line with socks, a jumper and a hanky swaying
+  - the repair kit by the bent leg, a picnic blanket, and a bucket and sponge for the soot
+  - a windsock lifting in the breeze, and supply boxes marked BUTTONS and YARN
+
 ## The last room details find their places
 - 11 of the new room details couldn't find a spot when the level was built. They're all in now:
   - The eight painted shields hang right on the stone piers of the Hall of Arms.

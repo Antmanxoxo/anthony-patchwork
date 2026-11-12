@@ -607,6 +607,13 @@ Stuff I need to remember about how Patchwork is put together.
 - PlayerCamera.AddBlocker(transform, center, radii) lists egg shapes the camera stays outside
   of (checked analytically each frame, on top of the SphereCast). LandedPod registers its egg.
   SnapBehind raises the pitch in 4-degree steps from 18 up to 56 until the view of Patch is clear.
+- The landed Pod's details live in LandedPodDetails.cs (LandedPod is now partial). Build calls
+  Details(kit, g, feet, yaw) just before making the Pod solid.
+  - OnShell(deg, y, lift) gives a frame on the egg's surface, its +z pointing out.
+  - The yard group sits at the Pod's feet, turned with the yaw but not the tilt. Its solid
+    things are the pots, letterbox, signpost, washing pole, bucket, windsock and supplies.
+- Level2Builder.Letters is now internal so other classes can write lettering. New behaviours
+  for the Pod: PodTwinkle (fairy lights) and PodWindsock.
 
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);

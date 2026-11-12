@@ -8,7 +8,8 @@ namespace Patchwork
     // porthole glowing from inside, three striped tail fins, springy landing legs (one of them
     // bent), a bent antenna still blinking, a patch stitched over a dent, sticky tape over a crack,
     // a steaming nozzle and a fizzing loose wire. Walk up to the hatch to fly home.
-    public class LandedPod
+    // (Everything else about it, and the little yard round it, is in LandedPodDetails.cs.)
+    public partial class LandedPod
     {
         public Transform Root, Door;
         public Vector3 Inside, DoorStep;
@@ -189,6 +190,8 @@ namespace Patchwork
             var spark = kit.Deco(PrimitiveType.Sphere, wire + wn2 * 0.5f + Vector3.down * 0.4f, Vector3.one * 0.12f, PatchworkAssets.Glow(new Color(1f, 0.9f, 0.5f), 3f), default(Vector3), g);
             var sb = spark.gameObject.AddComponent<Blinker>();
             sb.Period = 0.35f;
+
+            Details(kit, g, feet, yaw);
 
             // Solid (but not in front of the door, where Patch waits).
             var solid = kit.Block(feet + g.rotation * new Vector3(0f, 3.6f, -0.5f), new Vector3(4f, 5.2f, 3.4f), Color.white, "PodSolid");
