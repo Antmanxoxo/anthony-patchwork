@@ -28,6 +28,7 @@ namespace Patchwork
             KwTankWalls(kit);
             KwNoticeBoard(kit);
             KwUndercroftLife(kit);
+            KwStories(kit);
             AtriumFounder(kit);
             HallAir(kit);
         }
@@ -129,6 +130,31 @@ namespace Patchwork
                 Twinkling(weed, kit.Root, "MangroveWeed", new Color(0.4f, 0.65f, 0.3f), 0.25f, 0.45f, 0.3f, 0.2f);
                 rootlets.Build(kit.Root, "WallRoots", PatchworkAssets.Wood(new Color(0.42f, 0.32f, 0.24f)));
             }
+            // Rock built up the walls of the Coral Nursery and the Lantern Deep, the way a real
+            // tank's walls are made to look like a reef face or a sea cliff - not bare render.
+            {
+                var T = CoralTank;
+                var rng = new System.Random(7474);
+                var face = new MeshBatch();
+                KwWallCover(face, T, T[4] + 1.6f, -1.6f, new[] { 0, 2, 3 }, new[]
+                {
+                    new[] { -86.5f, -79.5f, T[4] - 1f, T[4] + 5f, 119.5f, 126.5f },    // the little cave
+                    new[] { -77.5f, -72.5f, -8.5f, -3.5f, 125f, 127f },               // the pipe's mouth
+                    new[] { -86.5f, -84f, T[4], -6f, 111f, 114f },                    // the moray's crevice
+                }, rng, 2.1f);
+                // On the Undercroft's side, only under and between the windows.
+                KwWallCover(face, T, T[4] + 0.5f, -8.4f, new[] { 1 }, new float[0][], rng, 1.4f);
+                face.Build(kit.Root, "NurseryReefWall", PatchworkAssets.Felt(new Color(0.4f, 0.4f, 0.48f)), true);
+            }
+            {
+                var T = LanternTank;
+                var rng = new System.Random(7575);
+                var face = new MeshBatch();
+                KwWallCover(face, T, T[4] + 1.2f, -1.4f, new[] { 1, 2, 3 }, new[] { new[] { -49f, -44f, -8f, -3f, 125f, 127f } }, rng, 2.4f);
+                KwWallCover(face, T, T[4] + 1.2f, -9.8f, new[] { 0 }, new[] { new[] { -57f, -53f, -18.5f, -15f, 111f, 121f } }, rng, 2.4f);   // (under the Undercroft's windows; clear of June's torch)
+                face.Build(kit.Root, "DeepCliffs", PatchworkAssets.Felt(new Color(0.1f, 0.1f, 0.15f)));
+            }
+
             // The Lantern Deep: a few long cracks in the rock glowing faintly blue, high and low.
             {
                 var T = LanternTank;
@@ -195,6 +221,90 @@ namespace Patchwork
                     }
                     n++;
                 }
+        }
+
+        // Little stories: Keeper Oskar on his lunch break in the Undercroft, a mouse who lives
+        // behind the Keepers' Room skirting, and a young stargazer in the Comet Gallery.
+        static void KwStories(LevelKit kit)
+        {
+            // ----- Oskar, with his sandwiches and his flask -----
+            Person(kit, new Vector3(-60.2f, -8f, 114.2f), 250f, ToyNpc.Kind.TinSoldier, "Keeper Oskar", new Color(0.35f, 0.45f, 0.55f), new Color(0.95f, 0.8f, 0.4f), 0.95f, () => new[]
+            {
+                "Lunch. Best seat in the museum, this. Reef on one side, the deep on the other, and nobody asks you to mop anything.",
+                "See that big grouper at the window? He waits for the shrimp to clean his teeth every day at one o'clock. Same as me, really.",
+                "Don't look at the Lantern Deep side too long. Something in there looks back. Very friendly. Very big eyes.",
+                "If you see the octopus with a biscuit, you didn't see the octopus with a biscuit."
+            });
+            Vector3 stool = new Vector3(-61.1f, -8f, 116.5f);
+            var lunch = kit.Group("OskarsLunch", stool + Vector3.up * 0.65f);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.04f, 0f), new Vector3(0.34f, 0.06f, 0.24f), PatchworkAssets.Felt(new Color(0.95f, 0.88f, 0.7f)), new Vector3(0f, 20f, 0f), lunch);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.08f, 0f), new Vector3(0.3f, 0.03f, 0.2f), PatchworkAssets.Felt(new Color(0.5f, 0.75f, 0.35f)), new Vector3(0f, 20f, 0f), lunch);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.11f, 0f), new Vector3(0.34f, 0.05f, 0.24f), PatchworkAssets.Felt(new Color(0.95f, 0.88f, 0.7f)), new Vector3(0f, 20f, 0f), lunch);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0.18f, 0.2f, 0.12f), new Vector3(0.12f, 0.2f, 0.12f), PatchworkAssets.Plain(new Color(0.2f, 0.4f, 0.65f), 0.6f), default(Vector3), lunch);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0.18f, 0.42f, 0.12f), new Vector3(0.1f, 0.03f, 0.1f), PatchworkAssets.Plain(new Color(0.8f, 0.8f, 0.82f), 0.8f), default(Vector3), lunch);
+
+            // ----- The mice who live behind the skirting (three of them, if you look) -----
+            MouseHole(kit, new Vector3(KwX1 - 0.04f, 0f, 90.6f), 270f, new Color(0.8f, 0.2f, 0.2f));
+            MouseHole(kit, new Vector3(-20f, 0f, -107.87f), 0f, new Color(0.25f, 0.45f, 0.8f));     // the Grand Atrium, by the doors
+            MouseHole(kit, new Vector3(-80f, 0f, -10.13f), 180f, new Color(0.3f, 0.6f, 0.35f));    // the Hall of Deep Time, by the Kelp door
+
+            // ----- A young stargazer at the Comet Gallery's windows -----
+            float Y = DeckY;
+            Person(kit, new Vector3(40.6f, Y, 1.5f), 0f, ToyNpc.Kind.JackInBox, "Pip", new Color(0.9f, 0.55f, 0.3f), new Color(0.35f, 0.5f, 0.9f), 1.45f, () => new[]
+            {
+                "Shh! I'm waiting for a comet. They're very shy.",
+                "Halley's Comet only comes round every seventy-six years. The next time is 2061. I'll be ready.",
+                "My granny saw it in 1986. She said it looked like a smudge. A very important smudge.",
+                "If you wish on a comet, does the wish come back every seventy-six years too?"
+            });
+            Mark("Narration_Pip", new Vector3(40.6f, Y + 1f, 1.5f));
+        }
+
+        // A mouse's front door in the skirting board: a dark arched hole, a tiny door standing
+        // open, a doormat, a thimble flowerpot, a crumb of cheese, and two eyes in the dark.
+        static void MouseHole(LevelKit kit, Vector3 at, float yaw, Color doorCol)
+        {
+            var hole = kit.Group("MouseHole", at);
+            hole.rotation = Rot(yaw);
+            var black = PatchworkAssets.Plain(new Color(0.03f, 0.03f, 0.03f), 0.2f);
+            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.09f, 0.01f), new Vector3(0.24f, 0.18f, 0.01f), black, default(Vector3), hole));
+            NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.18f, 0.01f), new Vector3(0.24f, 0.005f, 0.24f), black, new Vector3(90f, 0f, 0f), hole));
+            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(-0.17f, 0.1f, 0.06f), new Vector3(0.12f, 0.2f, 0.015f), PatchworkAssets.Felt(doorCol), new Vector3(0f, -70f, 0f), hole));
+            NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(-0.13f, 0.1f, 0.11f), Vector3.one * 0.015f, Brass, default(Vector3), hole));
+            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.004f, 0.09f), new Vector3(0.2f, 0.006f, 0.1f), PatchworkAssets.Felt(new Color(0.6f, 0.45f, 0.3f)), default(Vector3), hole));
+            NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(0.2f, 0.03f, 0.08f), new Vector3(0.06f, 0.03f, 0.06f), Brass, default(Vector3), hole));
+            NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(0.2f, 0.08f, 0.08f), Vector3.one * 0.05f, PatchworkAssets.Felt(new Color(0.95f, 0.5f, 0.6f)), default(Vector3), hole));
+            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(-0.05f, 0.015f, 0.2f), new Vector3(0.06f, 0.03f, 0.05f), PatchworkAssets.Felt(new Color(1f, 0.85f, 0.3f)), new Vector3(0f, 30f, 0f), hole));
+            foreach (int s in new[] { -1, 1 })
+                NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.025f, 0.08f, 0.015f), Vector3.one * 0.014f, PatchworkAssets.Glow(new Color(1f, 0.95f, 0.8f), 1.5f), default(Vector3), hole));
+            Mark("Secret_MouseHole", at);
+        }
+
+        // Lumps of rock over a tank's walls, from y0 up to y1. Sides: 0 west (x0), 1 east (x1),
+        // 2 south (z0), 3 north (z1). Nothing goes inside the "keep out" boxes {x0,x1,y0,y1,z0,z1}.
+        static void KwWallCover(MeshBatch mb, float[] T, float y0, float y1, int[] sides, float[][] keepOut, System.Random rng, float size)
+        {
+            foreach (int side in sides)
+            {
+                bool alongZ = side < 2;
+                float a0 = alongZ ? T[2] : T[0], a1 = alongZ ? T[3] : T[1];
+                float plane = side == 0 ? T[0] : side == 1 ? T[1] : side == 2 ? T[2] : T[3];
+                float inward = side == 0 || side == 2 ? 1f : -1f;
+                for (float y = y0; y <= y1; y += size * 0.8f)
+                    for (float u = a0 + size * 0.4f; u < a1 - size * 0.3f; u += size * 0.85f)
+                    {
+                        float uu = u + ((float)rng.NextDouble() - 0.5f) * size * 0.4f;
+                        float yy = y + ((float)rng.NextDouble() - 0.5f) * size * 0.4f;
+                        float out_ = size * (0.15f + (float)rng.NextDouble() * 0.25f);
+                        Vector3 p = alongZ ? new Vector3(plane + inward * out_, yy, uu) : new Vector3(uu, yy, plane + inward * out_);
+                        bool skip = false;
+                        foreach (var k in keepOut)
+                            if (p.x > k[0] - size * 0.5f && p.x < k[1] + size * 0.5f && p.y > k[2] - size * 0.5f && p.y < k[3] + size * 0.5f && p.z > k[4] - size * 0.5f && p.z < k[5] + size * 0.5f) skip = true;
+                        if (skip) continue;
+                        float s = size * (0.7f + (float)rng.NextDouble() * 0.5f);
+                        mb.Ball(p, alongZ ? new Vector3(s * 0.6f, s * 0.8f, s) : new Vector3(s, s * 0.8f, s * 0.6f), 3, 6);
+                    }
+            }
         }
 
         // A corkboard in the Keepers' Room with snapshots of the residents, and "keeper of the

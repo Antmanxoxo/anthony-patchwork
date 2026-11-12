@@ -1,5 +1,23 @@
 # Development Log
 
+## A new song for the museum, mice, and reef walls
+- A new piece for the Oceanic Museum, "The Lantern Tide": a gentle, glowing walk through an
+  aquarium at night in F major. A harp rippling in quavers, a marimba bobbing like something
+  afloat, plucked basses and bubbles rising through it; the flute sings the tune, then it
+  sinks into D minor for the cellos (the drums drop away, only brushes and bubbles keep
+  time), rises again with the violins up high and the horns answering, and comes home with
+  everything. It keeps the same four layers, so the museum still builds it up as you go.
+- The old waltz, "The Star Carousel", is kept: choose between them from Patchwork > Level 2
+  Music (it swaps straight away, even while playing).
+- Keeper Oskar on his lunch break in the Undercroft, sandwiches and flask on the stool.
+- Pip, a young stargazer waiting for a comet at the Comet Gallery's windows.
+- Three mice live behind the skirting boards (the Keepers' Room, the Grand Atrium by the
+  doors, and the Hall of Deep Time by the Kelp door): a dark little arch, a tiny door left
+  open, a doormat, a thimble flowerpot, a crumb of cheese, and two eyes in the dark.
+- The Coral Nursery's and the Lantern Deep's walls are built up with rock (a reef face and a
+  sea cliff) instead of bare render, kept clear of the cave, the moray, the pipes, the
+  Undercroft's windows and June's torch.
+
 ## Rippling light, dressed tank walls, and the Undercroft finished
 - Each tank throws dancing ripples of light up onto the Tank Hall's roof, like the ceiling
   over a real pool, and the Coral Nursery's ripples play across the Undercroft through its

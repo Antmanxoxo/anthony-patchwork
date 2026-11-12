@@ -579,6 +579,9 @@ Stuff I need to remember about how Patchwork is put together.
   creatures, sounds, and the atrium's Gosse bust (AtriumFounder). New behaviours there:
   DripLoop, GardenEel (shrinks when Patch is within Shy metres), GaugeWaver.
 - Level2Touches.cs: CorridorTouches (called at the end of StarCorridor).
+- Museum music: MusicPlayer.MuseumSong (PlayerPrefs "pw_l2_song": 0 The Lantern Tide in
+  MusicMuseumTide.cs, 1 The Star Carousel = ComposeCarousel in MusicMuseum.cs). Editor menu
+  Patchwork > Level 2 Music. Both use the same four stems (Bed, Strings, Winds, Grand).
 
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);

@@ -2,7 +2,11 @@
 
 namespace Patchwork
 {
-    // The Oceanic Museum's soundtrack: "The Star Carousel", a waltz in two moods that keep
+    // The Oceanic Museum has two pieces to choose from (Patchwork > Level 2 Music in the menu):
+    //   "The Lantern Tide" (MusicMuseumTide.cs) - the one it plays now
+    //   "The Star Carousel" (below)             - the waltz it used to play, kept so it can come back
+    //
+    // "The Star Carousel": a waltz in two moods that keep
     // turning into each other.
     //   The first is the night sky over the atrium: D major, a harp rippling under a long,
     //   wide-stepping tune for celesta and violins, the bass walking gently down the scale.
@@ -168,6 +172,26 @@ namespace Patchwork
         }
 
         static AudioClip[] museumStems;
+        static int museumStemsSong = -1;
+
+        // Which piece the museum plays: 0 "The Lantern Tide", 1 "The Star Carousel".
+        public const string MuseumSongPref = "pw_l2_song";
+        public static int MuseumSong
+        {
+            get { return Mathf.Clamp(PlayerPrefs.GetInt(MuseumSongPref, 0), 0, 1); }
+            set { PlayerPrefs.SetInt(MuseumSongPref, Mathf.Clamp(value, 0, 1)); PlayerPrefs.Save(); ReloadMuseum(); }
+        }
+        public static readonly string[] MuseumSongNames = { "The Lantern Tide", "The Star Carousel" };
+
+        // Swaps the piece over straight away if the museum's music is playing.
+        public static void ReloadMuseum()
+        {
+            if (instance == null || instance.museumSources == null) return;
+            foreach (var s in instance.museumSources) if (s != null) Destroy(s.gameObject);
+            instance.museumSources = null;
+            instance.museumStepFixes = 0;
+            instance.StartMuseum();
+        }
         AudioSource[] museumSources;
         AudioLowPassFilter[] museumFilters;
         float museumMix;
@@ -197,7 +221,11 @@ namespace Patchwork
             museumWant[1] = true;
             museumLayer[1] = 1f;
             if (museumSources != null) return;
-            if (museumStems == null || museumStems[0] == null) museumStems = ComposeMuseum();
+            if (museumStems == null || museumStems[0] == null || museumStemsSong != MuseumSong)
+            {
+                museumStemsSong = MuseumSong;
+                museumStems = museumStemsSong == 1 ? ComposeCarousel() : ComposeTide();
+            }
             museumSources = new AudioSource[MuseumStemCount];
             museumFilters = new AudioLowPassFilter[MuseumStemCount];
             for (int i = 0; i < MuseumStemCount; i++)
@@ -261,7 +289,7 @@ namespace Patchwork
             return Mathf.Cos(museumMix * Mathf.PI * 0.5f);
         }
 
-        static AudioClip[] ComposeMuseum()
+        static AudioClip[] ComposeCarousel()
         {
             float beat = 60f / MuseumBpm;
             float bar = beat * 3f;

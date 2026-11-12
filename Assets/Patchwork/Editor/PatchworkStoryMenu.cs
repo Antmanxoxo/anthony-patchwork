@@ -1,4 +1,4 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace Patchwork
@@ -50,6 +50,38 @@ namespace Patchwork
                 return;
             GameState.ForgetLevel(Level2Builder.SceneName, Level2Keys, false);
             Debug.Log("Patchwork: Level 2 reset to a first visit.");
+        }
+
+        // Which piece the museum plays. Works while playing too (it swaps over straight away).
+        const string TideMenu = "Patchwork/Level 2 Music/The Lantern Tide (new)";
+        const string CarouselMenu = "Patchwork/Level 2 Music/The Star Carousel (the old waltz)";
+
+        [MenuItem(TideMenu, false, 40)]
+        static void UseTide()
+        {
+            MusicPlayer.MuseumSong = 0;
+            Debug.Log("Patchwork: the museum will play The Lantern Tide.");
+        }
+
+        [MenuItem(TideMenu, true)]
+        static bool UseTideCheck()
+        {
+            Menu.SetChecked(TideMenu, MusicPlayer.MuseumSong == 0);
+            return true;
+        }
+
+        [MenuItem(CarouselMenu, false, 41)]
+        static void UseCarousel()
+        {
+            MusicPlayer.MuseumSong = 1;
+            Debug.Log("Patchwork: the museum will play The Star Carousel.");
+        }
+
+        [MenuItem(CarouselMenu, true)]
+        static bool UseCarouselCheck()
+        {
+            Menu.SetChecked(CarouselMenu, MusicPlayer.MuseumSong == 1);
+            return true;
         }
 
         static bool StoppedFirst()
