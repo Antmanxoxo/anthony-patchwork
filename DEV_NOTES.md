@@ -486,6 +486,10 @@ Stuff I need to remember about how Patchwork is put together.
   holds Ability to dive, floats up when let go, Jump kicks up. `PlayerMotor.Submerged` /
   `WasSubmerged`; while submerged the camera may go under the surface, and `Level2Mood`
   turns the fog and ambient blue-green and calls `LevelLook.SetUnderwater`.
+- God Mode Halo (hat 9, `FormVisuals.GodHat`): a testing hat, unlocked only in the editor
+  or a development build. `PlayerMotor.GodMode` is on while it's worn: 3.2x speed, 1.8x
+  jump height, jump again in mid-air, hold Jump in the air to fly up, a gentler fall, and
+  any form can swim (WaterBody). Pick it in the Satchel's hat row.
 - Editor menu: Patchwork > Replay Level 2 Moments (keep what you found) forgets the
   cutscenes, cards, Storyteller lines and map for Level 2; Patchwork > Reset Level 2
   (first visit) also puts back everything found there. Both use `GameState.ForgetLevel`

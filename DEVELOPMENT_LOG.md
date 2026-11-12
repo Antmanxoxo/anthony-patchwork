@@ -1,5 +1,11 @@
 # Development Log
 
+## God Mode Halo (testing hat)
+- A new hat for testing, only in the editor: a ring of glowing gold beads and two little
+  felt wings. Wearing it, Patch runs over three times as fast, jumps much higher, can jump
+  again in mid-air, flies upward while Jump is held, falls gently, and can swim in any
+  form. Pick it in the Satchel like any other hat; take it off to play normally.
+
 ## Replaying Level 2 from the editor
 - Patchwork menu: "Replay Level 2 Moments (keep what you found)" makes every cutscene,
   card, Storyteller line and the map play fresh again; "Reset Level 2 (first visit)" also

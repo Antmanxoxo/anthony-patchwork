@@ -36,6 +36,15 @@ namespace Patchwork
         // Set each frame by deep water while Water Form is swimming: faster moves, and Jump works
         // from the surface. Both reset every frame.
         [System.NonSerialized] public float SpeedBoost;
+
+        // Wearing the God Mode Halo (the testing hat): over three times the speed, much higher
+        // jumps, jump again in mid-air as often as you like, hold Jump to fly upward, a
+        // gentler fall, and any form can swim.
+        public static bool GodMode
+        {
+            get { return GameState.HatIndex == FormVisuals.GodHat && GameState.IsHatUnlocked(FormVisuals.GodHat); }
+        }
+        const float GodSpeed = 3.2f, GodJump = 1.8f, GodFly = 11f, GodMaxFall = 16f;
         [System.NonSerialized] public bool Swimming;
         [System.NonSerialized] public float SwimSurface;
         // Whether Patch was swimming last frame (Swimming itself resets every frame), for the camera.
@@ -176,21 +185,24 @@ namespace Patchwork
             }
             else
             {
-                Vector3 target = moveWorld * Params.MoveSpeed * (1f + SpeedBoost) + (Grounded ? Vector3.zero : AirCarry);
-                float accel = Grounded || Swimming ? Params.GroundAcceleration * (1f + SpeedBoost) : Params.AirAcceleration;
+                bool godSpeed = GodMode;
+                Vector3 target = moveWorld * Params.MoveSpeed * (1f + SpeedBoost) * (godSpeed ? GodSpeed : 1f) + (Grounded ? Vector3.zero : AirCarry);
+                float accel = Grounded || Swimming || godSpeed ? Params.GroundAcceleration * (1f + SpeedBoost) * (godSpeed ? 3f : 1f) : Params.AirAcceleration;
                 horizontal = Vector3.MoveTowards(horizontal, target, accel * dt);
             }
 
             // ---------------- Jump ----------------
             if (Grounded || Swimming) coyoteTimer = CoyoteTime; else coyoteTimer -= dt;
             if (jumpPressed) jumpBufferTimer = JumpBufferTime; else jumpBufferTimer -= dt;
+            bool god = GodMode;
+            if (god && jumpPressed) coyoteTimer = CoyoteTime;   // jump again, any time
 
             float gravity = BaseGravity * Params.GravityScale;
             float vy = Velocity.y;
 
             if (jumpBufferTimer > 0f && coyoteTimer > 0f)
             {
-                vy = Mathf.Sqrt(2f * gravity * Params.JumpHeight);
+                vy = Mathf.Sqrt(2f * gravity * Params.JumpHeight * (god ? GodJump : 1f));
                 jumpBufferTimer = 0f;
                 coyoteTimer = 0f;
                 allowJumpCut = true;
@@ -222,7 +234,12 @@ namespace Patchwork
                 vy = Mathf.MoveTowards(vy, LiftTargetSpeed, LiftAcceleration * dt);
             }
 
+            // God Mode: keep holding Jump in the air and Patch flies straight up.
+            if (god && !Grounded && jumpHeld && airTime > 0.3f && !HasLift)
+                vy = Mathf.MoveTowards(vy, GodFly, 45f * dt);
+
             float maxFall = Params.MaxFallSpeed;
+            if (god) maxFall = Mathf.Min(maxFall, GodMaxFall);
             if (FallSpeedCap > 0f) maxFall = Mathf.Min(maxFall, FallSpeedCap);
             if (vy < -maxFall) vy = Mathf.MoveTowards(vy, -maxFall, 60f * dt);
 

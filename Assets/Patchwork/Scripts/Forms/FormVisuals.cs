@@ -10,7 +10,9 @@ namespace Patchwork
     // Hats sit on their own transform so changing form never resets them.
     public class FormVisuals
     {
-        public static readonly string[] HatNames = { "No Hat", "Red Beanie", "Felt Top Hat", "Daisy Clip", "Golden Crown", "Party Hat", "Pirate Hat", "Propeller Cap", "Starry Wizard Hat" };
+        public static readonly string[] HatNames = { "No Hat", "Red Beanie", "Felt Top Hat", "Daisy Clip", "Golden Crown", "Party Hat", "Pirate Hat", "Propeller Cap", "Starry Wizard Hat", "God Mode Halo" };
+        // The testing hat: super speed, jump again in mid-air, hold Jump to fly (editor only).
+        public const int GodHat = 9;
 
         class Body
         {
@@ -25,7 +27,7 @@ namespace Patchwork
         readonly Transform root;
         readonly Body yarn = new Body(), water = new Body(), wind = new Body();
         readonly Transform accessoryRoot;
-        readonly GameObject[] hats = new GameObject[9];
+        readonly GameObject[] hats = new GameObject[10];
         static MaterialPropertyBlock mpb;
 
         // Yarn rig (the Blender model if it's there, otherwise the block-built toy)
@@ -1083,6 +1085,26 @@ namespace Patchwork
             }
             Prim(PrimitiveType.Sphere, wiz, new Vector3(0.22f, 0.24f, -0.02f), new Vector3(0.1f, 0.1f, 0.02f), PatchworkAssets.Glow(new Color(0.95f, 0.95f, 1f), 1.1f), new Vector3(0f, 90f, 0f));
             hats[8] = wiz.gameObject;
+
+            // God Mode Halo: a ring of glowing golden beads floating over his head, with two
+            // little white felt wings. (The testing hat.)
+            var halo = Pivot("Hat_GodHalo", accessoryRoot, Vector3.zero);
+            var ring = Pivot("Ring", halo, new Vector3(0f, 0.26f, 0f));
+            var haloGold = PatchworkAssets.Glow(new Color(1f, 0.85f, 0.35f), 2.2f);
+            for (int i = 0; i < 14; i++)
+            {
+                float a = i * Mathf.PI * 2f / 14f;
+                Prim(PrimitiveType.Sphere, ring, new Vector3(Mathf.Sin(a) * 0.26f, 0f, Mathf.Cos(a) * 0.26f), Vector3.one * 0.075f, haloGold);
+            }
+            var haloSpin = ring.gameObject.AddComponent<Spinner>();
+            haloSpin.Speed = 90f;
+            var wing = PatchworkAssets.Felt(new Color(0.98f, 0.97f, 1f));
+            for (int s = -1; s <= 1; s += 2)
+            {
+                Prim(PrimitiveType.Sphere, halo, new Vector3(s * 0.3f, -0.08f, -0.06f), new Vector3(0.05f, 0.22f, 0.3f), wing, new Vector3(-20f, 0f, s * -35f));
+                Prim(PrimitiveType.Sphere, halo, new Vector3(s * 0.36f, 0.02f, -0.1f), new Vector3(0.04f, 0.16f, 0.22f), wing, new Vector3(-25f, 0f, s * -55f));
+            }
+            hats[9] = halo.gameObject;
         }
 
         // Visual-only primitive (collider removed, player layer).

@@ -22,7 +22,7 @@ namespace Patchwork
             if (feet > SurfaceY + 0.05f) return;   // above the water (e.g. on a bridge or jumping out)
             splashCooldown -= dt;
 
-            if (player.Forms.Current == FormType.Water)
+            if (player.Forms.Current == FormType.Water || PlayerMotor.GodMode)
             {
                 // Float with the surface at about the middle of the body; let jumps leave the water.
                 // Ride high in the water so Patch's face (and the camera) stay above the surface.

@@ -158,6 +158,9 @@ namespace Patchwork
         public static bool IsHatUnlocked(int hat)
         {
             if (hat <= 1) return true;
+            // The God Mode Halo is a testing tool: always there in the editor (and in test
+            // builds), never in the finished game.
+            if (hat == FormVisuals.GodHat) return Application.isEditor || Debug.isDebugBuild;
             if (hat >= 5) return Data.unlockedHats.Contains(hat);
             if (hat == 2 || hat == 3)
             {
@@ -180,6 +183,7 @@ namespace Patchwork
                 case 6:
                 case 7: return "Hidden in a prize bubble in Toybox Town.";
                 case 8: return "Somewhere magical, deep in the Whispering Wood.";
+                case FormVisuals.GodHat: return "For testing only (in the Unity editor).";
                 default: return "";
             }
         }
