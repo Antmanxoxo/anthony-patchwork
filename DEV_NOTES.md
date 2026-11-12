@@ -575,6 +575,10 @@ Stuff I need to remember about how Patchwork is put together.
   (Narration_*, EnemyPatrol_*, EnemyLair_*, EnemyArena_*, Secret_*, Dive_*, Pipe_*).
 - Level2Mood.Zone has UnderFog / UnderFogEnd for each tank's own underwater look.
 - FailY no longer respawns a swimmer; Level 2 KillY is -45.
+- Level2KeepersLife.cs (called from KeepersWing): room/hall dressing, June and Pippa, tank
+  creatures, sounds, and the atrium's Gosse bust (AtriumFounder). New behaviours there:
+  DripLoop, GardenEel (shrinks when Patch is within Shy metres), GaugeWaver.
+- Level2Touches.cs: CorridorTouches (called at the end of StarCorridor).
 
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);

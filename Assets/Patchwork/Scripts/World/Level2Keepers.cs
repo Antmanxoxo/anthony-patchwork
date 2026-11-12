@@ -60,6 +60,7 @@ namespace Patchwork
             Mangrove(kit);
             KwPipes(kit);
             KwKelpSide(kit);
+            KwLife(kit);
         }
 
         // On the Kelp Galleries' side of the door: a doormat, a mop in its bucket, and wet

@@ -1,5 +1,28 @@
 # Development Log
 
+## The fine detail: a working back-of-house, and living tanks
+- The Keepers' Room: white tiled walls with a teal edge, a clock, a deep sink under a mirror
+  with a tap that drips, yellow raincoats, sou'westers and wellies by the door, the first-aid
+  box and the fuse box (its little green light on), the tide tables pinned up, and pipes
+  along the ceiling. You can hear the clock.
+- The Tank Hall: drains with grates and puddles by the tanks, a hose left running into the
+  Coral Nursery, a hoist on a rail under the roof with a net of fish swinging on its hook,
+  crates stencilled LIVE FISH, a sack truck, the big green pump on the north walk (piston
+  thumping, flywheel turning, steam, a gauge that never settles), copper filter pipes
+  pouring clean water back into three tanks, banners over every tank, a NO CHIPS FOR PENGUINS
+  sign, and the sounds of the hall, the pump, the pipes and the deep.
+- Two more keepers: June on the catwalk (it's her torch down in the Lantern Deep) and Pippa
+  out on the ice with a bucket of fish for the penguins.
+- In the tanks: garden eels that duck into the sand when you swim close and come back up
+  when you keep still; the octopus in its pot, with the Keepers' missing biscuits stacked up
+  beside it; a giant isopod and glowing sea pens in the Lantern Deep; a beluga and a shoal of
+  cod under the ice; a manatee in the Mangrove. New plaques for each.
+- The Grand Atrium: a bronze bust of Philip Henry Gosse, who named the aquarium, under its own
+  light; the visitors' book on a lectern and a glass donation box by the doors.
+- The Star Corridor: Harrison's H4 watch under a glass dome in the Hall of Clocks, a brass
+  telescope at a night window, a roundel for each planet on the Planet Walk's wall, a piece
+  of the Moon in a case, and the Comet Gallery's night windows lifted clear of the panelling.
+
 ## Behind the Glass: the keepers' side of the aquarium
 - Fixed the compile error (an old Unity call the flicker fixer used).
 - A new part of the museum through a KEEPERS ONLY door at the far end of the Kelp Galleries:

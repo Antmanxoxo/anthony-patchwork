@@ -120,6 +120,7 @@ namespace Patchwork
             PlanetWalk(kit, Y);
             MoonSteps(kit, Y);
             CometGallery(kit, Y);
+            CorridorTouches(kit, Y);
 
             // ----- Getting round -----
             kit.AddCheckpoint(new Vector3(45.6f, Y, -38f), 270f);
@@ -392,7 +393,7 @@ namespace Patchwork
             Motes(kit, new Vector3(43f, Y + 3.6f, 0f), new Vector3(18f, 3f, 4f), 30, new Color(0.8f, 0.92f, 1f), 1.8f, 0.06f, new Vector3(-0.2f, 0.02f, 0f));
             // Night windows down the north wall, star charts on the south.
             foreach (float x in new[] { 41.5f, 46f, 50.5f })
-                NightWindow(kit, new Vector3(x, Y + 0.9f, 2.98f), 180f, 2.2f, 4.6f, new Color(0.3f, 0.35f, 0.85f), 0.85f);
+                NightWindow(kit, new Vector3(x, Y + 1.3f, 2.98f), 180f, 2.2f, 4.6f, new Color(0.3f, 0.35f, 0.85f), 0.85f);
             Painting(kit, new Vector3(37f, Y + 3.4f, -2.95f), 0f, 2.4f, 1.9f, 46);
             Painting(kit, new Vector3(43f, Y + 3.4f, -2.95f), 0f, 2.4f, 1.9f, 47);
             PointLight(kit, new Vector3(38f, Y + 5f, 0f), LampGold, 11f, 1.1f);
