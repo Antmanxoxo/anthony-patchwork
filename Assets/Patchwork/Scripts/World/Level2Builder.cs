@@ -146,6 +146,7 @@ namespace Patchwork
             KeepersWing(kit);
             Details(kit);
             Life(kit);
+            Rooms(kit);   // (last of all: six more things in every room, fitted in round the rest)
 
             // The hush of the halls, and the deep rumble by the big tanks.
             var sounds = kit.Group("LevelSounds", Vector3.zero);

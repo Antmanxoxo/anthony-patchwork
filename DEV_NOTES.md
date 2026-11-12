@@ -582,6 +582,19 @@ Stuff I need to remember about how Patchwork is put together.
 - Museum music: MusicPlayer.MuseumSong (PlayerPrefs "pw_l2_song": 0 The Lantern Tide in
   MusicMuseumTide.cs, 1 The Star Carousel = ComposeCarousel in MusicMuseum.cs). Editor menu
   Patchwork > Level 2 Music. Both use the same four stems (Bed, Strings, Winds, Grand).
+- Room details (Level2Rooms.cs, plus Level2RoomsFront / Middle / Keepers.cs): Rooms(kit) runs
+  last in Build, after Life. It gathers the bounds of every renderer except walls, floors,
+  ceilings and water (anything over 7 m in two directions), then places each detail with
+  RmFloor / RmFlat / RmWall / RmAir / RmTry. Each one searches outwards for the nearest clear
+  spot: it raycasts for level floor, uses Physics.CheckBox against colliders, and checks the
+  gathered bounds. RmExhibit is a stand plus plaque; RmCase is a glass case; RmBits batches
+  parts by material in a group's own frame.
+- Room detail log lines: "[Level2] Room details: N placed, M left out" and "[Level2] No room
+  for <thing> near <spot>" for anything skipped.
+- New behaviours: Puffer, ColourShift, PopOut, KeplerOrbit, RmSway (Level2Rooms.cs) and RmTick
+  (Level2RoomsMiddle.cs).
+- New markers: Secret_CuckooClock, Secret_KeepersSlate, Secret_DropCamera, Story_NightKeepersBed,
+  Story_UndercroftLeak and Story_PippasSnowman.
 
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);

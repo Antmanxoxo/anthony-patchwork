@@ -1,5 +1,59 @@
 # Development Log
 
+## Six new things in every room of the Oceanic Museum
+Every room in Level 2 has six new hand-made details. Each one is fitted in round what's
+already there: it looks for clear floor, wall, air or water near where it wants to be and takes
+the nearest spot that's free, so nothing ends up inside anything else. If a spot can't be found,
+that detail is left out and the log says which one.
+- The Forecourt: bicycles at a rack by the doors (one with a basket of flowers), lobster pots
+  with a crab inside, a chalk hopscotch with a pebble on three, a coin-in-the-slot viewing
+  telescope at the railings, a tide board standing in the sea with a lamp on top, and a
+  harbour bell on a timber frame that sways in the breeze.
+- The Grand Atrium: an umbrella stand by the doors, a rack of museum maps, the blue whale's
+  baleen in a case, a whale's earplug (with its rings, like a tree), a mobile of folded paper
+  whales turning under the west gallery, and a satchel left on a bench with a whale drawing in it.
+- The Hall of Deep Time: a roped-off children's dig with a skull coming out of the sand, amber
+  with a fly in it, a Marshall Islands stick chart, an Egyptian water clock that drips,
+  Megalodon's jaws on the wall, and a coprolite (yes, a fossil dropping).
+- The Kelp Galleries: a five-metre kelp growth chart with a real frond pinned up beside it, the
+  otters' urchins, a garibaldi guarding his red weed garden, a leafy sea dragon drifting
+  through the pool, an old diver's air pump with turning flywheels, and a round sea-glass window.
+- The Deepsea Tunnel: a herd of sea pigs walking the sea floor, glowing Venus' flower baskets
+  (with their shrimp), a tripod fish on its stilts, a bamboo coral, an oarfish swimming high
+  overhead, and the squashed foam cups.
+- The Sunken Ruins: the archaeologists' table with the temple plan, a survey grid on the sea
+  bed with a marker buoy, a model of Pavlopetri, two cuttlefish rolling through colours, a
+  fallen bronze bell, and a swaying sea grass meadow.
+- The Hall of Arms: the armourer's anvil and bench, an archery butt and the Mary Rose's
+  longbows, eight painted shields on the piers, a model trebuchet, a shirt of mail, and a
+  cat asleep in a great helm.
+- The Orrery Bridge: a giant brass winding key in the wall, MIND THE GAP signs, the orrery
+  keeper's oil can, a star beside every step of both stairs, a window seat with cushions,
+  and Kepler's ellipse, with a planet that speeds up near the sun.
+- The Star Corridor: a cuckoo clock whose bird pops out, a planisphere that turns, an iron
+  meteorite you're allowed to touch, the phases of the Moon, comet dust in aerogel, and a
+  stargazer's deck chair.
+- The Observatory: Foucault's pendulum on a long wire from the dome, a cabinet of navigating
+  instruments, the library ladder, a red torch with a comet notebook, Voyager hanging under
+  the dome, and moonflowers that open at night.
+- The Keepers' Room: the night keeper's camp bed and alarm clock, a sick pufferfish resting
+  in a quarantine tub, the tool board (the big spanner's missing), a barometer, a towel horse
+  with flippers, and a wireless on a shelf.
+- The Tank Hall: a board of tank temperatures, children's THANK YOU drawings, the keepers'
+  skiff SALTY on the wall, a crate of glass, two pigeons on the catwalk rail, and a net
+  drying over the Frozen Sea.
+- The Undercroft: a brass speaking tube, binoculars on a hook, a shelf of field guides, a
+  leak dripping into a bucket, the fire bucket and lantern, and a PLEASE DON'T TAP THE GLASS sign.
+- The Coral Nursery: parrotfish, Christmas tree worms that duck in when you come close, the
+  corals spawning (pink beads rising), a brain coral with a goby, a pufferfish that puffs up,
+  and a keeper's slate.
+- The Lantern Deep: a gulper eel with a glowing tail, a barreleye with its see-through head,
+  hatchetfish, a chain of salps, brittle stars, and the keepers' drop camera with its light.
+- The Frozen Sea: icefish, sea butterflies flapping, an Arctic tern circling over the floes,
+  an ice drill and core, algae under the ice, and Pippa's snowman.
+- The Mangrove: a kingfisher on a snag who watches you, floating mangrove seedlings, a mud
+  lobster's mound, a spider's web with dew, tree-climbing crabs, and a crocodile being a log.
+
 ## A new song for the museum, mice, and reef walls
 - A new piece for the Oceanic Museum, "The Lantern Tide": a gentle, glowing walk through an
   aquarium at night in F major. A harp rippling in quavers, a marimba bobbing like something
