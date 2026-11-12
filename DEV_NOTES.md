@@ -542,6 +542,13 @@ Stuff I need to remember about how Patchwork is put together.
   marble `L2_marble_clam`), the Drowned Colonnade along the Ruins' east wall (x 93.5..100,
   z 72..100, roofed at y -1.5) with a `TreasureChest` that opens for a swimmer and shows
   marble `L2_marble_treasure`, and the Ruins' pool floor (sun mosaic, sphinx, coins).
+- `RenderOptimizer.WorldTiling` (on for Level 2 only, set in PatchworkGame before Run): cubes
+  wearing Brick/Cobble/Plaster/Planks/Shingle/Damask get their own mesh with world-space UVs
+  (tops map x,z; sides map along-wall and y), one texture repeat per 3 m (brick, cobble),
+  4 m (plaster), 1.6 m (planks), 2-2.4 m (others). Done before StaticCombine, so it merges.
+- Facade detail lives in `Level2Flourish.FacadeDetail` (outer face z -110, towers x 51..61).
+- Star Corridor walls are non-overlapping segments (each corner owned by one wall); the
+  dado and gilt are added per wall face by the `W` helper, never per room.
 
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);

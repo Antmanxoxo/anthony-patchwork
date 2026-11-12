@@ -36,44 +36,47 @@ namespace Patchwork
             {
                 var r = rooms[i];
                 Floor(kit, r[0], r[1], r[2], r[3], Y, quilts[i], 3f, "CorridorFloor");
-                kit.Block(new Vector3((r[0] + r[1]) * 0.5f, Y + CorH + 0.4f, (r[2] + r[3]) * 0.5f), new Vector3(r[1] - r[0] + 1f, 0.8f, r[3] - r[2] + 1f), Navy, "CorridorCeiling", ceil);
+                kit.Block(new Vector3((r[0] + r[1]) * 0.5f, Y + CorH + 0.4f, (r[2] + r[3]) * 0.5f), new Vector3(r[1] - r[0], 0.8f, r[3] - r[2]), Navy, "CorridorCeiling", ceil);
             }
             // The step through the wall onto the bridge.
             Floor(kit, 34f, 38f, 3f, 5.6f, Y, WarmQuilt, 3f, "CorridorDoorstep");
 
-            // ----- Walls -----
+            // ----- Walls (each with its wood panelling and a gilt line, on both faces: only
+            // along real walls, never across the openings between rooms) -----
             float w0 = Y - 1f, w1 = Y + CorH + 0.8f;
-            Wall(kit, new Vector3(39f, 0f, -34.5f), new Vector3(47.8f, 0f, -34.5f), w0, w1, 1f, stone);     // Clocks, north
-            Wall(kit, new Vector3(32f, 0f, -41.5f), new Vector3(47.8f, 0f, -41.5f), w0, w1, 1f, stone);     // Clocks and Gallery, south
-            Wall(kit, new Vector3(32.5f, 0f, -42f), new Vector3(32.5f, 0f, 4f), w0, w1, 1f, stone);         // the long west wall
-            Wall(kit, new Vector3(39.5f, 0f, -35f), new Vector3(39.5f, 0f, -16.5f), w0, w1, 1f, stone);     // Gallery, east
-            Wall(kit, new Vector3(39f, 0f, -16.5f), new Vector3(55f, 0f, -16.5f), w0, w1, 1f, stone);       // Planets, south
-            Wall(kit, new Vector3(32f, 0f, -9.5f), new Vector3(48f, 0f, -9.5f), w0, w1, 1f, stone);         // Gallery and Planets, north
-            Wall(kit, new Vector3(54.5f, 0f, -17f), new Vector3(54.5f, 0f, 4f), w0, w1, 1f, stone);         // the east wall
-            Wall(kit, new Vector3(47.5f, 0f, -9f), new Vector3(47.5f, 0f, -3f), w0, w1, 1f, stone);         // Moon Steps, west
-            Wall(kit, new Vector3(32f, 0f, -3.5f), new Vector3(47.5f, 0f, -3.5f), w0, w1, 1f, stone);       // Comets, south
-            Wall(kit, new Vector3(32f, 0f, 3.5f), new Vector3(34f, 0f, 3.5f), w0, w1, 1f, stone);           // Comets, north (with the door)
-            Wall(kit, new Vector3(38f, 0f, 3.5f), new Vector3(55f, 0f, 3.5f), w0, w1, 1f, stone);
-            Wall(kit, new Vector3(34f, 0f, 3.5f), new Vector3(38f, 0f, 3.5f), Y + 5.5f, w1, 1f, stone);
-            // Over the lift's doors (the lift is lower than the corridor's ceiling).
-            Wall(kit, new Vector3(48.2f, 0f, -41.5f), new Vector3(48.2f, 0f, -34.5f), Y + CarHigh + 0.4f, w1, 0.8f, stone);
-            // A dado of dark wood round every room, and a gilt line under the ceiling.
             var dado = new MeshBatch();
             var gilt = new MeshBatch();
-            foreach (var r in rooms)
+            System.Action<Vector3, Vector3, float, float> W = (a0, b0, y0, y1) =>
             {
-                float cx = (r[0] + r[1]) * 0.5f, cz = (r[2] + r[3]) * 0.5f, wx = r[1] - r[0], wz = r[3] - r[2];
-                foreach (float z in new[] { r[2] + 0.04f, r[3] - 0.04f })
+                Wall(kit, a0, b0, y0, y1, 1f, stone);
+                bool alongX = Mathf.Abs(b0.x - a0.x) > Mathf.Abs(b0.z - a0.z);
+                Vector3 mid = (a0 + b0) * 0.5f;
+                float len = alongX ? Mathf.Abs(b0.x - a0.x) : Mathf.Abs(b0.z - a0.z);
+                for (int s2 = -1; s2 <= 1; s2 += 2)
                 {
-                    dado.Box(new Vector3(cx, Y + 0.55f, z), new Vector3(wx, 1.1f, 0.08f), Quaternion.identity);
-                    gilt.Box(new Vector3(cx, Y + CorH - 0.25f, z), new Vector3(wx, 0.12f, 0.1f), Quaternion.identity);
+                    Vector3 off = alongX ? new Vector3(0f, 0f, s2 * 0.54f) : new Vector3(s2 * 0.54f, 0f, 0f);
+                    Vector3 size = alongX ? new Vector3(len, 1f, 0.08f) : new Vector3(0.08f, 1f, len);
+                    if (y0 <= Y)
+                        dado.Box(new Vector3(mid.x, Y + 0.55f, mid.z) + off, new Vector3(size.x, 1.1f, size.z), Quaternion.identity);
+                    gilt.Box(new Vector3(mid.x, Y + CorH - 0.25f, mid.z) + off * 1.02f, new Vector3(size.x, 0.12f, size.z * 1.2f), Quaternion.identity);
                 }
-                foreach (float x in new[] { r[0] + 0.04f, r[1] - 0.04f })
-                {
-                    dado.Box(new Vector3(x, Y + 0.55f, cz), new Vector3(0.08f, 1.1f, wz), Quaternion.identity);
-                    gilt.Box(new Vector3(x, Y + CorH - 0.25f, cz), new Vector3(0.1f, 0.12f, wz), Quaternion.identity);
-                }
-            }
+            };
+            // (Laid end to end without overlapping, each corner belonging to just one wall, so no
+            // two faces ever sit in the same place and flicker.)
+            W(new Vector3(32.5f, 0f, -42f), new Vector3(32.5f, 0f, 4f), w0, w1);         // the long west wall
+            W(new Vector3(33f, 0f, -41.5f), new Vector3(47.8f, 0f, -41.5f), w0, w1);     // Gallery and Clocks, south
+            W(new Vector3(40f, 0f, -34.5f), new Vector3(47.8f, 0f, -34.5f), w0, w1);     // Clocks, north
+            W(new Vector3(39.5f, 0f, -35f), new Vector3(39.5f, 0f, -16f), w0, w1);       // Gallery, east
+            W(new Vector3(40f, 0f, -16.5f), new Vector3(54f, 0f, -16.5f), w0, w1);       // Planets, south
+            W(new Vector3(54.5f, 0f, -17f), new Vector3(54.5f, 0f, 4f), w0, w1);         // the east wall
+            W(new Vector3(33f, 0f, -9.5f), new Vector3(48f, 0f, -9.5f), w0, w1);         // Gallery and Planets, north
+            W(new Vector3(47.5f, 0f, -9f), new Vector3(47.5f, 0f, -4f), w0, w1);         // Moon Steps, west
+            W(new Vector3(33f, 0f, -3.5f), new Vector3(48f, 0f, -3.5f), w0, w1);         // Comets, south
+            W(new Vector3(33f, 0f, 3.5f), new Vector3(34f, 0f, 3.5f), w0, w1);           // Comets, north (with the door)
+            W(new Vector3(38f, 0f, 3.5f), new Vector3(54f, 0f, 3.5f), w0, w1);
+            W(new Vector3(34f, 0f, 3.5f), new Vector3(38f, 0f, 3.5f), Y + 5.5f, w1);
+            // Over the lift's doors (the lift is lower than the corridor's ceiling).
+            Wall(kit, new Vector3(48.2f, 0f, -41f), new Vector3(48.2f, 0f, -35f), Y + CarHigh + 0.4f, w1, 0.8f, stone);
             dado.Build(kit.Root, "CorridorDado", DarkWood);
             gilt.Build(kit.Root, "CorridorGilt", PatchworkAssets.Glow(new Color(1f, 0.82f, 0.45f), 0.9f));
 
@@ -157,7 +160,7 @@ namespace Patchwork
             Rug(kit, new Vector3(36f, Y, -25.5f), new Vector2(2.4f, 28f), StarCloth, 0f, PatchworkAssets.Felt(new Color(1f, 0.82f, 0.4f)));
             // Tall night windows down the west wall.
             foreach (float z in new[] { -36f, -29.5f, -23f, -16.5f, -12f })
-                NightWindow(kit, new Vector3(33.02f, Y + 0.9f, z), 90f, 2.2f, 4.6f, new Color(0.25f, 0.3f, 0.8f), 0.85f);
+                NightWindow(kit, new Vector3(33.02f, Y + 1.3f, z), 90f, 2.2f, 4.6f, new Color(0.25f, 0.3f, 0.8f), 0.85f);
             // Star charts down the east wall, and celestial globes beneath them.
             int seed = 40;
             foreach (float z in new[] { -31f, -25f, -19f })
@@ -237,11 +240,11 @@ namespace Patchwork
         {
             PaintedStars(kit, new Vector3(46.5f, Y + CorH - 0.06f, -13f), 14f, 5f, 40, 78);
             // A brass line down the floor, with a stud under each planet.
-            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(46.5f, Y + 0.03f, -13f), new Vector3(14f, 0.04f, 0.14f), Brass));
+            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(46.6f, Y + 0.04f, -13f), new Vector3(13.6f, 0.04f, 0.14f), Brass));
             // The sun at the start, then the planets in order, roughly to size (Jupiter's the
             // big one). Each hangs from the ceiling on a brass rod and slowly turns.
-            NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(39.6f, Y + 3.4f, -13f), Vector3.one * 2.4f, PatchworkAssets.Glow(new Color(1f, 0.75f, 0.35f), 2.6f)));
-            PointLight(kit, new Vector3(40.6f, Y + 3.4f, -13f), new Color(1f, 0.78f, 0.45f), 12f, 1.4f);
+            NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(40.4f, Y + 3.4f, -13f), Vector3.one * 2.4f, PatchworkAssets.Glow(new Color(1f, 0.75f, 0.35f), 2.6f)));
+            PointLight(kit, new Vector3(41.6f, Y + 3.4f, -13f), new Color(1f, 0.78f, 0.45f), 12f, 1.4f);
             string[] names = { "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune" };
             float[] size = { 0.32f, 0.55f, 0.58f, 0.42f, 1.5f, 1.25f, 0.85f, 0.82f };
             Color[] col =
@@ -252,9 +255,9 @@ namespace Patchwork
             float x = 41.8f;
             for (int i = 0; i < names.Length; i++)
             {
-                x += size[i] * 0.6f + 0.55f;
+                x += size[i] * 0.5f + 0.35f;
                 Vector3 p = new Vector3(x, Y + 3.3f + Mathf.Sin(i * 1.7f) * 0.4f, -13f + (i % 2 == 0 ? -0.6f : 0.6f));
-                x += size[i] * 0.6f + 0.25f;
+                x += size[i] * 0.5f + 0.35f;
                 Beam(kit, p + Vector3.up * size[i] * 0.5f, new Vector3(p.x, Y + CorH, p.z), 0.04f, Brass);
                 var g = kit.Group("Planet_" + names[i], p);
                 var body = PatchworkAssets.Glow(col[i], 0.55f);
@@ -273,7 +276,7 @@ namespace Patchwork
                 if (i == 2) NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(0.55f, 0.2f, 0f), Vector3.one * 0.16f, PatchworkAssets.Felt(new Color(0.85f, 0.85f, 0.82f)), default(Vector3), g));
                 var turn = g.gameObject.AddComponent<Spinner>();
                 turn.Speed = 20f - i * 1.5f;
-                NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(p.x, Y + 0.05f, -13f), new Vector3(0.3f, 0.03f, 0.3f), Brass));
+                NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(p.x, Y + 0.09f, -13f), new Vector3(0.3f, 0.02f, 0.3f), Brass));
             }
             PointLight(kit, new Vector3(50f, Y + 5f, -13f), new Color(0.8f, 0.8f, 1f), 11f, 1f);
             Plaque(kit, new Vector3(52.6f, Y, -10.8f), 180f, "The Planet Found by Sums",

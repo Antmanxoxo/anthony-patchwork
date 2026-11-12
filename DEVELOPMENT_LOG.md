@@ -1,5 +1,22 @@
 # Development Log
 
+## Real-size stonework, a finished front, and a tidier Star Corridor
+- Level 2's brick, stone, plaster, plank, roof-tile and wallpaper textures are now laid on
+  at real size instead of one copy stretched over each face. The big walls used to show a
+  handful of giant bricks; now they show proper courses that line up from block to block.
+- The museum's front got its stonework: a rusticated base with cut joints, a moulded band
+  between the rows of windows, fluted pilasters, keystones and bracketed sills on every
+  window, a frieze and a row of dentils under the cornice, a balustrade with urns along
+  the roof, big corner quoins and a stone band on both towers, iron lanterns either side
+  of the doors, planters of yarn flowers under the banners, and ivy creeping up the towers.
+- The Star Corridor: the wood panelling and gold line now only run along real walls (they
+  used to cut straight across the doorways and even the lift doors), walls meet at their
+  corners without overlapping (which flickered), the ceilings fit their rooms exactly, the
+  night windows sit above the panelling, and the planets are spaced so Neptune hangs
+  inside the room instead of in the wall.
+- The sunken treasure's marble sits a little further from the chest so it no longer gets
+  pushed up out of place.
+
 ## Sewing-station checkpoints, and more detail
 - Checkpoints in every level are now sewing stations instead of pins with flags: a big
   tomato pincushion bristling with coloured pins, a wooden cotton reel on top and a

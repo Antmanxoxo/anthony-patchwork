@@ -23,6 +23,13 @@ namespace Patchwork
 
         static bool farView;
 
+        // When on, big blocks wearing a tiling texture (brick, stone, plaster, planks, roof
+        // tiles, wallpaper) get their texture laid on at real size, measured in the world, instead
+        // of one copy stretched over each face: a 30 m wall gets 30 m of bricks, not eight giant
+        // ones, and the courses line up from one block to the next.
+        public static bool WorldTiling;
+        static Dictionary<Texture, float> tileSize;
+
         // Cutscenes that fly over the whole level switch this on, so small things are drawn at
         // any distance for a while instead of popping in as the camera gets near.
         public static void SetFarView(bool on)
@@ -51,7 +58,8 @@ namespace Patchwork
         {
             Prepare();
             farView = false;
-            int swapped = 0, unshadowed = 0, layered = 0;
+            tileSize = null;
+            int swapped = 0, unshadowed = 0, layered = 0, tiled = 0;
             var filters = root.GetComponentsInChildren<MeshFilter>(true);
             foreach (var mf in filters)
             {
@@ -65,6 +73,11 @@ namespace Patchwork
                 // Our own copies of the cube and cylinder (same shape, but always mergeable).
                 if (mesh == hiCube) { mf.sharedMesh = cube; mesh = cube; }
                 else if (mesh == hiCylinder) { mf.sharedMesh = cylinder; mesh = cylinder; }
+                if (WorldTiling && mesh == cube)
+                {
+                    float tile = TileFor(r.sharedMaterial);
+                    if (tile > 0f) { mf.sharedMesh = WorldCube(mf.transform, tile); tiled++; }
+                }
                 if (mesh == hiSphere && size < 2.6f) { mf.sharedMesh = spheres[size < 0.45f ? 0 : size < 1.3f ? 1 : 2]; swapped++; }
                 else if (mesh == hiCapsule && size < 3.2f) { mf.sharedMesh = capsules[size < 0.6f ? 0 : size < 1.6f ? 1 : 2]; swapped++; }
 
@@ -88,7 +101,7 @@ namespace Patchwork
                 cullFar = farClip;
                 ApplyCullDistances();
             }
-            Debug.Log("Patchwork: render tidy-up - " + swapped + " lighter round meshes, " + unshadowed + " tiny shadows off, " + layered + " decorations distance-culled.");
+            Debug.Log("Patchwork: render tidy-up - " + swapped + " lighter round meshes, " + unshadowed + " tiny shadows off, " + layered + " decorations distance-culled, " + tiled + " blocks tiled at real size.");
         }
 
         static void Prepare()
@@ -116,6 +129,56 @@ namespace Patchwork
             cylinder = MakeCylinder(20);
             spheres = new[] { Round("LowSphere", 10, 7, 0f), Round("MidSphere", 16, 10, 0f), Round("HighSphere", 20, 14, 0f) };
             capsules = new[] { Round("LowCapsule", 10, 8, 0.5f), Round("MidCapsule", 16, 10, 0.5f), Round("HighCapsule", 20, 14, 0.5f) };
+        }
+
+        // How big one repeat of a material's texture is in the world (0 = leave it alone).
+        static float TileFor(Material m)
+        {
+            if (m == null || !m.HasProperty("_BaseMap")) return 0f;
+            var t = m.GetTexture("_BaseMap");
+            if (t == null) return 0f;
+            if (tileSize == null)
+            {
+                tileSize = new Dictionary<Texture, float>();
+                PatchworkAssets.Brick(Color.white);   // makes sure the textures exist
+                System.Action<PatchworkTextures.Pair, float> add = (pair, s) => { if (pair != null && pair.Albedo != null) tileSize[pair.Albedo] = s; };
+                add(PatchworkTextures.Brick, 3f);     // 8 courses a repeat: stone blocks about 0.4 m tall
+                add(PatchworkTextures.Cobble, 3f);
+                add(PatchworkTextures.Plaster, 4f);
+                add(PatchworkTextures.Planks, 1.6f);
+                add(PatchworkTextures.Shingle, 2f);
+                add(PatchworkTextures.Damask, 2.4f);
+            }
+            float s2;
+            return tileSize.TryGetValue(t, out s2) ? s2 : 0f;
+        }
+
+        // A copy of the cube whose UVs come from where each corner really is in the world:
+        // tops and bottoms map x and z, the sides map along the wall and up.
+        static Mesh WorldCube(Transform t, float tile)
+        {
+            var verts = cube.vertices;
+            var normals = cube.normals;
+            var uvs = new Vector2[verts.Length];
+            for (int i = 0; i < verts.Length; i++)
+            {
+                Vector3 w = t.TransformPoint(verts[i]);
+                Vector3 n = t.TransformDirection(normals[i]);
+                Vector2 uv;
+                if (Mathf.Abs(n.y) > 0.7f) uv = new Vector2(w.x, w.z);
+                else if (Mathf.Abs(n.x) > Mathf.Abs(n.z)) uv = new Vector2(n.x > 0f ? -w.z : w.z, w.y);
+                else uv = new Vector2(n.z > 0f ? w.x : -w.x, w.y);
+                uvs[i] = uv / tile;
+            }
+            var m = new Mesh { name = "PatchworkTiledCube" };
+            m.vertices = verts;
+            m.normals = normals;
+            m.uv = uvs;
+            m.triangles = cube.triangles;
+            m.RecalculateTangents();
+            m.RecalculateBounds();
+            m.UploadMeshData(false);
+            return m;
         }
 
         // A unit cube like Unity's (each face its own 0..1 UVs).

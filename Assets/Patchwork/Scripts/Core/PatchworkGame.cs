@@ -172,6 +172,7 @@ namespace Patchwork
             cam.farClipPlane = Level.FarClip;
             // Lighter meshes for small round things, no shadows from tiny ones, and distance
             // culling for small decorations (not in the Pod, where the stars outside need to show).
+            RenderOptimizer.WorldTiling = levelId == LevelId.Level2;
             RenderOptimizer.Run(kit.Root, cam, Level.FarClip, !Level.IsHub);
             if (!Level.IsHub)
             {
