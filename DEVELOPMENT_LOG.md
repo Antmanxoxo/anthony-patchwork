@@ -1,5 +1,17 @@
 # Development Log
 
+## Sewing-station checkpoints, and more detail
+- Checkpoints in every level are now sewing stations instead of pins with flags: a big
+  tomato pincushion bristling with coloured pins, a wooden cotton reel on top and a
+  needle asleep across it. Touch one and it's stitched: the needle springs upright and
+  sways, the thread glows gold, the reel winds, a warm lamp comes on, and it bounces with
+  a burst of sparkles. When you move on to another, it settles back to sleep. The map
+  shows them as little reels.
+- Level 2: paper boats with tea-lights bobbing off the end of the quay; a big painted map
+  of the museum (with a "you are here" pin) and a leaflet rack by the front doors; a trail
+  of dinosaur footprints walking in to the T. rex; and old glass fishing floats in rope
+  nets along the Kelp Galleries' wall.
+
 ## Level 2: the Star Corridor
 - The way to the Observatory is now much longer. The cardboard lift's top floor opens
   into the Star Corridor, about a hundred metres winding round the back of the museum

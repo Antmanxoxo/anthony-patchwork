@@ -473,6 +473,13 @@ Stuff I need to remember about how Patchwork is put together.
 - `Level2Grandeur.cs` is the fourth pass (sky lanterns over the sea, the atrium's river of
   stars, kelp moonbeams, the whale calf, fireflies, the Hall of Arms' pennants).
   `SkyLantern` lives there too.
+- Checkpoints (all levels) are sewing stations: `LevelKit.AddCheckpoint` builds a tomato
+  pincushion with pins, a cotton reel and a needle beside the spawn spot, parented under the
+  Checkpoint so it stays live. `Checkpoint` animates it: asleep (needle lying across the reel,
+  grey thread) or stitched (needle up and swaying, gold thread, reel winding, lamp on, a
+  bounce and sparkles). The map's checkpoint icon is a reel with a needle.
+- `Level2Flourish.cs`: paper boats on the sea, the museum map board and leaflet rack by the
+  front doors, dinosaur footprints in Deep Time, fishing floats in the Kelp Galleries.
 - The lift's two cars aren't stacked: the bottom one is in the Ruins tower (`LiftLower`),
   the top one is at the far end of the Star Corridor (`LiftUpper` = (52, DeckY, -38)).
   Both are built by `CarShell` + `CarInside` and must stay identical. The Ruins' old upper

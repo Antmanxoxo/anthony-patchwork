@@ -26,6 +26,7 @@ namespace Patchwork
             ArmsLife(kit);
             Signs(kit);
             Grandeur(kit);
+            Flourish(kit);
             Undersea(kit);
             Lighting(kit);
             Cinematics(kit);

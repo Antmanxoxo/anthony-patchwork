@@ -641,11 +641,11 @@ namespace Patchwork
                     float k = Mathf.Cos(5f * (ang - Mathf.PI * 0.5f));
                     float edge = Mathf.Lerp(0.45f, 0.95f, k * 0.5f + 0.5f);
                     s[y * n + x] = new Color(1f, 1f, 1f, Mathf.Clamp01((edge - r) * 12f));
-                    // A pennant on a pin.
-                    bool pole = Mathf.Abs(u + 0.5f) < 0.08f && v > -0.9f && v < 0.8f;
-                    bool pennant = u > -0.45f && u < 0.7f && v > 0.05f && v < 0.8f && Mathf.Abs(v - 0.42f) < (0.7f - u) * 0.33f;
-                    bool head = (u + 0.5f) * (u + 0.5f) + (v - 0.82f) * (v - 0.82f) < 0.03f;
-                    f[y * n + x] = new Color(1f, 1f, 1f, pole || pennant || head ? 1f : 0f);
+                    // A cotton reel with a needle stood up in it (the checkpoints).
+                    bool flange = Mathf.Abs(u) < 0.62f && (Mathf.Abs(v + 0.62f) < 0.11f || Mathf.Abs(v - 0.18f) < 0.11f);
+                    bool core = Mathf.Abs(u) < 0.42f && v > -0.62f && v < 0.18f;
+                    bool pin = Mathf.Abs(u - 0.12f) < 0.06f && v > 0.18f && v < 0.92f;
+                    f[y * n + x] = new Color(1f, 1f, 1f, flange || core || pin ? 1f : 0f);
                     // The Pod: a round capsule with a porthole and two little fins.
                     float body = (u * u) / 0.35f + (v * v) / 0.72f;
                     bool fin = v < -0.45f && v > -0.9f && Mathf.Abs(u) > 0.35f && Mathf.Abs(u) < 0.75f && Mathf.Abs(u) - 0.35f < (v + 0.95f) * 0.8f;

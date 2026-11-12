@@ -429,13 +429,69 @@ namespace Patchwork
             var cp = Volume<Checkpoint>(feet + Vector3.up * 1.5f, new Vector3(12f, 4f, 3f), "Checkpoint");
             cp.SpawnPoint = feet + Vector3.up * 0.1f;
             cp.SpawnYaw = yaw;
-            // A giant sewing pin with a felt flag.
-            Vector3 pinPos = feet + Quaternion.Euler(0f, yaw, 0f) * new Vector3(-1.6f, 0f, 0f);
-            Deco(PrimitiveType.Cylinder, pinPos + Vector3.up * 1.2f, new Vector3(0.07f, 1.2f, 0.07f), PatchworkAssets.Plain(new Color(0.85f, 0.85f, 0.9f), 0.8f));
-            Deco(PrimitiveType.Sphere, pinPos + Vector3.up * 2.5f, Vector3.one * 0.4f, PatchworkAssets.Felt(Palette.Rose));
-            var flag = Deco(PrimitiveType.Cube, pinPos + Vector3.up * 1.95f + Quaternion.Euler(0f, yaw, 0f) * new Vector3(0.45f, 0f, 0f),
-                new Vector3(0.8f, 0.5f, 0.04f), PatchworkAssets.Fabric(Palette.Cream), new Vector3(0f, yaw, 0f));
-            cp.Setup(flag.GetComponent<Renderer>());
+            // A sewing station beside the spot: a tomato pincushion bristling with pins, a wooden
+            // cotton reel on top of it, and a needle asleep across the reel (see Checkpoint).
+            var turn = Quaternion.Euler(0f, yaw, 0f);
+            Vector3 at = feet + turn * new Vector3(-1.7f, 0f, 0f);
+            var look = new GameObject("Sewing").transform;
+            look.SetParent(cp.transform, false);   // (under the checkpoint, so it stays movable)
+            look.position = at;
+            look.rotation = turn;
+            var red = PatchworkAssets.Felt(new Color(0.86f, 0.24f, 0.26f));
+            var leaf = PatchworkAssets.Felt(new Color(0.35f, 0.62f, 0.32f));
+            var wood = PatchworkAssets.Planks(new Color(0.78f, 0.58f, 0.36f));
+            var steel = PatchworkAssets.Plain(new Color(0.86f, 0.87f, 0.92f), 0.85f);
+            // The pincushion, with its segments stitched in and a leafy top.
+            Deco(PrimitiveType.Sphere, new Vector3(0f, 0.32f, 0f), new Vector3(1.35f, 0.64f, 1.35f), red, default(Vector3), look);
+            for (int i = 0; i < 6; i++)
+                Deco(PrimitiveType.Cube, new Vector3(0f, 0.34f, 0f), new Vector3(1.37f, 0.5f, 0.04f), PatchworkAssets.Felt(new Color(0.7f, 0.16f, 0.2f)), new Vector3(0f, i * 30f, 0f), look);
+            for (int i = 0; i < 5; i++)
+                Deco(PrimitiveType.Cube, new Vector3(0f, 0.63f + i * 0.015f, 0f) + Quaternion.Euler(0f, i * 72f, 0f) * new Vector3(0f, 0f, 0.2f), new Vector3(0.16f, 0.04f, 0.4f), leaf, new Vector3(0f, i * 72f, 0f), look);   // (each a little higher: they cross)
+            // Pins stuck in round the sides, each with a coloured head.
+            Color[] heads = { Palette.Gold, Palette.Rose, new Color(0.4f, 0.7f, 1f), new Color(0.6f, 0.9f, 0.5f), Palette.Cream };
+            for (int i = 0; i < 7; i++)
+            {
+                float a = i * 51f + 20f;
+                var dir = Quaternion.Euler(0f, a, 0f) * new Vector3(0f, 0.45f, 1f);
+                Vector3 p = new Vector3(0f, 0.3f, 0f) + dir.normalized * 0.62f;
+                Deco(PrimitiveType.Cylinder, p, new Vector3(0.03f, 0.22f, 0.03f), steel, Quaternion.FromToRotation(Vector3.up, dir).eulerAngles, look);
+                Deco(PrimitiveType.Sphere, p + dir.normalized * 0.24f, Vector3.one * 0.12f, PatchworkAssets.Felt(heads[i % heads.Length]), default(Vector3), look);
+            }
+            // The cotton reel: flanges, and the thread wound round the middle (it lights up).
+            var reel = new GameObject("Reel").transform;
+            reel.SetParent(look, false);
+            reel.localPosition = new Vector3(0f, 0.62f, 0f);
+            Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.05f, 0f), new Vector3(0.95f, 0.05f, 0.95f), wood, default(Vector3), reel);
+            Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.95f, 0f), new Vector3(0.95f, 0.05f, 0.95f), wood, default(Vector3), reel);
+            var t1 = Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.5f, 0f), new Vector3(0.74f, 0.4f, 0.74f), PatchworkAssets.Fabric(Palette.Cream), default(Vector3), reel);
+            // Bands of wound thread, and a tail of thread hanging off the side.
+            var t2 = Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.3f, 0f), new Vector3(0.78f, 0.05f, 0.78f), PatchworkAssets.Fabric(Palette.Cream), default(Vector3), reel);
+            var t3 = Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.7f, 0f), new Vector3(0.78f, 0.05f, 0.78f), PatchworkAssets.Fabric(Palette.Cream), default(Vector3), reel);
+            var t4 = Deco(PrimitiveType.Cylinder, new Vector3(0.39f, 0.25f, 0f), new Vector3(0.035f, 0.32f, 0.035f), PatchworkAssets.Fabric(Palette.Cream), new Vector3(0f, 0f, 12f), reel);
+            Deco(PrimitiveType.Cylinder, new Vector3(0f, 1f, 0f), new Vector3(0.18f, 0.02f, 0.18f), PatchworkAssets.Plain(new Color(0.35f, 0.24f, 0.16f), 0.3f), default(Vector3), reel);
+            // The needle, hinged at the top of the reel: lying down asleep, standing up awake.
+            var needle = new GameObject("Needle").transform;
+            needle.SetParent(look, false);
+            needle.localPosition = new Vector3(0f, 1.64f, 0f);
+            Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.6f, 0f), new Vector3(0.07f, 0.6f, 0.07f), steel, default(Vector3), needle);
+            Deco(PrimitiveType.Sphere, new Vector3(0f, 1.2f, 0f), new Vector3(0.07f, 0.12f, 0.07f), steel, default(Vector3), needle);
+            Deco(PrimitiveType.Cube, new Vector3(0f, 1.08f, 0f), new Vector3(0.02f, 0.12f, 0.08f), PatchworkAssets.Plain(new Color(0.2f, 0.2f, 0.25f), 0.3f), default(Vector3), needle);
+            var t5 = Deco(PrimitiveType.Cylinder, new Vector3(0.1f, 0.95f, 0f), new Vector3(0.03f, 0.18f, 0.03f), PatchworkAssets.Fabric(Palette.Cream), new Vector3(0f, 0f, -35f), needle);
+            // A little warm lamp that comes on when it's stitched.
+            var lampGo = new GameObject("Glow");
+            lampGo.transform.SetParent(look, false);
+            lampGo.transform.localPosition = new Vector3(0f, 1.8f, 0f);
+            var lamp = lampGo.AddComponent<Light>();
+            lamp.type = LightType.Point;
+            lamp.color = new Color(1f, 0.82f, 0.5f);
+            lamp.range = 7f;
+            lamp.intensity = 0f;
+            lamp.shadows = LightShadows.None;
+            lamp.enabled = false;
+            var threads = new[] { t1, t2, t3, t4, t5 };
+            var rends = new Renderer[threads.Length];
+            for (int i = 0; i < threads.Length; i++) rends[i] = threads[i].GetComponent<Renderer>();
+            cp.Setup(look, reel, needle, rends, lamp);
             return cp;
         }
 
