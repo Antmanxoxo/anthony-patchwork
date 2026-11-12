@@ -999,21 +999,40 @@ namespace Patchwork
                     kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(i * 0.7f + 0.3f) * 1.3f, Mathf.Sin(i * 0.7f + 0.3f) * 1.3f + 0.1f, 0.2f), Vector3.one * 0.9f, RuinDark, default(Vector3), head);
                 for (int s = -1; s <= 1; s += 2)
                     NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.5f, 0.36f, 1.1f), Vector3.one * 0.24f, PatchworkAssets.Glow(new Color(0.5f, 1f, 0.8f), 1.6f), default(Vector3), head));
-                // The falling water: a pale ribbon, bubbles tumbling down it, foam where it lands.
-                Vector3 lip = at + r * new Vector3(0f, -0.7f, 1.7f);
-                float drop = lip.y - RuinSurface;
-                NoShadow(kit.Deco(PrimitiveType.Cube, lip + Vector3.down * drop * 0.5f + r * new Vector3(0f, 0f, 0.3f), new Vector3(1f, drop, 0.2f), Shaft(new Color(0.7f, 1f, 0.95f), 0.22f), new Vector3(0f, w.w, 0f)));
-                var falls = kit.Group("Falls", lip + r * new Vector3(0f, 0f, 0.3f));
+                // An open mouth: a dark hollow between the upper lip and a dropped jaw.
+                NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -0.5f, 1.42f), new Vector3(0.8f, 0.42f, 0.5f), RuinDark, default(Vector3), head));
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -0.86f, 1.2f), new Vector3(1f, 0.38f, 0.8f), RuinStone, default(Vector3), head);
+                // The water pours out of the mouth in an arc, as a round stream, and splashes
+                // down into the pool; bubbles of spray tumble along the end of it.
+                Vector3 mouth = at + r * new Vector3(0f, -0.5f, 1.62f);
+                Vector3 outward = r * Vector3.forward;
+                float drop = mouth.y - RuinSurface;
+                const float reach = 1.8f;
+                var stream = PatchworkAssets.Water(new Color(0.6f, 0.92f, 0.95f));
+                Vector3 prev = mouth;
+                const int segs = 9;
+                for (int i = 1; i <= segs; i++)
+                {
+                    float t = i / (float)segs;
+                    Vector3 pt = mouth + outward * (reach * t) + Vector3.down * (drop * t * t);
+                    NoShadow(Beam(kit, prev, pt, Mathf.Lerp(0.42f, 0.34f, t), stream));
+                    prev = pt;
+                }
+                Vector3 land = mouth + outward * reach + Vector3.down * drop;
+                Vector3 mid = mouth + outward * (reach * 0.55f) + Vector3.down * (drop * 0.3f);
+                var falls = kit.Group("Falls", mid);
                 var fm = PatchworkAssets.Glow(new Color(0.85f, 1f, 1f), 1f);
                 var drops = new Transform[10];
-                for (int i = 0; i < drops.Length; i++) drops[i] = NoShadow(kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 0.2f, fm, default(Vector3), falls));
+                for (int i = 0; i < drops.Length; i++) drops[i] = NoShadow(kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 0.18f, fm, default(Vector3), falls));
                 var fs = falls.gameObject.AddComponent<BubbleStream>();
                 fs.Bubbles = drops;
-                fs.Height = -drop;
+                fs.Height = -(mid.y - RuinSurface);
                 fs.Speed = -7f;   // (falling: the stream runs downwards)
-                fs.Wobble = 0.3f;
-                NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(lip.x, RuinSurface + 0.03f, lip.z) + r * new Vector3(0f, 0f, 0.3f), new Vector3(3f, 0.02f, 3f), PatchworkAssets.Glow(new Color(0.85f, 1f, 1f), 0.8f)));
-                AmbientEmitter.Create(kit.Root, lip, Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.5f, 5f, 26f);
+                fs.Wobble = 0.35f;
+                // Foam rings where it lands.
+                NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(land.x, RuinSurface + 0.04f, land.z), new Vector3(2.2f, 0.02f, 2.2f), PatchworkAssets.Glow(new Color(0.85f, 1f, 1f), 0.8f)));
+                NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(land.x, RuinSurface + 0.07f, land.z), new Vector3(1.1f, 0.02f, 1.1f), PatchworkAssets.Felt(new Color(0.95f, 1f, 1f))));
+                AmbientEmitter.Create(kit.Root, land, Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.5f, 5f, 26f);
             }
             // A great stone hand reaching up out of the water.
             Vector3 hand = new Vector3(90f, RuinSurface - 0.6f, 88f);

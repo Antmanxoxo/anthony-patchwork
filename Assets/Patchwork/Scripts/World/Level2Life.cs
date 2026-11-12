@@ -549,7 +549,8 @@ namespace Patchwork
             var lamp = PointLight(kit, g.TransformPoint(orb), pearl ? new Color(0.8f, 0.9f, 1f) : new Color(1f, 0.85f, 0.5f), 18f, 1.8f);
             lamp.gameObject.AddComponent<GlowPulse>().Lamp = lamp;
             PointLight(kit, foot + Rot(yaw) * new Vector3(0f, 1f, 3.4f), new Color(1f, 0.85f, 0.65f), 12f, 1f);
-            Plaque(kit, foot + Rot(yaw) * new Vector3(2.2f, 0f, 2.2f), yaw, pearl ? "The Keeper of the Deep" : "The Keeper of the Sky",
+            // (On the open side of each statue, away from the gallery columns.)
+            Plaque(kit, foot + new Vector3(-2.6f, 0f, pearl ? 3.6f : -3.6f), yaw, pearl ? "The Keeper of the Deep" : "The Keeper of the Sky",
                 pearl ? "One of the two stone Keepers who guard the Great Window. She holds up the pearl, for everything under the sea." : "One of the two stone Keepers who guard the Great Window. She holds up the star, for everything over it.",
                 "The sculptor made their faces from the same model: her own grandmother, asleep in a deckchair at the seaside.");
         }

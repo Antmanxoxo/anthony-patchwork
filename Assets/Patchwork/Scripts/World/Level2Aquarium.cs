@@ -202,6 +202,7 @@ namespace Patchwork
             kit.Rope(new Vector3(-84.6f, 11f, 28.4f), new Vector3(-84.6f, 11f, 54f), Brass, 0.07f);
             TownKit.Solid(kit, new Vector3(-84.6f, 10.5f, 41.2f), new Vector3(0.2f, 1f, 25.6f), 0f);
             kit.Fountain(new Vector3(-82.6f, PoolSurface, 25f), 11.6f, LevelKit.FountainStyle.Spring);
+            SpringMouth(kit, new Vector3(-82.6f, PoolSurface, 25f), PatchworkAssets.Cobble(new Color(0.42f, 0.55f, 0.5f)), 270f);
             kit.GoldenButton("L2_b_catwalk", new Vector3(-86f, 11.4f, 52f));
             kit.ThreadLine(new Vector3(-86f, 11.1f, 30f), new Vector3(-86f, 11.1f, 48f), 5);
 
@@ -264,7 +265,12 @@ namespace Patchwork
             var far = Backdrop(deep, shallow, 0.9f);
             NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(cx, DeepFloor + h * 0.5f, DeepZ1 + 0.4f), new Vector3(W + 4f, h, 0.2f), far));
             NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(-15f, DeepFloor + h * 0.5f, DeepZ0 - 0.4f), new Vector3(34f, h, 0.2f), far));
-            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(cx, DeepTop + 0.05f, cz), new Vector3(W + 4f, 0.1f, D + 4f), PatchworkAssets.Glow(new Color(0.45f, 0.75f, 1f), 1.1f)));
+            // The surface far overhead (seen from underneath), and the roof of the tank above it.
+            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(cx, DeepTop - 1.4f, cz), new Vector3(W + 3.6f, 0.08f, D + 3.6f), PatchworkAssets.Water(new Color(0.5f, 0.78f, 0.95f))));
+            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(cx, DeepTop + 0.5f, cz), new Vector3(W + 4f, 1f, D + 4f), PatchworkAssets.Plaster(new Color(0.1f, 0.12f, 0.17f))));
+            for (float lx = DeepX0 + 8f; lx < DeepX1 - 4f; lx += 14f)
+                for (float lz = DeepZ0 + 10f; lz < DeepZ1 - 4f; lz += 20f)
+                    NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(lx, DeepTop - 0.1f, lz), new Vector3(1.2f, 0.08f, 1.2f), PatchworkAssets.Glow(new Color(0.85f, 0.95f, 1f), 1.8f)));
             var rng = new System.Random(61);
             foreach (var p in new[] { new Vector3(-10f, 12f, 44f), new Vector3(24f, 12f, 46f), new Vector3(-8f, 12f, 86f), new Vector3(26f, 12f, 86f) })
                 PointLight(kit, p, new Color(0.3f, 0.55f, 1f), 42f, 1.7f);
@@ -416,15 +422,19 @@ namespace Patchwork
                 float a = i / (float)corners.Length * Mathf.PI * 2f;
                 corners[i] = new Vector2(c.x + Mathf.Cos(a) * (R + 0.4f), c.z + Mathf.Sin(a) * (R + 0.4f));
             }
-            kit.Prism(corners, -1f, 0f, PatchworkAssets.Fabric(new Color(0.1f, 0.14f, 0.3f)), "BellFloor");
+            // (A hair above the tunnel floor it sits on, so the two don't flicker.)
+            const float lift = 0.06f;   // (also above the tunnel's star runner)
+            kit.Prism(corners, -1f, lift, PatchworkAssets.Fabric(new Color(0.1f, 0.14f, 0.3f)), "BellFloor");
             kit.Deco(PrimitiveType.Cylinder, c + Vector3.up * (DeepFloor - 1f) * 0.5f, new Vector3(6f, (-1f - DeepFloor) * 0.5f, 6f), DarkStone);
             kit.Deco(PrimitiveType.Cylinder, c + Vector3.down * 1.3f, new Vector3(R * 2f + 1.6f, 0.3f, R * 2f + 1.6f), DarkStone);
             // A compass rose in cloth on the floor.
-            NoShadow(kit.Deco(PrimitiveType.Cylinder, c + Vector3.up * 0.02f, new Vector3(R * 1.5f, 0.02f, R * 1.5f), StarCloth));
-            NoShadow(kit.Deco(PrimitiveType.Cylinder, c + Vector3.up * 0.03f, new Vector3(R * 0.9f, 0.02f, R * 0.9f), PlumStars));
+            // (Each layer a clear step above the last; the four gold points cross in the middle,
+            // so each is set a little higher than the one before.)
+            NoShadow(kit.Deco(PrimitiveType.Cylinder, c + Vector3.up * (lift + 0.02f), new Vector3(R * 1.5f, 0.02f, R * 1.5f), StarCloth));
+            NoShadow(kit.Deco(PrimitiveType.Cylinder, c + Vector3.up * (lift + 0.05f), new Vector3(R * 0.9f, 0.02f, R * 0.9f), PlumStars));
             var gold = PatchworkAssets.Felt(new Color(1f, 0.82f, 0.4f));
             for (int i = 0; i < 4; i++)
-                NoShadow(kit.Deco(PrimitiveType.Cube, c + Vector3.up * 0.045f, new Vector3(0.5f, 0.02f, R * 1.36f), gold, new Vector3(0f, i * 45f, 0f)));
+                NoShadow(kit.Deco(PrimitiveType.Cube, c + Vector3.up * (lift + 0.085f + i * 0.02f), new Vector3(0.5f, 0.02f, R * 1.36f), gold, new Vector3(0f, i * 45f, 0f)));
             // The dome, its brass ribs, and a low glass wall round the foot of it (open at each
             // end where the tunnel comes in).
             Dome(kit, c, new Vector3(R, 7.6f, R), DomeGlass(new Color(0.6f, 0.85f, 0.95f, 0.1f)), false, "BellDome", 8, 28);
@@ -458,7 +468,7 @@ namespace Patchwork
                 }
             }
             // Inside: the jelly cushion and the Heartstring over it, benches, and someone to talk to.
-            kit.AddBouncePad(c, 16f);
+            kit.AddBouncePad(c + Vector3.up * (lift + 0.08f), 16f);
             Level1Builder.MakeHeartstring(kit, "L2_hs_bell", "The Bell", c + Vector3.up * 5f, false);
             ScoreBubbles.Place(kit, c + Vector3.up * 2.6f, 50);
             for (int i = 0; i < 4; i++)

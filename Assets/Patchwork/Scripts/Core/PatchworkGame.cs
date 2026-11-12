@@ -140,7 +140,9 @@ namespace Patchwork
             camGo.tag = "MainCamera";
             var cam = camGo.AddComponent<Camera>();
             cam.fieldOfView = 60f;
-            cam.nearClipPlane = 0.1f;
+            // (Not too close: a near plane of 0.1 m leaves so little depth precision far away
+            // that floors, rugs and trims flicker against each other.)
+            cam.nearClipPlane = 0.25f;
             cam.farClipPlane = 600f;
             var ears = new GameObject("Listener");
             ears.AddComponent<AudioListener>();

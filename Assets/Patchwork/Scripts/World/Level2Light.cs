@@ -13,6 +13,8 @@ namespace Patchwork
 
         static void Lighting(LevelKit kit)
         {
+            Beams(kit);
+
             // ----- The Great Window: the reef's light pouring into the atrium -----
             // From high up at the back of the tank, so the kelp and the passing sharks throw
             // moving shadows across the atrium floor through the glass, netted with caustics.
@@ -46,6 +48,53 @@ namespace Patchwork
 
         // (Spot lights fall off with the square of the distance, so these, hung far from what
         // they light, need big numbers to land about as bright as a lamp a few metres away.)
+        // Soft beams of light, where light really comes in: moonlight down from the atrium's
+        // skylights, sun through the water in the Great Window, the kelp pool and the Great
+        // Deep, light through the cracked roof of the Ruins, and the moon through the
+        // Observatory dome.
+        static void Beams(LevelKit kit)
+        {
+            var root = kit.Group("LightBeams", Vector3.zero);
+            var rng = new System.Random(4321);
+            System.Func<float, float, float> R = (a, b) => a + (float)rng.NextDouble() * (b - a);
+            Color moon = new Color(0.72f, 0.82f, 1f), sea = new Color(0.55f, 0.92f, 1f), kelp = new Color(0.6f, 1f, 0.88f), ruin = new Color(0.62f, 1f, 0.78f);
+
+            // The atrium: two beams under each skylight, leaning a little towards the window.
+            foreach (float z in new[] { -97.5f, -84.5f, -71.5f, -58.5f })
+                for (int s = -1; s <= 1; s += 2)
+                    LightBeam.Make(root, new Vector3(s * 2.2f, AtriumTop - 0.3f, z + s * 1.2f), new Vector3(s * 2.2f + 3.5f, 0.2f, z + s * 1.2f + 1.5f), 5.5f, moon, 0.32f);
+
+            // Inside the Great Window's tank, from just under the water's surface.
+            for (int i = 0; i < 8; i++)
+            {
+                float x = R(AtriumHalf + 4f, AtriumHalf + 27f), z = -99f + i * 6f + R(-1.5f, 1.5f);
+                LightBeam.Make(root, new Vector3(x, 20.2f, z), new Vector3(x - R(2f, 4f), 0.2f, z + R(-1.5f, 1.5f)), R(2.4f, 3.6f), sea, 0.55f);
+            }
+
+            // The kelp pool's skylights, down into the water.
+            for (int i = 0; i < 4; i++)
+            {
+                float x = -80f + i * 13.5f;
+                foreach (float z in new[] { 26f, 38f, 50f })
+                    LightBeam.Make(root, new Vector3(x + R(-2f, 2f), KelpTop - 0.3f, z + R(-3f, 3f)), new Vector3(x + R(0f, 3f), PoolBed + 0.3f, z + R(-2f, 2f)), R(3f, 4.2f), kelp, 0.3f);
+            }
+
+            // The Great Deep: sunlight falling from the far surface (not across the tunnel).
+            for (int i = 0; i < 9; i++)
+            {
+                float x = R(DeepX0 + 6f, DeepX1 - 6f), z = R(DeepZ0 + 6f, DeepZ1 - 6f);
+                if (Mathf.Abs(z - TunnelZ) < 8f) z += z < TunnelZ ? -8f : 8f;
+                LightBeam.Make(root, new Vector3(x, DeepTop - 1.6f, z), new Vector3(x + R(1f, 3f), DeepFloor + 0.3f, z + R(-2f, 2f)), R(3f, 4.5f), sea, 0.4f);
+            }
+
+            // The Ruins: through the cracks in the roof onto the water.
+            foreach (var p in new[] { new Vector3(75f, 0f, 58f), new Vector3(60f, 0f, 84f), new Vector3(90f, 0f, 42f), new Vector3(62f, 0f, 36f), new Vector3(88f, 0f, 80f) })
+                LightBeam.Make(root, new Vector3(p.x + 3f, RuinTop - 0.3f, p.z), new Vector3(p.x, RuinBed + 0.5f, p.z + 1f), 3.6f, ruin, 0.34f);
+
+            // The Observatory: one broad moonbeam through the dome onto the telescope floor.
+            LightBeam.Make(root, Observatory + new Vector3(7f, 22f, -5f), Observatory + new Vector3(0f, 0.2f, 0f), 6f, moon, 0.26f);
+        }
+
         static Light SpotLight(LevelKit kit, Vector3 pos, Vector3 target, Color c, float range, float angle, float intensity, bool shadows, bool caustic)
         {
             var go = new GameObject(caustic ? "CausticLight" : "SpotLight");

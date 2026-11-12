@@ -19,6 +19,30 @@ namespace Patchwork
         static Material RuinDark { get { return PatchworkAssets.Cobble(new Color(0.5f, 0.56f, 0.54f)); } }
 
         // A broken column standing up out of the water, flat on top to land on.
+        // A great stone fish just under the water, its mouth open to the sky: the spring's jet
+        // rises out of its mouth. (No colliders: Water Form swims straight into the jet.)
+        static void SpringMouth(LevelKit kit, Vector3 at, Material stone, float yaw)
+        {
+            var g = kit.Group("SpringFish", at);
+            g.rotation = Rot(yaw);
+            var dark = PatchworkAssets.Felt(new Color(0.05f, 0.1f, 0.12f));
+            // The lips: a ring of rounded stones round the jet, just breaking the surface.
+            for (int i = 0; i < 12; i++)
+            {
+                float a = i / 12f * Mathf.PI * 2f;
+                NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 1.35f, 0.05f, Mathf.Sin(a) * 1.35f), new Vector3(0.75f, 0.5f, 0.75f), stone, default(Vector3), g));
+            }
+            NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.5f, 0f), new Vector3(2.3f, 0.4f, 2.3f), dark, default(Vector3), g));
+            // The head and body slope away under the water, with eyes and a fin or two.
+            NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -1.4f, -1.6f), new Vector3(3.6f, 2.6f, 4.2f), stone, default(Vector3), g));
+            NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -2.6f, -4.6f), new Vector3(2.6f, 2f, 4f), stone, default(Vector3), g));
+            for (int s = -1; s <= 1; s += 2)
+            {
+                NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(s * 1.45f, -0.2f, -1.1f), Vector3.one * 0.5f, PatchworkAssets.Glow(new Color(0.6f, 1f, 0.85f), 1.5f), default(Vector3), g));
+                NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(s * 1.9f, -1.6f, -2.6f), new Vector3(0.3f, 1.2f, 1.8f), stone, new Vector3(0f, 0f, s * 35f), g));
+            }
+        }
+
         static void Stump(LevelKit kit, float x, float z, float top, float radius, bool mossy = false)
         {
             RoundPlatform(kit, new Vector3(x, top, z), radius, top - RuinBed, RuinStone, RuinStone, false);
@@ -138,6 +162,7 @@ namespace Patchwork
             // A walkway along the top of that arch's wall: Water Form's reward for riding the spring.
             kit.Block(new Vector3(58f, 7.95f, 86f), new Vector3(2.4f, 0.5f, 14f), StoneCol, "ArchTop", RuinStone);
             kit.Fountain(new Vector3(61.6f, RuinSurface, 82f), 9.6f, LevelKit.FountainStyle.Spring);
+            SpringMouth(kit, new Vector3(61.6f, RuinSurface, 82f), RuinStone, 200f);
             kit.ThreadLine(new Vector3(58f, 9.4f, 81f), new Vector3(58f, 9.4f, 91f), 6);
             kit.Hint(new Vector3(52f, 1.5f, 70f), new Vector3(6f, 4f, 6f), "Springs in the Ruins", "Water Form can swim the whole hall. A spring by the tall arch to the north lifts you to the top of it.", HintTheme.Water);
             // Warm vents for Wind Form: one on the entry terrace, one on the temple.

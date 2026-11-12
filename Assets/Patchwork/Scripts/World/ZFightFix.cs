@@ -19,15 +19,20 @@ namespace Patchwork
         {
             public Transform T;
             public int Axis, Side;      // which way the face looks: axis 0/1/2 = x/y/z, side +1/-1
+            public int Frame;           // the turn it's measured in (half degrees)
             public float Plane;         // where the face is along that axis
             public Vector2 Min, Max;    // its extent along the other two axes
             public float Area;
         }
 
+        // Faces are compared inside a "frame": tops and bottoms all share one (they're all
+        // level), while the sides of a block turned to some angle are compared with the sides
+        // of other blocks turned the same way.
         public static int Run(Transform root)
         {
             var faces = new Dictionary<long, List<Face>>();
             var renderers = root.GetComponentsInChildren<MeshRenderer>(true);
+            var corner = new Vector3[8];
             foreach (var r in renderers)
             {
                 if (r == null || !r.enabled) continue;
@@ -39,22 +44,45 @@ namespace Patchwork
                 bool cube = mesh == "Cube", cyl = mesh == "Cylinder";
                 if (!cube && !cyl) continue;
                 var t = r.transform;
-                if (!Aligned(t, cyl)) continue;
-                Bounds b = r.bounds;
+                if (Mathf.Abs(t.up.y) < 0.9995f) continue;   // only things standing level
+                // The block's own turn, folded into 0..90 (a block turned 90 is the same shape).
+                float yaw = Mathf.Repeat(t.eulerAngles.y, 90f);
+                if (yaw > 89.75f) yaw = 0f;
+                int frame = cube ? Mathf.RoundToInt(yaw * 2f) : 0;   // half-degree steps
+                Quaternion inv = Quaternion.Euler(0f, -frame * 0.5f, 0f);
+                // Its box in that frame (exact for a cube; near enough for a disc's top).
+                Bounds mb = mf.sharedMesh.bounds;
+                int n = 0;
+                for (int ix = 0; ix < 2; ix++)
+                    for (int iy = 0; iy < 2; iy++)
+                        for (int iz = 0; iz < 2; iz++)
+                            corner[n++] = inv * t.TransformPoint(new Vector3(ix == 0 ? mb.min.x : mb.max.x, iy == 0 ? mb.min.y : mb.max.y, iz == 0 ? mb.min.z : mb.max.z));
+                Vector3 lo = corner[0], hi = corner[0];
+                for (int i = 1; i < 8; i++) { lo = Vector3.Min(lo, corner[i]); hi = Vector3.Max(hi, corner[i]); }
                 for (int axis = 0; axis < 3; axis++)
                 {
-                    // A disc (cylinder) only has flat faces top and bottom.
-                    if (cyl && axis != 1) continue;
+                    if (cyl && axis != 1) continue;   // a disc only has flat faces top and bottom
+                    int fr = axis == 1 ? -1 : frame;    // tops and bottoms all compare together
                     for (int side = -1; side <= 1; side += 2)
                     {
-                        var f = new Face { T = t, Axis = axis, Side = side };
-                        f.Plane = side > 0 ? b.max[axis] : b.min[axis];
+                        var f = new Face { T = t, Axis = axis, Side = side, Frame = frame };
+                        f.Plane = side > 0 ? hi[axis] : lo[axis];
                         int a1 = (axis + 1) % 3, a2 = (axis + 2) % 3;
-                        f.Min = new Vector2(b.min[a1], b.min[a2]);
-                        f.Max = new Vector2(b.max[a1], b.max[a2]);
+                        if (axis == 1)
+                        {
+                            // Level faces: compare in world space (a rough box is fine here).
+                            Bounds wb = r.bounds;
+                            f.Min = new Vector2(wb.min[a1], wb.min[a2]);
+                            f.Max = new Vector2(wb.max[a1], wb.max[a2]);
+                        }
+                        else
+                        {
+                            f.Min = new Vector2(lo[a1], lo[a2]);
+                            f.Max = new Vector2(hi[a1], hi[a2]);
+                        }
                         f.Area = (f.Max.x - f.Min.x) * (f.Max.y - f.Min.y);
-                        if (cyl) { f.Min += (f.Max - f.Min) * 0.15f; f.Max -= (f.Max - f.Min) * 0.15f; }   // roughly the disc, not its corners
-                        long key = Key(axis, side, Mathf.RoundToInt(f.Plane / Same));
+                        if (cyl || (axis == 1 && frame != 0)) { Vector2 sz = f.Max - f.Min; f.Min += sz * 0.15f; f.Max -= sz * 0.15f; }
+                        long key = Key(fr, axis, side, Mathf.RoundToInt(f.Plane / Same));
                         List<Face> list;
                         if (!faces.TryGetValue(key, out list)) faces[key] = list = new List<Face>();
                         list.Add(f);
@@ -67,13 +95,14 @@ namespace Patchwork
             foreach (var kv in faces)
             {
                 var list = kv.Value;
-                long baseKey = kv.Key;
-                // Compare with the faces in this bucket and the next one up (so a pair that falls
-                // either side of a bucket edge is still found, without counting it twice).
+                if (list.Count == 0) continue;
+                Face first = list[0];
+                int fr0 = first.Axis == 1 ? -1 : first.Frame;
+                int cell = Mathf.RoundToInt(first.Plane / Same);
                 for (int pass = 0; pass < 2; pass++)
                 {
                     List<Face> other = list;
-                    if (pass == 1 && !faces.TryGetValue(baseKey + 8, out other)) continue;   // the same axis and side, one bucket up
+                    if (pass == 1 && !faces.TryGetValue(Key(fr0, first.Axis, first.Side, cell + 1), out other)) continue;
                     for (int i = 0; i < list.Count; i++)
                         for (int j = pass == 0 ? i + 1 : 0; j < other.Count; j++)
                         {
@@ -87,6 +116,7 @@ namespace Patchwork
                             if (moved.Contains(small.T)) continue;
                             Vector3 dir = Vector3.zero;
                             dir[small.Axis] = small.Side;
+                            if (small.Axis != 1) dir = Quaternion.Euler(0f, small.Frame * 0.5f, 0f) * dir;
                             small.T.position += dir * Nudge;
                             moved.Add(small.T);
                             fixedCount++;
@@ -96,9 +126,10 @@ namespace Patchwork
             return fixedCount;
         }
 
-        static long Key(int axis, int side, int cell)
+        static long Key(int frame, int axis, int side, int cell)
         {
-            return ((long)cell << 3) | (long)(axis * 2 + (side > 0 ? 1 : 0));
+            // cell in the high bits, then the frame (-1..180), then axis and side.
+            return ((long)cell << 12) | ((long)(frame + 1) << 3) | (long)(axis * 2 + (side > 0 ? 1 : 0));
         }
 
         // Is it lined up with the world (so its box is its shape)? Cubes may be turned in steps

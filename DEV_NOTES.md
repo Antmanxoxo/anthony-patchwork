@@ -473,6 +473,17 @@ Stuff I need to remember about how Patchwork is put together.
 - `Level2Grandeur.cs` is the fourth pass (sky lanterns over the sea, the atrium's river of
   stars, kelp moonbeams, the whale calf, fireflies, the Hall of Arms' pennants).
   `SkyLantern` lives there too.
+- Light beams are `LightBeam`s (CinematicShot.cs): a soft-edged additive quad that turns
+  round its own axis to face the camera (`LightBeam.Make(parent, top, bottom, width,
+  colour, strength)`); placed in `Level2Light.Beams`. Never use flat `Shaft` sheets for
+  light again.
+- Tanks: the water stops below the top of the glass (`waterline`), with a dark band of
+  "air" walls, lamps and the roof above, so the top reads as a closed tank. The Great Deep
+  has the same.
+- Camera near clip is 0.25 m (it was 0.1, which made distant flat things flicker).
+- `Plinth()` caps stand 3 cm proud; `ZFightFix` also handles blocks turned to any angle.
+- The lion spouts pour from open mouths in an arc of round stream segments; the springs
+  rise from a stone fish's mouth (`SpringMouth`).
 - No see-through "light shaft" sheets any more (they read as flat grey panels and flickered
   as they sorted against each other): light through windows is real spot lights only.
   `Shaft()` is still used for the waterfall ribbon, soft aurora blobs and clouds.

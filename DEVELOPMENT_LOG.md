@@ -1,5 +1,21 @@
 # Development Log
 
+## Level 2: second clean-up
+- Light beams are back, done properly: soft glowing shafts with feathered edges that fade
+  towards the floor and always face you, so they never show a flat edge. Moonlight down
+  from the atrium skylights, sunlight inside the Great Window's tank, through the kelp
+  pool's skylights, falling through the Great Deep, through the Ruins' cracked roof, and
+  through the Observatory dome.
+- Tanks now look closed: the water stops below the top of the glass, and above it you
+  see the dark roof of the tank with its lamps. Same for the Great Deep overhead.
+- Flicker: fixed the diving bell's floor (it sat exactly level with the tunnel floor) and
+  its gold compass points; every plinth's cap (including the globe's) sat level with its
+  top; the camera's near clip was so close that far-off flat things shimmered; and the
+  flicker-fixing pass now handles blocks turned at an angle too.
+- The plaques beside the Keeper statues moved to the open side (one was inside a column).
+- The lion spouts in the Ruins have open mouths and the water arcs out of them; the
+  springs in the Ruins and the kelp pool rise from the mouth of a big stone fish.
+
 ## Level 2: clean-up from the playtest videos
 - Removed every flat "beam of light" sheet: the atrium's skylight and window beams, the
   haze under the star ceiling, the shafts in the tanks, the kelp galleries, the Great Deep

@@ -505,7 +505,8 @@ namespace Patchwork
             mat = mat != null ? mat : Ashlar;
             var b = kit.Block(foot + Vector3.up * size.y * 0.5f, size, StoneCol, "Plinth", mat);
             b.rotation = Rot(yaw);
-            kit.Deco(PrimitiveType.Cube, foot + Vector3.up * (size.y - 0.06f), new Vector3(size.x + 0.2f, 0.12f, size.z + 0.2f), PaleStone, new Vector3(0f, yaw, 0f));
+            // (The cap band stands 3 cm proud of the top, so the two tops never flicker.)
+            kit.Deco(PrimitiveType.Cube, foot + Vector3.up * (size.y - 0.03f), new Vector3(size.x + 0.2f, 0.12f, size.z + 0.2f), PaleStone, new Vector3(0f, yaw, 0f));
             kit.Deco(PrimitiveType.Cube, foot + Vector3.up * 0.1f, new Vector3(size.x + 0.2f, 0.2f, size.z + 0.2f), PaleStone, new Vector3(0f, yaw, 0f));
             return foot + Vector3.up * size.y;
         }
@@ -721,13 +722,29 @@ namespace Patchwork
             NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, h * 0.5f, depth), new Vector3(width + 1f, h, 0.2f), far, new Vector3(0f, yaw, 0f)));
             for (int s = -1; s <= 1; s += 2)
                 NoShadow(kit.Deco(PrimitiveType.Cube, t.At(s * (width * 0.5f + 0.1f), h * 0.5f, depth * 0.5f), new Vector3(0.2f, h, depth), sides, new Vector3(0f, yaw, 0f)));
-            // The surface, seen from below: bright and rippling.
-            NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, h + 0.05f, depth * 0.5f), new Vector3(width + 1f, 0.1f, depth), PatchworkAssets.Glow(Color.Lerp(shallow, Color.white, 0.35f), 1.1f), new Vector3(0f, yaw, 0f)));
+            // The top of the tank, like a real one: the water stops a little below the top of the
+            // glass (its surface seen from underneath, silvery and rippled), then a band of air,
+            // then the dark roof of the tank with a row of lamps hung under it.
+            float waterline = Mathf.Max(h * 0.86f, h - 1.6f);
+            NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, waterline, depth * 0.5f), new Vector3(width + 0.3f, 0.08f, depth - 0.1f), PatchworkAssets.Water(Color.Lerp(shallow, Color.white, 0.25f)), new Vector3(0f, yaw, 0f)));
+            var dry = PatchworkAssets.Plaster(new Color(0.16f, 0.2f, 0.24f));
+            NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, (waterline + h) * 0.5f + 0.02f, depth - 0.15f), new Vector3(width + 0.9f, h - waterline + 0.04f, 0.08f), dry, new Vector3(0f, yaw, 0f)));
+            for (int s = -1; s <= 1; s += 2)
+                NoShadow(kit.Deco(PrimitiveType.Cube, t.At(s * (width * 0.5f - 0.03f), (waterline + h) * 0.5f + 0.02f, depth * 0.5f), new Vector3(0.08f, h - waterline + 0.04f, depth - 0.2f), dry, new Vector3(0f, yaw, 0f)));
+            var lampGlow = PatchworkAssets.Glow(new Color(1f, 0.92f, 0.75f), 2f);
+            int lamps = Mathf.Max(3, Mathf.RoundToInt(width / 7f));
+            for (int i = 0; i < lamps; i++)
+            {
+                float x = -width * 0.5f + width * (i + 0.5f) / lamps;
+                NoShadow(kit.Deco(PrimitiveType.Cylinder, t.At(x, h - 0.12f, depth * 0.35f), new Vector3(1.1f, 0.1f, 1.1f), IronMat));
+                NoShadow(kit.Deco(PrimitiveType.Cylinder, t.At(x, h - 0.26f, depth * 0.35f), new Vector3(0.8f, 0.06f, 0.8f), lampGlow));
+            }
+            NoShadow(kit.Deco(PrimitiveType.Cylinder, t.At(0f, h - 0.35f, depth * 0.7f), new Vector3(0.3f, width * 0.5f, 0.3f), IronMat, new Vector3(0f, yaw, 90f)));
             // Sand.
             NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, -0.25f, depth * 0.5f), new Vector3(width + 1f, 0.5f, depth), PatchworkAssets.Felt(Color.Lerp(new Color(0.75f, 0.68f, 0.5f), deep, 0.45f)), new Vector3(0f, yaw, 0f)));
             // A lid on the tank: the dark stone roof above the water, so looking up through the
             // glass you never see over the top of it.
-            NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, h + 0.65f, depth * 0.5f), new Vector3(width + 1.6f, 1f, depth + 0.6f), DarkStone, new Vector3(0f, yaw, 0f)));
+            NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, h + 0.5f, depth * 0.5f), new Vector3(width + 1.6f, 1f, depth + 0.6f), PatchworkAssets.Plaster(new Color(0.12f, 0.14f, 0.18f)), new Vector3(0f, yaw, 0f)));
             NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, h + 0.22f, -0.05f), new Vector3(width + 1.6f, 0.44f, 0.5f), IronMat, new Vector3(0f, yaw, 0f)));
             // The glow that spills out through the glass onto the floor.
             PointLight(kit, t.At(0f, Mathf.Min(h * 0.45f, floorDrop + 6f), -2.5f), Color.Lerp(shallow, Color.white, 0.2f), Mathf.Max(14f, width * 0.5f), 1.5f);

@@ -26,6 +26,7 @@ namespace Patchwork
             CardboardLift.ResetStatics();
             CinematicShot.ResetStatics();
             CausticLight.ResetStatics();
+            LightBeam.ResetStatics();
             PodTheme.ResetStatics();
             PodLaunch.ResetStatics();
             PodDecor.ResetStatics();

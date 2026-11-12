@@ -198,4 +198,128 @@ namespace Patchwork
             return result;
         }
     }
+
+    // A soft beam of light (sunlight through water, moonlight through a skylight): a glowing
+    // strip with feathered edges that fades out towards the bottom, always turned to face
+    // the camera round its own length, so from any side it reads as a shaft of light and
+    // never as a flat sheet. It adds light rather than covering what's behind it, so beams
+    // crossing each other can't flicker.
+    public class LightBeam : MonoBehaviour
+    {
+        public Vector3 Axis = Vector3.down;   // from the top of the beam to the bottom
+        public float Shimmer = 0.12f, Phase;
+        Renderer rend;
+        MaterialPropertyBlock mpb;
+        Color baseCol;
+        static Texture2D tex;
+        static readonly System.Collections.Generic.Dictionary<string, Material> mats = new System.Collections.Generic.Dictionary<string, Material>();
+        static Camera cam;
+
+        public static void ResetStatics() { tex = null; mats.Clear(); cam = null; }
+
+        // Makes a beam from top to bottom, topWidth wide where it starts (it spreads a little).
+        public static LightBeam Make(Transform parent, Vector3 top, Vector3 bottom, float width, Color c, float strength)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            Object.DestroyImmediate(go.GetComponent<Collider>());
+            go.name = "LightBeam";
+            go.layer = 2;
+            go.transform.SetParent(parent, false);
+            go.transform.position = (top + bottom) * 0.5f;
+            float len = Vector3.Distance(top, bottom);
+            go.transform.localScale = new Vector3(width, len, 1f);
+            var r = go.GetComponent<MeshRenderer>();
+            r.sharedMaterial = Mat(c, strength);
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            var b = go.AddComponent<LightBeam>();
+            b.Axis = (bottom - top).normalized;
+            b.Phase = top.x * 0.37f + top.z * 0.21f;
+            return b;
+        }
+
+        static Material Mat(Color c, float strength)
+        {
+            string key = ColorUtility.ToHtmlStringRGB(c) + strength.ToString("0.00");
+            Material m;
+            if (mats.TryGetValue(key, out m) && m != null) return m;
+            if (tex == null) tex = MakeTexture();
+            m = PatchworkAssets.Unique(PatchworkAssets.Bubble(new Color(1f, 1f, 1f, 1f)));
+            m.name = "PW_beam" + key;
+            m.SetTexture("_BaseMap", tex);
+            m.SetColor("_BaseColor", new Color(0f, 0f, 0f, 1f));
+            m.SetColor("_EmissionColor", c * strength);
+            m.SetTexture("_EmissionMap", tex);
+            m.EnableKeyword("_EMISSION");
+            m.SetFloat("_Smoothness", 0f);
+            m.SetFloat("_SpecularHighlights", 0f);
+            m.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
+            m.SetFloat("_EnvironmentReflections", 0f);
+            m.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
+            m.SetFloat("_Cull", 0f);
+            // Additive: light added on top, nothing darkened, no sorting to get wrong.
+            m.SetFloat("_Blend", 2f);
+            m.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            m.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.One);
+            m.SetFloat("_SrcBlendAlpha", (float)UnityEngine.Rendering.BlendMode.Zero);
+            m.SetFloat("_DstBlendAlpha", (float)UnityEngine.Rendering.BlendMode.One);
+            m.SetFloat("_ZWrite", 0f);
+            m.renderQueue = 3100;
+            mats[key] = m;
+            return m;
+        }
+
+        // Soft across (a gentle hump with feathered edges), narrower at the top, fading in at
+        // the top and away to nothing towards the bottom, with a few faint streaks.
+        static Texture2D MakeTexture()
+        {
+            const int w = 64, h = 128;
+            var t = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            t.wrapMode = TextureWrapMode.Clamp;
+            t.filterMode = FilterMode.Bilinear;
+            var px = new Color[w * h];
+            for (int y = 0; y < h; y++)
+            {
+                float v = (y + 0.5f) / h;   // 0 bottom, 1 top
+                float halfW = Mathf.Lerp(0.5f, 0.28f, v);
+                float along = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((1f - v) / 0.08f)) * Mathf.Pow(Mathf.Clamp01(v / 0.9f), 0.8f);
+                for (int x = 0; x < w; x++)
+                {
+                    float u = (x + 0.5f) / w - 0.5f;
+                    float across = Mathf.Clamp01(1f - Mathf.Abs(u) / halfW);
+                    across = across * across * (3f - 2f * across);
+                    float streak = 0.82f + 0.18f * Mathf.Sin(u * 41f + Mathf.Sin(u * 13f) * 2f);
+                    float a = across * along * streak;
+                    px[y * w + x] = new Color(a, a, a, a);
+                }
+            }
+            t.SetPixels(px);
+            t.Apply(false);
+            return t;
+        }
+
+        void Start()
+        {
+            rend = GetComponent<Renderer>();
+            mpb = new MaterialPropertyBlock();
+            if (rend != null && rend.sharedMaterial != null) baseCol = rend.sharedMaterial.GetColor("_EmissionColor");
+        }
+
+        void LateUpdate()
+        {
+            if (cam == null) cam = Camera.main != null ? Camera.main : Object.FindAnyObjectByType<Camera>();
+            if (cam == null) return;
+            Vector3 toCam = cam.transform.position - transform.position;
+            Vector3 flat = toCam - Vector3.Dot(toCam, Axis) * Axis;
+            if (flat.sqrMagnitude < 1e-4f) return;
+            // The quad's face looks down its -Z: point +Z away from the camera, +Y up the beam.
+            transform.rotation = Quaternion.LookRotation(-flat.normalized, -Axis);
+            if (rend != null && Shimmer > 0f)
+            {
+                float k = 1f + Mathf.Sin(Time.time * 0.6f + Phase) * Shimmer + Mathf.Sin(Time.time * 1.7f + Phase * 2f) * Shimmer * 0.4f;
+                mpb.SetColor("_EmissionColor", baseCol * k);
+                rend.SetPropertyBlock(mpb);
+            }
+        }
+    }
 }
