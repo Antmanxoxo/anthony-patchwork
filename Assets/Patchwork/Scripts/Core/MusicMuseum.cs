@@ -2,9 +2,10 @@
 
 namespace Patchwork
 {
-    // The Oceanic Museum has two pieces to choose from (Patchwork > Level 2 Music in the menu):
-    //   "The Lantern Tide" (MusicMuseumTide.cs) - the one it plays now
-    //   "The Star Carousel" (below)             - the waltz it used to play, kept so it can come back
+    // The Oceanic Museum has three pieces to choose from (Patchwork > Level 2 Music in the menu):
+    //   "The Skyward Waltz" (MusicMuseumSkyward.cs) - the one it plays now
+    //   "The Star Carousel" (below)                 - the first waltz, kept so it can come back
+    //   "The Lantern Tide" (MusicMuseumTide.cs)     - the second piece, kept too
     //
     // "The Star Carousel": a waltz in two moods that keep
     // turning into each other.
@@ -174,14 +175,15 @@ namespace Patchwork
         static AudioClip[] museumStems;
         static int museumStemsSong = -1;
 
-        // Which piece the museum plays: 0 "The Lantern Tide", 1 "The Star Carousel".
+        // Which piece the museum plays: 0 "The Skyward Waltz", 1 "The Star Carousel",
+        // 2 "The Lantern Tide".
         public const string MuseumSongPref = "pw_l2_song";
         public static int MuseumSong
         {
-            get { return Mathf.Clamp(PlayerPrefs.GetInt(MuseumSongPref, 0), 0, 1); }
-            set { PlayerPrefs.SetInt(MuseumSongPref, Mathf.Clamp(value, 0, 1)); PlayerPrefs.Save(); ReloadMuseum(); }
+            get { return Mathf.Clamp(PlayerPrefs.GetInt(MuseumSongPref, 0), 0, 2); }
+            set { PlayerPrefs.SetInt(MuseumSongPref, Mathf.Clamp(value, 0, 2)); PlayerPrefs.Save(); ReloadMuseum(); }
         }
-        public static readonly string[] MuseumSongNames = { "The Lantern Tide", "The Star Carousel" };
+        public static readonly string[] MuseumSongNames = { "The Skyward Waltz", "The Star Carousel", "The Lantern Tide" };
 
         // Swaps the piece over straight away if the museum's music is playing.
         public static void ReloadMuseum()
@@ -224,7 +226,7 @@ namespace Patchwork
             if (museumStems == null || museumStems[0] == null || museumStemsSong != MuseumSong)
             {
                 museumStemsSong = MuseumSong;
-                museumStems = museumStemsSong == 1 ? ComposeCarousel() : ComposeTide();
+                museumStems = museumStemsSong == 1 ? ComposeCarousel() : museumStemsSong == 2 ? ComposeTide() : ComposeSkyward();
             }
             museumSources = new AudioSource[MuseumStemCount];
             museumFilters = new AudioLowPassFilter[MuseumStemCount];

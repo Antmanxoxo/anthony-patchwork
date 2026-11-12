@@ -53,20 +53,35 @@ namespace Patchwork
         }
 
         // Which piece the museum plays. Works while playing too (it swaps over straight away).
-        const string TideMenu = "Patchwork/Level 2 Music/The Lantern Tide (new)";
-        const string CarouselMenu = "Patchwork/Level 2 Music/The Star Carousel (the old waltz)";
+        const string SkywardMenu = "Patchwork/Level 2 Music/The Skyward Waltz (new)";
+        const string CarouselMenu = "Patchwork/Level 2 Music/The Star Carousel (the first waltz)";
+        const string TideMenu = "Patchwork/Level 2 Music/The Lantern Tide (the second piece)";
 
-        [MenuItem(TideMenu, false, 40)]
-        static void UseTide()
+        [MenuItem(SkywardMenu, false, 39)]
+        static void UseSkyward()
         {
             MusicPlayer.MuseumSong = 0;
+            Debug.Log("Patchwork: the museum will play The Skyward Waltz.");
+        }
+
+        [MenuItem(SkywardMenu, true)]
+        static bool UseSkywardCheck()
+        {
+            Menu.SetChecked(SkywardMenu, MusicPlayer.MuseumSong == 0);
+            return true;
+        }
+
+        [MenuItem(TideMenu, false, 42)]
+        static void UseTide()
+        {
+            MusicPlayer.MuseumSong = 2;
             Debug.Log("Patchwork: the museum will play The Lantern Tide.");
         }
 
         [MenuItem(TideMenu, true)]
         static bool UseTideCheck()
         {
-            Menu.SetChecked(TideMenu, MusicPlayer.MuseumSong == 0);
+            Menu.SetChecked(TideMenu, MusicPlayer.MuseumSong == 2);
             return true;
         }
 

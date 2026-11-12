@@ -1,5 +1,17 @@
 # Development Log
 
+## A third song for the museum: The Skyward Waltz
+- The Oceanic Museum now plays "The Skyward Waltz", an original waltz that takes off. It
+  starts on its toes in G minor: the accordion has the tune, the bass steps down a half-step
+  at a time, and the piano goes "pah-pah" on two and three. Then the violins take the tune
+  with a flute weaving round it. It lifts off into B flat major with long soaring violins
+  and the horns opening out, and climbs among the stars in E flat major (harp, celesta,
+  bells and a choir-like hush). The tune comes back with the whole orchestra, flying, and it
+  lands in G major.
+- It uses the same four layers as before, so the museum still builds it up as you explore.
+- Both older pieces are kept. Patchwork > Level 2 Music now has The Skyward Waltz (new),
+  The Star Carousel (the first waltz) and The Lantern Tide (the second piece).
+
 ## Six new things in every room of the Oceanic Museum
 Every room in Level 2 has six new hand-made details. Each one is fitted in round what's
 already there: it looks for clear floor, wall, air or water near where it wants to be and takes

@@ -595,6 +595,11 @@ Stuff I need to remember about how Patchwork is put together.
   (Level2RoomsMiddle.cs).
 - New markers: Secret_CuckooClock, Secret_KeepersSlate, Secret_DropCamera, Story_NightKeepersBed,
   Story_UndercroftLeak and Story_PippasSnowman.
+- Museum music now has three pieces: MusicPlayer.MuseumSong (PlayerPrefs "pw_l2_song") is
+  0 The Skyward Waltz (ComposeSkyward, MusicMuseumSkyward.cs, 3/4 at 156 BPM, 96 bars, the
+  default), 1 The Star Carousel (ComposeCarousel) and 2 The Lantern Tide (ComposeTide).
+  SkyBass sets the bass note for each bar separately from SkyChords, so the A tune's bass
+  can walk down by half-steps under a chord that stays the same.
 
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
