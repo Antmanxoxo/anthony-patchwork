@@ -473,6 +473,14 @@ Stuff I need to remember about how Patchwork is put together.
 - `Level2Grandeur.cs` is the fourth pass (sky lanterns over the sea, the atrium's river of
   stars, kelp moonbeams, the whale calf, fireflies, the Hall of Arms' pennants).
   `SkyLantern` lives there too.
+- See-through draw order is fixed, not left to distance sorting (that swaps big
+  overlapping see-through things as you move: flicker). `Renderer.sortingOrder` (URP
+  ignores `rendererPriority` for see-through things): pool haze -15, glass -20 (domes:
+  inside shell -21, outside -20; `ZFightFix.OrderSeeThrough` sets all "PW_glass"
+  materials), everything else 0, pool surfaces 5, light beams 20.
+- A light that casts shadows never moves (`CausticLight` only sways the shadowless ones).
+- Tanks are full to the roof: looking up through the glass you see the dark ceiling, its
+  beams and lamps.
 - Light beams are `LightBeam`s (CinematicShot.cs): a soft-edged additive quad that turns
   round its own axis to face the camera (`LightBeam.Make(parent, top, bottom, width,
   colour, strength)`); placed in `Level2Light.Beams`. Never use flat `Shaft` sheets for

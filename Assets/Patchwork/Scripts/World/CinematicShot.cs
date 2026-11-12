@@ -138,9 +138,12 @@ namespace Patchwork
         {
             if (Lamp == null) return;
             float t = Time.time + Phase * 10f;
-            // A slow turn plus a gentle sway, like light through a moving surface.
-            transform.localRotation = home * Quaternion.Euler(Mathf.Sin(t * 0.37f) * 1.6f, Mathf.Cos(t * 0.29f) * 1.6f, t * Turn);
-            if (baseIntensity > 0f) Lamp.intensity = baseIntensity * (0.92f + Mathf.Sin(t * 0.8f) * 0.05f + Mathf.Sin(t * 1.9f) * 0.03f);
+            // A light that throws shadows stays perfectly still: if it moved, every shadow it
+            // casts would crawl and shimmer. The others turn and sway slowly, like light
+            // through a moving surface.
+            if (Lamp.shadows == LightShadows.None)
+                transform.localRotation = home * Quaternion.Euler(Mathf.Sin(t * 0.37f) * 1.6f, Mathf.Cos(t * 0.29f) * 1.6f, t * Turn);
+            if (baseIntensity > 0f) Lamp.intensity = baseIntensity * (0.96f + Mathf.Sin(t * 0.5f) * 0.04f);
         }
 
         // A looping set of caustic patterns: bright threads where the cells of a slowly
@@ -207,6 +210,9 @@ namespace Patchwork
     public class LightBeam : MonoBehaviour
     {
         public Vector3 Axis = Vector3.down;   // from the top of the beam to the bottom
+        // If set, the beam swings round with whatever it's fixed to (like a lighthouse's lamp),
+        // and Axis is in that thing's own terms.
+        public bool AxisFollowsParent;
         public float Shimmer = 0.12f, Phase;
         Renderer rend;
         MaterialPropertyBlock mpb;
@@ -232,6 +238,7 @@ namespace Patchwork
             r.sharedMaterial = Mat(c, strength);
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             r.receiveShadows = false;
+            r.sortingOrder = 20;   // adding light: drawn after everything else see-through
             var b = go.AddComponent<LightBeam>();
             b.Axis = (bottom - top).normalized;
             b.Phase = top.x * 0.37f + top.z * 0.21f;
@@ -309,11 +316,12 @@ namespace Patchwork
         {
             if (cam == null) cam = Camera.main != null ? Camera.main : Object.FindAnyObjectByType<Camera>();
             if (cam == null) return;
+            Vector3 axis = AxisFollowsParent && transform.parent != null ? transform.parent.TransformDirection(Axis).normalized : Axis;
             Vector3 toCam = cam.transform.position - transform.position;
-            Vector3 flat = toCam - Vector3.Dot(toCam, Axis) * Axis;
+            Vector3 flat = toCam - Vector3.Dot(toCam, axis) * axis;
             if (flat.sqrMagnitude < 1e-4f) return;
             // The quad's face looks down its -Z: point +Z away from the camera, +Y up the beam.
-            transform.rotation = Quaternion.LookRotation(-flat.normalized, -Axis);
+            transform.rotation = Quaternion.LookRotation(-flat.normalized, -axis);
             if (rend != null && Shimmer > 0f)
             {
                 float k = 1f + Mathf.Sin(Time.time * 0.6f + Phase) * Shimmer + Mathf.Sin(Time.time * 1.7f + Phase * 2f) * Shimmer * 0.4f;

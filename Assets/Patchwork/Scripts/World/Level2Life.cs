@@ -593,8 +593,8 @@ namespace Patchwork
             sign.rotation = Rot(160f);
             var yellow = PatchworkAssets.Felt(new Color(1f, 0.85f, 0.2f));
             for (int s = -1; s <= 1; s += 2)
-                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.5f, s * 0.15f), new Vector3(0.6f, 1f, 0.04f), yellow, new Vector3(s * 14f, 0f, 0f), sign);
-            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.6f, 0.2f), new Vector3(0.3f, 0.3f, 0.02f), PatchworkAssets.Felt(new Color(0.15f, 0.15f, 0.2f)), new Vector3(14f, 0f, 45f), sign));
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.5f, s * 0.15f), new Vector3(0.6f, 1f, 0.04f), yellow, new Vector3(-s * 14f, 0f, 0f), sign);   // an A: the tops lean together
+            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.6f, 0.15f), new Vector3(0.3f, 0.3f, 0.02f), PatchworkAssets.Felt(new Color(0.15f, 0.15f, 0.2f)), new Vector3(-14f, 0f, 45f), sign));
             NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(5f, 0.035f, -95.6f), new Vector3(2.6f, 0.01f, 1.9f), PatchworkAssets.Plain(new Color(0.5f, 0.6f, 0.9f), 0.98f)));
             // The guard asleep at his post by the doors.
             Vector3 chair = new Vector3(9.6f, 0f, -106.4f);

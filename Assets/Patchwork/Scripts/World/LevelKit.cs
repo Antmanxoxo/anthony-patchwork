@@ -710,10 +710,10 @@ namespace Patchwork
             // The column and the jet inside it are both see-through and share a middle, so the
             // renderer can't decide which to draw first and they flicker: fix the order (inner
             // jet first, then the glassy column round it, then the bubbles and drops).
-            jet.GetComponent<Renderer>().rendererPriority = 0;
-            column.GetComponent<Renderer>().rendererPriority = 1;
-            foreach (var b in bubbles) b.GetComponent<Renderer>().rendererPriority = 2;
-            foreach (var d in drops) d.GetComponent<Renderer>().rendererPriority = 2;
+            jet.GetComponent<Renderer>().sortingOrder = 1;
+            column.GetComponent<Renderer>().sortingOrder = 2;
+            foreach (var b in bubbles) b.GetComponent<Renderer>().sortingOrder = 3;
+            foreach (var d in drops) d.GetComponent<Renderer>().sortingOrder = 3;
             current.SetupVisuals(column, jet, bubbles, crown, drops, height, style != FountainStyle.Spring && style != FountainStyle.Pipe ? 1.6f : 1.2f);
             AmbientEmitter.Create(current.transform, basePos + Vector3.up * 0.5f, Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.25f, 1.5f, 12f);
             return current;

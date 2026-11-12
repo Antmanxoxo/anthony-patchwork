@@ -618,6 +618,18 @@ namespace Patchwork
         // (degrees, 0 = east, 90 = north) leaves a slice of it out.
         static Transform Dome(LevelKit kit, Vector3 center, Vector3 radii, Material mat, bool inward, string name = "Dome", int rings = 10, int segs = 28, float az0 = 0f, float az1 = 360f)
         {
+            // Glass seen from both sides: built as two shells (inside faces and outside faces),
+            // each one-sided, with the inside always drawn first. (One two-sided see-through
+            // mesh draws its near and far sides in a muddled order, which flickers.)
+            if (mat != null && mat.renderQueue >= 2500 && mat.HasProperty("_Cull") && mat.GetFloat("_Cull") == 0f)
+            {
+                var single = Glass(mat.GetColor("_BaseColor"), false);
+                var inner = Dome(kit, center, radii, single, true, name + "Inside", rings, segs, az0, az1);
+                inner.GetComponent<Renderer>().sortingOrder = -21;
+                var outer = Dome(kit, center, radii, single, false, name, rings, segs, az0, az1);
+                outer.GetComponent<Renderer>().sortingOrder = -20;
+                return outer;
+            }
             var v = new List<Vector3>();
             var nrm = new List<Vector3>();
             var uv = new List<Vector2>();
@@ -722,24 +734,21 @@ namespace Patchwork
             NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, h * 0.5f, depth), new Vector3(width + 1f, h, 0.2f), far, new Vector3(0f, yaw, 0f)));
             for (int s = -1; s <= 1; s += 2)
                 NoShadow(kit.Deco(PrimitiveType.Cube, t.At(s * (width * 0.5f + 0.1f), h * 0.5f, depth * 0.5f), new Vector3(0.2f, h, depth), sides, new Vector3(0f, yaw, 0f)));
-            // The top of the tank, like a real one: the water stops a little below the top of the
-            // glass (its surface seen from underneath, silvery and rippled), then a band of air,
-            // then the dark roof of the tank with a row of lamps hung under it.
-            float waterline = Mathf.Max(h * 0.86f, h - 1.6f);
-            NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, waterline, depth * 0.5f), new Vector3(width + 0.3f, 0.08f, depth - 0.1f), PatchworkAssets.Water(Color.Lerp(shallow, Color.white, 0.25f)), new Vector3(0f, yaw, 0f)));
-            var dry = PatchworkAssets.Plaster(new Color(0.16f, 0.2f, 0.24f));
-            NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, (waterline + h) * 0.5f + 0.02f, depth - 0.15f), new Vector3(width + 0.9f, h - waterline + 0.04f, 0.08f), dry, new Vector3(0f, yaw, 0f)));
-            for (int s = -1; s <= 1; s += 2)
-                NoShadow(kit.Deco(PrimitiveType.Cube, t.At(s * (width * 0.5f - 0.03f), (waterline + h) * 0.5f + 0.02f, depth * 0.5f), new Vector3(0.08f, h - waterline + 0.04f, depth - 0.2f), dry, new Vector3(0f, yaw, 0f)));
+            // The roof of the tank: the water comes right up to it, so looking up through the glass
+            // you see a dark ceiling with its beams and a row of lamps, like the inside of a
+            // real aquarium tank.
+            var beamsUnder = PatchworkAssets.Plaster(new Color(0.2f, 0.22f, 0.27f));
+            for (float bz = depth * 0.2f; bz < depth; bz += depth * 0.2f)
+                NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, h - 0.25f, bz), new Vector3(width + 0.2f, 0.5f, 0.5f), beamsUnder, new Vector3(0f, yaw, 0f)));
             var lampGlow = PatchworkAssets.Glow(new Color(1f, 0.92f, 0.75f), 2f);
             int lamps = Mathf.Max(3, Mathf.RoundToInt(width / 7f));
             for (int i = 0; i < lamps; i++)
             {
                 float x = -width * 0.5f + width * (i + 0.5f) / lamps;
-                NoShadow(kit.Deco(PrimitiveType.Cylinder, t.At(x, h - 0.12f, depth * 0.35f), new Vector3(1.1f, 0.1f, 1.1f), IronMat));
-                NoShadow(kit.Deco(PrimitiveType.Cylinder, t.At(x, h - 0.26f, depth * 0.35f), new Vector3(0.8f, 0.06f, 0.8f), lampGlow));
+                NoShadow(kit.Deco(PrimitiveType.Cylinder, t.At(x, h - 0.14f, depth * 0.3f), new Vector3(1.1f, 0.12f, 1.1f), IronMat));
+                NoShadow(kit.Deco(PrimitiveType.Cylinder, t.At(x, h - 0.3f, depth * 0.3f), new Vector3(0.8f, 0.05f, 0.8f), lampGlow));
             }
-            NoShadow(kit.Deco(PrimitiveType.Cylinder, t.At(0f, h - 0.35f, depth * 0.7f), new Vector3(0.3f, width * 0.5f, 0.3f), IronMat, new Vector3(0f, yaw, 90f)));
+            NoShadow(kit.Deco(PrimitiveType.Cylinder, t.At(0f, h - 0.75f, depth * 0.5f), new Vector3(0.3f, width * 0.5f, 0.3f), IronMat, new Vector3(0f, yaw, 90f)));
             // Sand.
             NoShadow(kit.Deco(PrimitiveType.Cube, t.At(0f, -0.25f, depth * 0.5f), new Vector3(width + 1f, 0.5f, depth), PatchworkAssets.Felt(Color.Lerp(new Color(0.75f, 0.68f, 0.5f), deep, 0.45f)), new Vector3(0f, yaw, 0f)));
             // A lid on the tank: the dark stone roof above the water, so looking up through the

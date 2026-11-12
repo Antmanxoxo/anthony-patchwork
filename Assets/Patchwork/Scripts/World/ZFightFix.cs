@@ -126,6 +126,21 @@ namespace Patchwork
             return fixedCount;
         }
 
+        // See-through things are drawn back to front by their middles, so two big ones in the
+        // same place (glass and the water behind it, a dome and the jellyfish round it) keep
+        // swapping as you move: flicker. Give them a fixed order instead: glass first, then
+        // everything else, then light beams.
+        public static void OrderSeeThrough(Transform root)
+        {
+            foreach (var r in root.GetComponentsInChildren<Renderer>(true))
+            {
+                var m = r.sharedMaterial;
+                if (m == null || m.renderQueue < 2500 || r.sortingOrder != 0) continue;
+                if (m.name.StartsWith("PW_glass")) r.sortingOrder = -20;
+                else if (m.name.StartsWith("PW_beam")) r.sortingOrder = 20;
+            }
+        }
+
         static long Key(int frame, int axis, int side, int cell)
         {
             // cell in the high bits, then the frame (-1..180), then axis and side.

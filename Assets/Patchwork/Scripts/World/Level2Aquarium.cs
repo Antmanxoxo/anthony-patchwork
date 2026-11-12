@@ -61,7 +61,12 @@ namespace Patchwork
             var drift = go.AddComponent<PaintLake>();
             drift.Drift = new Vector2(0.015f, 0.025f);
             drift.Setup(mat);
-            NoShadow(kit.Deco(PrimitiveType.Cube, c + Vector3.down * 1.2f, new Vector3(w, 0.05f, d), PatchworkAssets.Bubble(new Color(tint.r * 0.5f, tint.g * 0.5f, tint.b * 0.6f, 0.4f))));
+            var haze = NoShadow(kit.Deco(PrimitiveType.Cube, c + Vector3.down * 1.2f, new Vector3(w, 0.05f, d), PatchworkAssets.Bubble(new Color(tint.r * 0.5f, tint.g * 0.5f, tint.b * 0.6f, 0.4f))));
+            // A fixed order for the see-through layers: the haze under the water first, then
+            // anything in the water, then the surface on top. (Left to sort themselves, the big
+            // sheets and the things between them keep swapping places and flicker.)
+            haze.GetComponent<Renderer>().sortingOrder = -15;
+            rend.sortingOrder = 5;
             var body = kit.Volume<WaterBody>(new Vector3(c.x, (bottom + surface + 0.6f) * 0.5f, c.z), new Vector3(w, surface + 0.6f - bottom, d), name);
             body.SurfaceY = surface;
             body.Divable = true;
@@ -265,8 +270,9 @@ namespace Patchwork
             var far = Backdrop(deep, shallow, 0.9f);
             NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(cx, DeepFloor + h * 0.5f, DeepZ1 + 0.4f), new Vector3(W + 4f, h, 0.2f), far));
             NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(-15f, DeepFloor + h * 0.5f, DeepZ0 - 0.4f), new Vector3(34f, h, 0.2f), far));
-            // The surface far overhead (seen from underneath), and the roof of the tank above it.
-            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(cx, DeepTop - 1.4f, cz), new Vector3(W + 3.6f, 0.08f, D + 3.6f), PatchworkAssets.Water(new Color(0.5f, 0.78f, 0.95f))));
+            // The roof of the tank far overhead, with beams and lamps (the water fills it right up).
+            for (float bx = DeepX0 + 6f; bx < DeepX1; bx += 9f)
+                NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(bx, DeepTop - 0.3f, cz), new Vector3(0.6f, 0.6f, D + 2f), PatchworkAssets.Plaster(new Color(0.2f, 0.22f, 0.27f))));
             NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(cx, DeepTop + 0.5f, cz), new Vector3(W + 4f, 1f, D + 4f), PatchworkAssets.Plaster(new Color(0.1f, 0.12f, 0.17f))));
             for (float lx = DeepX0 + 8f; lx < DeepX1 - 4f; lx += 14f)
                 for (float lz = DeepZ0 + 10f; lz < DeepZ1 - 4f; lz += 20f)

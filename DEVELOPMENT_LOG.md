@@ -1,5 +1,17 @@
 # Development Log
 
+## Level 2: third clean-up
+- Flicker: see-through things now draw in a fixed order (glass first, then what's inside or
+  around it, then water surfaces, then light beams) instead of swapping as you move; the
+  bell's glass dome is two one-sided shells instead of one two-sided one; the fountains'
+  order now actually sticks; and the lights that cast shadows no longer turn, so shadows
+  don't crawl.
+- Tanks are filled to the roof: looking up through the glass you see the tank's dark
+  ceiling with its beams and lamps. Same over the Great Deep.
+- The wet floor sign stands the right way up (an A, not a V).
+- The lighthouse has its beams back as two soft shafts of light sweeping round with the
+  lamp.
+
 ## Level 2: second clean-up
 - Light beams are back, done properly: soft glowing shafts with feathered edges that fade
   towards the floor and always face you, so they never show a flat edge. Moonlight down

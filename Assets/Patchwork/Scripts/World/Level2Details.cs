@@ -393,6 +393,18 @@ namespace Patchwork
             sweep.spotAngle = 14f;
             sweep.intensity = 260f;
             sweep.shadows = LightShadows.None;
+            // And the beams you can see: two soft shafts of light out of either side of the
+            // lamp, sweeping round with it (they always turn their face to you, so they look
+            // like light in the night air, never like a flat board).
+            for (int s = -1; s <= 1; s += 2)
+            {
+                Vector3 from = lamp.position + new Vector3(0f, 0f, s * 1.6f);
+                Vector3 to = lamp.position + new Vector3(0f, -4f, s * 75f);
+                var lb = LightBeam.Make(lamp, from, to, 9f, new Color(1f, 0.92f, 0.7f), 0.65f);
+                lb.Axis = lamp.InverseTransformDirection((to - from).normalized);
+                lb.AxisFollowsParent = true;
+                lb.Shimmer = 0.04f;
+            }
             lamp.gameObject.AddComponent<Spinner>().Speed = 16f;
             // An island with a few lit windows to the east, and far hills behind.
             var isle = new MeshBatch();

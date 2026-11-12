@@ -150,6 +150,7 @@ namespace Patchwork
             ScoreBubbles.Settle(kit);
             // Last of all: settle any surfaces that sit exactly on top of each other (flicker).
             int settled = ZFightFix.Run(kit.Root);
+            ZFightFix.OrderSeeThrough(kit.Root);
             if (settled > 0) Debug.Log("[Level2] Settled " + settled + " flickering surfaces.");
             return info;
         }
