@@ -161,7 +161,9 @@ namespace Patchwork
             foreach (var r in renderers)
             {
                 var mf = r.GetComponent<MeshFilter>();
-                if (mf == null || mf.sharedMesh == null || mf.sharedMesh.name != "Cube") continue;
+                if (mf == null || mf.sharedMesh == null) continue;
+                string mn = mf.sharedMesh.name;   // (Unity's cube, or our own copies of it)
+                if (mn != "Cube" && mn != "PatchworkCube" && mn != "PatchworkTiledCube") continue;
                 if (!AxisAligned(r.transform.rotation)) continue;
                 boxes.Add(new KeyValuePair<Bounds, MeshRenderer>(r.bounds, r));
             }

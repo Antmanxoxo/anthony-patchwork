@@ -149,20 +149,26 @@ namespace Patchwork
                 kit.Deco(PrimitiveType.Cylinder, new Vector3(x, bed + h * 0.5f, z0 - 0.4f), new Vector3(0.8f, h * 0.5f, 0.8f), RuinStone);
             kit.Deco(PrimitiveType.Cube, new Vector3((x0 + x1) * 0.5f, roof - 0.2f, z0 - 0.4f), new Vector3(x1 - x0 + 0.6f, 0.5f, 1f), RuinStone);
             // Crystals glowing along the inside, blue-green, then gold near the treasure.
-            var crystals = new MeshBatch();
-            var gold = new MeshBatch();
+            // (One batch per wall: a single batch across both walls has a bounding box filling the
+            // whole passage, which made the marble think the passage was blocked.)
+            var crystals = new[] { new MeshBatch(), new MeshBatch() };
+            var gold = new[] { new MeshBatch(), new MeshBatch() };
             var rng = new System.Random(919);
             for (float z = z0 + 2f; z < z1 - 1f; z += 2.2f)
             {
                 bool near = z > z1 - 8f;
-                var mb = near ? gold : crystals;
-                float side = rng.Next(0, 2) == 0 ? x0 + 0.6f : x1 - 0.3f;
+                int si = rng.Next(0, 2);
+                var mb = near ? gold[si] : crystals[si];
+                float side = si == 0 ? x0 + 0.6f : x1 - 0.3f;
                 float y = bed + 0.2f + (float)rng.NextDouble() * 2.2f;
                 for (int c = 0; c < 3; c++)
                     mb.Box(new Vector3(side, y + c * 0.12f, z + c * 0.25f), new Vector3(0.16f, 0.55f - c * 0.12f, 0.16f), Quaternion.Euler((float)rng.NextDouble() * 40f - 20f, 0f, (float)rng.NextDouble() * 40f - 20f));
             }
-            Twinkling(crystals, kit.Root, "ColonnadeCrystals", new Color(0.4f, 1f, 0.9f), 1.2f, 2.8f, 0.8f, 0.2f);
-            Twinkling(gold, kit.Root, "ColonnadeGold", new Color(1f, 0.82f, 0.4f), 1.4f, 3f, 1.1f, 0.6f);
+            for (int s = 0; s < 2; s++)
+            {
+                Twinkling(crystals[s], kit.Root, "ColonnadeCrystals", new Color(0.4f, 1f, 0.9f), 1.2f, 2.8f, 0.8f, 0.2f + s);
+                Twinkling(gold[s], kit.Root, "ColonnadeGold", new Color(1f, 0.82f, 0.4f), 1.4f, 3f, 1.1f, 0.6f + s);
+            }
             PointLight(kit, new Vector3(96.8f, bed + 2.4f, 80f), new Color(0.4f, 1f, 0.85f), 10f, 1.2f);
             PointLight(kit, new Vector3(96.8f, bed + 2.4f, 90f), new Color(0.4f, 1f, 0.85f), 10f, 1.1f);
             PointLight(kit, new Vector3(96.8f, bed + 2.2f, 97f), new Color(1f, 0.8f, 0.45f), 8f, 1.5f);

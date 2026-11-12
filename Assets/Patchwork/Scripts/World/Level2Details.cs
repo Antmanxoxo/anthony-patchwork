@@ -76,6 +76,17 @@ namespace Patchwork
             NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0f, 0.03f), new Vector3(w + 0.36f, h + 0.36f, 0.08f), Brass, default(Vector3), g));
             NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0f, 0.08f), new Vector3(w, h, 0.02f), PatchworkAssets.Felt(sky), default(Vector3), g));
             NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, -h * 0.3f, 0.095f), new Vector3(w, h * 0.4f, 0.01f), PatchworkAssets.Felt(land), default(Vector3), g));
+            // A dark liner just inside the gilt, so the frame reads as carved and deep.
+            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0f, 0.07f), new Vector3(w + 0.12f, h + 0.12f, 0.02f), PatchworkAssets.Plain(new Color(0.24f, 0.17f, 0.1f), 0.5f), default(Vector3), g));
+            // A brass picture light on a little arm over the top, glowing down onto the canvas.
+            float lw = Mathf.Min(w * 0.6f, 1.6f);
+            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, h * 0.5f + 0.42f, 0.04f), new Vector3(0.22f, 0.14f, 0.08f), Brass, default(Vector3), g));
+            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, h * 0.5f + 0.42f, 0.2f), new Vector3(0.05f, 0.05f, 0.32f), Brass, new Vector3(-20f, 0f, 0f), g));
+            NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, h * 0.5f + 0.36f, 0.4f), new Vector3(0.16f, lw * 0.5f, 0.16f), Brass, new Vector3(0f, 0f, 90f), g));
+            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, h * 0.5f + 0.29f, 0.42f), new Vector3(lw - 0.06f, 0.03f, 0.08f), PatchworkAssets.Glow(new Color(1f, 0.88f, 0.62f), 2.2f), default(Vector3), g));
+            // A small engraved title plate under the frame.
+            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, -h * 0.5f - 0.36f, 0.03f), new Vector3(Mathf.Min(w * 0.4f, 0.9f), 0.18f, 0.03f), Brass, default(Vector3), g));
+            NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, -h * 0.5f - 0.36f, 0.046f), new Vector3(Mathf.Min(w * 0.4f, 0.9f) * 0.7f, 0.03f, 0.005f), PatchworkAssets.Plain(new Color(0.2f, 0.15f, 0.1f), 0.3f), default(Vector3), g));
             int what = rng.Next(4);
             if (what == 0)   // a sail on the sea
             {

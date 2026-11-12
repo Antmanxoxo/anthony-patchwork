@@ -497,6 +497,7 @@ namespace Patchwork
             }
             var g = kit.Group("Keeper", top);
             g.rotation = Rot(yaw);
+            TownKit.Solid(kit, top + Vector3.up * 2.9f, new Vector3(2f, 5.8f, 2.2f), yaw);
             // The robe: a long bell of stone, folded.
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.6f, 0f), new Vector3(2f, 1.6f, 1.7f), stone, default(Vector3), g);
             for (int i = 0; i < 9; i++)
@@ -603,6 +604,7 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cube, chair + new Vector3(0f, 0.6f, 0.05f), new Vector3(1f, 0.14f, 0.9f), PatchworkAssets.Fabric(Wine));
             kit.Deco(PrimitiveType.Cube, chair + new Vector3(0f, 1.2f, -0.48f), new Vector3(1f, 1.4f, 0.12f), DarkWood, new Vector3(-12f, 0f, 0f));
             var guard = kit.Group("SleepingGuard", chair + Vector3.up * 0.62f);
+            TownKit.Solid(kit, chair + Vector3.up * 1.1f, new Vector3(0.9f, 1f, 1f), 0f);
             var coat = PatchworkAssets.Felt(new Color(0.2f, 0.25f, 0.5f));
             var body = kit.Deco(PrimitiveType.Capsule, new Vector3(0f, 0.55f, -0.1f), new Vector3(0.62f, 0.5f, 0.5f), coat, new Vector3(-22f, 0f, 0f), guard);
             for (int s = -1; s <= 1; s += 2)

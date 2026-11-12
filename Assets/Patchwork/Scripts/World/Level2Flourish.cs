@@ -21,6 +21,53 @@ namespace Patchwork
             Footprints(kit);
             FishingFloats(kit);
             FacadeDetail(kit);
+            HistoryOutside(kit);
+        }
+
+        // The outside of the Hall of Deep Time, seen from the quay past the west tower: the
+        // same stonework as the front, with lit windows, so it isn't a blank cliff of brick.
+        static void HistoryOutside(LevelKit kit)
+        {
+            const float face = -106f, x0 = -90f, x1 = -61.2f;
+            var pale = PaleStone;
+            var trim = new MeshBatch();
+            float mid = (x0 + x1) * 0.5f, len = x1 - x0;
+            kit.Deco(PrimitiveType.Cube, new Vector3(mid, 0.8f, face - 0.25f), new Vector3(len, 3.6f, 0.5f), Ashlar);
+            trim.Box(new Vector3(mid, 2.75f, face - 0.3f), new Vector3(len, 0.3f, 0.6f), Quaternion.identity);
+            kit.Deco(PrimitiveType.Cube, new Vector3(mid, 13.4f, face - 0.2f), new Vector3(len, 0.6f, 0.4f), pale);
+            kit.Deco(PrimitiveType.Cube, new Vector3(mid, 23.2f, face - 0.4f), new Vector3(len + 0.6f, 1.2f, 0.8f), pale);
+            for (float x = x0 + 0.5f; x < x1 - 0.2f; x += 0.9f)
+                trim.Box(new Vector3(x, 22.35f, face - 0.22f), new Vector3(0.45f, 0.5f, 0.44f), Quaternion.identity);
+            Color warm = new Color(1f, 0.78f, 0.45f);
+            foreach (float x in new[] { -84f, -75.5f, -67f })
+            {
+                NightWindow(kit, new Vector3(x, 4f, face), 180f, 3.6f, 8.5f, warm, 0.9f);
+                NightWindow(kit, new Vector3(x, 15f, face), 180f, 3f, 5.5f, warm, 0.7f);
+                trim.Box(new Vector3(x, 12.85f, face - 0.3f), new Vector3(0.7f, 1f, 0.6f), Quaternion.identity);
+                trim.Box(new Vector3(x, 20.8f, face - 0.3f), new Vector3(0.6f, 0.9f, 0.6f), Quaternion.identity);
+                trim.Box(new Vector3(x, 3.68f, face - 0.36f), new Vector3(4.8f, 0.18f, 0.72f), Quaternion.identity);
+            }
+            // Quoins up the corner.
+            for (int i = 0; i < 14; i++)
+            {
+                float y = 0.45f + i * 1.65f;
+                bool longX = i % 2 == 0;
+                float lx = longX ? 1.8f : 1f, lz = longX ? 1f : 1.8f;
+                trim.Box(new Vector3(x0 + (lx * 0.5f - 0.12f), y, face + (lz * 0.5f - 0.12f) - 0f), new Vector3(lx, 1.5f, lz), Quaternion.identity);
+            }
+            trim.Build(kit.Root, "HistoryOutsideStone", pale, true);
+            // Downpipes: iron rainwater pipes from a hopper under the cornice to the ground, one
+            // here and one each side of the front.
+            foreach (var p in new[] { new Vector3(-62.4f, 0f, face - 0.5f), new Vector3(-50.66f, 0f, -110.85f), new Vector3(50.66f, 0f, -110.85f) })
+            {
+                float topY = p.z < -108f ? 34.7f : 21.6f, footY = 2.9f;
+                var iron = IronMat;
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(p.x, (topY + footY) * 0.5f, p.z), new Vector3(0.22f, (topY - footY) * 0.5f, 0.22f), iron);
+                kit.Deco(PrimitiveType.Cube, new Vector3(p.x, topY + 0.1f, p.z - 0.05f), new Vector3(0.6f, 0.6f, 0.45f), iron);
+                for (float y = footY + 2f; y < topY - 1f; y += 3.5f)
+                    kit.Deco(PrimitiveType.Cylinder, new Vector3(p.x, y, p.z), new Vector3(0.3f, 0.06f, 0.3f), iron);
+                kit.Deco(PrimitiveType.Cube, new Vector3(p.x, footY + 0.12f, p.z - 0.22f), new Vector3(0.3f, 0.24f, 0.5f), iron, new Vector3(30f, 0f, 0f));
+            }
         }
 
         // The museum's front (the wall's outer face is at z -110, the towers stand at x 51..61).

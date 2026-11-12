@@ -478,7 +478,11 @@ namespace Patchwork
                     // or the Great Window (east) to stand in front of.
                     // (None on the east side at all: the Keeper statues stand in those corners.)
                     bool clear = s < 0 ? Mathf.Abs(z + 78f) < 1f : true;
-                    if (!clear) kit.Deco(PrimitiveType.Cube, new Vector3(s * (AtriumHalf - 0.6f), 11f, z), new Vector3(1.2f, 22f, 1.6f), PaleStone);
+                    if (!clear)
+                    {
+                        kit.Deco(PrimitiveType.Cube, new Vector3(s * (AtriumHalf - 0.6f), 11f, z), new Vector3(1.2f, 22f, 1.6f), PaleStone);
+                        TownKit.Solid(kit, new Vector3(s * (AtriumHalf - 0.6f), 11f, z), new Vector3(1.2f, 22f, 1.6f), 0f);
+                    }
                     kit.Deco(PrimitiveType.Cube, new Vector3(s * (AtriumHalf - 0.8f), 21.6f, z), new Vector3(1.8f, 0.8f, 2.2f), Ashlar);
                 }
             }
@@ -707,6 +711,7 @@ namespace Patchwork
             Plinth(kit, foot, new Vector3(5.4f, 1.1f, 5.4f), 45f);
             kit.Block(foot + Vector3.up * 1.5f, new Vector3(3f, 0.8f, 3f), StoneCol, "ArmillaryBase", PaleStone);
             Vector3 c = foot + Vector3.up * 6.4f;
+            TownKit.Solid(kit, foot + Vector3.up * 2.3f, new Vector3(2.4f, 0.9f, 2.4f), 0f);   // the cradle's feet
             // The cradle: four brass arms curving up to hold the fixed horizon ring.
             for (int i = 0; i < 4; i++)
             {

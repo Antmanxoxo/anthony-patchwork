@@ -1,5 +1,21 @@
 # Development Log
 
+## Attention to detail: solid statues, picture lights, the side of the museum
+- Things you could walk straight through are now solid: the stone piers down the atrium's
+  west wall, both Keeper statues, the sleeping guard, the stone cat, the Rosetta Stone, the
+  jars on the shelves in the Hall of Deep Time, and the feet of the armillary sphere.
+- Every painting now has a brass picture light glowing over it on a little arm, a dark
+  liner inside the gilt frame, and an engraved title plate underneath.
+- The outside of the Hall of Deep Time (the long wall you see from the quay past the west
+  tower) has the same stonework as the front: a stone base, lit windows with keystones and
+  sills, a band between the floors, a cornice with dentils, and quoins up the corner.
+- Iron rainwater downpipes with hoppers and brackets at both ends of the front and on the
+  side wall.
+- The sarcophagus marble sits by the jar shelf instead of inside the jars, and the drowned
+  colonnade's treasure marble now stays where it's put (the glowing crystals' outline was
+  filling the passage and pushing it up through the roof).
+- The level check now spots flickering faces again (it had stopped recognising the cubes).
+
 ## Real-size stonework, a finished front, and a tidier Star Corridor
 - Level 2's brick, stone, plaster, plank, roof-tile and wallpaper textures are now laid on
   at real size instead of one copy stretched over each face. The big walls used to show a

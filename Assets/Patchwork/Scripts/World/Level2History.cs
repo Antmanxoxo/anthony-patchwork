@@ -160,12 +160,13 @@ namespace Patchwork
             Plaque(kit, new Vector3(-60f, 0f, -94.6f), 0f, "A Painted Coffin",
                 "The Egyptians wrapped their dead in linen: hundreds of metres of it, in strips, wound round and round. The very first patchwork people, you might say.",
                 "The paint on this lid is over three thousand years old and has never been touched up.");
-            SecretMarble.Place(kit, new Vector3(-86.4f, 1.1f, -102.6f), "L2_marble_sarcophagus", new Color(0.4f, 0.85f, 1f));
+            SecretMarble.Place(kit, new Vector3(-87.3f, 1.1f, -101.6f), "L2_marble_sarcophagus", new Color(0.4f, 0.85f, 1f));
 
             // The patient cat.
             Vector3 cat = Plinth(kit, new Vector3(-46f, 0f, -97f), new Vector3(3f, 1.4f, 4f));
             var basalt = PatchworkAssets.Plain(new Color(0.2f, 0.22f, 0.28f), 0.7f);
             var g = kit.Group("StoneCat", cat);
+            TownKit.Solid(kit, cat + Vector3.up * 1.6f, new Vector3(1.5f, 3.2f, 2.3f), 0f);
             kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 1.1f, -0.3f), new Vector3(1.5f, 2.2f, 1.8f), basalt, default(Vector3), g);
             kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.5f, 0.5f), new Vector3(1.2f, 1f, 1.3f), basalt, default(Vector3), g);
             kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 2.5f, 0.2f), new Vector3(1.1f, 1.05f, 1.1f), basalt, default(Vector3), g);
@@ -186,6 +187,7 @@ namespace Patchwork
             for (float x = -84f; x <= -66f; x += 6f)
             {
                 kit.Block(new Vector3(x, 0.6f, -103.2f), new Vector3(5f, 1.2f, 1.2f), WoodCol, "JarShelf", DarkWood);
+                TownKit.Solid(kit, new Vector3(x, 1.8f, -103.2f), new Vector3(4.8f, 1.2f, 0.9f), 0f);   // the jars
                 for (int i = 0; i < 4; i++)
                 {
                     Vector3 p = new Vector3(x - 1.8f + i * 1.2f, 1.2f, -103.2f);
@@ -199,6 +201,7 @@ namespace Patchwork
             // The stone of three scripts.
             Vector3 rs = Plinth(kit, new Vector3(-52f, 0f, -88f), new Vector3(2.6f, 0.7f, 1.6f));
             var slab = kit.Deco(PrimitiveType.Cube, rs + new Vector3(0f, 1.1f, 0f), new Vector3(1.9f, 2.2f, 0.4f), PatchworkAssets.Plain(new Color(0.22f, 0.22f, 0.26f), 0.4f), new Vector3(-8f, 0f, 0f));
+            TownKit.Solid(kit, rs + new Vector3(0f, 1.1f, 0f), new Vector3(1.9f, 2.2f, 0.6f), 0f);
             var chalk = PatchworkAssets.Felt(new Color(0.9f, 0.88f, 0.8f));
             for (int i = 0; i < 12; i++)
                 NoShadow(kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.42f - i * 0.075f, 0.52f), new Vector3(i < 4 ? 0.8f : i < 8 ? 0.72f : 0.84f, 0.025f, 0.02f), chalk, default(Vector3), slab));

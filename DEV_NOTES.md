@@ -549,6 +549,11 @@ Stuff I need to remember about how Patchwork is put together.
 - Facade detail lives in `Level2Flourish.FacadeDetail` (outer face z -110, towers x 51..61).
 - Star Corridor walls are non-overlapping segments (each corner owned by one wall); the
   dado and gilt are added per wall face by the `W` helper, never per room.
+- ScoreBubbles.Settle treats any renderer under 9 m as a prop by its bounding box, so one
+  MeshBatch spread across a passage blocks the whole passage: split batches per wall.
+- Walk-through props from the audit are fixed with `TownKit.Solid` boxes beside the decor.
+- `Painting()` now adds its own picture light, liner and title plate (all paintings get them).
+- `Level2Flourish.HistoryOutside` dresses the Hall of Deep Time's outer south face (z -106).
 
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
