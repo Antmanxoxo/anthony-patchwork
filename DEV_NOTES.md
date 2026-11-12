@@ -554,6 +554,11 @@ Stuff I need to remember about how Patchwork is put together.
 - Walk-through props from the audit are fixed with `TownKit.Solid` boxes beside the decor.
 - `Painting()` now adds its own picture light, liner and title plate (all paintings get them).
 - `Level2Flourish.HistoryOutside` dresses the Hall of Deep Time's outer south face (z -106).
+- `Level2Engravings.cs`: `Letters(mb, text, centre, facing, px, depth)` draws text in a 5x7
+  dot font (capitals only; add glyphs to `Font`). Also the tower tablets/roundels, garlands,
+  door fanlight, atrium compass rose and skirting boards. Called from Flourish.
+- WorldTiling divides by the material's baked `_BaseMap` scale (LevelKit.Block bakes a repeat
+  count into a material copy), so the world repeat is the only one.
 
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);

@@ -1,5 +1,20 @@
 # Development Log
 
+## Lettering, carving and a compass rose
+- The museum's front now carries its name: gilt letters reading THE OCEANIC MUSEUM across
+  the portico, and the motto OPEN TO ALL WHO WONDER along the frieze under the cornice.
+- The towers have carved stone tablets reading ANNO and MDCCCLIII (1853, the year the first
+  public aquarium opened) and big scallop-shell roundels between their windows.
+- Stone garlands hang in swags between the pilasters along the top of the front, with
+  ribbons at the ends.
+- A fanlight of leaded glass fills the round top of the great doorway, glowing with the
+  light inside.
+- Inside: a brass compass rose is set into the atrium floor round the armillary sphere, and
+  the atrium and the Hall of Deep Time have skirting boards (dark marble and oak, with a brass
+  bead), stopping neatly at every doorway.
+- Fixed the real-size textures over-repeating on blocks that already had a repeat count
+  baked into their material.
+
 ## Attention to detail: solid statues, picture lights, the side of the museum
 - Things you could walk straight through are now solid: the stone piers down the atrium's
   west wall, both Keeper statues, the sleeping guard, the stone cat, the Rosetta Stone, the

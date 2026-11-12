@@ -76,7 +76,15 @@ namespace Patchwork
                 if (WorldTiling && mesh == cube)
                 {
                     float tile = TileFor(r.sharedMaterial);
-                    if (tile > 0f) { mf.sharedMesh = WorldCube(mf.transform, tile); tiled++; }
+                    if (tile > 0f)
+                    {
+                        // (Blocks already carry a material copy with its own repeat count baked in;
+                        // undo that so the world-size repeat is the only one.)
+                        Vector2 rep = r.sharedMaterial.GetTextureScale("_BaseMap");
+                        if (rep.x < 0.01f || rep.y < 0.01f) rep = Vector2.one;
+                        mf.sharedMesh = WorldCube(mf.transform, tile, rep);
+                        tiled++;
+                    }
                 }
                 if (mesh == hiSphere && size < 2.6f) { mf.sharedMesh = spheres[size < 0.45f ? 0 : size < 1.3f ? 1 : 2]; swapped++; }
                 else if (mesh == hiCapsule && size < 3.2f) { mf.sharedMesh = capsules[size < 0.6f ? 0 : size < 1.6f ? 1 : 2]; swapped++; }
@@ -155,7 +163,7 @@ namespace Patchwork
 
         // A copy of the cube whose UVs come from where each corner really is in the world:
         // tops and bottoms map x and z, the sides map along the wall and up.
-        static Mesh WorldCube(Transform t, float tile)
+        static Mesh WorldCube(Transform t, float tile, Vector2 rep)
         {
             var verts = cube.vertices;
             var normals = cube.normals;
@@ -168,7 +176,7 @@ namespace Patchwork
                 if (Mathf.Abs(n.y) > 0.7f) uv = new Vector2(w.x, w.z);
                 else if (Mathf.Abs(n.x) > Mathf.Abs(n.z)) uv = new Vector2(n.x > 0f ? -w.z : w.z, w.y);
                 else uv = new Vector2(n.z > 0f ? w.x : -w.x, w.y);
-                uvs[i] = uv / tile;
+                uvs[i] = new Vector2(uv.x / (tile * rep.x), uv.y / (tile * rep.y));
             }
             var m = new Mesh { name = "PatchworkTiledCube" };
             m.vertices = verts;

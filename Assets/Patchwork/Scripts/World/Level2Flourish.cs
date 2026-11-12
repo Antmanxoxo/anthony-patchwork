@@ -22,6 +22,7 @@ namespace Patchwork
             FishingFloats(kit);
             FacadeDetail(kit);
             HistoryOutside(kit);
+            Engravings(kit);
         }
 
         // The outside of the Hall of Deep Time, seen from the quay past the west tower: the
