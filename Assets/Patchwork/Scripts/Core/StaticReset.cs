@@ -15,6 +15,8 @@ namespace Patchwork
             GameState.ResetStatics();
             LoadingScreen.ResetStatics();
             Narrator.ResetStatics();
+            StrikeFx.ResetStatics();
+            Level2Quest.ResetStatics();
             GlobeDetail.ResetStatics();
             ToyNpc.Focus = null;
             FrayBodies.ResetStatics();

@@ -22,6 +22,11 @@ namespace Patchwork
         {
             visual = visualRoot;
             t = Random.value * 5f;
+            // (So a strike can pop it too.)
+            var fc = gameObject.AddComponent<FrayCreature>();
+            fc.Center = () => transform.position;
+            fc.Pop = p => Pop(p);
+            fc.Quiet = true;
         }
 
         // Is the player hitting this hard enough to pop it? (Shared with Snarlings.)

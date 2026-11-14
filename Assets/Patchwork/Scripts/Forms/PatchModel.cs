@@ -115,6 +115,58 @@ namespace Patchwork
             tetherTarget = target;
         }
 
+        // A strike under way (see PatchStrike): which of the three, and how far through.
+        int strikeMove = -1;
+        float strikeK;
+
+        public void SetStrike(int move, float k)
+        {
+            strikeMove = move;
+            strikeK = k;
+        }
+
+        // A direction out from Patch: so many degrees to his right, and so many up.
+        Vector3 Out(float yaw, float pitch)
+        {
+            return transform.rotation * (Quaternion.Euler(-pitch, yaw, 0f) * Vector3.forward);
+        }
+
+        static void SwingArm(Transform arm, Transform hand, Vector3 dir, float weight)
+        {
+            if (arm == null || hand == null) return;
+            Quaternion before = arm.rotation;
+            AimArm(arm, hand, arm.position + dir);
+            arm.rotation = Quaternion.Slerp(before, arm.rotation, weight);
+        }
+
+        // His three hits, laid over whichever animation is playing: a lash of the yarn arm
+        // from right to left, a backhand with the other from left to right, and both arms
+        // up over his head and down in front (the knot hammer).
+        void StrikePose()
+        {
+            float k = strikeK;
+            float swing = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(k / 0.5f));
+            float hold = k < 0.72f ? 1f : Mathf.Clamp01((1f - k) / 0.28f);
+            if (strikeMove == 0)
+            {
+                if (modelRoot != null) modelRoot.localRotation = Quaternion.Euler(0f, Mathf.Lerp(38f, -38f, swing) * hold, 0f) * modelRoot.localRotation;
+                SwingArm(armR, HandR, Out(Mathf.Lerp(115f, -70f, swing), 8f), hold);
+            }
+            else if (strikeMove == 1)
+            {
+                if (modelRoot != null) modelRoot.localRotation = Quaternion.Euler(0f, Mathf.Lerp(-38f, 38f, swing) * hold, 0f) * modelRoot.localRotation;
+                SwingArm(armLeft, handLeft, Out(Mathf.Lerp(-115f, 70f, swing), 8f), hold);
+            }
+            else
+            {
+                float slam = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((k - 0.45f) / 0.18f));
+                float pitch = Mathf.Lerp(Mathf.Lerp(30f, 105f, Mathf.Clamp01(k / 0.4f)), -40f, slam);
+                if (modelRoot != null) modelRoot.localRotation = Quaternion.Euler(Mathf.Lerp(-14f, 24f, slam) * hold, 0f, 0f) * modelRoot.localRotation;
+                SwingArm(armR, HandR, Out(6f, pitch), hold);
+                SwingArm(armLeft, handLeft, Out(-6f, pitch), hold);
+            }
+        }
+
         // Holding something: both arms reach for it.
         bool gripping;
         Vector3 gripTarget;
@@ -432,6 +484,8 @@ namespace Patchwork
                 AimArm(armR, HandR, gripTarget + side);
                 AimArm(armLeft, handLeft, gripTarget - side);
             }
+
+            if (strikeMove >= 0 && !tethered) StrikePose();
 
             // The hand is in its final spot now, so anything attached to it (the rope) can follow.
             if (PoseApplied != null) PoseApplied();

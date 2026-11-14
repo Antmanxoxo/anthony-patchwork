@@ -5,7 +5,8 @@ namespace Patchwork
 {
     // All the controls in one place. PlayStation controller first, keyboard as backup.
     // Move: left stick / WASD      Camera: right stick / mouse
-    // Jump: X / Space              Ability: Square / E or left click
+    // Jump: X / Space              Ability: Square / E
+    // Strike: Circle / left click or R (three in a row for the big one)
     // Form Wheel: L1 or R1 / Q     Satchel: touchpad / Tab     Pause: Options / Esc
     // Quick forms: D-pad left / up / right (or 1 / 2 / 3) for Water / Yarn / Wind
     // Patch's face: D-pad down (or 4) cycles happy / sad / angry
@@ -22,6 +23,7 @@ namespace Patchwork
         public readonly InputAction LookMouse;
         public readonly InputAction Jump;
         public readonly InputAction Ability;
+        public readonly InputAction Attack;
         public readonly InputAction FormWheel;
         public readonly InputAction Confirm;
         public readonly InputAction Cancel;
@@ -84,7 +86,9 @@ namespace Patchwork
             LookMouse = map.AddAction("LookMouse", InputActionType.Value, "<Mouse>/delta", expectedControlLayout: "Vector2");
 
             Jump = Button("Jump", "<Gamepad>/buttonSouth", "<Keyboard>/space");
-            Ability = Button("Ability", "<Gamepad>/buttonWest", "<Keyboard>/e", "<Mouse>/leftButton");
+            Ability = Button("Ability", "<Gamepad>/buttonWest", "<Keyboard>/e");
+            // (Circle is only "back" in the menus, so out in the world it's free for hitting things.)
+            Attack = Button("Attack", "<Gamepad>/buttonEast", "<Mouse>/leftButton", "<Keyboard>/r");
             FormWheel = Button("FormWheel", DefaultFormWheelGamepadPath, "<Keyboard>/q");
             Confirm = Button("Confirm", "<Gamepad>/buttonSouth", "<Keyboard>/enter", "<Keyboard>/space", "<Keyboard>/numpadEnter");
             Cancel = Button("Cancel", "<Gamepad>/buttonEast", "<Keyboard>/backspace", "<Keyboard>/escape");

@@ -630,7 +630,8 @@ namespace Patchwork
             var look = kit.Volume<UseSpot>(C + new Vector3(0f, 2.2f, -2.4f), new Vector3(3.6f, 3f, 2.6f), "TelescopeSpot");
             look.Label = "Look through the telescope";
             look.PromptPoint = C + new Vector3(0f, 3.6f, -1.8f);
-            look.Used = p => director.LookThroughTelescope();
+            // (Not until its three lenses are back in it: see Level2Quest.)
+            look.Used = p => { if (Level2Quest.Instance == null || Level2Quest.Instance.TelescopeReady()) director.LookThroughTelescope(); };
             director.TelescopeEye = mount + new Vector3(0f, 4.4f, -1.4f);
             director.TelescopeLook = C + new Vector3(0f, 30f, 12.5f);
             Plaque(kit, C + new Vector3(3.2f, 1f, -2.6f), 200f, "The Great Telescope",

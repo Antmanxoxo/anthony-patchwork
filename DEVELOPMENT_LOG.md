@@ -1,5 +1,44 @@
 # Development Log
 
+## The Night Glass: Level 2's story, its Fray, and three-hit strikes
+The Oceanic Museum now has a proper story, enemies of its own, and Patch can hit things.
+- The story ("Chapter Two: The Night Glass"):
+  - Every midnight the keepers point the Observatory's great telescope at the Great Whale as
+    she goes over. She only sings if somebody sees her, and her song keeps the museum's colour in.
+  - At dusk the Fray took the telescope's three lenses. If midnight passes unseen, the museum
+    goes grey by morning, and the exhibits are already waking up wrong.
+  - Wick, a new night watchman by the Atrium checkpoint, tells you all this and where to look.
+  - Marlow, the Castellan, Stella, Button, Dr. Trowel and Thimble each have new things to say
+    as the story moves on (said once, then they go back to their usual chatter).
+  - A panel at the top left shows the three lenses and what to do next.
+- Lens one, the Object Glass (Hall of Arms):
+  - the first time you walk down the aisle the portcullis drops behind you
+  - the armours step down off their plinths in three waves (their display suits vanish and
+    come back, empty, when beaten)
+  - shield bearers (Knight, Legionary, Viking, Hoplite) block everything from the front
+    except the third hit; the Samurai dashes through you, the Eagle warrior leaps, the steppe
+    archer shoots sucker arrows, the Terracotta soldier is slow and very tough
+  - last is the Knight by the door, the Hollow Captain, with the lens on his chest
+  - if you unravel, only the wave you were on starts again
+- Lens two, the Field Lens (the keepers' four tanks):
+  - a grey clot hangs in each tank, guarded by ink jellies; dive in as Water and break it
+  - the clot swells before it lets off a shock, so hit and back away
+  - the fourth clot coughs up the lens
+- Lens three, the Eye Lens (the Helmet Crab):
+  - a brass diving helmet on legs; it bolts from the Atrium, then from the Kelp Galleries
+    (with hopping chessmen for company), and turns to fight in the Sunken Ruins
+  - only the third hit gets through the brass and tips it over; it also tips itself over
+    after a charge
+- The ending: with all three, Stella fits them, moths come for the telescope, and once they
+  are gone you can look. The telescope refuses until then.
+- Striking: Circle (left click or R on keyboard) hits. Three presses in a row make a combo
+  and the third is the big one. Square is still swing / gust / dive.
+  - Yarn: lash, backhand, knot-hammer slam
+  - Water: slap, long squirt, splash down all round
+  - Wind: puff, whirl, gale burst straight through
+  - Old Fray and snarl knots pop in one hit; stomping still works.
+  - The form badge shows the name of the next hit.
+
 ## The landed Pod, lived in
 The Pod you arrive in at each level now looks well-travelled and lived-in, and Patch has made a
 little yard round it in the crater.

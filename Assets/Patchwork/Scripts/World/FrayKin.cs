@@ -392,7 +392,7 @@ namespace Patchwork
                 float nearest = 1000f;
                 foreach (var c in FrayCreature.All)
                 {
-                    if (c == null || c.Center == null) continue;
+                    if (c == null || c.Center == null || c.Quiet) continue;
                     Vector3 at = c.Center();
                     float d = (at - pp).magnitude;
                     nearest = Mathf.Min(nearest, d);

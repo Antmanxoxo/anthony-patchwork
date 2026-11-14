@@ -16,7 +16,8 @@ namespace Patchwork
         Map,
         Grab,
         Sticker,
-        Rotate
+        Rotate,
+        Attack
     }
 
     // Immediate-mode UI helpers. Everything is drawn in a virtual 1080p-tall space, so it scales to any
@@ -266,6 +267,7 @@ namespace Patchwork
                 case PromptAction.Grab: return "Shift";
                 case PromptAction.Sticker: return "F";
                 case PromptAction.Rotate: return "Z / X";
+                case PromptAction.Attack: return "Click";
                 default: return "Arrows";
             }
         }
@@ -277,7 +279,8 @@ namespace Patchwork
                 case PromptAction.Jump:
                 case PromptAction.Confirm: return PatchworkAssets.GlyphCross;
                 case PromptAction.Ability: return PatchworkAssets.GlyphSquare;
-                case PromptAction.Cancel: return PatchworkAssets.GlyphCircle;
+                case PromptAction.Cancel:
+                case PromptAction.Attack: return PatchworkAssets.GlyphCircle;
                 case PromptAction.Sticker: return PatchworkAssets.GlyphTriangle;
                 default: return null;
             }

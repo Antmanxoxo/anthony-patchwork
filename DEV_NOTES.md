@@ -615,6 +615,26 @@ Stuff I need to remember about how Patchwork is put together.
 - Level2Builder.Letters is now internal so other classes can write lettering. New behaviours
   for the Pod: PodTwinkle (fairy lights) and PodWindsock.
 
+- **The story lives in `Level2Quest.cs`** (builder part `Quest(kit)`, run after `Rooms`; the
+  `Level2Quest` component; `HallOfArmsFight`). Every save key starts `L2_q_` (met, lens0-2,
+  arms, clot0-3, crab1, crab2, crab, fitted, defended). The telescope's Look spot asks
+  `Level2Quest.Instance.TelescopeReady()` first.
+- **The museum's Fray are in `MuseumFray.cs`**, all built on `MuseumFoe` (health, flinch,
+  knock-back, `Blocks()` for shields and brass, `Contact()` for stomps and stings):
+  `HollowGuard`, `InkJelly`, `GreyClot`, `Chessling`, `HelmetCrab`, plus `ToyArrow` and
+  `LensPickup`.
+- **`HallOfArmsFight` holds references to the eight display armours** (`ArmourKnight` etc.).
+  That reference is what stops StaticCombine merging them, so they can be hidden while their
+  Hollow copy is walking. Don't rename those groups without changing the `Find`.
+- **Guards never use physics.** They stay inside `HallOfArmsFight.Fence` (between the plinth
+  rows, round the horseman). If furniture moves in the hall, move the fence.
+- **Strikes are `PatchStrike` (Forms).** Attack = Circle / left click / R. A creature takes
+  hits through `FrayCreature.TakeHit`; set `Struck` for anything with more than one hit point,
+  otherwise it just calls `Pop`. `Radius` makes big things reachable; `Quiet` stops GreyStain
+  blotting under it. Left click is no longer Ability (that's E / Square only).
+- **Strike poses** are laid over the normal animation: `FormVisuals.ApplyStrike` for Water,
+  Wind and the block Yarn rig, `PatchModel.StrikePose` for the Blender model.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

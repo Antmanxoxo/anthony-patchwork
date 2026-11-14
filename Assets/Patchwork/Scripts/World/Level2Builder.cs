@@ -147,6 +147,7 @@ namespace Patchwork
             Details(kit);
             Life(kit);
             Rooms(kit);   // (last of all: six more things in every room, fitted in round the rest)
+            Quest(kit);   // the story: the three lenses of the Night Glass, and the Fray that has them
 
             // The hush of the halls, and the deep rumble by the big tanks.
             var sounds = kit.Group("LevelSounds", Vector3.zero);

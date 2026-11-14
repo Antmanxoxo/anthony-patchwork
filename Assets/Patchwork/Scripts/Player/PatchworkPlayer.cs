@@ -11,6 +11,7 @@ namespace Patchwork
         public FormVisuals Visuals { get; private set; }
         public PatchworkGame Game { get; private set; }
         public GrabHand Hand { get; private set; }
+        public PatchStrike Strike { get; private set; }
         StitchTrail trail;
 
         public static PatchworkPlayer Create(PatchworkGame game, Vector3 feet, float yaw)
@@ -36,6 +37,7 @@ namespace Patchwork
             player.Forms.Initialise(GameState.CurrentForm);
             player.Hand = go.AddComponent<GrabHand>();
             player.Hand.Init(player);
+            player.Strike = new PatchStrike(player);
             BlobShadow.Create(player);
             player.trail = StitchTrail.Create(player);
             return player;
@@ -48,6 +50,7 @@ namespace Patchwork
             Forms.Ability.PreMove(input, dt);
             PlayerVolume.UpdateAll(this, dt);
             Hand.Tick(input, dt);
+            Strike.Tick(input, dt);
             Motor.Step(input.MoveWorld, input.JumpPressed, input.JumpHeld, dt);
             Forms.Ability.PostMove(dt);
 
@@ -124,6 +127,7 @@ namespace Patchwork
         public void Respawn(Vector3 feet, float yaw)
         {
             Hand.Release();
+            Strike.Cancel();
             Forms.CancelAll();
             Motor.Teleport(feet, yaw);
             Forms.Ability.ForceCancel();

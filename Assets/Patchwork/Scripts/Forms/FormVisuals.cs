@@ -166,6 +166,104 @@ namespace Patchwork
             if (patchModel != null) patchModel.SetTether(on, target);
         }
 
+        // A strike under way: which of the three (or -1 for none), and how far through (0..1).
+        int strikeMove = -1;
+        float strikeK;
+
+        public void SetStrike(int move, float k)
+        {
+            strikeMove = move;
+            strikeK = k;
+            if (patchModel != null) patchModel.SetStrike(move, k);
+        }
+
+        // Each form's three hits, laid over whatever its body was doing anyway.
+        void ApplyStrike()
+        {
+            int m = strikeMove;
+            float k = strikeK;
+            float swing = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(k / 0.5f));   // the hit itself
+            float hold = k < 0.72f ? 1f : Mathf.Clamp01((1f - k) / 0.28f);     // easing back out of it
+            float bell = Mathf.Sin(Mathf.Clamp01(k) * Mathf.PI);
+            Quaternion fwd = Quaternion.Euler(-90f, 0f, 0f);                   // an arm that hangs down, pointed ahead
+
+            if (form == FormType.Yarn)
+            {
+                if (patchModel != null || shoulderR == null) return;   // (the Blender model poses itself)
+                if (m == 0)
+                    shoulderR.localRotation = Quaternion.Slerp(shoulderR.localRotation, Quaternion.Euler(0f, Mathf.Lerp(100f, -70f, swing), 0f) * fwd, hold);
+                else if (m == 1)
+                    shoulderL.localRotation = Quaternion.Slerp(shoulderL.localRotation, Quaternion.Euler(0f, Mathf.Lerp(-100f, 70f, swing), 0f) * fwd, hold);
+                else
+                {
+                    float slam = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((k - 0.45f) / 0.18f));
+                    var both = Quaternion.Euler(Mathf.Lerp(-175f, -50f, slam), 0f, 0f);
+                    shoulderR.localRotation = Quaternion.Slerp(shoulderR.localRotation, both, hold);
+                    shoulderL.localRotation = Quaternion.Slerp(shoulderL.localRotation, both, hold);
+                    yarnHead.localRotation = Quaternion.Euler(Mathf.Lerp(-18f, 22f, slam) * hold, 0f, 0f);
+                }
+                armR.localScale = new Vector3(1f, 1f + (m == 0 ? bell * 0.9f : 0f), 1f);
+                return;
+            }
+
+            if (form == FormType.Water)
+            {
+                if (wArmR == null) return;
+                if (m == 0)
+                {
+                    // The slap: the right arm comes round flat, and the body twists after it.
+                    wArmR.localRotation = Quaternion.Slerp(wArmR.localRotation, Quaternion.Euler(0f, Mathf.Lerp(105f, -60f, swing), 0f) * fwd, hold);
+                    wBody.localRotation = Quaternion.Euler(0f, Mathf.Lerp(35f, -35f, swing) * hold, 0f) * wBody.localRotation;
+                }
+                else if (m == 1)
+                {
+                    // The squirt: both hands together out in front, cheeks blown out, then a lean into it.
+                    wArmL.localRotation = Quaternion.Slerp(wArmL.localRotation, Quaternion.Euler(0f, 14f, 0f) * fwd, hold);
+                    wArmR.localRotation = Quaternion.Slerp(wArmR.localRotation, Quaternion.Euler(0f, -14f, 0f) * fwd, hold);
+                    wHead.localRotation = Quaternion.Euler(Mathf.Lerp(-22f, 14f, swing) * hold, 0f, 0f) * wHead.localRotation;
+                    Vector3 s = bubble.localScale;
+                    bubble.localScale = new Vector3(s.x * (1f - bell * 0.12f), s.y * (1f - bell * 0.08f), s.z * (1f + bell * 0.35f));
+                }
+                else
+                {
+                    // The splash down: arms flung up, then flat as a pancake.
+                    float flat = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((k - 0.5f) / 0.14f)) * hold;
+                    wArmL.localRotation = Quaternion.Slerp(wArmL.localRotation, Quaternion.Euler(0f, 0f, -150f), hold);
+                    wArmR.localRotation = Quaternion.Slerp(wArmR.localRotation, Quaternion.Euler(0f, 0f, 150f), hold);
+                    bubble.localScale = Vector3.Lerp(bubble.localScale, new Vector3(1.5f, 0.5f, 1.5f), flat);
+                    wBody.localRotation = Quaternion.Euler(Mathf.Clamp01(k / 0.5f) * 60f * (1f - flat) * hold, 0f, 0f) * wBody.localRotation;
+                }
+                return;
+            }
+
+            if (windArm[0] == null) return;
+            for (int side = 0; side < 2; side++)
+            {
+                float sx = side == 0 ? -1f : 1f;
+                Quaternion want;
+                if (m == 0) want = Quaternion.Euler(Mathf.Lerp(-40f, -100f, swing), 0f, sx * 8f);            // both hands shove forward
+                else if (m == 1) want = Quaternion.Euler(0f, 0f, sx * 100f);                                 // straight out, spinning
+                else want = Quaternion.Euler(75f, 0f, sx * 28f);                                             // swept back like a diver
+                windArm[side].localRotation = Quaternion.Slerp(windArm[side].localRotation, want, hold);
+            }
+            if (m == 0)
+            {
+                cloud.localScale = Vector3.one * (1f + bell * 0.3f);
+                windHead.localRotation = Quaternion.Euler(bell * 22f, 0f, 0f) * windHead.localRotation;
+            }
+            else if (m == 1)
+            {
+                // The whirl: once right round (and a bit), fast.
+                root.localRotation = Quaternion.Euler(0f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(k / 0.85f)) * 720f, 0f);
+                cloud.localScale = new Vector3(1f + bell * 0.25f, 1f - bell * 0.12f, 1f + bell * 0.25f);
+            }
+            else
+            {
+                root.localRotation = Quaternion.Euler(bell * 32f, 0f, 0f);
+                cloud.localScale = new Vector3(1f - bell * 0.18f, 1f - bell * 0.18f, 1f + bell * 0.5f);
+            }
+        }
+
         // Holding something (grab): his arms reach for it.
         public void SetGrip(bool on, Vector3 target)
         {
@@ -253,6 +351,7 @@ namespace Patchwork
             AnimateYarn(motor, speed, localVel, dt);
             AnimateWater(motor, dv, dt);
             AnimateWind(motor, dt);
+            if (strikeMove >= 0 && !transitioning) ApplyStrike();
             if (transitioning) TickTransition(dt);
 
             // Hat follows the head of the current body (the cloud floats, so its head moves).

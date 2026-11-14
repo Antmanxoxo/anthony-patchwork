@@ -388,6 +388,10 @@ namespace Patchwork
                 UIKit.Style(24, false, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, 0.85f * e * (0.75f + 0.25f * Mathf.Sin(t * 4f)))));
         }
 
+        static readonly string[] YarnHits = { "Lash", "Backhand", "Knot hammer" };
+        static readonly string[] WaterHits = { "Slap", "Squirt", "Splash down" };
+        static readonly string[] WindHits = { "Puff", "Whirl", "Gale burst" };
+
         void DrawFormBadge(bool kb)
         {
             var forms = Game.Player.Forms;
@@ -405,14 +409,22 @@ namespace Patchwork
 
             float x = panel.x + 176f;
             UIKit.Label(new Rect(x, panel.y + 20f, 440f, 40f), def.DisplayName, UIKit.Style(32, true, TextAnchor.MiddleLeft, ink));
+            // The strike this form will throw next (three in a row; the third's the big one).
+            var strike = Game.Player.Strike;
+            if (strike != null)
+            {
+                string[] hits = forms.Current == FormType.Water ? WaterHits : forms.Current == FormType.Wind ? WindHits : YarnHits;
+                int n = strike.Active ? strike.Move : strike.NextMove;
+                UIKit.PromptLabel(panel.x + 410f, panel.y + 24f, 34f, PromptAction.Attack, hits[Mathf.Clamp(n, 0, 2)], kb, ink, strike.Active ? 1f : 0.8f);
+            }
 
             float y = panel.y + 70f;
             float h = 40f;
             switch (forms.Current)
             {
                 case FormType.Water:
-                    UIKit.Label(new Rect(x, y, 440f, 90f), "Slip through blue drain grates.\nRide blue fountains upward.",
-                        UIKit.Style(23, false, TextAnchor.UpperLeft, ink, true));
+                    UIKit.Label(new Rect(x, y, 440f, 60f), "Slip through blue drain grates.\nRide blue fountains upward.",
+                        UIKit.Style(21, false, TextAnchor.UpperLeft, ink, true));
                     break;
 
                 case FormType.Yarn:
@@ -498,6 +510,26 @@ namespace Patchwork
                 string sub = level.HeartstringsNeeded <= 0 ? "Bonus finds" : got >= level.HeartstringsNeeded ? "The lift is open!" : "Need " + level.HeartstringsNeeded + " for the lift";
                 UIKit.Label(new Rect(hr.x + 92f, hr.y + 54f, 170f, 28f), sub, UIKit.Style(17, true, TextAnchor.MiddleLeft, new Color(0.45f, 0.25f, 0.1f, 0.8f)));
                 y += 104f;
+            }
+            var quest = Level2Quest.Instance;
+            if (quest != null && level.Id == Level2Builder.SceneName && !GameState.IsLevelComplete(level.Id))
+            {
+                // The Oceanic Museum: the three lenses of the Night Glass, and what to do next.
+                var qr = new Rect(28f, y, 380f, 148f);
+                UIKit.Panel(qr, new Color(0.93f, 0.97f, 1f, 0.95f), new Color(0.3f, 0.55f, 0.85f, 0.9f), 20f);
+                UIKit.Label(new Rect(qr.x + 20f, qr.y + 6f, 340f, 34f), "The Night Glass  " + quest.LensCount + " / 3",
+                    UIKit.Style(23, true, TextAnchor.MiddleLeft, new Color(0.15f, 0.25f, 0.5f)));
+                string[] lensNames = { "Object", "Field", "Eye" };
+                for (int i = 0; i < 3; i++)
+                {
+                    bool got = quest.HasLens(i);
+                    var chip = new Rect(qr.x + 16f + i * 118f, qr.y + 44f, 110f, 38f);
+                    UIKit.Fill(chip, got ? new Color(0.4f, 0.75f, 1f) : new Color(0.62f, 0.6f, 0.66f, 0.55f), 19f);
+                    UIKit.Label(chip, lensNames[i], UIKit.Style(18, true, TextAnchor.MiddleCenter, got ? new Color(0.08f, 0.2f, 0.4f) : new Color(1f, 1f, 1f, 0.9f)));
+                }
+                UIKit.Label(new Rect(qr.x + 20f, qr.y + 88f, 344f, 54f), quest.Objective(),
+                    UIKit.Style(17, true, TextAnchor.UpperLeft, new Color(0.15f, 0.25f, 0.5f, 0.9f), true));
+                y += 160f;
             }
             if (total > 0)
             {

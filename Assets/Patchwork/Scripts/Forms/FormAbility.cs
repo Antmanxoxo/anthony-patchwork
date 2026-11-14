@@ -13,6 +13,7 @@ namespace Patchwork
         public bool AbilityHeld;
         public bool GrabPressed;
         public bool GrabHeld;
+        public bool AttackPressed;
 
         public static PlayerInputFrame Empty
         {

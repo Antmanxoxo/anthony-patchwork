@@ -77,10 +77,10 @@ namespace Patchwork
             var list = new System.Collections.Generic.List<FrayCreature>(FrayCreature.All);
             foreach (var c in list)
             {
-                if (c == null || c.Center == null || c.Pop == null) continue;
+                if (c == null || c.Center == null) continue;
                 Vector3 d = c.Center() - origin;
-                if (d.magnitude > 3.8f || Vector3.Dot(d.normalized, dir) < 0.2f) continue;
-                c.Pop(player);
+                if (d.magnitude - c.Radius > 3.8f || Vector3.Dot(d.normalized, dir) < 0.2f) continue;
+                c.TakeHit(player, 1, origin, false);
             }
         }
 
@@ -99,12 +99,29 @@ namespace Patchwork
         public static Material Glow { get { if (glow == null) glow = PatchworkAssets.Glow(SnarlKnot.FrayGlow, 1.4f); return glow; } }
     }
 
-    // Marks something as a creature of the Fray (so Wind's gust can find it).
+    // Marks something as a creature of the Fray (so Patch's strikes and Wind's gust can find it).
     public class FrayCreature : MonoBehaviour
     {
         public static readonly System.Collections.Generic.List<FrayCreature> All = new System.Collections.Generic.List<FrayCreature>();
         public System.Func<Vector3> Center;
         public System.Action<PatchworkPlayer> Pop;
+        // How big it is (so a strike reaches the edge of a big thing, not just its middle).
+        public float Radius = 0.6f;
+        // Leaves no grey behind it (things that look after their own gloom).
+        public bool Quiet;
+        // For creatures that take more than one hit: (Patch, how hard, from where, was it the
+        // third hit of the three). Returns true if the hit landed (false if it was blocked).
+        public System.Func<PatchworkPlayer, int, Vector3, bool, bool> Struck;
+
+        // A strike (or a gust) has reached it. Little ones just pop.
+        public bool TakeHit(PatchworkPlayer player, int power, Vector3 from, bool finisher)
+        {
+            if (!isActiveAndEnabled) return false;
+            if (Struck != null) return Struck(player, power, from, finisher);
+            if (Pop == null) return false;
+            Pop(player);
+            return true;
+        }
         void OnEnable() { All.Add(this); }
         void OnDisable() { All.Remove(this); }
     }
