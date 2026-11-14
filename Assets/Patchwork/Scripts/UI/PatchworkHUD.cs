@@ -519,6 +519,9 @@ namespace Patchwork
                 UIKit.Panel(qr, new Color(0.93f, 0.97f, 1f, 0.95f), new Color(0.3f, 0.55f, 0.85f, 0.9f), 20f);
                 UIKit.Label(new Rect(qr.x + 20f, qr.y + 6f, 340f, 34f), "The Night Glass  " + quest.LensCount + " / 3",
                     UIKit.Style(23, true, TextAnchor.MiddleLeft, new Color(0.15f, 0.25f, 0.5f)));
+                // The museum clock, creeping toward midnight.
+                UIKit.Label(new Rect(qr.x + 230f, qr.y + 6f, 134f, 34f), quest.Clock(),
+                    UIKit.Style(20, true, TextAnchor.MiddleRight, new Color(0.7f, 0.3f, 0.25f)));
                 string[] lensNames = { "Object", "Field", "Eye" };
                 for (int i = 0; i < 3; i++)
                 {

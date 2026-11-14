@@ -1,5 +1,19 @@
 # Development Log
 
+## The Night Glass, deeper
+More to find and more to do along the way to the three lenses.
+- Wick's night book: six pages are scattered round the museum (Atrium, Deep Time, the old
+  ship, Kelp Galleries, Keepers' Room, outside the Hall of Arms). Each is an hour of the
+  evening in his words. Bring him all six and he remembers who took the lenses: the Unpicker.
+- The Unpicker turns up twice: on the toy castle after the Hall of Arms, and in the
+  Observatory, where he points and the moths come. He leaves when the last moth is gone.
+- The museum clock on the quest panel starts at 11:00 and moves toward midnight with each lens.
+- Three lamps on a stand by Wick light up one by one as lenses come home.
+- The tanks: every clot is now held by three anchor knots on long ropes. Nothing hurts the
+  clot until all three are broken, so you have to swim the whole tank.
+- The Helmet Crab in the Kelp Galleries stays tucked in its helmet until its chessmen are
+  popped; then it bolts.
+
 ## The Night Glass: Level 2's story, its Fray, and three-hit strikes
 The Oceanic Museum now has a proper story, enemies of its own, and Patch can hit things.
 - The story ("Chapter Two: The Night Glass"):

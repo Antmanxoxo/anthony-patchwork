@@ -829,10 +829,31 @@ namespace Patchwork
     // a shock all round it: get your hits in, then get clear.
     public class GreyClot : MuseumFoe
     {
-        Transform knot, eye, murk;
+        Transform knot, eye, murk, ward;
         Transform[] ropes;
         float pulse = 3f, swell = -1f;
         const float ShockRadius = 3.9f;
+
+        // The anchor knots that hold it fast. While any is left, nothing hurts it.
+        public int AnchorsLeft { get; private set; }
+        public System.Action<GreyClot> Held;      // somebody hit it while it was still anchored
+        public System.Action<GreyClot> Loosed;    // the last anchor has gone
+
+        public void AddAnchor() { AnchorsLeft++; if (ward != null) ward.gameObject.SetActive(true); }
+
+        public void AnchorLost()
+        {
+            AnchorsLeft = Mathf.Max(0, AnchorsLeft - 1);
+            flinch = 1f;
+            if (AnchorsLeft > 0) return;
+            if (ward != null) ward.gameObject.SetActive(false);
+            FxBurst.Spawn(FxBurst.Kind.Threads, pos, SnarlKnot.FrayGlow);
+            Sfx.PlayNear(SfxId.Unravel, pos, 0.6f, 40f);
+            if (Loosed != null) Loosed(this);
+        }
+
+        protected override bool Blocks(Vector3 from, bool finisher) { return AnchorsLeft > 0; }
+        protected override void OnBlocked(bool finisher) { if (Held != null) Held(this); }
 
         public static GreyClot Create(Transform parent, Vector3 at, float seed)
         {
@@ -872,6 +893,10 @@ namespace Patchwork
             // The murk it's made of the water round it.
             c.murk = P(PrimitiveType.Sphere, go.transform, Vector3.zero, Vector3.one * 9f, PatchworkAssets.Bubble(new Color(0.3f, 0.28f, 0.36f, 0.3f)));
             c.murk.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            // The skin that's on it while its anchors hold.
+            c.ward = P(PrimitiveType.Sphere, go.transform, Vector3.zero, Vector3.one * 2.9f, PatchworkAssets.Bubble(new Color(0.62f, 0.35f, 0.9f, 0.45f)));
+            c.ward.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            c.ward.gameObject.SetActive(false);
             c.Register(1.15f);
             return c;
         }
@@ -939,6 +964,65 @@ namespace Patchwork
                 }
             }
             Contact(player, 1.5f, 1.6f, true);
+        }
+    }
+
+    // One of the three anchor knots that tie a grey clot to its tank: a fist of thread on
+    // the end of a long rope. One hit undoes it. Undo all three and the clot can be hurt.
+    public class GreyAnchor : MuseumFoe
+    {
+        GreyClot clot;
+        Transform knot;
+
+        public static GreyAnchor Create(Transform parent, Vector3 at, GreyClot clot)
+        {
+            var go = new GameObject("GreyAnchor");
+            go.transform.SetParent(parent, false);
+            go.transform.position = at;
+            var a = go.AddComponent<GreyAnchor>();
+            a.clot = clot;
+            a.pos = at;
+            a.MaxHealth = 1;
+            a.Score = 100;
+            a.centreY = 0f;
+            a.knockScale = 0f;
+            a.t = at.x + at.z;
+            a.rig = Pivot(go.transform, "Rig", Vector3.zero);
+            a.knot = Pivot(a.rig, "Knot", Vector3.zero);
+            P(PrimitiveType.Sphere, a.knot, Vector3.zero, Vector3.one * 0.95f, Monsters.Dark);
+            for (int i = 0; i < 5; i++)
+                P(PrimitiveType.Sphere, a.knot, (Quaternion.Euler(i * 71f, i * 133f, 0f) * Vector3.forward) * 0.36f, Vector3.one * 0.5f, i % 2 == 0 ? Monsters.Grey : Monsters.Dark);
+            P(PrimitiveType.Sphere, a.knot, Vector3.zero, Vector3.one * 0.5f, Monsters.Glow);
+            for (int i = 0; i < 4; i++) Tuft(a.knot, (Quaternion.Euler(i * 90f, i * 60f, 0f) * Vector3.up) * 0.5f, 2.4f, i * 1.9f);
+            // The rope, from here to the clot.
+            Vector3 to = clot.Center - at;
+            float len = to.magnitude;
+            if (len > 0.5f)
+            {
+                var rope = Pivot(go.transform, "Rope", Vector3.zero);
+                rope.rotation = Quaternion.FromToRotation(Vector3.up, to / len);
+                P(PrimitiveType.Cylinder, rope, new Vector3(0f, len * 0.5f, 0f), new Vector3(0.12f, len * 0.5f, 0.12f), Monsters.Grey);
+                for (float d = 1.2f; d < len - 1f; d += 1.6f) P(PrimitiveType.Sphere, rope, new Vector3(0f, d, 0f), Vector3.one * 0.24f, Monsters.Dark);
+            }
+            clot.AddAnchor();
+            a.Register(0.7f);
+            return a;
+        }
+
+        protected override void OnBeaten()
+        {
+            if (clot != null) clot.AnchorLost();
+        }
+
+        void Update()
+        {
+            if (IsBeaten) return;
+            float dt = Time.deltaTime;
+            if (dt <= 0f) return;
+            Common(dt);
+            knot.localRotation = Quaternion.Euler(t * 20f, t * 33f, 0f);
+            knot.localScale = Vector3.one * (1f + Mathf.Sin(t * 3f) * 0.06f);
+            Contact(ThePlayer(), 0.9f, 1f, false);
         }
     }
 
@@ -1041,6 +1125,8 @@ namespace Patchwork
         enum State { Lurk, Startle, Circle, Rear, Charge, Dizzy }
         public System.Action<HelmetCrab> Fled;
         public bool Standing { get; private set; }   // true at the last place: no more running
+        // Tucked down inside its helmet while its chessmen are still about: it won't budge.
+        public bool Guarded;
 
         State state;
         float st, cooldown = 2f, walk;
@@ -1133,6 +1219,7 @@ namespace Patchwork
 
         protected override bool Blocks(Vector3 from, bool finisher)
         {
+            if (Guarded) return true;
             if (state == State.Dizzy) return false;
             if (finisher) return false;
             return true;
@@ -1141,6 +1228,7 @@ namespace Patchwork
         protected override void OnBlocked(bool finisher)
         {
             // Being rapped on the helmet makes it bolt (or, if it's cornered, cross).
+            if (Guarded) return;
             if (!Standing && state == State.Lurk) { state = State.Startle; st = 0f; }
             else if (Standing && state == State.Lurk) { state = State.Circle; st = 0f; }
             else cooldown = Mathf.Min(cooldown, 0.4f);
@@ -1187,6 +1275,7 @@ namespace Patchwork
             {
                 case State.Lurk:
                     facing = Vector3.Slerp(facing, Quaternion.Euler(0f, Mathf.Sin(t * 0.7f) * 70f, 0f) * (dist < 14f ? dirP : facing), 1f - Mathf.Exp(-3f * dt));
+                    if (Guarded) { tilt = 8f; break; }
                     if (player != null && dist < (Standing ? 9f : 6.5f) && Mathf.Abs(dy) < 4f)
                     {
                         state = Standing ? State.Circle : State.Startle;
@@ -1261,7 +1350,7 @@ namespace Patchwork
             transform.rotation = Quaternion.LookRotation(new Vector3(facing.x, 0f, facing.z).normalized, Vector3.up);
             float ease = 1f - Mathf.Exp(-12f * dt);
             shell.localRotation = Quaternion.Slerp(shell.localRotation, Quaternion.Euler(tilt + Mathf.Sin(t * 2f) * 3f, 0f, roll), ease);
-            shell.localPosition = new Vector3(0f, 0.95f + Mathf.Sin(t * 4f) * 0.03f - (state == State.Dizzy ? 0.2f : 0f), 0f);
+            shell.localPosition = new Vector3(0f, 0.95f + Mathf.Sin(t * 4f) * 0.03f - (state == State.Dizzy ? 0.2f : Guarded ? 0.34f : 0f), 0f);
             walk += legSpeed * dt * 6f;
             for (int i = 0; i < legs.Length; i++)
             {
@@ -1275,6 +1364,99 @@ namespace Patchwork
             float flare = state == State.Rear ? 1.7f + Mathf.Sin(st * 30f) * 0.4f : state == State.Dizzy ? 0.4f : 1f;
             eyes.localScale = Vector3.Lerp(eyes.localScale, Vector3.one * flare, ease);
             if (state != State.Startle) Contact(player, 1f, 1.5f, false);
+        }
+    }
+
+    // A page torn out of Wick's night book and blown about the museum: a sheet of cream paper
+    // turning slowly in the air.
+    public class NightBookPage : PlayerVolume
+    {
+        public System.Action Taken;
+        Transform sheet;
+        float t;
+
+        public static NightBookPage Spawn(Transform parent, Vector3 at)
+        {
+            var go = new GameObject("NightBookPage");
+            go.transform.SetParent(parent, false);
+            go.transform.position = at;
+            var p = go.AddComponent<NightBookPage>();
+            p.Size = new Vector3(1.8f, 2.4f, 1.8f);
+            p.sheet = new GameObject("Sheet").transform;
+            p.sheet.SetParent(go.transform, false);
+            Monsters.Part(PrimitiveType.Cube, p.sheet, Vector3.zero, new Vector3(0.5f, 0.66f, 0.02f), PatchworkAssets.Glow(new Color(1f, 0.95f, 0.8f), 0.7f));
+            var ink = PatchworkAssets.Plain(new Color(0.2f, 0.22f, 0.4f), 0.2f);
+            for (int i = 0; i < 6; i++)
+                for (int s = -1; s <= 1; s += 2)
+                    Monsters.Part(PrimitiveType.Cube, p.sheet, new Vector3(i == 5 ? -0.08f : 0f, 0.24f - i * 0.09f, s * 0.012f), new Vector3(i == 5 ? 0.22f : 0.38f, 0.02f, 0.004f), ink);
+            p.t = at.x + at.z;
+            return p;
+        }
+
+        protected override void OnPlayerStay(PatchworkPlayer player, float dt)
+        {
+            FxBurst.Spawn(FxBurst.Kind.Sparkle, transform.position, new Color(1f, 0.95f, 0.7f));
+            var taken = Taken;
+            Destroy(gameObject);
+            if (taken != null) taken();
+        }
+
+        void Update()
+        {
+            t += Time.deltaTime;
+            sheet.localPosition = Vector3.up * Mathf.Sin(t * 1.7f) * 0.14f;
+            sheet.localRotation = Quaternion.Euler(Mathf.Sin(t * 1.1f) * 14f, t * 50f, Mathf.Sin(t * 0.8f) * 10f);
+        }
+    }
+
+    // The Unpicker, come to see how his work's getting on. He stands somewhere and watches
+    // with all his eyes; come close, or wait long enough, and he folds up thin and is gone.
+    public class UnpickerVisit : MonoBehaviour
+    {
+        float left, flee, fold = -1f;
+
+        // Stands him on whatever is under "from" (within "drop" of it). Null if there's nothing.
+        public static UnpickerVisit Show(Transform parent, Vector3 from, float drop, float seconds, float fleeDistance)
+        {
+            RaycastHit hit;
+            if (!Physics.Raycast(from, Vector3.down, out hit, drop, ~(1 << 2), QueryTriggerInteraction.Ignore)) return null;
+            var go = new GameObject("TheUnpicker_Visit");
+            go.transform.SetParent(parent, false);
+            go.transform.position = hit.point;
+            FrayBodies.Unpicker(go.transform);
+            var v = go.AddComponent<UnpickerVisit>();
+            v.left = seconds;
+            v.flee = fleeDistance;
+            FxBurst.Spawn(FxBurst.Kind.Threads, hit.point + Vector3.up * 3f, SnarlKnot.FrayDark);
+            return v;
+        }
+
+        public void Leave()
+        {
+            if (fold >= 0f) return;
+            fold = 0f;
+            FxBurst.Spawn(FxBurst.Kind.Threads, transform.position + Vector3.up * 3f, SnarlKnot.FrayDark);
+            Sfx.PlayNear(SfxId.Unravel, transform.position, 0.5f, 60f);
+        }
+
+        void Update()
+        {
+            float dt = Time.deltaTime;
+            if (fold >= 0f)
+            {
+                fold += dt / 0.45f;
+                float k = Mathf.Clamp01(fold);
+                transform.localScale = new Vector3(1f - k, 1f + k * 0.25f, 1f - k);
+                if (k >= 1f) Destroy(gameObject);
+                return;
+            }
+            var game = PatchworkGame.Instance;
+            if (game == null || game.Player == null) return;
+            Vector3 to = game.Player.transform.position - transform.position;
+            to.y = 0f;
+            if (to.sqrMagnitude > 0.01f) transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(to.normalized, Vector3.up), 1f - Mathf.Exp(-1.5f * dt));
+            left -= dt;
+            if (left <= 0f || to.magnitude < flee) Leave();
         }
     }
 

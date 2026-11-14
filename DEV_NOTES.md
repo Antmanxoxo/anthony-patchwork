@@ -635,6 +635,11 @@ Stuff I need to remember about how Patchwork is put together.
 - **Strike poses** are laid over the normal animation: `FormVisuals.ApplyStrike` for Water,
   Wind and the block Yarn rig, `PatchModel.StrikePose` for the Blender model.
 
+- **Quest extras** (all in `Level2Quest.cs` / `MuseumFray.cs`): night-book pages
+  (`L2_q_page0-5`, `L2_q_pages_told`), `Clock()`, the lens lamps (`LampGlows`), `GreyAnchor`
+  (three per clot; `GreyClot.AnchorsLeft` blocks hits), `HelmetCrab.Guarded`, `UnpickerVisit`.
+  Anchors aren't saved: an unbroken clot gets all three back when the level reloads.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

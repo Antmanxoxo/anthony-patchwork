@@ -26,6 +26,16 @@ namespace Patchwork
     // Then up the lift (which still wants three Heartstrings), where Stella fits them, the
     // moths come for the light, and at last Patch can look.
     //
+    // Round the edges of that:
+    //   - Six pages of Wick's night book are scattered about. Each is an hour of the evening
+    //     in his own words, and together they say who took the lenses.
+    //   - The museum clock (on the panel) starts at eleven and creeps toward midnight with
+    //     every lens.
+    //   - Three lamps by Wick's post light one by one as the lenses come home.
+    //   - Each clot in the tanks is held by three anchor knots that have to go first.
+    //   - The Helmet Crab sits tight in the Kelp Galleries until its chessmen are dealt with.
+    //   - The Unpicker himself turns up, twice, to see how it's going.
+    //
     // Everything saved here starts "L2_q_".
     public static partial class Level2Builder
     {
@@ -51,6 +61,28 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.55f, 0f), new Vector3(0.36f, 0.04f, 0.36f), Brass, default(Vector3), lamp);
             kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.66f, 0f), new Vector3(0.16f, 0.2f, 0.16f), Brass, default(Vector3), lamp);
             PointLight(kit, wickAt + new Vector3(0.9f, 0.6f, 0.3f), new Color(1f, 0.75f, 0.4f), 7f, 1.6f);
+            // The three lens lamps on a stand behind him: one lights for each lens that comes home.
+            var stand = kit.Group("LensLamps", wickAt + new Vector3(-1.3f, 0f, -0.5f));
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.05f, 0f), new Vector3(0.7f, 0.05f, 0.7f), IronMat, default(Vector3), stand);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.2f, 0f), new Vector3(0.09f, 1.2f, 0.09f), IronMat, default(Vector3), stand);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 2.3f, 0f), new Vector3(1.9f, 0.08f, 0.08f), IronMat, default(Vector3), stand);
+            quest.LampGlows = new Transform[3];
+            for (int i = 0; i < 3; i++)
+            {
+                float lx = (i - 1) * 0.8f;
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(lx, 2.12f, 0f), new Vector3(0.02f, 0.16f, 0.02f), IronMat, default(Vector3), stand);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(lx, 1.96f, 0f), new Vector3(0.3f, 0.03f, 0.3f), Brass, default(Vector3), stand);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(lx, 1.56f, 0f), new Vector3(0.3f, 0.03f, 0.3f), Brass, default(Vector3), stand);
+                NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(lx, 1.76f, 0f), new Vector3(0.3f, 0.36f, 0.3f), PatchworkAssets.Bubble(new Color(0.5f, 0.55f, 0.65f, 0.35f)), default(Vector3), stand));
+                quest.LampGlows[i] = NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(lx, 1.76f, 0f), new Vector3(0.22f, 0.28f, 0.22f), PatchworkAssets.Glow(new Color(0.55f, 0.85f, 1f), 2.4f), default(Vector3), stand));
+                quest.LampGlows[i].gameObject.SetActive(false);
+            }
+
+            // ----- Six pages of his night book, blown about the museum -----
+            Vector3[] pageAt = { wickAt + new Vector3(3f, 0f, 5f), new Vector3(-48f, 0f, -77f), new Vector3(-63f, 0f, 17.5f), new Vector3(-47f, 0f, 73f), new Vector3(-52f, 0f, 88f), new Vector3(77f, 0f, 10f) };
+            for (int i = 0; i < pageAt.Length; i++)
+                if (RmFloor("a page of the night book", pageAt[i], new Vector3(1.2f, 2f, 1.2f), 0f, 5f, out foot)) pageAt[i] = foot;
+            quest.PageSpots = pageAt;
 
             // ----- The Hall of Arms: the portcullis and the Hollow Guard -----
             var fight = root.gameObject.AddComponent<HallOfArmsFight>();
@@ -88,6 +120,7 @@ namespace Patchwork
             // ----- The four tanks: a grey clot in each, and the jellies round it -----
             Vector3[] lair = { new Vector3(-74.5f, -6.5f, 112f), new Vector3(-46.5f, -17f, 112f), new Vector3(-74.5f, -6.5f, 154.5f), new Vector3(-46.5f, -4.4f, 154.5f) };
             float[] bed = { -9f, -24f, -12f, -7f };
+            float[] tankX0 = { -86f, -57f, -86f, -57f }, tankX1 = { -63f, -36f, -63f, -36f }, tankZ0 = { 98f, 98f, 134f, 134f }, tankZ1 = { 126f, 126f, 175f, 175f };
             quest.TankNames = TankNames;
             quest.ClotSpots = lair;
             quest.Clots = new GreyClot[4];
@@ -99,6 +132,18 @@ namespace Patchwork
                 if (RmAir("a grey clot", lair[i], Vector3.one * 2.6f, 0f, 5f, out at, 1.5f)) lair[i] = at;
                 var clot = GreyClot.Create(root, lair[i], i * 1.7f);
                 quest.Clots[i] = clot;
+                // Three anchor knots, out toward the corners of the tank.
+                for (int k = 0; k < 3; k++)
+                {
+                    float ang = k * Mathf.PI * 2f / 3f + i * 0.9f + 0.5f;
+                    Vector3 a = lair[i] + new Vector3(Mathf.Cos(ang) * 7f, 0f, Mathf.Sin(ang) * 9f);
+                    a.x = Mathf.Clamp(a.x, tankX0[i] + 2.2f, tankX1[i] - 2.2f);
+                    a.z = Mathf.Clamp(a.z, tankZ0[i] + 2.2f, tankZ1[i] - 2.2f);
+                    a.y = Mathf.Clamp(lair[i].y + (k - 1) * 1.6f, bed[i] + 1.6f, -2.2f);
+                    Vector3 clear;
+                    if (RmAir("an anchor knot", a, Vector3.one * 1.4f, 0f, 3f, out clear, 1.2f)) a = clear;
+                    GreyAnchor.Create(root, a, clot);
+                }
                 int jellies = i == 1 ? 4 : 3;
                 for (int j = 0; j < jellies; j++)
                 {
@@ -132,6 +177,8 @@ namespace Patchwork
         public Vector3[] CrabSpots, ClotSpots;
         public GreyClot[] Clots;
         public string[] TankNames;
+        public Vector3[] PageSpots;
+        public Transform[] LampGlows;
 
         const string K = "L2_q_";
         public static string ClotKey(int i) { return K + "clot" + i; }
@@ -141,8 +188,32 @@ namespace Patchwork
         static readonly Vector3 ObservatoryCentre = new Vector3(0f, 14f, -20f);
 
         readonly List<StaticMoth> moths = new List<StaticMoth>();
-        bool defending;
+        readonly List<Chessling> escorts = new List<Chessling>();
+        UnpickerVisit visitor;
+        bool defending, toldHeld;
         float tick;
+
+        // Wick's night book: an hour of the evening on each page.
+        const int Pages = 6;
+        static readonly string[] PageText =
+        {
+            "\"Four o'clock. Lit the lamps. Counted the exhibits: all present. Whale due at midnight, same as every night. Stella says the dome wants oiling.\"",
+            "\"Five. A loose thread on the floor of Deep Time. Grey, a yard long, and cold. Put it in my pocket to throw away. It is not in my pocket now.\"",
+            "\"Half past five. The paint on the old ship has gone pale down one side, as if something had licked it. Barnacle says he heard scissors.\"",
+            "\"Six. Chess case in the Kelp Galleries standing open. Counted the chessmen: seven short. Something in the corner went tick, tick, tick, like claws on tile.\"",
+            "\"Seven. Marlow sent for me. Water in the Coral Nursery gone cloudy. Told him it was the filters. I did not think it was the filters.\"",
+            "\"Dusk. A tall fellow on the Observatory stair, a thimble for a hat, a lens under each arm and one in his teeth. He bowed to me. Then the lamps went out.\""
+        };
+        public int PagesFound { get { int n = 0; for (int i = 0; i < Pages; i++) if (Seen("page" + i)) n++; return n; } }
+
+        // The museum clock: eleven when Patch arrives, and later with every lens.
+        public string Clock()
+        {
+            if (Defended) return "Midnight";
+            if (Fitted) return "11:58";
+            int n = LensCount;
+            return n >= 3 ? "11:50" : n == 2 ? "11:35" : n == 1 ? "11:20" : "11:00";
+        }
 
         static bool Seen(string key) { return GameState.IsHintSeen(K + key); }
         static void Mark(string key) { GameState.SetHintSeen(K + key); }
@@ -168,7 +239,20 @@ namespace Patchwork
                 if (Clots == null || Clots[i] == null) continue;
                 int which = i;
                 Clots[i].Beaten = f => ClotBeaten(which, f.Center);
+                Clots[i].Held = c => ClotHeld();
+                Clots[i].Loosed = c =>
+                {
+                    var g = PatchworkGame.Instance;
+                    if (g != null) g.ShowToast("The last anchor's gone. The clot hangs loose: hit it!");
+                };
             }
+            for (int i = 0; i < Pages && PageSpots != null; i++)
+            {
+                if (Seen("page" + i)) continue;
+                int page = i;
+                NightBookPage.Spawn(FoeRoot, PageSpots[i] + Vector3.up * 1.2f).Taken = () => TakePage(page);
+            }
+            RefreshLamps();
             // Anything won on an earlier visit but not picked up is waiting where it fell.
             if (ArmsWon && !HasLens(0)) DropLens(0, new Vector3(80f, 1.3f, -10f), false);
             if (ClotsCleared >= 4 && !HasLens(1)) DropLens(1, ClotSpots[0], false);
@@ -178,7 +262,7 @@ namespace Patchwork
             {
                 Crab.Fled = c => CrabFled();
                 Crab.Beaten = f => CrabFell(f.Center);
-                if (!CrabBeaten) PlaceCrab(false);
+                if (!CrabBeaten) PlaceCrab(CrabStage > 0);
             }
             if (Fitted && !Defended) StartDefence(false);
 
@@ -206,6 +290,17 @@ namespace Patchwork
             PatchworkHUD.ShowGet(LensNames[which], n >= 3 ? "All three lenses of the Night Glass!" : n + " of 3 lenses of the Night Glass", LensBlue, 0);
             Sfx.Play(SfxId.PrizeFanfare, 0.6f);
             Haptics.Pulse(0.4f, 0.5f, 0.3f);
+            RefreshLamps();
+            // The first lens Patch wins, somebody notices.
+            if (n == 1 && which == 0 && visitor == null)
+            {
+                visitor = UnpickerVisit.Show(FoeRoot, new Vector3(80f, 18.5f, -44f), 19f, 16f, 13f);
+                if (visitor != null)
+                {
+                    Narrator.Say("The Object Glass, still warm from the Captain's chest. And at the far end of the hall, up on the toy castle, something very tall unfolded itself, looked at Patch with all its eyes, and folded away again.");
+                    return;
+                }
+            }
             if (n >= 3) Narrator.Say("Three lenses, safe in Patch's satchel, clinking. Now for the top of the house, and Stella, and the time: which was getting on.");
             else if (which == 0) Narrator.Say("The Object Glass: the big one, the one that gathers the light. It was still warm from the Captain's chest.");
             else if (which == 1) Narrator.Say("The Field Lens, washed clean. All down the hall the tanks were turning blue again, one after another, like lamps being lit.");
@@ -239,6 +334,39 @@ namespace Patchwork
             }
         }
 
+        void ClotHeld()
+        {
+            if (toldHeld) return;
+            toldHeld = true;
+            var game = PatchworkGame.Instance;
+            if (game != null) game.ShowToast("It's held fast! Follow its three ropes and break the anchor knots first.");
+        }
+
+        // ------------------------------------------------------------------ The night book
+
+        void TakePage(int which)
+        {
+            if (Seen("page" + which)) return;
+            Mark("page" + which);
+            int n = PagesFound;
+            PatchworkHUD.ShowGet("Wick's Night Book", "Page " + n + " of " + Pages, new Color(0.95f, 0.85f, 0.55f), 0);
+            Sfx.Play(SfxId.Checkpoint, 0.35f);
+            Narrator.Say(PageText[which]);
+            if (n >= Pages)
+            {
+                ScoreKeeper.Bonus(3000, PatchworkGame.Instance != null && PatchworkGame.Instance.Player != null ? PatchworkGame.Instance.Player.Motor.Center : Vector3.zero);
+                var game = PatchworkGame.Instance;
+                if (game != null) game.ShowToast("The whole night book! Wick will want to see this.");
+            }
+        }
+
+        void RefreshLamps()
+        {
+            if (LampGlows == null) return;
+            for (int i = 0; i < LampGlows.Length; i++)
+                if (LampGlows[i] != null) LampGlows[i].gameObject.SetActive(HasLens(i));
+        }
+
         // ------------------------------------------------------------------ The Helmet Crab
 
         void PlaceCrab(bool escorted)
@@ -246,6 +374,8 @@ namespace Patchwork
             int stage = CrabStage;
             Vector3 at = CrabSpots[stage];
             at.y = Monsters.Ground(at + Vector3.up * 0.5f);
+            Crab.Guarded = false;
+            escorts.Clear();
             Crab.Appear(at, stage >= 2);
             if (!escorted) return;
             // It doesn't travel alone any more: chessmen, out of their case.
@@ -256,8 +386,10 @@ namespace Patchwork
                 Vector3 p = at + new Vector3(Mathf.Cos(a) * 3.2f, 0f, Mathf.Sin(a) * 3.2f);
                 float g = Monsters.Ground(p + Vector3.up * 0.5f);
                 if (Mathf.Abs(g - at.y) > 1f || Physics.CheckSphere(new Vector3(p.x, g + 0.9f, p.z), 0.5f, ~(1 << 2), QueryTriggerInteraction.Ignore)) continue;
-                Chessling.Create(FoeRoot, new Vector3(p.x, g, p.z), i % 2 == 1);
+                escorts.Add(Chessling.Create(FoeRoot, new Vector3(p.x, g, p.z), i % 2 == 1));
             }
+            // In the Kelp Galleries it sits tight inside its helmet till the chessmen are gone.
+            Crab.Guarded = stage == 1 && escorts.Count > 0;
         }
 
         void CrabFled()
@@ -286,7 +418,10 @@ namespace Patchwork
             Mark("fitted");
             PatchworkHUD.ShowGet("The Night Glass", "Stella has fitted all three lenses.", LensBlue, 0);
             Sfx.Play(SfxId.Lever, 0.5f);
-            Narrator.Say("Click, click, click: three lenses home. And the moment the Night Glass could see again, everything grey in the museum knew it, and came.");
+            if (visitor == null) visitor = UnpickerVisit.Show(FoeRoot, ObservatoryCentre + new Vector3(-11f, 7f, -11f), 12f, 600f, 7f);
+            Narrator.Say(visitor != null
+                ? "Click, click, click: three lenses home. And on the far side of the dome a tall shape with a thimble for a hat lifted one long arm, and pointed. Out of the dark came the moths."
+                : "Click, click, click: three lenses home. And the moment the Night Glass could see again, everything grey in the museum knew it, and came.");
             StartDefence(true);
         }
 
@@ -344,7 +479,24 @@ namespace Patchwork
                     Mark("defended");
                     game.ShowToast("The Night Glass is ready. Go and look!");
                     Sfx.Play(SfxId.PrizeFanfare, 0.5f);
-                    Narrator.Say("The last moth went out like a candle. Somewhere below, a clock began to strike. Midnight; and the telescope was pointing the right way.");
+                    if (visitor != null)
+                    {
+                        visitor.Leave();
+                        Narrator.Say("The last moth went out like a candle. The tall shape took off its thimble, which may have been a bow, and stepped backward into a seam. Somewhere below, a clock began to strike. Midnight.");
+                    }
+                    else Narrator.Say("The last moth went out like a candle. Somewhere below, a clock began to strike. Midnight; and the telescope was pointing the right way.");
+                }
+            }
+
+            // Once its chessmen are gone, the crab in the Kelp Galleries comes out of its helmet.
+            if (Crab != null && Crab.Guarded)
+            {
+                bool any = false;
+                foreach (var c in escorts) if (c != null && !c.IsBeaten) any = true;
+                if (!any)
+                {
+                    Crab.Guarded = false;
+                    game.ShowToast("No chessmen left to hide behind. The helmet's lifting...");
                 }
             }
 
@@ -412,6 +564,19 @@ namespace Patchwork
             if (Defended) return new[] { "It's ready? Then what are you doing down here talking to me? Go and look, before she's gone over!" };
             if (n >= 3) return new[] { "All three! Up to Stella with them, quick as you can. The lift's at the far end of the Sunken Ruins." };
             var lines = new List<string>();
+            int pages = PagesFound;
+            if (pages >= Pages && !Seen("pages_told"))
+            {
+                Mark("pages_told");
+                return new[]
+                {
+                    "My night book! Every page! I thought the draught had them for good.",
+                    "Read me the last one. ...A thimble for a hat. Yes. I remember now. I'd made myself forget.",
+                    "The toys down in Toybox Town have a name for him. The Unpicker. The Fray goes where he points, and the colour it takes ends up in his jars.",
+                    "He bowed to me. Forty years a watchman and the thief bowed to me. You get those lenses back, and you look through that glass, and you let him watch you do it."
+                };
+            }
+            if (pages > 0 && pages < Pages) lines.Add("You've found " + pages + " of the six pages out of my night book. Keep an eye out for the rest; I wrote down everything I saw, and I can't for the life of me remember the end of it.");
             lines.Add(n == 0 ? "No lenses yet? No shame in it. It's a big museum and they've a head start." : n == 1 ? "One lens back. Two to find. You're doing better than I did." : "Two! One more and she can see again.");
             if (!HasLens(0)) lines.Add(ArmsWon ? "The Hall of Arms has gone quiet. Whatever the Captain dropped is still lying in there." : "The Hall of Arms is through the Sunken Ruins, south side. Mind the door. I don't like the look of that portcullis.");
             if (!HasLens(1)) lines.Add("The tanks are behind the big aquarium: the door marked KEEPERS ONLY. You'll want to be Water to go in. Marlow's count is " + ClotsCleared + " of 4 clear.");
@@ -504,7 +669,8 @@ namespace Patchwork
             if (!Met && LensCount == 0) return "Find Wick, the night watchman, in the Atrium.";
             if (Fight != null && Fight.Busy) return "Beat the Hollow Guard!  (Wave " + Fight.WaveNumber + " of 3)";
             if (!HasLens(0)) return ArmsWon ? "Pick up the Object Glass in the Hall of Arms." : "Hall of Arms: something is clanking in there.";
-            if (!HasLens(1)) return ClotsCleared >= 4 ? "Pick up the Field Lens in the tank." : "Keepers' tanks: break the grey clots.  (" + ClotsCleared + " of 4)";
+            if (!HasLens(1)) return ClotsCleared >= 4 ? "Pick up the Field Lens in the tank." : "Keepers' tanks: cut each clot's three anchors, then break it.  (" + ClotsCleared + " of 4)";
+            if (Crab != null && Crab.Guarded) return "Kelp Galleries: pop the chessmen guarding the Helmet Crab.";
             return CrabBeaten ? "Pick up the Eye Lens." : "Catch the Helmet Crab: last seen in " + CrabPlaces[CrabStage] + ".";
         }
     }
