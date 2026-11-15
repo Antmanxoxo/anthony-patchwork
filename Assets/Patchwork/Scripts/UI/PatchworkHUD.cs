@@ -515,7 +515,7 @@ namespace Patchwork
             if (quest != null && level.Id == Level2Builder.SceneName && !GameState.IsLevelComplete(level.Id))
             {
                 // The Oceanic Museum: the three lenses of the Night Glass, and what to do next.
-                var qr = new Rect(28f, y, 380f, 148f);
+                var qr = new Rect(28f, y, 380f, 172f);
                 UIKit.Panel(qr, new Color(0.93f, 0.97f, 1f, 0.95f), new Color(0.3f, 0.55f, 0.85f, 0.9f), 20f);
                 UIKit.Label(new Rect(qr.x + 20f, qr.y + 6f, 340f, 34f), "The Night Glass  " + quest.LensCount + " / 3",
                     UIKit.Style(23, true, TextAnchor.MiddleLeft, new Color(0.15f, 0.25f, 0.5f)));
@@ -530,9 +530,11 @@ namespace Patchwork
                     UIKit.Fill(chip, got ? new Color(0.4f, 0.75f, 1f) : new Color(0.62f, 0.6f, 0.66f, 0.55f), 19f);
                     UIKit.Label(chip, lensNames[i], UIKit.Style(18, true, TextAnchor.MiddleCenter, got ? new Color(0.08f, 0.2f, 0.4f) : new Color(1f, 1f, 1f, 0.9f)));
                 }
-                UIKit.Label(new Rect(qr.x + 20f, qr.y + 88f, 344f, 54f), quest.Objective(),
+                UIKit.Label(new Rect(qr.x + 20f, qr.y + 86f, 344f, 24f), "Seams stitched " + quest.SeamsShut + " / " + Level2Quest.Seams + "     Pages " + quest.PagesFound + " / 6",
+                    UIKit.Style(15, true, TextAnchor.MiddleLeft, new Color(0.35f, 0.4f, 0.6f, 0.9f)));
+                UIKit.Label(new Rect(qr.x + 20f, qr.y + 112f, 344f, 54f), quest.Objective(),
                     UIKit.Style(17, true, TextAnchor.UpperLeft, new Color(0.15f, 0.25f, 0.5f, 0.9f), true));
-                y += 160f;
+                y += 184f;
             }
             if (total > 0)
             {

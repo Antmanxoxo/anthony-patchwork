@@ -35,6 +35,12 @@ namespace Patchwork
     //   - Each clot in the tanks is held by three anchor knots that have to go first.
     //   - The Helmet Crab sits tight in the Kelp Galleries until its chessmen are dealt with.
     //   - The Unpicker himself turns up, twice, to see how it's going.
+    //   - Five seams (rips in the floor where the Fray comes up) keep letting things out until
+    //     they're stitched shut with three hits: chessmen from most, ammonite rollers from the
+    //     ones in Deep Time and the Sunken Ruins. Shutting all five slows the last one down.
+    //   - The Lantern Deep and the Frozen Sea each have a lantern lurker in them.
+    //   - The Hollow Captain, at half strength, calls two beaten armours back up.
+    //   - The end is the Great Seam in the Observatory: moths pour out of it until it's shut.
     //
     // Everything saved here starts "L2_q_".
     public static partial class Level2Builder
@@ -154,6 +160,24 @@ namespace Patchwork
                 }
             }
 
+            // A lantern lurker in the two deep tanks, for as long as their clots last.
+            foreach (int i in new[] { 1, 2 })
+            {
+                if (quest.Clots[i] == null) continue;
+                Vector3 lo = new Vector3(tankX0[i] + 1.8f, bed[i] + 1.6f, tankZ0[i] + 1.8f), hi = new Vector3(tankX1[i] - 1.8f, -2f, tankZ1[i] - 1.8f);
+                Vector3 lurk = lair[i] + new Vector3(i == 1 ? 5f : -5f, i == 1 ? -3f : -1f, i == 1 ? -8f : 12f);
+                lurk = new Vector3(Mathf.Clamp(lurk.x, lo.x, hi.x), Mathf.Clamp(lurk.y, lo.y, hi.y), Mathf.Clamp(lurk.z, lo.z, hi.z));
+                Vector3 open;
+                if (RmAir("a lantern lurker", lurk, Vector3.one * 2f, 0f, 4f, out open, 1.5f)) lurk = open;
+                LanternLurker.Create(root, lurk, lo, hi);
+            }
+
+            // ----- The five seams the Fray came up through -----
+            Vector3[] seam = { new Vector3(8f, 0f, -98f), new Vector3(-45f, 0f, -74f), new Vector3(-44f, 0f, 60f), new Vector3(60f, 0f, 27f), new Vector3(-60f, 0f, 130f) };
+            for (int i = 0; i < seam.Length; i++)
+                if (RmFloor("a seam", seam[i], new Vector3(3.6f, 1.6f, 2f), 0f, 7f, out foot)) seam[i] = foot;
+            quest.SeamSpots = seam;
+
             // ----- The Helmet Crab, and the three places it turns up -----
             Vector3[] want = { new Vector3(2f, 0f, -90f), new Vector3(-46f, 0f, 66f), new Vector3(72f, 0f, 16f) };
             for (int i = 0; i < 3; i++)
@@ -177,7 +201,7 @@ namespace Patchwork
         public Vector3[] CrabSpots, ClotSpots;
         public GreyClot[] Clots;
         public string[] TankNames;
-        public Vector3[] PageSpots;
+        public Vector3[] PageSpots, SeamSpots;
         public Transform[] LampGlows;
 
         const string K = "L2_q_";
@@ -190,7 +214,12 @@ namespace Patchwork
         readonly List<StaticMoth> moths = new List<StaticMoth>();
         readonly List<Chessling> escorts = new List<Chessling>();
         UnpickerVisit visitor;
+        FraySeam[] seams;
+        FraySeam greatSeam;
         bool defending, toldHeld;
+        static readonly string[] SeamPlaces = { "the Atrium", "Deep Time", "the Kelp Galleries", "the Sunken Ruins", "the keepers' aisle" };
+        public const int Seams = 5;
+        public int SeamsShut { get { int n = 0; for (int i = 0; i < Seams; i++) if (Seen("seam" + i)) n++; return n; } }
         float tick;
 
         // Wick's night book: an hour of the evening on each page.
@@ -253,6 +282,25 @@ namespace Patchwork
                 NightBookPage.Spawn(FoeRoot, PageSpots[i] + Vector3.up * 1.2f).Taken = () => TakePage(page);
             }
             RefreshLamps();
+
+            // The seams: open ones let things out; shut ones are a row of stitches.
+            seams = new FraySeam[Seams];
+            for (int i = 0; i < Seams && SeamSpots != null; i++)
+            {
+                Vector3 at = SeamSpots[i];
+                at.y = Monsters.Ground(at + Vector3.up * 0.4f);
+                float yaw = i * 37f + 20f;
+                if (Seen("seam" + i)) { FraySeam.Stitches(FoeRoot, at, yaw, 1f); continue; }
+                int shut = i;
+                bool rollers = i == 1 || i == 3;
+                var s = FraySeam.Create(FoeRoot, at, yaw, 1f, 4);
+                s.Every = rollers ? 12f : 9f;
+                s.Most = rollers ? 1 : 2;
+                s.Birth = p => Hatch(p, rollers);
+                s.Beaten = f => SeamShut(shut);
+                seams[i] = s;
+            }
+
             // Anything won on an earlier visit but not picked up is waiting where it fell.
             if (ArmsWon && !HasLens(0)) DropLens(0, new Vector3(80f, 1.3f, -10f), false);
             if (ClotsCleared >= 4 && !HasLens(1)) DropLens(1, ClotSpots[0], false);
@@ -272,6 +320,31 @@ namespace Patchwork
             WrapNpc("Button", () => CrabGossip(1, "Button"), null);
             WrapNpc("Dr. Trowel", () => CrabGossip(2, "Trowel"), null);
             WrapNpc("Thimble", () => CrabGossip(0, "Thimble"), null);
+            Flavour("Ticket-master Tock", () => Seen("seam0"),
+                "No tickets tonight. Museum's closed, on account of the floor has a hole in it and things keep coming out. Three good thumps closes it, Wick says. I am a ticket-master. I do not thump.",
+                "You stitched it! Lovely needlework. I'd give you a free ticket, but you're already in.");
+            Flavour("Professor Plume", () => false,
+                "The Great Whale? She has gone over this spot every midnight since before there was a roof on it. The museum was built round the telescope, you know, not the other way about. She sings when she's seen. Nobody knows why. I have a theory that it's simply manners.", null);
+            Flavour("Mrs. Sudsbury", () => LensCount >= 2,
+                "I've been scrubbing grey off the skirting boards since six o'clock and it comes back worse. It isn't dirt. Dirt I understand.",
+                "It's lifting! Look, that's blue under there. I'd forgotten that skirting board was blue.");
+            Flavour("Sergeant Stanchion", () => Seen("seam1"),
+                "The big spiral fossils are out of their case and they are ROLLING. Stand aside when they rock. Hit them when they fall over. That is the whole of the drill.",
+                "Deep Time is secure. The fossils are fossils again. Carry on.");
+            Flavour("Old Barnacle", () => Defended,
+                "Scissors. I heard scissors. Snip, snip, up in the rigging, and when I looked, the red had gone clean out of the ensign.", null);
+            Flavour("Squire Pim", () => ArmsWon,
+                "I'm not hiding. I'm guarding this corner. From behind this plinth.",
+                "Did you see the Captain call the others back up? I did. I had my eyes shut, but I saw it.");
+            Flavour("Keeper June", () => HasLens(1),
+                "From up here you can see the ropes. Three to a knot, going off toward the corners. Cut those first, or you'll never so much as dent it.", null);
+            Flavour("Keeper Oskar", () => HasLens(1),
+                "Mind the Lantern Deep. Something down there has a light on, and it isn't one of ours. When the light flares, swim sideways.", null);
+            Flavour("Keeper Pippa", () => HasLens(1),
+                "The Frozen Sea's got one too. I saw teeth. I've never been so glad to be on this side of the glass.", null);
+            Flavour("Professor Hoot", () => SeamsShut >= Seams,
+                "The seams? The Fray lives on the back of everything. The Underside, where all the knots are. A seam is where it has picked its way through to the front. Stitch it and it has to find another way round.",
+                "Five seams shut. Do you know, I can hear the building settle. Like a quilt when you've finished the border.");
         }
 
         // ------------------------------------------------------------------ The lenses
@@ -340,6 +413,39 @@ namespace Patchwork
             toldHeld = true;
             var game = PatchworkGame.Instance;
             if (game != null) game.ShowToast("It's held fast! Follow its three ropes and break the anchor knots first.");
+        }
+
+        // ------------------------------------------------------------------ The seams
+
+        // Something climbs out of a seam: a chessman, or (in the stony galleries) an ammonite.
+        GameObject Hatch(Vector3 at, bool roller)
+        {
+            float g = Monsters.Ground(at + Vector3.up * 0.4f);
+            if (Mathf.Abs(g - at.y) > 1f) return null;
+            if (Physics.CheckSphere(new Vector3(at.x, g + 1f, at.z), 0.55f, ~(1 << 2), QueryTriggerInteraction.Ignore)) return null;
+            at.y = g;
+            if (roller) return AmmoniteRoller.Create(FoeRoot, at).gameObject;
+            return Chessling.Create(FoeRoot, at, Random.value < 0.4f).gameObject;
+        }
+
+        void SeamShut(int which)
+        {
+            Mark("seam" + which);
+            int n = SeamsShut;
+            var game = PatchworkGame.Instance;
+            if (game == null) return;
+            if (n >= Seams)
+            {
+                game.ShowToast("All five seams stitched! Nothing more can come up that way.");
+                game.Heal(PatchworkGame.MaxHearts);
+                if (game.Player != null) ScoreKeeper.Bonus(2000, game.Player.Motor.Center);
+                Narrator.Say("Five rips, five rows of stitches, and not one of them straight. The museum floor had never looked so well mended, or so pleased with itself.");
+            }
+            else
+            {
+                game.ShowToast("Seam stitched in " + SeamPlaces[which] + "!  (" + n + " of " + Seams + ")");
+                if (n == 1) Narrator.Say("Patch pulled the last stitch tight and the rip was only a scar. Whatever was on the other side of it knocked twice, politely, and went away.");
+            }
         }
 
         // ------------------------------------------------------------------ The night book
@@ -429,17 +535,29 @@ namespace Patchwork
         {
             defending = true;
             moths.Clear();
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 2; i++)
             {
-                float a = i * Mathf.PI / 3f + 0.4f;
+                float a = i * Mathf.PI + 0.4f;
                 Vector3 p = ObservatoryCentre + new Vector3(Mathf.Cos(a) * 9f, 0f, Mathf.Sin(a) * 9f);
                 p.y = Monsters.Ground(p + Vector3.up * 2f);
                 moths.Add(StaticMoth.Create(FoeRoot, p));
             }
+            // The Great Seam: the one the Unpicker came through himself. Moths keep coming
+            // out of it until it's shut. (Slower, if the five below are already stitched.)
+            Vector3 gs = ObservatoryCentre + new Vector3(-9f, 0f, 7f);
+            gs.y = Monsters.Ground(gs + Vector3.up * 2f);
+            greatSeam = FraySeam.Create(FoeRoot, gs, 30f, 1.7f, 8);
+            greatSeam.Every = SeamsShut >= Seams ? 7f : 4.5f;
+            greatSeam.Most = SeamsShut >= Seams ? 3 : 4;
+            greatSeam.Birth = at =>
+            {
+                at.y = Monsters.Ground(at + Vector3.up * 2f);
+                return StaticMoth.Create(FoeRoot, at).gameObject;
+            };
             if (loud)
             {
                 var game = PatchworkGame.Instance;
-                if (game != null) game.ShowToast("Moths! Keep them off the telescope.");
+                if (game != null) game.ShowToast("The Great Seam has opened! Stitch it shut: three hits, twice over.");
             }
         }
 
@@ -457,7 +575,7 @@ namespace Patchwork
                 Sfx.Play(SfxId.TransformFail, 0.4f);
                 return false;
             }
-            game.ShowToast("Not with moths all over it!");
+            game.ShowToast("Not with the Great Seam open and moths all over it!");
             return false;
         }
 
@@ -471,7 +589,7 @@ namespace Patchwork
 
             if (defending)
             {
-                bool any = false;
+                bool any = greatSeam != null && (!greatSeam.IsBeaten || greatSeam.BroodLeft > 0);
                 foreach (var m in moths) if (m != null && m.gameObject.activeSelf) any = true;
                 if (!any)
                 {
@@ -497,6 +615,20 @@ namespace Patchwork
                 {
                     Crab.Guarded = false;
                     game.ShowToast("No chessmen left to hide behind. The helmet's lifting...");
+                }
+            }
+
+            // The first sight of a seam.
+            if (!Seen("say_seam") && seams != null)
+            {
+                Vector3 pp = game.Player.transform.position;
+                foreach (var s in seams)
+                {
+                    if (s == null || s.IsBeaten || (s.Feet - pp).sqrMagnitude > 170f) continue;
+                    Mark("say_seam");
+                    Narrator.Say("A rip in the floor, as long as a sofa, with fingers of grey thread feeling about its edges. That was how they had come in: up from the Underside, the back of everything, where the knots are.");
+                    game.ShowToast("A seam! Three hits in a row stitch it shut.");
+                    break;
                 }
             }
 
@@ -539,6 +671,18 @@ namespace Patchwork
             npc.TalkEnded = () => { if (was != null) was(); talked(); };
         }
 
+        // A bit of talk for somebody who isn't part of the quest but can see it going on:
+        // one thing to say while the trouble lasts, another (if any) once it's over.
+        void Flavour(string name, System.Func<bool> over, string during, string after)
+        {
+            WrapNpc(name, () =>
+            {
+                if (GameState.IsLevelComplete(Level2Builder.SceneName)) return null;
+                string line = over() ? after : during;
+                return line == null ? null : new[] { line };
+            }, null);
+        }
+
         public void WickTalked()
         {
             if (Met) return;
@@ -576,6 +720,8 @@ namespace Patchwork
                     "He bowed to me. Forty years a watchman and the thief bowed to me. You get those lenses back, and you look through that glass, and you let him watch you do it."
                 };
             }
+            int shut = SeamsShut;
+            if (shut < Seams) lines.Add(shut == 0 ? "And mind the seams. Rips in the floor, five of them: that's how they came up. Things keep climbing out till somebody stitches them shut. Three hits does it." : shut + " of the five seams stitched. Every one you shut is one less way in for them, and it'll tell at the end, mark my words.");
             if (pages > 0 && pages < Pages) lines.Add("You've found " + pages + " of the six pages out of my night book. Keep an eye out for the rest; I wrote down everything I saw, and I can't for the life of me remember the end of it.");
             lines.Add(n == 0 ? "No lenses yet? No shame in it. It's a big museum and they've a head start." : n == 1 ? "One lens back. Two to find. You're doing better than I did." : "Two! One more and she can see again.");
             if (!HasLens(0)) lines.Add(ArmsWon ? "The Hall of Arms has gone quiet. Whatever the Captain dropped is still lying in there." : "The Hall of Arms is through the Sunken Ruins, south side. Mind the door. I don't like the look of that portcullis.");
@@ -615,7 +761,7 @@ namespace Patchwork
         string[] StellaLines()
         {
             if (Defended) return new[] { "It's ready. Every lens where it belongs. Go on, up the steps. You earned the first look." };
-            if (Fitted) return new[] { "Moths! Get them off! Shoo! They'll have the lenses out again!" };
+            if (Fitted) return new[] { "The floor! It's come open! Stitch it, stitch it shut, or the moths will have the lenses out again!" };
             int n = LensCount;
             if (n >= 3) return new[]
             {
@@ -660,7 +806,7 @@ namespace Patchwork
         {
             var game = PatchworkGame.Instance;
             if (Defended) return "Look through the Night Glass.";
-            if (Fitted) return "Drive the moths off the telescope!";
+            if (Fitted) return "Stitch the Great Seam shut and clear the moths!";
             if (LensCount >= 3)
             {
                 bool lift = game != null && game.Level != null && game.Level.HeartstringCount() >= game.Level.HeartstringsNeeded;
@@ -691,10 +837,11 @@ namespace Patchwork
         enum State { Idle, Closing, Fighting, Between, Won }
         static readonly int[][] Waves = { new[] { 2, 1, 6 }, new[] { 3, 7, 5 }, new[] { 4, 0 } };
 
+        readonly List<int> active = new List<int>();
         State state;
         int wave;
         float timer;
-        bool fell;
+        bool fell, rallied;
         Vector3 lastFall = new Vector3(80f, 0f, -12f);
 
         public bool Busy { get { return state == State.Closing || state == State.Fighting || state == State.Between; } }
@@ -757,8 +904,21 @@ namespace Patchwork
 
                 case State.Fighting:
                     if (Restarting(game, pp)) break;
+                    // The Captain, at half strength, calls two of the fallen back up.
+                    if (wave == 2 && !rallied && !Guards[0].IsBeaten && Guards[0].Health <= Guards[0].MaxHealth / 2)
+                    {
+                        rallied = true;
+                        foreach (int i in new[] { 2, 1 })
+                        {
+                            if (Suits[i] != null) Suits[i].gameObject.SetActive(false);
+                            Guards[i].Wake(Landings[i]);
+                            active.Add(i);
+                        }
+                        game.ShowToast("The Captain raises his sword: two armours climb down again!");
+                        Narrator.Say("The Captain lifted his sword, and the strings above him twitched; and two suits that had been quite finished with all this stepped down a second time.");
+                    }
                     bool left = false;
-                    foreach (int i in Waves[wave]) if (!Guards[i].IsBeaten) left = true;
+                    foreach (int i in active) if (!Guards[i].IsBeaten) left = true;
                     if (left) break;
                     if (wave >= Waves.Length - 1) { Win(game); break; }
                     state = State.Between;
@@ -790,6 +950,9 @@ namespace Patchwork
         void StartWave()
         {
             state = State.Fighting;
+            rallied = false;
+            active.Clear();
+            active.AddRange(Waves[wave]);
             foreach (int i in Waves[wave])
             {
                 if (Suits[i] != null) Suits[i].gameObject.SetActive(false);
@@ -805,7 +968,7 @@ namespace Patchwork
             if (game.Unravelling) { fell = true; return true; }
             if (!fell && Inside(pp, 3f)) return false;
             fell = false;
-            foreach (int i in Waves[wave])
+            foreach (int i in active)
             {
                 Guards[i].Sleep();
                 if (Suits[i] != null) Suits[i].gameObject.SetActive(true);

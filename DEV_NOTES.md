@@ -640,6 +640,12 @@ Stuff I need to remember about how Patchwork is put together.
   (three per clot; `GreyClot.AnchorsLeft` blocks hits), `HelmetCrab.Guarded`, `UnpickerVisit`.
   Anchors aren't saved: an unbroken clot gets all three back when the level reloads.
 
+- **Seams** are `FraySeam` (MuseumFray.cs), made at runtime in `Level2Quest.Start` from
+  `SeamSpots` (keys `L2_q_seam0-4`). `Birth` says what climbs out; `Every` and `Most` set how
+  fast and how many. A shut seam is just `FraySeam.Stitches`. The Great Seam in the finale
+  is the same class, bigger, hatching moths. `Flavour(name, over, during, after)` gives a
+  bystander one line during the trouble and one after.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

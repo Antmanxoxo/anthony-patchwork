@@ -1,5 +1,25 @@
 # Development Log
 
+## Seams, rollers, lurkers and a rallying Captain
+More Fray in the museum, and a bigger ending.
+- Seams: five rips in the floor (Atrium, Deep Time, Kelp Galleries, Sunken Ruins, keepers'
+  aisle) where the Fray came up. While one is open, things keep climbing out. One full
+  three-hit combo stitches it shut for good, leaving a row of bright cross-stitches.
+  - Shutting all five refills your hearts and makes the ending easier.
+- New Fray:
+  - Ammonite rollers (from the Deep Time and Ruins seams): fossil shells that rock, then
+    roll at you. Only the third hit stops one mid-roll; when it hits something it falls over
+    and is soft.
+  - Lantern lurkers (one in the Lantern Deep, one in the Frozen Sea): grey anglerfish. The
+    light flares, then it lunges in a straight line, then it has to rest.
+- Hall of Arms: at half health the Hollow Captain calls two beaten armours back up.
+- The ending: instead of six moths, the Great Seam opens in the Observatory and moths pour
+  out until it is stitched shut (two full combos).
+- Ten more of the museum's people comment on what's going on (Tock, Plume, Mrs. Sudsbury,
+  Sergeant Stanchion, Old Barnacle, Squire Pim, Keepers June, Oskar and Pippa, Professor
+  Hoot), most with a hint in it, some with a second line once their bit of trouble is over.
+- The quest panel also counts seams stitched and pages found.
+
 ## The Night Glass, deeper
 More to find and more to do along the way to the three lenses.
 - Wick's night book: six pages are scattered round the museum (Atrium, Deep Time, the old

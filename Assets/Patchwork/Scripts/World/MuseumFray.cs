@@ -133,6 +133,20 @@ namespace Patchwork
             }
         }
 
+        // A step along the floor, for things that walk: refused if it would leave the floor,
+        // go through something, or stray too far from home.
+        protected bool GroundMove(Vector3 next, Vector3 home, float leash, float radius)
+        {
+            Vector3 flat = next - home;
+            flat.y = 0f;
+            if (flat.magnitude > leash) return false;
+            float g = Monsters.Ground(next + Vector3.up * 0.4f);
+            if (Mathf.Abs(g - pos.y) > 0.7f) return false;
+            if (Physics.CheckSphere(new Vector3(next.x, g + radius + 0.45f, next.z), radius, ~(1 << 2), QueryTriggerInteraction.Ignore)) return false;
+            pos = new Vector3(next.x, g, next.z);
+            return true;
+        }
+
         protected static PatchworkPlayer ThePlayer()
         {
             var game = PatchworkGame.Instance;
@@ -1023,6 +1037,367 @@ namespace Patchwork
             knot.localRotation = Quaternion.Euler(t * 20f, t * 33f, 0f);
             knot.localScale = Vector3.one * (1f + Mathf.Sin(t * 3f) * 0.06f);
             Contact(ThePlayer(), 0.9f, 1f, false);
+        }
+    }
+
+    // An ammonite roller: a great coiled fossil shell out of Deep Time, with the Fray curled
+    // up in it where the animal used to be. It rocks, then rolls at you like a cartwheel, and
+    // nothing stops it but the third hit. When it runs into something (or runs out of puff) it
+    // falls on its side, and then it's soft.
+    public class AmmoniteRoller : MuseumFoe
+    {
+        enum State { Wait, Rock, Roll, Flop }
+        State state;
+        Vector3 home, dir = Vector3.forward;
+        float st, spin;
+        bool bit;
+        Transform shell;
+
+        public static AmmoniteRoller Create(Transform parent, Vector3 ground)
+        {
+            var go = new GameObject("AmmoniteRoller");
+            go.transform.SetParent(parent, false);
+            go.transform.position = ground;
+            var r = go.AddComponent<AmmoniteRoller>();
+            r.home = ground;
+            r.pos = ground;
+            r.MaxHealth = 2;
+            r.Score = 250;
+            r.centreY = 0.75f;
+            r.knockScale = 0.6f;
+            var stone = PatchworkAssets.Felt(new Color(0.62f, 0.56f, 0.5f));
+            var rib = PatchworkAssets.Felt(new Color(0.48f, 0.43f, 0.4f));
+            r.rig = Pivot(go.transform, "Rig", Vector3.zero);
+            r.shell = Pivot(r.rig, "Shell", new Vector3(0f, 0.75f, 0f));
+            P(PrimitiveType.Sphere, r.shell, Vector3.zero, new Vector3(0.5f, 1.5f, 1.5f), stone);
+            // The coil: smaller and smaller discs winding in to the middle, and ribs across it.
+            for (int i = 0; i < 4; i++)
+            {
+                float a = i * 1.5f;
+                float rad = 0.34f - i * 0.08f;
+                for (int s = -1; s <= 1; s += 2)
+                    P(PrimitiveType.Sphere, r.shell, new Vector3(s * 0.2f, Mathf.Sin(a) * rad, Mathf.Cos(a) * rad), new Vector3(0.16f, 0.6f - i * 0.12f, 0.6f - i * 0.12f), i % 2 == 0 ? rib : stone);
+            }
+            for (int i = 0; i < 12; i++)
+            {
+                float a = i * Mathf.PI / 6f;
+                P(PrimitiveType.Cube, r.shell, new Vector3(0f, Mathf.Sin(a) * 0.62f, Mathf.Cos(a) * 0.62f), new Vector3(0.54f, 0.22f, 0.06f), rib, new Vector3(-a * Mathf.Rad2Deg, 0f, 0f));
+            }
+            // The mouth of the shell, and what looks out of it.
+            P(PrimitiveType.Sphere, r.shell, new Vector3(0f, -0.3f, 0.62f), new Vector3(0.44f, 0.5f, 0.4f), PatchworkAssets.Plain(new Color(0.05f, 0.04f, 0.07f), 0.9f));
+            for (int s = -1; s <= 1; s += 2) P(PrimitiveType.Sphere, r.shell, new Vector3(s * 0.09f, -0.24f, 0.8f), new Vector3(0.09f, 0.11f, 0.06f), Monsters.Glow);
+            for (int i = 0; i < 4; i++)
+                P(PrimitiveType.Capsule, r.shell, new Vector3((i - 1.5f) * 0.09f, -0.5f, 0.8f), new Vector3(0.05f, 0.2f, 0.05f), i % 2 == 0 ? Monsters.Grey : Monsters.Dark, new Vector3(60f + i * 9f, 0f, (i - 1.5f) * 14f));
+            r.Register(0.8f);
+            return r;
+        }
+
+        protected override bool Blocks(Vector3 from, bool finisher) { return state == State.Roll && !finisher; }
+
+        protected override void OnHurt(bool finisher)
+        {
+            if (state == State.Roll || state == State.Rock) { state = State.Flop; st = 0f; }
+        }
+
+        void Update()
+        {
+            if (IsBeaten) return;
+            float dt = Time.deltaTime;
+            if (dt <= 0f) return;
+            var player = ThePlayer();
+            Vector3 keep = pos;
+            bool free = Common(dt);
+            if (pos != keep) { Vector3 want = pos; pos = keep; GroundMove(want, home, 18f, 0.6f); }
+            st += dt;
+            Vector3 toP = player != null ? player.transform.position - pos : dir;
+            float dy = toP.y;
+            toP.y = 0f;
+            float dist = toP.magnitude;
+            float lean = 0f, rock = 0f;
+
+            switch (state)
+            {
+                case State.Wait:
+                    if (!free) break;
+                    if (dist > 0.1f && dist < 16f) dir = Vector3.Slerp(dir, toP / dist, 1f - Mathf.Exp(-3f * dt));
+                    if (player != null && st > 0.9f && dist < 13f && Mathf.Abs(dy) < 3f && (player.transform.position - home).magnitude < 20f)
+                    {
+                        state = State.Rock;
+                        st = 0f;
+                        Sfx.PlayNear(SfxId.Lever, pos, 0.4f, 30f);
+                    }
+                    break;
+                case State.Rock:
+                    // Back and forth, back and forth: here it comes.
+                    rock = Mathf.Sin(st * 22f) * 16f;
+                    if (dist > 0.1f) dir = Vector3.Slerp(dir, toP / dist, 1f - Mathf.Exp(-8f * dt));
+                    if (st >= 0.7f) { state = State.Roll; st = 0f; bit = false; Sfx.PlayNear(SfxId.Whoosh, pos, 0.35f, 30f); }
+                    break;
+                case State.Roll:
+                    bool blocked = !GroundMove(pos + dir * 9.5f * dt, home, 18f, 0.6f);
+                    spin += 9.5f * dt / 0.75f * Mathf.Rad2Deg;
+                    if (!bit && player != null && dist < 1.25f && Mathf.Abs(dy) < 1.5f && !SnarlKnot.HitHard(player, Center))
+                    {
+                        bit = true;
+                        player.Game.Hurt(Center);
+                    }
+                    if (blocked || st > 1.5f)
+                    {
+                        state = State.Flop;
+                        st = 0f;
+                        Sfx.PlayNear(SfxId.Clack, pos, blocked ? 0.6f : 0.3f, 30f);
+                        if (blocked) FxBurst.Spawn(FxBurst.Kind.Poof, pos + dir * 0.6f + Vector3.up * 0.6f, new Color(0.8f, 0.76f, 0.7f));
+                    }
+                    break;
+                case State.Flop:
+                    lean = 78f * Mathf.Clamp01(st / 0.25f);
+                    if (st > 1.8f) { state = State.Wait; st = 0f; }
+                    break;
+            }
+            transform.position = pos;
+            transform.rotation = Quaternion.LookRotation(new Vector3(dir.x, 0f, dir.z).normalized, Vector3.up);
+            float ease = 1f - Mathf.Exp(-12f * dt);
+            rig.localRotation = Quaternion.Slerp(rig.localRotation, Quaternion.Euler(0f, 0f, lean), ease);
+            shell.localRotation = Quaternion.Euler(spin + rock, 0f, 0f);
+            if (state != State.Roll) Contact(player, 0.9f, 1.3f, false);
+        }
+    }
+
+    // A lantern lurker: the deep-sea anglerfish from the Lantern Deep, gone grey, with its
+    // little light still burning. It hangs in the dark; the light flares; then it comes at you
+    // very fast in a straight line, and afterwards has to get its breath back.
+    public class LanternLurker : MuseumFoe
+    {
+        enum State { Drift, Flash, Lunge, Tired }
+        State state;
+        Vector3 home, dir = Vector3.forward, lo, hi;
+        float st, cooldown = 1.5f;
+        bool bit;
+        Transform lure, jaw, tail;
+
+        public static LanternLurker Create(Transform parent, Vector3 at, Vector3 lo, Vector3 hi)
+        {
+            var go = new GameObject("LanternLurker");
+            go.transform.SetParent(parent, false);
+            go.transform.position = at;
+            var l = go.AddComponent<LanternLurker>();
+            l.home = at;
+            l.pos = at;
+            l.lo = lo;
+            l.hi = hi;
+            l.MaxHealth = 3;
+            l.Score = 350;
+            l.centreY = 0f;
+            l.t = at.x * 0.7f + at.z;
+            var tooth = PatchworkAssets.Felt(new Color(0.9f, 0.88f, 0.8f));
+            l.rig = Pivot(go.transform, "Rig", Vector3.zero);
+            P(PrimitiveType.Sphere, l.rig, new Vector3(0f, 0.1f, 0f), new Vector3(1.3f, 1.15f, 1.7f), Monsters.Dark);
+            P(PrimitiveType.Sphere, l.rig, new Vector3(0f, 0.3f, -0.2f), new Vector3(1.1f, 0.9f, 1.3f), Monsters.Grey);
+            for (int s = -1; s <= 1; s += 2)
+            {
+                P(PrimitiveType.Sphere, l.rig, new Vector3(s * 0.42f, 0.36f, 0.5f), new Vector3(0.2f, 0.2f, 0.14f), Monsters.Glow);
+                P(PrimitiveType.Cube, l.rig, new Vector3(s * 0.7f, 0f, -0.1f), new Vector3(0.5f, 0.05f, 0.4f), Monsters.Grey, new Vector3(0f, s * 30f, s * -25f));
+            }
+            for (int i = 0; i < 7; i++)
+                P(PrimitiveType.Cube, l.rig, new Vector3((i - 3) * 0.14f, -0.02f, 0.74f - Mathf.Abs(i - 3) * 0.05f), new Vector3(0.06f, 0.24f, 0.05f), tooth, new Vector3(0f, 0f, 180f));
+            l.jaw = Pivot(l.rig, "Jaw", new Vector3(0f, -0.14f, 0.1f));
+            P(PrimitiveType.Sphere, l.jaw, new Vector3(0f, -0.12f, 0.3f), new Vector3(1.15f, 0.4f, 1.1f), Monsters.Dark);
+            for (int i = 0; i < 6; i++)
+                P(PrimitiveType.Cube, l.jaw, new Vector3((i - 2.5f) * 0.15f, 0.1f, 0.68f - Mathf.Abs(i - 2.5f) * 0.05f), new Vector3(0.06f, 0.26f, 0.05f), tooth);
+            l.tail = Pivot(l.rig, "Tail", new Vector3(0f, 0.1f, -0.8f));
+            P(PrimitiveType.Cube, l.tail, new Vector3(0f, 0f, -0.35f), new Vector3(0.05f, 0.7f, 0.6f), Monsters.Grey);
+            // The lantern: a stalk bent over its head, with a warm light on the end.
+            l.lure = Pivot(l.rig, "Lure", new Vector3(0f, 0.62f, 0.2f));
+            P(PrimitiveType.Capsule, l.lure, new Vector3(0f, 0.3f, 0.12f), new Vector3(0.05f, 0.34f, 0.05f), Monsters.Dark, new Vector3(22f, 0f, 0f));
+            P(PrimitiveType.Capsule, l.lure, new Vector3(0f, 0.62f, 0.48f), new Vector3(0.045f, 0.26f, 0.045f), Monsters.Dark, new Vector3(75f, 0f, 0f));
+            P(PrimitiveType.Sphere, l.lure, new Vector3(0f, 0.6f, 0.8f), Vector3.one * 0.24f, PatchworkAssets.Glow(new Color(1f, 0.85f, 0.45f), 2.6f));
+            l.Register(0.85f);
+            return l;
+        }
+
+        protected override void OnHurt(bool finisher)
+        {
+            if (state == State.Flash) { state = State.Tired; st = 0f; }
+        }
+
+        void Update()
+        {
+            if (IsBeaten) return;
+            float dt = Time.deltaTime;
+            if (dt <= 0f) return;
+            var player = ThePlayer();
+            bool free = Common(dt);
+            st += dt;
+            Vector3 toP = player != null ? player.Motor.Center - pos : dir;
+            float dist = toP.magnitude;
+            float gape = 8f, glow = 1f;
+
+            switch (state)
+            {
+                case State.Drift:
+                    if (!free) break;
+                    pos = Vector3.MoveTowards(pos, home + new Vector3(Mathf.Sin(t * 0.4f) * 2f, Mathf.Sin(t * 0.6f) * 0.8f, Mathf.Cos(t * 0.33f) * 2f), 1.2f * dt);
+                    if (dist > 0.1f && dist < 14f) dir = Vector3.Slerp(dir, toP / dist, 1f - Mathf.Exp(-2.5f * dt));
+                    cooldown -= dt;
+                    if (player != null && cooldown <= 0f && dist < 9f && (player.Motor.Swimming || player.Motor.Submerged))
+                    {
+                        state = State.Flash;
+                        st = 0f;
+                        Sfx.PlayNear(SfxId.Lever, pos, 0.4f, 30f);
+                    }
+                    break;
+                case State.Flash:
+                    // The light flares: that's the warning.
+                    glow = 1.8f + Mathf.Sin(st * 28f) * 0.6f;
+                    gape = 8f + 30f * Mathf.Clamp01(st / 0.8f);
+                    if (dist > 0.1f) dir = Vector3.Slerp(dir, toP / dist, 1f - Mathf.Exp(-6f * dt));
+                    if (st >= 0.85f) { state = State.Lunge; st = 0f; bit = false; Sfx.PlayNear(SfxId.Whoosh, pos, 0.4f, 30f); }
+                    break;
+                case State.Lunge:
+                    gape = 40f;
+                    pos += dir * 14f * dt;
+                    if (!bit && player != null && dist < 1.4f) { bit = true; player.Game.Hurt(pos); }
+                    if (st >= 0.5f) { state = State.Tired; st = 0f; }
+                    break;
+                case State.Tired:
+                    gape = 22f + Mathf.Sin(st * 9f) * 8f;
+                    glow = 0.5f;
+                    if (st >= 1.8f) { state = State.Drift; st = 0f; cooldown = Random.Range(1.6f, 2.8f); }
+                    break;
+            }
+            pos = new Vector3(Mathf.Clamp(pos.x, lo.x, hi.x), Mathf.Clamp(pos.y, lo.y, hi.y), Mathf.Clamp(pos.z, lo.z, hi.z));
+            transform.position = pos;
+            if (dir.sqrMagnitude > 0.01f) transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir.normalized, Vector3.up), 1f - Mathf.Exp(-10f * dt));
+            float ease = 1f - Mathf.Exp(-12f * dt);
+            jaw.localRotation = Quaternion.Slerp(jaw.localRotation, Quaternion.Euler(gape, 0f, 0f), ease);
+            lure.localScale = Vector3.Lerp(lure.localScale, Vector3.one * glow, ease);
+            lure.localRotation = Quaternion.Euler(Mathf.Sin(t * 2.1f) * 8f, 0f, Mathf.Sin(t * 1.3f) * 8f);
+            tail.localRotation = Quaternion.Euler(0f, Mathf.Sin(t * (state == State.Lunge ? 22f : 4f)) * 28f, 0f);
+            Contact(player, 1.05f, 1.1f, false);
+        }
+    }
+
+    // A seam: a rip in the floor where the Fray comes up from the Underside. While it's open,
+    // things keep climbing out of it. Three hits stitch it shut (the third pulls the thread
+    // tight), and it stays shut: a neat row of bright cross-stitches where the rip was.
+    public class FraySeam : MuseumFoe
+    {
+        // What climbs out (given where): returns the new thing.
+        public System.Func<Vector3, GameObject> Birth;
+        public float Every = 9f;
+        public int Most = 2;
+
+        readonly List<GameObject> brood = new List<GameObject>();
+        Transform lips;
+        Transform[] fingers;
+        float next = 4f, big = 1f, yaw;
+
+        public static FraySeam Create(Transform parent, Vector3 ground, float yaw, float size, int health)
+        {
+            var go = new GameObject("FraySeam");
+            go.transform.SetParent(parent, false);
+            go.transform.position = ground;
+            go.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            var s = go.AddComponent<FraySeam>();
+            s.pos = ground;
+            s.yaw = yaw;
+            s.big = size;
+            s.MaxHealth = health;
+            s.Score = 500;
+            s.centreY = 0.5f;
+            s.knockScale = 0f;
+            s.rig = Pivot(go.transform, "Rig", Vector3.zero);
+            s.lips = Pivot(s.rig, "Lips", Vector3.zero);
+            s.lips.localScale = Vector3.one * size;
+            P(PrimitiveType.Sphere, s.lips, new Vector3(0f, 0.03f, 0f), new Vector3(3.2f, 0.05f, 1.2f), Monsters.Glow);
+            P(PrimitiveType.Sphere, s.lips, new Vector3(0f, 0.05f, 0f), new Vector3(2.9f, 0.06f, 0.9f), PatchworkAssets.Plain(new Color(0.03f, 0.02f, 0.05f), 0.2f));
+            for (int i = 0; i < 9; i++)
+            {
+                float x = (i - 4) * 0.34f;
+                float w = 0.5f * Mathf.Sqrt(Mathf.Max(0f, 1f - (x / 1.55f) * (x / 1.55f)));
+                for (int side = -1; side <= 1; side += 2)
+                    Tuft(s.lips, new Vector3(x, 0.08f, side * w), 2f, i * 1.7f + side);
+            }
+            s.fingers = new Transform[4];
+            for (int i = 0; i < 4; i++)
+            {
+                s.fingers[i] = Pivot(s.lips, "Finger", new Vector3((i - 1.5f) * 0.6f, 0.05f, 0f));
+                P(PrimitiveType.Capsule, s.fingers[i], new Vector3(0f, 0.4f, 0f), new Vector3(0.1f, 0.42f, 0.1f), i % 2 == 0 ? Monsters.Grey : Monsters.Dark);
+                P(PrimitiveType.Sphere, s.fingers[i], new Vector3(0f, 0.84f, 0f), Vector3.one * 0.13f, Monsters.Glow);
+            }
+            s.Register(1.3f * size);
+            return s;
+        }
+
+        // How many of its brood are still about.
+        public int BroodLeft
+        {
+            get
+            {
+                int n = 0;
+                foreach (var b in brood) if (b != null && b.activeSelf) n++;
+                return n;
+            }
+        }
+
+        // The mend that's left when a seam is shut.
+        public static void Stitches(Transform parent, Vector3 ground, float yaw, float size)
+        {
+            var g = new GameObject("StitchedSeam").transform;
+            g.SetParent(parent, false);
+            g.position = ground;
+            g.rotation = Quaternion.Euler(0f, yaw, 0f);
+            Color[] cols = { new Color(0.95f, 0.45f, 0.5f), new Color(1f, 0.8f, 0.35f), new Color(0.4f, 0.75f, 0.7f), new Color(0.45f, 0.6f, 0.95f) };
+            P(PrimitiveType.Cube, g, new Vector3(0f, 0.012f, 0f), new Vector3(3f * size, 0.012f, 0.05f), PatchworkAssets.Plain(new Color(0.25f, 0.22f, 0.3f), 0.2f));
+            for (int i = 0; i < 9; i++)
+            {
+                var m = PatchworkAssets.Yarn(cols[i % cols.Length]);
+                float x = (i - 4) * 0.34f * size;
+                P(PrimitiveType.Cube, g, new Vector3(x, 0.03f, 0f), new Vector3(0.05f, 0.03f, 0.36f * size), m, new Vector3(0f, 40f, 0f));
+                P(PrimitiveType.Cube, g, new Vector3(x, 0.03f, 0f), new Vector3(0.05f, 0.03f, 0.36f * size), m, new Vector3(0f, -40f, 0f));
+            }
+        }
+
+        protected override void OnBeaten()
+        {
+            Stitches(transform.parent, pos, yaw, big);
+            FxBurst.Spawn(FxBurst.Kind.Threads, pos + Vector3.up * 0.5f, new Color(1f, 0.8f, 0.35f));
+            FxBurst.Spawn(FxBurst.Kind.Sparkle, pos + Vector3.up, new Color(1f, 0.9f, 0.6f));
+            Sfx.Play(SfxId.Thread, 0.6f);
+        }
+
+        protected override void OnHurt(bool finisher)
+        {
+            next = Mathf.Max(next, 2.5f);   // (a hit makes it flinch shut for a moment)
+        }
+
+        void Update()
+        {
+            if (IsBeaten) return;
+            float dt = Time.deltaTime;
+            if (dt <= 0f) return;
+            var player = ThePlayer();
+            Common(dt);
+            // It closes a little with every hit.
+            float open = 0.45f + 0.55f * Health / (float)MaxHealth;
+            float about = next < 1.2f ? 1f + Mathf.Sin(t * 30f) * 0.08f : 1f;
+            lips.localScale = Vector3.Lerp(lips.localScale, new Vector3(big, big, big * open * about), 1f - Mathf.Exp(-8f * dt));
+            for (int i = 0; i < fingers.Length; i++)
+                fingers[i].localRotation = Quaternion.Euler(Mathf.Sin(t * 2.3f + i * 1.7f) * 28f, 0f, Mathf.Cos(t * 1.9f + i) * 28f);
+            if (player == null || Birth == null) return;
+            Vector3 d = player.transform.position - pos;
+            if (new Vector2(d.x, d.z).magnitude > 24f || Mathf.Abs(d.y) > 8f) return;
+            next -= dt;
+            if (next > 0f) return;
+            next = Every;
+            if (BroodLeft >= Most) return;
+            float a = Random.value * Mathf.PI * 2f;
+            Vector3 at = pos + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * 1.6f * big;
+            var born = Birth(at);
+            if (born == null) return;
+            brood.Add(born);
+            FxBurst.Spawn(FxBurst.Kind.Threads, pos + Vector3.up * 0.6f, SnarlKnot.FrayGrey);
+            Sfx.PlayNear(SfxId.Unravel, pos, 0.35f, 30f);
         }
     }
 
