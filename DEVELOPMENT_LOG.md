@@ -1,5 +1,16 @@
 # Development Log
 
+## Real floors in the museum
+The museum's fabric-patch floors are now proper floors, still pieced together like a quilt.
+- Galleries and halls: polished parquet. Square panels of boards, each panel laid across
+  its neighbours and stained a slightly different shade. The stains are the room's old
+  quilt colours soaked into oak, so the navy rooms, warm rooms and sea rooms still differ.
+  A line of cream stitching runs round the edge of each big floor.
+- Keepers' decks, bridges, the corridor and the undercroft: long straight boards with
+  staggered ends, scrubbed and dull.
+- The Sunken Ruins and the temple: stone flags in shifted rows.
+- Nothing about where you can walk has changed; only the surface.
+
 ## The museum shows the night going by
 The level itself now changes as the quest goes on, with more to find.
 - Colour: the whole museum starts a little grey and the colour comes back in steps, one for

@@ -203,10 +203,170 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cube, sill + r * new Vector3(0f, h + 0.45f, 0f), new Vector3(0.7f, 1f, thick + 0.45f), trim, new Vector3(0f, yaw, 0f));
         }
 
-        // A quilted floor: one solid slab with patchwork on top (top surface at y = top).
+        // A museum floor: one solid slab (top surface at y = top) with a proper floor laid on it,
+        // still pieced together like a quilt. Which floor depends on where it is:
+        //   - galleries and halls: parquet. Square panels of polished boards, each panel laid the
+        //     other way to its neighbours and stained a slightly different shade (the room's old
+        //     quilt colours, soaked into oak), with a line of cream stitching round the edge.
+        //   - the keepers' decks, the bridges and the corridor: long straight boards, like a ship.
+        //   - the Sunken Ruins and the temple: stone flags.
         static Transform Floor(LevelKit kit, float x0, float x1, float z0, float z1, float top, Color[] palette, float cell = 4.5f, string name = "Floor")
         {
-            return kit.Quilt(new Vector3((x0 + x1) * 0.5f, top - 0.5f, (z0 + z1) * 0.5f), new Vector3(x1 - x0, 1f, z1 - z0), palette, cell, name);
+            Vector3 size = new Vector3(x1 - x0, 1f, z1 - z0);
+            var slab = new GameObject(name).transform;
+            slab.SetParent(kit.Root, false);
+            slab.position = new Vector3((x0 + x1) * 0.5f, top - 0.5f, (z0 + z1) * 0.5f);
+            slab.gameObject.AddComponent<BoxCollider>().size = size;
+
+            bool stone = name.StartsWith("Ruin") || name.StartsWith("Temple");
+            bool deck = !stone && (name.Contains("Deck") || name.StartsWith("Bridge") || name.StartsWith("Corridor") || name.StartsWith("Undercroft"));
+            int n = palette.Length;
+            var mats = new Material[n];
+            var batches = new MeshBatch[n];
+            for (int i = 0; i < n; i++)
+            {
+                mats[i] = stone ? FlagStone(palette[i]) : FloorWood(palette[i], deck);
+                batches[i] = new MeshBatch();
+            }
+            // What shows in the cracks: the dark underside of the floor.
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, -0.015f, 0f), new Vector3(size.x - 0.02f, 0.97f, size.z - 0.02f),
+                stone ? PatchworkAssets.Felt(new Color(0.2f, 0.2f, 0.22f)) : PatchworkAssets.Wood(new Color(0.2f, 0.14f, 0.1f)), default(Vector3), slab);
+
+            float y = 0.504f;                         // (a whisker above the solid top, like the quilt was)
+            int seed = Mathf.RoundToInt(Mathf.Abs(x0 * 3f + z0 * 7f + top * 11f));
+            if (stone)
+            {
+                // Flags in rows, every other row shifted half a stone.
+                float want = Mathf.Max(1.4f, cell * 0.5f);
+                int rows = Mathf.Max(1, Mathf.RoundToInt(size.z / want));
+                float rz = size.z / rows;
+                for (int r = 0; r < rows; r++)
+                {
+                    int cols = Mathf.Max(1, Mathf.RoundToInt(size.x / (want * 1.4f)));
+                    float cw = size.x / cols;
+                    float shift = (r & 1) == 0 ? 0f : cw * 0.5f;
+                    for (int c = -1; c <= cols; c++)
+                    {
+                        float a = Mathf.Max(0f, c * cw + shift), b = Mathf.Min(size.x, (c + 1) * cw + shift);
+                        if (b - a < 0.15f) continue;
+                        int pick = FloorHash(c + seed, r * 7 + seed) % n;
+                        batches[pick].Board(new Vector3(-size.x * 0.5f + (a + b) * 0.5f, y, -size.z * 0.5f + rz * (r + 0.5f)), b - a - 0.05f, rz - 0.05f, true,
+                            FloorHash(c, r + seed) * 0.013f, FloorHash(r, c + seed) * 0.017f, 3f, 3f);
+                    }
+                }
+            }
+            else if (deck)
+            {
+                // Long boards running the long way of the floor, their ends staggered.
+                bool alongX = size.x >= size.z;
+                float across = alongX ? size.z : size.x, along = alongX ? size.x : size.z;
+                int rows = Mathf.Max(1, Mathf.RoundToInt(across / 0.6f));
+                float w = across / rows;
+                for (int r = 0; r < rows; r++)
+                {
+                    float at = -(FloorHash(r, seed) % 100) * 0.03f;   // (the first board starts off the edge)
+                    int k = 0;
+                    while (at < along)
+                    {
+                        float len = 2.6f + (FloorHash(r * 31 + k, seed + 5) % 100) * 0.024f;
+                        float a = Mathf.Max(0f, at), b = Mathf.Min(along, at + len);
+                        at += len;
+                        k++;
+                        if (b - a < 0.12f) continue;
+                        int pick = FloorHash(r + seed, k * 13) % n;
+                        float mid = -along * 0.5f + (a + b) * 0.5f, off = -across * 0.5f + w * (r + 0.5f);
+                        batches[pick].Board(alongX ? new Vector3(mid, y, off) : new Vector3(off, y, mid), b - a - 0.02f, w - 0.02f, alongX,
+                            FloorHash(r, k + seed) * 0.013f, FloorHash(k, r + seed) * 0.017f);
+                    }
+                }
+            }
+            else
+            {
+                // Parquet: a panel for every patch the quilt had, each laid across its neighbours.
+                int nx = Mathf.Max(1, Mathf.RoundToInt(size.x / cell));
+                int nz = Mathf.Max(1, Mathf.RoundToInt(size.z / cell));
+                float cx = size.x / nx, cz = size.z / nz;
+                for (int ix = 0; ix < nx; ix++)
+                    for (int iz = 0; iz < nz; iz++)
+                    {
+                        bool alongX = ((ix + iz) & 1) == 0;
+                        float px = -size.x * 0.5f + cx * (ix + 0.5f), pz = -size.z * 0.5f + cz * (iz + 0.5f);
+                        float along = (alongX ? cx : cz) - 0.035f, across = (alongX ? cz : cx) - 0.035f;
+                        int boards = Mathf.Max(3, Mathf.RoundToInt(across / 0.75f));
+                        float w = across / boards;
+                        int pick = FloorHash(ix * 7 + seed, iz * 13) % n;
+                        for (int j = 0; j < boards; j++)
+                        {
+                            float off = -across * 0.5f + w * (j + 0.5f);
+                            // (Mostly the panel's own stain, with the odd board from the next tin.)
+                            int m = (pick + (FloorHash(ix * 5 + j, iz * 3 + seed) % 4 == 0 ? 1 : 0)) % n;
+                            batches[m].Board(alongX ? new Vector3(px, y, pz + off) : new Vector3(px + off, y, pz), along, w - 0.018f, alongX,
+                                FloorHash(ix + j * 7, iz + seed) * 0.013f, FloorHash(iz + j * 3, ix + seed) * 0.017f);
+                        }
+                    }
+                // Our signature: a line of stitching all the way round, a little in from the edge.
+                if (size.x > 7f && size.z > 7f)
+                {
+                    var thread = new MeshBatch();
+                    float hx = size.x * 0.5f - 0.6f, hz = size.z * 0.5f - 0.6f, sy = y + 0.012f;
+                    thread.Stitches(new Vector3(-hx, sy, -hz), new Vector3(hx, sy, -hz), 0.34f, 0.22f, 0.07f, 0.016f);
+                    thread.Stitches(new Vector3(hx, sy, -hz), new Vector3(hx, sy, hz), 0.34f, 0.22f, 0.07f, 0.016f);
+                    thread.Stitches(new Vector3(hx, sy, hz), new Vector3(-hx, sy, hz), 0.34f, 0.22f, 0.07f, 0.016f);
+                    thread.Stitches(new Vector3(-hx, sy, hz), new Vector3(-hx, sy, -hz), 0.34f, 0.22f, 0.07f, 0.016f);
+                    thread.Build(slab, "FloorStitching", PatchworkAssets.Yarn(new Color(0.95f, 0.88f, 0.72f)));
+                }
+            }
+            for (int i = 0; i < n; i++) batches[i].Build(slab, stone ? "Flags" : "Boards", mats[i]);
+            return slab;
+        }
+
+        static int FloorHash(int a, int b)
+        {
+            unchecked
+            {
+                int h = a * 73856093 ^ b * 19349663;
+                h ^= h >> 13;
+                h *= 1274126177;
+                return (h ^ (h >> 16)) & 0x7fffffff;
+            }
+        }
+
+        // Polished floorboards, stained with one of a room's colours: mostly oak, with enough of
+        // the colour soaked in that the navy rooms and the warm rooms still feel different.
+        static readonly Dictionary<string, Material> floorMats = new Dictionary<string, Material>();
+
+        static Material FloorWood(Color tint, bool deck)
+        {
+            Color oak = deck ? new Color(0.6f, 0.47f, 0.34f) : new Color(0.68f, 0.47f, 0.29f);
+            Color c = Color.Lerp(oak, tint, deck ? 0.22f : 0.36f);
+            float top = Mathf.Max(c.r, Mathf.Max(c.g, c.b));
+            if (top < 0.46f) c *= 0.46f / Mathf.Max(0.01f, top);
+            c.a = 1f;
+            string key = (deck ? "deck_" : "parquet_") + ColorUtility.ToHtmlStringRGB(c);
+            Material m;
+            if (floorMats.TryGetValue(key, out m) && m != null) return m;
+            m = PatchworkAssets.Unique(PatchworkAssets.Wood(c));
+            m.name = "PW_floor_" + key;
+            // (Waxed and buffed in the galleries; scrubbed and dull on the keepers' decks.)
+            m.SetFloat("_Smoothness", deck ? 0.22f : 0.5f);
+            m.SetFloat("_Glossiness", deck ? 0.22f : 0.5f);
+            floorMats[key] = m;
+            return m;
+        }
+
+        static Material FlagStone(Color tint)
+        {
+            Color c = Color.Lerp(new Color(0.66f, 0.64f, 0.6f), tint, 0.3f);
+            c.a = 1f;
+            string key = "flag_" + ColorUtility.ToHtmlStringRGB(c);
+            Material m;
+            if (floorMats.TryGetValue(key, out m) && m != null) return m;
+            m = PatchworkAssets.Unique(PatchworkAssets.Plaster(c));
+            m.name = "PW_floor_" + key;
+            m.SetFloat("_Smoothness", 0.16f);
+            m.SetFloat("_Glossiness", 0.16f);
+            floorMats[key] = m;
+            return m;
         }
 
         // A flat rug or runner lying on the floor.

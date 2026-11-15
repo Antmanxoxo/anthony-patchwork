@@ -49,6 +49,19 @@ namespace Patchwork
             Quad(c[4], c[5], c[1], c[0], 0f, ux, 0f, uz);   // -y
         }
 
+        // The top of a floorboard (only the face you walk on), with the grain of the wood
+        // running along its length. uOff / vOff slide the texture so no two boards match;
+        // the texture repeats every "grainAcross" metres across and "grainAlong" along.
+        public void Board(Vector3 center, float length, float width, bool alongX, float uOff, float vOff, float grainAcross = 1.1f, float grainAlong = 2.6f)
+        {
+            float hl = length * 0.5f, hw = width * 0.5f;
+            float u1 = uOff + width / grainAcross, v1 = vOff + length / grainAlong;
+            if (alongX)
+                Quad(center + new Vector3(-hl, 0f, hw), center + new Vector3(-hl, 0f, -hw), center + new Vector3(hl, 0f, -hw), center + new Vector3(hl, 0f, hw), uOff, u1, vOff, v1);
+            else
+                Quad(center + new Vector3(-hw, 0f, -hl), center + new Vector3(hw, 0f, -hl), center + new Vector3(hw, 0f, hl), center + new Vector3(-hw, 0f, hl), uOff, u1, vOff, v1);
+        }
+
         // A thin three-sided blade from root to a tip that leans by "lean" (9 vertices).
         public void Blade(Vector3 root, float height, float width, Vector3 lean, float yaw)
         {

@@ -657,6 +657,12 @@ Stuff I need to remember about how Patchwork is put together.
   `FrayCreep` and `NightLamp` are in `MuseumDressing.cs`. Lamp keys are `L2_q_lamp0-7`.
   `PatchStrike.Landed` reports how many things one strike hit.
 
+- **Museum floors** all come from `Floor()` in `Level2Kit.cs`. The floor's NAME picks the
+  kind: starts with Ruin/Temple = stone flags; contains Deck or starts with
+  Bridge/Corridor/Undercroft = straight decking; anything else = parquet. Boards are flat
+  quads drawn by `MeshBatch.Board` (one mesh per stain per floor) over a dark slab; the
+  palette passed in only tints the wood (`FloorWood`, `FlagStone`).
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark
