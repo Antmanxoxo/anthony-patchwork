@@ -33,6 +33,7 @@ namespace Patchwork
             Says("Thimble", null,
                 () => CrabGossip(0));
             Says("Ticket-master Tock", null,
+                PassportLines,
                 Mood(() => Seen("seam0"),
                     "No tickets tonight. Museum's closed, on account of the floor has a hole in it and things keep coming out. Three good thumps closes it, Wick says. I am a ticket-master. I do not thump.",
                     "You stitched it! Lovely needlework. I'd give you a free ticket, but you're already in."));
@@ -272,6 +273,28 @@ namespace Patchwork
             if (!HasLens(1)) lines.Add("The tanks are behind the big aquarium: the door marked KEEPERS ONLY. You'll want to be Water to go in. Marlow's count is " + ClotsCleared + " of 4 clear.");
             if (!HasLens(2)) lines.Add("That helmet with legs was last seen in " + CrabPlaces[CrabStage] + ". Nothing dents it but a really good wallop, the third of three. Then it's on its back, and it's yours.");
             return lines.ToArray();
+        }
+
+        // Tock and the Museum Passport: five hands-on machines, a stamp for each.
+        string[] PassportLines()
+        {
+            var passport = MuseumPassport.Instance;
+            if (passport == null) return null;
+            if (Tell("passport")) return new[]
+            {
+                "Five stamps! A full passport! Do you know, in all my years, nobody has ever filled one in?",
+                "Mostly because I only had the idea this evening. But still. First ever.",
+                "Here: the museum's honorary membership, which entitles you to come in whenever you like, free, for ever. ...You already do that. Well. Now it's official."
+            };
+            if (HasSecret("passport")) return null;
+            int n = passport.Count;
+            if (n == 0) return new[]
+            {
+                "Tickets? No. But! I do have this. A Museum Passport. Five hands-on exhibits, a stamp for every one you try.",
+                "The whale-song gramophone in here, the screw in Deep Time, the lighthouse lens in the Kelp Galleries, the ship's bell in the Ruins, and the message tube in the Keepers' Room.",
+                "They're for touching. That's the whole point of them. Most people are too shy."
+            };
+            return new[] { n + " of five stamps. " + (n >= 4 ? "Just the one to go!" : "Have you tried them all? Turn things. Ring things. Post things.") };
         }
 
         string[] MarlowLines()

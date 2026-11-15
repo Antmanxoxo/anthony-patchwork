@@ -692,6 +692,10 @@ Stuff I need to remember about how Patchwork is put together.
   an earlier one already has. Anything flat laid on a museum floor should start at least
   1 cm above the floor's top (the boards are 1 mm above it).
 
+- **Hands-on exhibits** are `MuseumHandsOn.cs`: `HandsOn(kit)` places them (with
+  `RmFloor`, so it runs before `RmDone`), `HandsOnExhibit` builds and animates each by its
+  `Kind`, `MuseumPassport` keeps the stamps (`L2_q_stamp0-4`).
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

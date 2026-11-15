@@ -1,5 +1,21 @@
 # Development Log
 
+## Hands-on exhibits and the Museum Passport
+Five machines in the Oceanic Museum you're meant to touch. Use one and it does something
+for a few seconds while the Storyteller tells you a true thing about it. Each has its own
+brass card too.
+- The Whale-Song Gramophone (Grand Atrium): crank it, the record turns, rings of sound roll
+  out of the horn. Humpback songs, and how every whale in a sea changes its song together.
+- The Archimedes Screw (Hall of Deep Time): turn the handle and drops of water climb the
+  spiral from the trough to the basin.
+- The Lighthouse Lens (Kelp Galleries): wind it and a real beam of light sweeps the room.
+  Augustin Fresnel's lens of glass rings, 1822.
+- The Ship's Bell (Sunken Ruins): eight bells, and what a watch was.
+- The Message Tube (Keepers' Room): post a capsule and it whooshes up the pipe and along the
+  ceiling. London's pneumatic tube, 1853.
+- Ticket-master Tock hands out the Museum Passport: each machine stamps it, and a full
+  passport is a secret (eighteen secrets now).
+
 ## Fix: shiny, flickering museum floors
 - Too glossy: the new wooden floors were waxed to a mirror shine, and the wood grain's
   bumps made that shine sparkle and crawl as the camera moved. They now have a soft sheen

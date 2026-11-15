@@ -150,6 +150,7 @@ namespace Patchwork
             Quest(kit);   // the story: the three lenses of the Night Glass, and the Fray that has them
             Eggs(kit);    // the Long Gallery, and the Dust Sheet Five
             Audit(kit);   // the Curator's Audit: twelve exhibits, five of them fakes
+            HandsOn(kit); // five machines you're allowed to touch, and the Museum Passport
             RmDone();
 
             // The hush of the halls, and the deep rumble by the big tanks.

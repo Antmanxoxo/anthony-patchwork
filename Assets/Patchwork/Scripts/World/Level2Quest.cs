@@ -627,9 +627,9 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ Secrets
 
-        static readonly string[] SecretKeys = { "flawless", "crab", "thimble", "nomoth", "tidy", "stranger", "whistle", "king", "jar", "torch", "larder", "rounds", "skittles", "hall", "dusties", "audit", "connoisseur" };
-        static readonly string[] SecretNames = { "Not a Scratch", "Caught Napping", "Hats Off", "Not One Moth", "A Stitch in Time", "No Introductions", "Marlow's Whistle", "The King in the Biscuits", "A Jar of Red", "June's Torch", "The Unpicker's Larder", "Wick's Round", "Three at a Blow", "The Long Gallery", "The Dust Sheet Five", "The Curator's Audit", "A Perfect Eye" };
-        public const int Secrets = 17;
+        static readonly string[] SecretKeys = { "flawless", "crab", "thimble", "nomoth", "tidy", "stranger", "whistle", "king", "jar", "torch", "larder", "rounds", "skittles", "hall", "dusties", "audit", "connoisseur", "passport" };
+        static readonly string[] SecretNames = { "Not a Scratch", "Caught Napping", "Hats Off", "Not One Moth", "A Stitch in Time", "No Introductions", "Marlow's Whistle", "The King in the Biscuits", "A Jar of Red", "June's Torch", "The Unpicker's Larder", "Wick's Round", "Three at a Blow", "The Long Gallery", "The Dust Sheet Five", "The Curator's Audit", "A Perfect Eye", "The Museum Passport" };
+        public const int Secrets = 18;
         public int SecretsFound { get { int n = 0; foreach (var k in SecretKeys) if (Seen("s_" + k)) n++; return n; } }
         public bool HasSecret(string key) { return Seen("s_" + key); }
 
