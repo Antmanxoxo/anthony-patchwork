@@ -418,6 +418,16 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.3f, 0f), new Vector3(radius * 2.9f, 0.6f, radius * 2.9f), trim, default(Vector3), g);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.72f, 0f), new Vector3(radius * 2.5f, 0.12f, radius * 2.5f), mat, default(Vector3), g);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, height * 0.5f, 0f), new Vector3(radius * 2f, height * 0.5f, radius * 2f), mat, default(Vector3), g);
+            // Somebody has knitted it a sock: a striped band of wool round the shaft, a little
+            // above the base, with a row of stitching top and bottom.
+            int pick = Mathf.Abs(Mathf.RoundToInt(foot.x * 7f + foot.z * 13f)) % SockWool.Length;
+            float band = Mathf.Min(1.4f, height * 0.18f), y0 = 1.1f;
+            for (int i = 0; i < 3; i++)
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, y0 + band * (i + 0.5f) / 3f, 0f), new Vector3(radius * 2f + 0.07f, band / 6f - 0.005f, radius * 2f + 0.07f),
+                    PatchworkAssets.Knit(SockWool[(pick + (i == 1 ? 1 : 0)) % SockWool.Length]), default(Vector3), g);
+            for (int e = 0; e < 2; e++)
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, y0 + (e == 0 ? 0.02f : band - 0.02f), 0f), new Vector3(radius * 2f + 0.1f, 0.02f, radius * 2f + 0.1f),
+                    PatchworkAssets.Yarn(new Color(0.96f, 0.9f, 0.76f)), default(Vector3), g);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, height - 0.75f, 0f), new Vector3(radius * 2.4f, 0.1f, radius * 2.4f), Brass, default(Vector3), g);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, height - 0.45f, 0f), new Vector3(radius * 2.7f, 0.2f, radius * 2.7f), mat, default(Vector3), g);
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, height - 0.13f, 0f), new Vector3(radius * 3.1f, 0.26f, radius * 3.1f), trim, default(Vector3), g);
@@ -426,6 +436,8 @@ namespace Patchwork
             col.radius = radius * 1.1f;
             col.height = height;
         }
+
+        static readonly Color[] SockWool = { new Color(0.78f, 0.32f, 0.36f), new Color(0.95f, 0.72f, 0.3f), new Color(0.32f, 0.55f, 0.62f), new Color(0.5f, 0.4f, 0.65f), new Color(0.45f, 0.62f, 0.4f) };
 
         // A flight of steps going up in direction yaw from "bottom" (the foot of the first step).
         // Each step is solid all the way down to baseY, so there's never a gap underneath.

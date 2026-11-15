@@ -151,6 +151,7 @@ namespace Patchwork
             Eggs(kit);    // the Long Gallery, and the Dust Sheet Five
             Audit(kit);   // the Curator's Audit: twelve exhibits, five of them fakes
             HandsOn(kit); // five machines you're allowed to touch, and the Museum Passport
+            PatchworkTouches(kit);   // mended patches on the walls, bunting across the halls
             RmDone();
 
             // The hush of the halls, and the deep rumble by the big tanks.

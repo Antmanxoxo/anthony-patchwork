@@ -1,5 +1,17 @@
 # Development Log
 
+## Patchwork touches on the museum
+Hand-made details so the Oceanic Museum looks like it belongs in Patchwork's world.
+- Mended patches: squares of coloured felt sewn onto the stone walls here and there, a
+  little crooked, each with a ring of big cream stitches round it, and now and then a
+  cross-stitch darn in the middle. They are fitted round paintings, cases and anything else
+  already on the walls.
+- Bunting: strings of felt flags sag across the Grand Atrium, the Hall of Deep Time, the
+  Kelp Galleries and the Sunken Ruins. A string is left out wherever it would pass through
+  something (the whale, the longship, a balcony).
+- Knitted column socks: every big column has a striped knitted band round it above the base,
+  stitched top and bottom, in one of five wool colours.
+
 ## Hands-on exhibits and the Museum Passport
 Five machines in the Oceanic Museum you're meant to touch. Use one and it does something
 for a few seconds while the Storyteller tells you a true thing about it. Each has its own

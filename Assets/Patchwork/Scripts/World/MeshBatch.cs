@@ -62,6 +62,13 @@ namespace Patchwork
                 Quad(center + new Vector3(-hw, 0f, -hl), center + new Vector3(hw, 0f, -hl), center + new Vector3(hw, 0f, hl), center + new Vector3(-hw, 0f, hl), uOff, u1, vOff, v1);
         }
 
+        // A flat triangle that can be seen from both sides (a bunting flag).
+        public void Flag(Vector3 a, Vector3 b, Vector3 tip)
+        {
+            Tri(a, b, tip, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 0f));
+            Tri(b, a, tip, new Vector2(1f, 1f), new Vector2(0f, 1f), new Vector2(0.5f, 0f));
+        }
+
         // A thin three-sided blade from root to a tip that leans by "lean" (9 vertices).
         public void Blade(Vector3 root, float height, float width, Vector3 lean, float yaw)
         {

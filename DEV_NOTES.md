@@ -696,6 +696,11 @@ Stuff I need to remember about how Patchwork is put together.
   `RmFloor`, so it runs before `RmDone`), `HandsOnExhibit` builds and animates each by its
   `Kind`, `MuseumPassport` keeps the stamps (`L2_q_stamp0-4`).
 
+- **Patchwork touches** (`Level2Patchwork.cs`) run after everything else is placed and
+  before `RmDone`. Mended patches only go on blocks named `Wall` or `Lintel` that are direct
+  children of the level root; bunting spans are listed in `Bunting` and drop out on their
+  own if blocked. The log line `[Level2] Patchwork touches:` says how many of each fitted.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark
