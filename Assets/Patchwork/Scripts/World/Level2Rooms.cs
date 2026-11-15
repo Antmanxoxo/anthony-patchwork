@@ -52,6 +52,12 @@ namespace Patchwork
             RoomsMangrove(kit);
 
             Debug.Log("[Level2] Room details: " + rmPlaced + " placed" + (rmMissed > 0 ? ", " + rmMissed + " left out for want of room." : "."));
+            // (The record of what's where is kept for Quest, which fits its things in round all
+            // this too. RmDone lets it go once everything's built.)
+        }
+
+        static void RmDone()
+        {
             rmTaken = null;
             rmGrid = null;
         }

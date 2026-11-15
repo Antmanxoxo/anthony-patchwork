@@ -1,5 +1,11 @@
 # Development Log
 
+## Fix: Level 2 stopped building half way
+Level 2 opened facing a blank wall with a NullReferenceException. The room-detail pass threw
+away its record of where everything was as soon as it finished, but the quest (which is
+built straight after) uses that same record to find space for Wick's clock, the lamps, the
+seams and the rest. Now the record is kept until the quest is built too, then let go.
+
 ## Real floors in the museum
 The museum's fabric-patch floors are now proper floors, still pieced together like a quilt.
 - Galleries and halls: polished parquet. Square panels of boards, each panel laid across

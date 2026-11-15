@@ -663,6 +663,10 @@ Stuff I need to remember about how Patchwork is put together.
   quads drawn by `MeshBatch.Board` (one mesh per stain per floor) over a dark slab; the
   palette passed in only tints the wood (`FloorWood`, `FlagStone`).
 
+- **Anything that uses RmFloor / RmAir / RmTry must be built between `Rooms(kit)` and
+  `RmDone()`** in `Level2Builder.Build`. Outside that window the room record is null and
+  the whole level fails to build.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark
