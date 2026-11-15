@@ -53,10 +53,13 @@ namespace Patchwork
                 Sfx.PlayNear(SfxId.PadClick, Center, 0.4f, 30f);
                 FxBurst.Spawn(FxBurst.Kind.Sparkle, Vector3.Lerp(from, Center, 0.7f), new Color(1f, 0.95f, 0.7f));
                 flinch = 0.5f;
+                string hint = BlockHint;
+                if (hint != null) HintOnce(GetType().Name, hint);
                 OnBlocked(finisher);
                 return false;
             }
             Health -= Mathf.Max(1, power);
+            ShowPips();
             flinch = 1f;
             stun = Mathf.Max(stun, finisher ? 0.9f : 0.3f);
             Vector3 away = Center - from;
@@ -79,9 +82,55 @@ namespace Patchwork
             ScoreKeeper.Bonus(Score, c);
             ScoreBubbles.BurstAt(c, 5);
             Monsters.Popped(c);
+            // A puff of whatever colour it had been keeping.
+            FxBurst.Spawn(FxBurst.Kind.Pompoms, c, Freed[Random.Range(0, Freed.Length)]);
+            if (pipRoot != null) pipRoot.gameObject.SetActive(false);
             OnBeaten();
             gameObject.SetActive(false);
             if (Beaten != null) Beaten(this);
+        }
+
+        static readonly Color[] Freed = { new Color(1f, 0.5f, 0.6f), new Color(1f, 0.8f, 0.3f), new Color(0.4f, 0.85f, 0.9f), new Color(0.5f, 0.85f, 0.5f), new Color(0.75f, 0.55f, 0.95f) };
+
+        // What to tell the player the first time one of these shrugs off a hit (null: nothing).
+        protected virtual string BlockHint { get { return null; } }
+
+        // A tip, shown once ever.
+        protected static void HintOnce(string key, string text)
+        {
+            key = "L2_q_hint_" + key;
+            if (GameState.IsHintSeen(key)) return;
+            GameState.SetHintSeen(key);
+            var game = PatchworkGame.Instance;
+            if (game != null) game.ShowToast(text);
+        }
+
+        // How much it has left, as a row of little lights over its head: lit for what's left,
+        // dark for what's gone. They come up when it's hit and fade a few seconds after.
+        Transform pipRoot;
+        Renderer[] pips;
+        float pipTime;
+
+        void ShowPips()
+        {
+            if (MaxHealth <= 1) return;
+            if (pipRoot == null)
+            {
+                pipRoot = new GameObject("Pips").transform;
+                pipRoot.SetParent(transform, false);
+                pipRoot.localPosition = Vector3.up * (centreY > 0.05f ? centreY * 2f + 0.55f : 1.9f);
+                pips = new Renderer[MaxHealth];
+                float gap = MaxHealth > 6 ? 0.2f : 0.26f;
+                for (int i = 0; i < MaxHealth; i++)
+                {
+                    var p = P(PrimitiveType.Sphere, pipRoot, new Vector3((i - (MaxHealth - 1) * 0.5f) * gap, 0f, 0f), Vector3.one * 0.16f, Monsters.Glow);
+                    pips[i] = p.GetComponent<Renderer>();
+                    pips[i].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
+            }
+            for (int i = 0; i < pips.Length; i++) pips[i].sharedMaterial = i < Health ? Monsters.Glow : Monsters.Dark;
+            pipRoot.gameObject.SetActive(true);
+            pipTime = 4f;
         }
 
         // Put back as it was (the fight's starting again).
@@ -109,6 +158,17 @@ namespace Patchwork
                 knock = Vector3.Lerp(knock, Vector3.zero, 1f - Mathf.Exp(-6f * dt));
             }
             if (rig != null) rig.localScale = Vector3.one * (1f + Mathf.Sin(flinch * Mathf.PI * 3f) * 0.12f * flinch);
+            if (pipRoot != null && pipRoot.gameObject.activeSelf)
+            {
+                pipTime -= dt;
+                if (pipTime <= 0f) pipRoot.gameObject.SetActive(false);
+                else
+                {
+                    // (Square on to the camera, whichever way the thing itself is facing.)
+                    var cam = Camera.main;
+                    if (cam != null) pipRoot.rotation = cam.transform.rotation;
+                }
+            }
             if (stun > 0f) { stun -= dt; return false; }
             return true;
         }
@@ -204,7 +264,10 @@ namespace Patchwork
         bool shield, struckOnce, strafeLeft;
         float st, cooldown, shieldDown, size = 1f, floorY, walk, moved;
         Vector3 facing = Vector3.forward, from, to;
-        Transform legL, legR, armL, armR, head, eyes, strings;
+        Transform legL, legR, armL, armR, head, eyes, strings, wounds;
+        bool stepSide;
+
+        protected override string BlockHint { get { return "A shield stops the first two hits. The third knocks it aside!"; } }
 
         public static HollowGuard Create(Transform parent, Vector3 plinthTop, float yaw, Suit kind, bool captain)
         {
@@ -253,6 +316,7 @@ namespace Patchwork
             state = State.Wake;
             st = 0f;
             shieldDown = 0f;
+            if (wounds != null) wounds.gameObject.SetActive(false);
             cooldown = Random.Range(0.6f, 1.6f);
             strafeLeft = Random.value < 0.5f;
             FxBurst.Spawn(FxBurst.Kind.Threads, PlinthTop + Vector3.up * 1.4f, SnarlKnot.FrayGrey);
@@ -439,6 +503,16 @@ namespace Patchwork
             }
             Tuft(head, new Vector3(0f, -0.3f, 0f), 1.4f, 3f);
 
+            // What shows once it's taken a beating: the Fray coming out at the seams.
+            wounds = Pivot(body, "Wounds", Vector3.zero);
+            Tuft(wounds, new Vector3(0.2f, 1.75f, 0.3f), 2.6f, 1.3f);
+            Tuft(wounds, new Vector3(-0.25f, 1.45f, 0.28f), 2.2f, 4.1f);
+            Tuft(wounds, new Vector3(0f, 1.6f, -0.32f), 2.8f, 2.2f);
+            Tuft(wounds, new Vector3(0f, 2.62f, 0f), 2.4f, 6.3f);
+            P(PrimitiveType.Cube, wounds, new Vector3(0.12f, 1.62f, 0.31f), new Vector3(0.05f, 0.5f, 0.02f), dark, new Vector3(0f, 0f, 24f));
+            P(PrimitiveType.Cube, wounds, new Vector3(-0.2f, 1.4f, 0.3f), new Vector3(0.04f, 0.34f, 0.02f), dark, new Vector3(0f, 0f, -38f));
+            wounds.gameObject.SetActive(false);
+
             // The strings it hangs from.
             strings = Pivot(body, "Strings", new Vector3(0f, 2.1f, 0f));
             for (int s = -1; s <= 1; s += 2)
@@ -468,6 +542,11 @@ namespace Patchwork
         {
             // A hit stops most of them part way through a swing (not the heavy ones).
             if (state == State.Windup && style != Style.Heavy && !Captain) { state = State.Recover; st = 0f; }
+            if (Health <= MaxHealth / 2 && wounds != null && !wounds.gameObject.activeSelf)
+            {
+                wounds.gameObject.SetActive(true);
+                FxBurst.Spawn(FxBurst.Kind.Scraps, Center, new Color(0.7f, 0.7f, 0.76f));
+            }
         }
 
         protected override void OnBeaten()
@@ -660,6 +739,13 @@ namespace Patchwork
             float ease = 1f - Mathf.Exp(-14f * dt);
             walk += moved * dt * 2.6f;
             float stride = Mathf.Sin(walk) * 30f * Mathf.Clamp01(moved / 2f);
+            // Clank, clank: a footfall each time the legs cross.
+            bool side = Mathf.Sin(walk) > 0f;
+            if (side != stepSide)
+            {
+                stepSide = side;
+                if (moved > 0.9f && state != State.Wake) Sfx.PlayNear(SfxId.Clack, pos, Captain ? 0.2f : 0.12f, 16f);
+            }
             legL.localRotation = Quaternion.Euler(stride, 0f, 0f);
             legR.localRotation = Quaternion.Euler(-stride, 0f, 0f);
 
@@ -772,6 +858,14 @@ namespace Patchwork
         float minY, maxY, seed;
         Transform bell;
         Transform[] arms;
+
+        protected override void OnBeaten()
+        {
+            // A cloud of ink where it was.
+            Color ink = new Color(0.16f, 0.14f, 0.22f);
+            FxBurst.Spawn(FxBurst.Kind.Puff, pos, ink);
+            FxBurst.Spawn(FxBurst.Kind.Puff, pos + Vector3.up * 0.5f, ink, Vector3.up);
+        }
 
         public static InkJelly Create(Transform parent, Vector3 at, float minY, float maxY)
         {
@@ -1093,6 +1187,8 @@ namespace Patchwork
         }
 
         protected override bool Blocks(Vector3 from, bool finisher) { return state == State.Roll && !finisher; }
+        protected override string BlockHint { get { return "Only the third hit stops a roller mid-roll. Or step aside and hit it when it falls over."; } }
+        float dust;
 
         protected override void OnHurt(bool finisher)
         {
@@ -1129,12 +1225,15 @@ namespace Patchwork
                     break;
                 case State.Rock:
                     // Back and forth, back and forth: here it comes.
+                    HintOnce("RollerRock", "An ammonite roller! When it rocks, it's about to roll. Step aside.");
                     rock = Mathf.Sin(st * 22f) * 16f;
                     if (dist > 0.1f) dir = Vector3.Slerp(dir, toP / dist, 1f - Mathf.Exp(-8f * dt));
                     if (st >= 0.7f) { state = State.Roll; st = 0f; bit = false; Sfx.PlayNear(SfxId.Whoosh, pos, 0.35f, 30f); }
                     break;
                 case State.Roll:
                     bool blocked = !GroundMove(pos + dir * 9.5f * dt, home, 18f, 0.6f);
+                    dust -= dt;
+                    if (dust <= 0f) { dust = 0.16f; FxBurst.Spawn(FxBurst.Kind.Poof, pos + Vector3.up * 0.15f, new Color(0.8f, 0.76f, 0.7f)); }
                     spin += 9.5f * dt / 0.75f * Mathf.Rad2Deg;
                     if (!bit && player != null && dist < 1.25f && Mathf.Abs(dy) < 1.5f && !SnarlKnot.HitHard(player, Center))
                     {
@@ -1248,6 +1347,7 @@ namespace Patchwork
                     break;
                 case State.Flash:
                     // The light flares: that's the warning.
+                    HintOnce("LurkerFlash", "A lantern lurker! When its light flares, swim sideways.");
                     glow = 1.8f + Mathf.Sin(st * 28f) * 0.6f;
                     gape = 8f + 30f * Mathf.Clamp01(st / 0.8f);
                     if (dist > 0.1f) dir = Vector3.Slerp(dir, toP / dist, 1f - Mathf.Exp(-6f * dt));
@@ -1290,7 +1390,7 @@ namespace Patchwork
 
         readonly List<GameObject> brood = new List<GameObject>();
         Transform lips;
-        Transform[] fingers;
+        Transform[] fingers, wisps;
         float next = 4f, big = 1f, yaw;
 
         public static FraySeam Create(Transform parent, Vector3 ground, float yaw, float size, int health)
@@ -1325,6 +1425,13 @@ namespace Patchwork
                 s.fingers[i] = Pivot(s.lips, "Finger", new Vector3((i - 1.5f) * 0.6f, 0.05f, 0f));
                 P(PrimitiveType.Capsule, s.fingers[i], new Vector3(0f, 0.4f, 0f), new Vector3(0.1f, 0.42f, 0.1f), i % 2 == 0 ? Monsters.Grey : Monsters.Dark);
                 P(PrimitiveType.Sphere, s.fingers[i], new Vector3(0f, 0.84f, 0f), Vector3.one * 0.13f, Monsters.Glow);
+            }
+            // Wisps of grey going up out of it, so you can see one from across a hall.
+            s.wisps = new Transform[6];
+            for (int i = 0; i < 6; i++)
+            {
+                s.wisps[i] = P(PrimitiveType.Sphere, s.rig, Vector3.zero, Vector3.one * 0.16f, i % 2 == 0 ? Monsters.Grey : Monsters.Dark);
+                s.wisps[i].GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
             s.Register(1.3f * size);
             return s;
@@ -1385,6 +1492,12 @@ namespace Patchwork
             lips.localScale = Vector3.Lerp(lips.localScale, new Vector3(big, big, big * open * about), 1f - Mathf.Exp(-8f * dt));
             for (int i = 0; i < fingers.Length; i++)
                 fingers[i].localRotation = Quaternion.Euler(Mathf.Sin(t * 2.3f + i * 1.7f) * 28f, 0f, Mathf.Cos(t * 1.9f + i) * 28f);
+            for (int i = 0; i < wisps.Length; i++)
+            {
+                float k = Mathf.Repeat(t * 0.28f + i / (float)wisps.Length, 1f);
+                wisps[i].localPosition = new Vector3((i - 2.5f) * 0.4f * big + Mathf.Sin(t * 1.4f + i * 2f) * 0.25f, 0.2f + k * 3.4f * big, Mathf.Cos(t * 1.1f + i) * 0.2f);
+                wisps[i].localScale = Vector3.one * 0.2f * big * (1f - k) * open;
+            }
             if (player == null || Birth == null) return;
             Vector3 d = player.transform.position - pos;
             if (new Vector2(d.x, d.z).magnitude > 24f || Mathf.Abs(d.y) > 8f) return;
@@ -1413,7 +1526,7 @@ namespace Patchwork
         float hop = -1f, rest, squash;
         Transform body;
 
-        public static Chessling Create(Transform parent, Vector3 ground, bool bishop)
+        public static Chessling Create(Transform parent, Vector3 ground, bool bishop, bool rook = false)
         {
             var go = new GameObject("Chessling");
             go.transform.SetParent(parent, false);
@@ -1422,8 +1535,8 @@ namespace Patchwork
             c.home = ground;
             c.pos = ground;
             c.rest = Random.Range(0.3f, 1.2f);
-            c.MaxHealth = 1;
-            c.Score = 150;
+            c.MaxHealth = rook ? 2 : 1;
+            c.Score = rook ? 250 : 150;
             c.centreY = 0.6f;
             var ivory = PatchworkAssets.Felt(new Color(0.86f, 0.82f, 0.72f));
             c.rig = Pivot(go.transform, "Rig", Vector3.zero);
@@ -1432,7 +1545,18 @@ namespace Patchwork
             P(PrimitiveType.Capsule, c.body, new Vector3(0f, 0.5f, 0f), new Vector3(0.5f, 0.42f, 0.5f), ivory);
             P(PrimitiveType.Cylinder, c.body, new Vector3(0f, 0.86f, 0f), new Vector3(0.52f, 0.04f, 0.52f), ivory);
             P(PrimitiveType.Sphere, c.body, new Vector3(0f, 1.08f, 0f), Vector3.one * 0.44f, ivory);
-            if (bishop) P(PrimitiveType.Sphere, c.body, new Vector3(0f, 1.36f, 0f), new Vector3(0.22f, 0.4f, 0.22f), ivory);
+            if (rook)
+            {
+                // A rook: a stout little tower with battlements. Takes two hits.
+                P(PrimitiveType.Cylinder, c.body, new Vector3(0f, 0.55f, 0f), new Vector3(0.66f, 0.46f, 0.66f), ivory);
+                P(PrimitiveType.Cylinder, c.body, new Vector3(0f, 1.34f, 0f), new Vector3(0.6f, 0.05f, 0.6f), ivory);
+                for (int i = 0; i < 6; i++)
+                {
+                    float a = i * Mathf.PI / 3f;
+                    P(PrimitiveType.Cube, c.body, new Vector3(Mathf.Cos(a) * 0.24f, 1.46f, Mathf.Sin(a) * 0.24f), new Vector3(0.13f, 0.16f, 0.13f), ivory, new Vector3(0f, -a * Mathf.Rad2Deg, 0f));
+                }
+            }
+            else if (bishop) P(PrimitiveType.Sphere, c.body, new Vector3(0f, 1.36f, 0f), new Vector3(0.22f, 0.4f, 0.22f), ivory);
             else P(PrimitiveType.Cube, c.body, new Vector3(0f, 1.32f, 0f), new Vector3(0.34f, 0.08f, 0.34f), ivory);
             // The worried face they all have, and the Fray looking out of it.
             for (int s = -1; s <= 1; s += 2)
@@ -1603,6 +1727,11 @@ namespace Patchwork
             if (state == State.Dizzy) return false;
             if (finisher) return false;
             return true;
+        }
+
+        protected override string BlockHint
+        {
+            get { return Guarded ? "It won't come out of its helmet while its chessmen are about." : "Brass! Only the third hit of three tips it over."; }
         }
 
         protected override void OnBlocked(bool finisher)
@@ -1996,6 +2125,9 @@ namespace Patchwork
                 float a = i * Mathf.PI / 4f;
                 Monsters.Part(PrimitiveType.Sphere, l.visual, new Vector3(Mathf.Cos(a) * 0.5f, Mathf.Sin(a) * 0.5f, 0f), Vector3.one * 0.09f, brass);
             }
+            // A thin shaft of light standing over it, so it can be found from a distance.
+            var beam = Monsters.Part(PrimitiveType.Cylinder, go.transform, new Vector3(0f, 3.4f, 0f), new Vector3(0.05f, 3f, 0.05f), PatchworkAssets.Glow(new Color(0.6f, 0.9f, 1f), 1.4f));
+            beam.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             if (hop)
             {
                 l.dropping = true;

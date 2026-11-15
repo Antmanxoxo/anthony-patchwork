@@ -84,6 +84,17 @@ namespace Patchwork
         }
     }
 
+    // The pendulum of the museum clock: back and forth behind its little window.
+    public class ClockPendulum : MonoBehaviour
+    {
+        float t;
+        void Update()
+        {
+            t += Time.deltaTime;
+            transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * Mathf.PI) * 9f);
+        }
+    }
+
     // One of the night lamps on Wick's round: an iron post with a glass lantern on a hook.
     // They all went out at dusk. Walk up to one and Patch turns it up again: a pool of warm
     // light, and a heart back the first time.
@@ -93,6 +104,7 @@ namespace Patchwork
         public bool IsLit { get; private set; }
         Light lamp;
         Transform flame;
+        Transform[] moths;
         float t, glow;
 
         public static NightLamp Create(LevelKit kit, Vector3 foot, Material iron, Material brass)
@@ -128,6 +140,19 @@ namespace Patchwork
             l.lamp.intensity = 0f;
             l.lamp.shadows = LightShadows.None;
             l.lamp.enabled = false;
+            // Two little moths that find it once it's burning (the ordinary, harmless kind).
+            l.moths = new Transform[2];
+            for (int i = 0; i < 2; i++)
+            {
+                var m = new GameObject("Moth").transform;
+                m.SetParent(g, false);
+                var cream = PatchworkAssets.Felt(new Color(0.93f, 0.89f, 0.78f));
+                Monsters.Part(PrimitiveType.Sphere, m, Vector3.zero, new Vector3(0.05f, 0.05f, 0.1f), cream);
+                Monsters.Part(PrimitiveType.Cube, m, new Vector3(-0.07f, 0.01f, 0f), new Vector3(0.12f, 0.01f, 0.09f), cream, new Vector3(0f, 0f, 20f));
+                Monsters.Part(PrimitiveType.Cube, m, new Vector3(0.07f, 0.01f, 0f), new Vector3(0.12f, 0.01f, 0.09f), cream, new Vector3(0f, 0f, -20f));
+                m.gameObject.SetActive(false);
+                l.moths[i] = m;
+            }
             l.t = foot.x + foot.z;
             return l;
         }
@@ -160,6 +185,14 @@ namespace Patchwork
             glow = Mathf.MoveTowards(glow, 1f, Time.deltaTime * 1.5f);
             float flick = 1f + Mathf.Sin(t * 9f) * 0.05f + Mathf.Sin(t * 23f) * 0.03f;
             lamp.intensity = 2.1f * glow * flick;
+            for (int i = 0; i < moths.Length; i++)
+            {
+                if (!moths[i].gameObject.activeSelf) moths[i].gameObject.SetActive(true);
+                float a = t * (1.7f + i * 0.6f) + i * 3f;
+                float r = 0.42f + Mathf.Sin(t * 2.3f + i) * 0.14f;
+                moths[i].localPosition = new Vector3(0.56f + Mathf.Cos(a) * r, 2.02f + Mathf.Sin(t * 3.1f + i * 2f) * 0.22f, Mathf.Sin(a) * r);
+                moths[i].localRotation = Quaternion.Euler(0f, -a * Mathf.Rad2Deg, Mathf.Sin(t * 30f + i) * 30f);
+            }
             flame.localScale = new Vector3(0.14f, 0.22f * flick, 0.14f) * (0.4f + 0.6f * glow);
         }
     }

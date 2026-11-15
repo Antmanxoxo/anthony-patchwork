@@ -209,7 +209,50 @@ namespace Patchwork
             }
             // (A dark window in the trunk, with the pendulum bob behind it.)
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.3f, 0.305f), new Vector3(0.5f, 1.3f, 0.01f), PatchworkAssets.Plain(new Color(0.08f, 0.07f, 0.1f), 0.6f), default(Vector3), clock);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.95f, 0.32f), new Vector3(0.3f, 0.01f, 0.3f), Brass, new Vector3(90f, 0f, 0f), clock);
+            var swing = new GameObject("Pendulum").transform;
+            swing.SetParent(clock, false);
+            swing.localPosition = new Vector3(0f, 1.9f, 0.32f);
+            swing.gameObject.AddComponent<ClockPendulum>();
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, -0.48f, 0f), new Vector3(0.03f, 0.96f, 0.01f), Brass, default(Vector3), swing);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.98f, 0f), new Vector3(0.3f, 0.01f, 0.3f), Brass, new Vector3(90f, 0f, 0f), swing);
+
+            // ----- Wick's sentry box: striped, with his stool, his mug and his keys -----
+            Vector3 boxAt = wickAt + new Vector3(-1.4f, 0f, -2.6f);
+            if (RmFloor("the sentry box", boxAt, new Vector3(2f, 3.4f, 1.8f), 180f, 5f, out foot))
+            {
+                var box = kit.Group("SentryBox", foot);
+                box.localRotation = Quaternion.Euler(0f, 180f, 0f);
+                var navy = PatchworkAssets.Wood(new Color(0.2f, 0.24f, 0.42f));
+                var cream = PatchworkAssets.Wood(new Color(0.9f, 0.85f, 0.72f));
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.06f, 0f), new Vector3(1.8f, 0.12f, 1.6f), caseWood, default(Vector3), box);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.4f, -0.74f), new Vector3(1.7f, 2.6f, 0.08f), navy, default(Vector3), box);
+                for (int s = -1; s <= 1; s += 2)
+                {
+                    kit.Deco(PrimitiveType.Cube, new Vector3(s * 0.84f, 1.4f, 0f), new Vector3(0.08f, 2.6f, 1.5f), navy, default(Vector3), box);
+                    for (int k = 0; k < 3; k++)
+                        kit.Deco(PrimitiveType.Cube, new Vector3(s * 0.885f, 1.4f, -0.5f + k * 0.5f), new Vector3(0.012f, 2.6f, 0.2f), cream, default(Vector3), box);
+                    kit.Deco(PrimitiveType.Cube, new Vector3(s * 0.46f, 2.95f, 0f), new Vector3(1.1f, 0.08f, 1.8f), caseWood, new Vector3(0f, 0f, s * -24f), box);
+                }
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 3.22f, 0.7f), Vector3.one * 0.2f, Brass, default(Vector3), box);
+                // His stool, his mug of tea on a ledge, and the ring of keys on its hook.
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(-0.3f, 0.6f, -0.2f), new Vector3(0.5f, 0.04f, 0.5f), caseWood, default(Vector3), box);
+                for (int k = 0; k < 3; k++)
+                {
+                    float a = k * Mathf.PI * 2f / 3f;
+                    kit.Deco(PrimitiveType.Cylinder, new Vector3(-0.3f + Mathf.Cos(a) * 0.17f, 0.34f, -0.2f + Mathf.Sin(a) * 0.17f), new Vector3(0.05f, 0.24f, 0.05f), caseWood, default(Vector3), box);
+                }
+                kit.Deco(PrimitiveType.Cube, new Vector3(0.5f, 1.2f, -0.55f), new Vector3(0.6f, 0.04f, 0.3f), caseWood, default(Vector3), box);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0.5f, 1.3f, -0.55f), new Vector3(0.14f, 0.08f, 0.14f), PatchworkAssets.Felt(new Color(0.85f, 0.3f, 0.3f)), default(Vector3), box);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0.5f, 1.375f, -0.55f), new Vector3(0.115f, 0.005f, 0.115f), PatchworkAssets.Plain(new Color(0.45f, 0.28f, 0.16f), 0.6f), default(Vector3), box);
+                kit.Deco(PrimitiveType.Cube, new Vector3(-0.5f, 1.9f, -0.68f), new Vector3(0.04f, 0.04f, 0.1f), IronMat, default(Vector3), box);
+                for (int k = 0; k < 8; k++)
+                {
+                    float a = k * Mathf.PI / 4f;
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(-0.5f + Mathf.Cos(a) * 0.1f, 1.78f + Mathf.Sin(a) * 0.1f, -0.64f), Vector3.one * 0.03f, Brass, default(Vector3), box);
+                }
+                for (int k = 0; k < 3; k++)
+                    kit.Deco(PrimitiveType.Cube, new Vector3(-0.54f + k * 0.04f, 1.58f - k * 0.02f, -0.64f), new Vector3(0.025f, 0.16f, 0.01f), Brass, new Vector3(0f, 0f, -8f + k * 8f), box);
+            }
             quest.ClockHands = new Transform[2];
             for (int i = 0; i < 2; i++)
             {
@@ -716,7 +759,8 @@ namespace Patchwork
             if (Physics.CheckSphere(new Vector3(at.x, g + 1f, at.z), 0.55f, ~(1 << 2), QueryTriggerInteraction.Ignore)) return null;
             at.y = g;
             if (roller) return AmmoniteRoller.Create(FoeRoot, at).gameObject;
-            return Chessling.Create(FoeRoot, at, Random.value < 0.4f).gameObject;
+            float roll = Random.value;
+            return Chessling.Create(FoeRoot, at, roll < 0.35f, roll > 0.8f).gameObject;
         }
 
         void SeamShut(int which)

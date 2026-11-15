@@ -667,6 +667,10 @@ Stuff I need to remember about how Patchwork is put together.
   `RmDone()`** in `Level2Builder.Build`. Outside that window the room record is null and
   the whole level fails to build.
 
+- **MuseumFoe extras**: health pips appear automatically for `MaxHealth > 1`; override
+  `BlockHint` to give a one-time tip when a hit is blocked; `HintOnce(key, text)` for any
+  other one-time tip (keys `L2_q_hint_...`).
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

@@ -1,5 +1,27 @@
 # Development Log
 
+## More detail on the Fray, the fights and Wick's post
+- Fighting reads better:
+  - Anything with more than one hit point shows a row of small lights over its head when
+    hit: lit for health left, dark for health gone. They fade after a few seconds.
+  - The first time a shield, the Helmet Crab's brass or a rolling ammonite shrugs off a hit,
+    a one-time tip says what gets through. Rollers and lurkers also get a one-time warning
+    the first time they wind up.
+  - Every museum Fray bursts into a puff of bright colour when beaten.
+- The Fray themselves:
+  - Hollow Guards clank as they walk, and at half health grey thread bursts out through
+    cracks in the armour.
+  - Rooks: a stout chess tower with battlements that takes two hits, mixed in with the pawns
+    and bishops.
+  - Seams give off wisps of grey that rise a few metres, so they can be spotted across a hall.
+  - Ink jellies leave a cloud of ink. Rolling ammonites kick up dust.
+- The quest's props:
+  - Each lens has a thin shaft of light over it.
+  - The museum clock has a swinging pendulum.
+  - Wick has a striped sentry box with his stool, his mug of tea and his ring of keys.
+  - Lit night lamps each attract two small harmless moths.
+- The Observatory floor is polished boards now, matching the galleries.
+
 ## Fix: Level 2 stopped building half way
 Level 2 opened facing a blank wall with a NullReferenceException. The room-detail pass threw
 away its record of where everything was as soon as it finished, but the quest (which is

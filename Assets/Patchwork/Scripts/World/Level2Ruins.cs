@@ -511,7 +511,7 @@ namespace Patchwork
                 float a = (i + 0.5f) / sides * Mathf.PI * 2f;
                 corners[i] = new Vector2(C.x + Mathf.Cos(a) * (R + 0.9f), C.z + Mathf.Sin(a) * (R + 0.9f));
             }
-            kit.Prism(corners, -1f, DeckY, PatchworkAssets.Fabric(new Color(0.14f, 0.16f, 0.36f)), "ObservatoryDeck", 3f);
+            kit.Prism(corners, -1f, DeckY, FloorWood(new Color(0.14f, 0.16f, 0.36f), false), "ObservatoryDeck", 3f);   // (polished boards, like the galleries below)
             // The star map on the floor: rings of cloth, brass circles and a compass star.
             NoShadow(kit.Deco(PrimitiveType.Cylinder, C + Vector3.up * 0.02f, new Vector3(R * 1.84f, 0.02f, R * 1.84f), StarCloth));
             NoShadow(kit.Deco(PrimitiveType.Cylinder, C + Vector3.up * 0.03f, new Vector3(R * 1.3f, 0.02f, R * 1.3f), PlumStars));
