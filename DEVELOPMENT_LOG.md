@@ -1,5 +1,18 @@
 # Development Log
 
+## Fix a compile error, and tidy the quest's dialogue code
+- The compile error: the museum clock's pendulum had been given a second script with the
+  same name as the one the grandfather clock upstairs already uses. The duplicate is gone
+  and the museum clock uses the existing one.
+- Tidying (nothing in the game changes):
+  - All of Level 2's quest dialogue moved out of `Level2Quest.cs` into its own file,
+    `Level2QuestTalk.cs`.
+  - Characters used to be given new lines by stacking wrappers on top of each other, up to
+    four deep for Professor Hoot and Professor Plume. Each character now has one entry that
+    lists everything they can say, most important first.
+  - Removed a few unused bits (an unused parameter, two unused fields, an unused method, a
+    redundant check in the strike code).
+
 ## The Curator's Audit, the Long Gallery and the Dust Sheet Five
 Three new things to do in the Oceanic Museum.
 - The Curator's Audit (a reason to read the cards):

@@ -548,8 +548,6 @@ namespace Patchwork
     // under there, giggles). Only wind gets the sheet off.
     public class DustSheet : MonoBehaviour
     {
-        DustyHunt hunt;
-        int index;
         Transform sheet;
         Dusty dusty;
         bool bare;
@@ -564,8 +562,6 @@ namespace Patchwork
             go.transform.position = ground;
             go.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
             var d = go.AddComponent<DustSheet>();
-            d.hunt = hunt;
-            d.index = index;
             d.t = index * 1.7f;
 
             // What's under it: a different old thing each time.

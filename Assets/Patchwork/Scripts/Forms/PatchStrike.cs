@@ -301,8 +301,7 @@ namespace Patchwork
             {
                 if (c == null || c.Center == null || struck.Contains(c)) continue;
                 Vector3 d = c.Center() - at;
-                if (Mathf.Abs(d.y) > 2f + c.Radius && d.magnitude - c.Radius > radius) continue;
-                d.y *= 0.6f;
+                d.y *= 0.6f;   // (a little more forgiving up and down than sideways)
                 if (d.magnitude - c.Radius > radius) continue;
                 struck.Add(c);
                 if (c.TakeHit(player, power, player.Motor.Center, finisher)) n++;

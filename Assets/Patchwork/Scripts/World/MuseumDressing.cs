@@ -84,17 +84,6 @@ namespace Patchwork
         }
     }
 
-    // The pendulum of the museum clock: back and forth behind its little window.
-    public class ClockPendulum : MonoBehaviour
-    {
-        float t;
-        void Update()
-        {
-            t += Time.deltaTime;
-            transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * Mathf.PI) * 9f);
-        }
-    }
-
     // One of the night lamps on Wick's round: an iron post with a glass lantern on a hook.
     // They all went out at dusk. Walk up to one and Patch turns it up again: a pool of warm
     // light, and a heart back the first time.

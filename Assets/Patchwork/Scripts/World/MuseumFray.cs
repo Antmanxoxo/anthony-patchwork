@@ -418,7 +418,7 @@ namespace Patchwork
                 case Style.Spear:
                 case Style.Heavy:
                     P(PrimitiveType.Cylinder, hand, new Vector3(0f, 0.5f, 0f), new Vector3(0.07f, 1.5f, 0.07f), wood);
-                    P(PrimitiveType.Cube, hand, new Vector3(0f, 2.12f, 0f), new Vector3(style == Style.Heavy ? 0.3f : 0.14f, 0.42f, 0.04f), steel, new Vector3(0f, 0f, 0f));
+                    P(PrimitiveType.Cube, hand, new Vector3(0f, 2.12f, 0f), new Vector3(style == Style.Heavy ? 0.3f : 0.14f, 0.42f, 0.04f), steel);
                     if (style == Style.Heavy) P(PrimitiveType.Cube, hand, new Vector3(0.16f, 1.86f, 0f), new Vector3(0.34f, 0.1f, 0.04f), steel, new Vector3(0f, 0f, 30f));
                     break;
                 case Style.Leaper:
@@ -522,7 +522,7 @@ namespace Patchwork
 
         float Reach { get { return (style == Style.Spear ? 3.3f : style == Style.Heavy ? 3f : 2.5f) * (Captain ? 1.2f : 1f); } }
         float WindupTime { get { return style == Style.Heavy ? 0.95f : style == Style.Archer ? 0.8f : style == Style.Leaper ? 0.6f : style == Style.Dasher ? 0.55f : Captain ? 0.75f : 0.6f; } }
-        float SwingTime { get { return style == Style.Leaper ? 0.75f : style == Style.Dasher ? 0.3f : 0.3f; } }
+        float SwingTime { get { return style == Style.Leaper ? 0.75f : 0.3f; } }
         float RecoverTime { get { return style == Style.Heavy ? 1.3f : style == Style.Leaper ? 1.1f : style == Style.Dasher ? 1f : style == Style.Archer ? 0.5f : 0.8f; } }
         bool Spin { get { return Captain && Health <= MaxHealth / 2; } }
 
@@ -1714,11 +1714,6 @@ namespace Patchwork
             cooldown = 1.5f;
             gameObject.SetActive(true);
             FxBurst.Spawn(FxBurst.Kind.Threads, at + Vector3.up, SnarlKnot.FrayGrey);
-        }
-
-        public void Hide()
-        {
-            gameObject.SetActive(false);
         }
 
         protected override bool Blocks(Vector3 from, bool finisher)

@@ -682,6 +682,11 @@ Stuff I need to remember about how Patchwork is put together.
 - **Exhibit cases and dust sheets carry a FrayCreature** (marked Quiet) only so strikes and
   gusts can reach them. They aren't enemies.
 
+- **Quest dialogue is in `Level2QuestTalk.cs`** (the same class, split in two). To give
+  somebody a new line, add a source to their `Says(...)` entry in `WireTalk`: sources are
+  tried in order and each new thing is said once. `Mood(over, during, after)` makes a simple
+  before/after source.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark
