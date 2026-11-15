@@ -1,5 +1,17 @@
 # Development Log
 
+## Fix: shiny, flickering museum floors
+- Too glossy: the new wooden floors were waxed to a mirror shine, and the wood grain's
+  bumps made that shine sparkle and crawl as the camera moved. They now have a soft sheen
+  (galleries) or none (decks and stone), gentler grain bumps, and no reflections.
+- Flicker: some floors overlap (the keepers' decks are laid as crossing strips), and the
+  new boards were drawn twice in those places at exactly the same height. Where floors
+  overlap now, only the first gets boards. The automatic flicker-fixer never looked at
+  the boards because they're custom meshes rather than plain blocks.
+- The boards also now sit lower, right on the floor's surface, and the grey creep and
+  stitched seams sit a little higher, so nothing lying flat on the floor is close enough
+  to the boards to fight them.
+
 ## Fix a compile error, and tidy the quest's dialogue code
 - The compile error: the museum clock's pendulum had been given a second script with the
   same name as the one the grandfather clock upstairs already uses. The duplicate is gone

@@ -31,7 +31,7 @@ namespace Patchwork
                 float a = seed * 1.3f + i * 2.4f;
                 float d = i == 0 ? 0f : radius * (0.25f + 0.5f * Mathf.Abs(Mathf.Sin(seed + i * 1.9f)));
                 float s = radius * (i == 0 ? 1.1f : 0.45f + 0.35f * Mathf.Abs(Mathf.Cos(seed * 2f + i)));
-                var b = Monsters.Part(PrimitiveType.Sphere, go.transform, new Vector3(Mathf.Cos(a) * d, 0.012f + i * 0.002f, Mathf.Sin(a) * d),
+                var b = Monsters.Part(PrimitiveType.Sphere, go.transform, new Vector3(Mathf.Cos(a) * d, 0.025f + i * 0.004f, Mathf.Sin(a) * d),
                     new Vector3(s, 0.02f, s * (0.7f + 0.3f * Mathf.Sin(i + seed))), i % 3 == 2 ? dark : blot, new Vector3(0f, a * 57f, 0f));
                 b.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }

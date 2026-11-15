@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Patchwork
@@ -55,6 +55,8 @@ namespace Patchwork
         static void ResetKit()
         {
             special.Clear();
+            floorsLaid.Clear();
+            floorTops.Clear();
             madeTextures.Clear();
         }
 
@@ -232,7 +234,17 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, -0.015f, 0f), new Vector3(size.x - 0.02f, 0.97f, size.z - 0.02f),
                 stone ? PatchworkAssets.Felt(new Color(0.2f, 0.2f, 0.22f)) : PatchworkAssets.Wood(new Color(0.2f, 0.14f, 0.1f)), default(Vector3), slab);
 
-            float y = 0.504f;                         // (a whisker above the solid top, like the quilt was)
+            // The boards sit a hair above the solid top: low enough that anything standing on the
+            // floor is plainly above them, high enough to stay clear of the dark slab below.
+            float y = 0.501f;
+            // Where two floors overlap (the keepers' decks are laid in strips that cross), only the
+            // first one laid gets boards there: two sets of boards in the same place flicker.
+            Vector3 o = slab.position;
+            void Lay(MeshBatch mb, Vector3 c, float len, float w, bool lengthwiseX, float u, float v, float grainAcross = 1.1f, float grainAlong = 2.6f)
+            {
+                if (FloorTaken(o.x + c.x, o.z + c.z, top)) return;
+                mb.Board(c, len, w, lengthwiseX, u, v, grainAcross, grainAlong);
+            }
             int seed = Mathf.RoundToInt(Mathf.Abs(x0 * 3f + z0 * 7f + top * 11f));
             if (stone)
             {
@@ -250,7 +262,7 @@ namespace Patchwork
                         float a = Mathf.Max(0f, c * cw + shift), b = Mathf.Min(size.x, (c + 1) * cw + shift);
                         if (b - a < 0.15f) continue;
                         int pick = FloorHash(c + seed, r * 7 + seed) % n;
-                        batches[pick].Board(new Vector3(-size.x * 0.5f + (a + b) * 0.5f, y, -size.z * 0.5f + rz * (r + 0.5f)), b - a - 0.05f, rz - 0.05f, true,
+                        Lay(batches[pick], new Vector3(-size.x * 0.5f + (a + b) * 0.5f, y, -size.z * 0.5f + rz * (r + 0.5f)), b - a - 0.05f, rz - 0.05f, true,
                             FloorHash(c, r + seed) * 0.013f, FloorHash(r, c + seed) * 0.017f, 3f, 3f);
                     }
                 }
@@ -275,7 +287,7 @@ namespace Patchwork
                         if (b - a < 0.12f) continue;
                         int pick = FloorHash(r + seed, k * 13) % n;
                         float mid = -along * 0.5f + (a + b) * 0.5f, off = -across * 0.5f + w * (r + 0.5f);
-                        batches[pick].Board(alongX ? new Vector3(mid, y, off) : new Vector3(off, y, mid), b - a - 0.02f, w - 0.02f, alongX,
+                        Lay(batches[pick], alongX ? new Vector3(mid, y, off) : new Vector3(off, y, mid), b - a - 0.02f, w - 0.02f, alongX,
                             FloorHash(r, k + seed) * 0.013f, FloorHash(k, r + seed) * 0.017f);
                     }
                 }
@@ -300,7 +312,7 @@ namespace Patchwork
                             float off = -across * 0.5f + w * (j + 0.5f);
                             // (Mostly the panel's own stain, with the odd board from the next tin.)
                             int m = (pick + (FloorHash(ix * 5 + j, iz * 3 + seed) % 4 == 0 ? 1 : 0)) % n;
-                            batches[m].Board(alongX ? new Vector3(px, y, pz + off) : new Vector3(px + off, y, pz), along, w - 0.018f, alongX,
+                            Lay(batches[m], alongX ? new Vector3(px, y, pz + off) : new Vector3(px + off, y, pz), along, w - 0.018f, alongX,
                                 FloorHash(ix + j * 7, iz + seed) * 0.013f, FloorHash(iz + j * 3, ix + seed) * 0.017f);
                         }
                     }
@@ -308,7 +320,7 @@ namespace Patchwork
                 if (size.x > 7f && size.z > 7f)
                 {
                     var thread = new MeshBatch();
-                    float hx = size.x * 0.5f - 0.6f, hz = size.z * 0.5f - 0.6f, sy = y + 0.012f;
+                    float hx = size.x * 0.5f - 0.6f, hz = size.z * 0.5f - 0.6f, sy = y + 0.014f;
                     thread.Stitches(new Vector3(-hx, sy, -hz), new Vector3(hx, sy, -hz), 0.34f, 0.22f, 0.07f, 0.016f);
                     thread.Stitches(new Vector3(hx, sy, -hz), new Vector3(hx, sy, hz), 0.34f, 0.22f, 0.07f, 0.016f);
                     thread.Stitches(new Vector3(hx, sy, hz), new Vector3(-hx, sy, hz), 0.34f, 0.22f, 0.07f, 0.016f);
@@ -317,7 +329,22 @@ namespace Patchwork
                 }
             }
             for (int i = 0; i < n; i++) batches[i].Build(slab, stone ? "Flags" : "Boards", mats[i]);
+            floorsLaid.Add(new Vector4(x0, x1, z0, z1));
+            floorTops.Add(top);
             return slab;
+        }
+
+        static readonly List<Vector4> floorsLaid = new List<Vector4>();
+        static readonly List<float> floorTops = new List<float>();
+
+        static bool FloorTaken(float x, float z, float top)
+        {
+            for (int i = 0; i < floorsLaid.Count; i++)
+            {
+                var r = floorsLaid[i];
+                if (Mathf.Abs(floorTops[i] - top) < 0.05f && x > r.x && x < r.y && z > r.z && z < r.w) return true;
+            }
+            return false;
         }
 
         static int FloorHash(int a, int b)
@@ -347,9 +374,13 @@ namespace Patchwork
             if (floorMats.TryGetValue(key, out m) && m != null) return m;
             m = PatchworkAssets.Unique(PatchworkAssets.Wood(c));
             m.name = "PW_floor_" + key;
-            // (Waxed and buffed in the galleries; scrubbed and dull on the keepers' decks.)
-            m.SetFloat("_Smoothness", deck ? 0.22f : 0.5f);
-            m.SetFloat("_Glossiness", deck ? 0.22f : 0.5f);
+            // A soft waxed sheen, not a mirror: a shiny floor with a bumpy grain sparkles and
+            // shimmers as the camera moves.
+            m.SetFloat("_Smoothness", deck ? 0.06f : 0.12f);
+            m.SetFloat("_Glossiness", deck ? 0.06f : 0.12f);
+            m.SetFloat("_BumpScale", 0.35f);
+            m.SetFloat("_EnvironmentReflections", 0f);
+            m.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
             floorMats[key] = m;
             return m;
         }
@@ -363,8 +394,10 @@ namespace Patchwork
             if (floorMats.TryGetValue(key, out m) && m != null) return m;
             m = PatchworkAssets.Unique(PatchworkAssets.Plaster(c));
             m.name = "PW_floor_" + key;
-            m.SetFloat("_Smoothness", 0.16f);
-            m.SetFloat("_Glossiness", 0.16f);
+            m.SetFloat("_Smoothness", 0.06f);
+            m.SetFloat("_Glossiness", 0.06f);
+            m.SetFloat("_EnvironmentReflections", 0f);
+            m.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
             floorMats[key] = m;
             return m;
         }

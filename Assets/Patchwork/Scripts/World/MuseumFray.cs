@@ -1410,8 +1410,8 @@ namespace Patchwork
             s.rig = Pivot(go.transform, "Rig", Vector3.zero);
             s.lips = Pivot(s.rig, "Lips", Vector3.zero);
             s.lips.localScale = Vector3.one * size;
-            P(PrimitiveType.Sphere, s.lips, new Vector3(0f, 0.03f, 0f), new Vector3(3.2f, 0.05f, 1.2f), Monsters.Glow);
-            P(PrimitiveType.Sphere, s.lips, new Vector3(0f, 0.05f, 0f), new Vector3(2.9f, 0.06f, 0.9f), PatchworkAssets.Plain(new Color(0.03f, 0.02f, 0.05f), 0.2f));
+            P(PrimitiveType.Sphere, s.lips, new Vector3(0f, 0.04f, 0f), new Vector3(3.2f, 0.05f, 1.2f), Monsters.Glow);
+            P(PrimitiveType.Sphere, s.lips, new Vector3(0f, 0.06f, 0f), new Vector3(2.9f, 0.06f, 0.9f), PatchworkAssets.Plain(new Color(0.03f, 0.02f, 0.05f), 0.2f));
             for (int i = 0; i < 9; i++)
             {
                 float x = (i - 4) * 0.34f;
@@ -1456,7 +1456,7 @@ namespace Patchwork
             g.position = ground;
             g.rotation = Quaternion.Euler(0f, yaw, 0f);
             Color[] cols = { new Color(0.95f, 0.45f, 0.5f), new Color(1f, 0.8f, 0.35f), new Color(0.4f, 0.75f, 0.7f), new Color(0.45f, 0.6f, 0.95f) };
-            P(PrimitiveType.Cube, g, new Vector3(0f, 0.012f, 0f), new Vector3(3f * size, 0.012f, 0.05f), PatchworkAssets.Plain(new Color(0.25f, 0.22f, 0.3f), 0.2f));
+            P(PrimitiveType.Cube, g, new Vector3(0f, 0.022f, 0f), new Vector3(3f * size, 0.012f, 0.05f), PatchworkAssets.Plain(new Color(0.25f, 0.22f, 0.3f), 0.2f));
             for (int i = 0; i < 9; i++)
             {
                 var m = PatchworkAssets.Yarn(cols[i % cols.Length]);

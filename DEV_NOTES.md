@@ -687,6 +687,11 @@ Stuff I need to remember about how Patchwork is put together.
   tried in order and each new thing is said once. `Mood(over, during, after)` makes a simple
   before/after source.
 
+- **Floor boards and flicker**: `ZFightFix` only knows plain cubes and cylinders, so the
+  board meshes look after themselves: `FloorTaken` stops a later floor laying boards where
+  an earlier one already has. Anything flat laid on a museum floor should start at least
+  1 cm above the floor's top (the boards are 1 mm above it).
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark
