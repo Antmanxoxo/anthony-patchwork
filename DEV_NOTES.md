@@ -701,6 +701,10 @@ Stuff I need to remember about how Patchwork is put together.
   children of the level root; bunting spans are listed in `Bunting` and drop out on their
   own if blocked. The log line `[Level2] Patchwork touches:` says how many of each fitted.
 
+- **`MusicPlayer.Silence`** fades the music out completely (LiftHush only ducks it).
+  **`LevelLook.SetGloom(0..1)`** drains colour, darkens and closes the vignette on top of
+  whatever else the look is doing; whoever sets it must set it back to 0.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

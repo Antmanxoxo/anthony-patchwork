@@ -72,6 +72,13 @@ namespace Patchwork
         Transform figure, shroud, party;
         Light[] own;
         readonly List<Light> dimmed = new List<Light>();
+        // The dread: a low drone instead of the music, a heartbeat later on, footsteps that
+        // aren't yours, a lamp that dies, something glimpsed at the edge of the dark.
+        AudioSource drone, beat;
+        Transform watcher;
+        float dread, beatTimer, stepTimer, glimpseTimer = 9f, watcherLeft, lampOutLeft;
+        int lampOut = -1;
+        bool eyesRed;
         readonly List<float> dimmedWas = new List<float>();
         ToyNpc hoot;
 
@@ -113,7 +120,13 @@ namespace Patchwork
             }
         }
 
-        void OnDestroy() { if (state == State.Looping || state == State.Starting || state == State.Reveal) MusicPlayer.LiftHush = false; }
+        void OnDestroy()
+        {
+            if (state != State.Looping && state != State.Starting && state != State.Reveal) return;
+            MusicPlayer.Silence = false;
+            LevelLook.SetGloom(0f);
+            RenderSettings.fogMode = FogMode.Linear;
+        }
 
         static Transform Part(PrimitiveType type, Transform parent, Vector3 p, Vector3 s, Material m, Vector3 e = default(Vector3))
         {
@@ -293,6 +306,20 @@ namespace Patchwork
             }
             foreach (var l in own) l.enabled = true;
             foreach (var f in frames) f.gameObject.SetActive(true);
+            if (drone == null)
+            {
+                drone = gameObject.AddComponent<AudioSource>();
+                drone.clip = DroneClip();
+                drone.loop = true;
+                drone.spatialBlend = 0f;
+                drone.playOnAwake = false;
+                beat = gameObject.AddComponent<AudioSource>();
+                beat.clip = BeatClip();
+                beat.spatialBlend = 0f;
+                beat.playOnAwake = false;
+            }
+            drone.volume = 0f;
+            drone.Play();
             game.Blackout(1f);
             Sfx.Play(SfxId.PlatformThunk, 0.5f);
             Narrator.Say("The lamps went out, all but three. The music stopped as if somebody had put a hand over it. And the gallery was a good deal longer than it had been.");
@@ -307,7 +334,9 @@ namespace Patchwork
             frames[0].gameObject.SetActive(false);
             frames[2].gameObject.SetActive(false);
             if (hoot != null) hoot.gameObject.SetActive(true);
-            MusicPlayer.LiftHush = false;
+            if (watcher != null) watcher.gameObject.SetActive(false);
+            MusicPlayer.Silence = false;
+            RenderSettings.fogMode = FogMode.Linear;
         }
 
         void Shift(PatchworkGame game, float dz)
@@ -348,6 +377,8 @@ namespace Patchwork
                 }
             }
 
+            Dread(game, dt, pp);
+
             switch (state)
             {
                 case State.Idle:
@@ -365,7 +396,7 @@ namespace Patchwork
                     break;
 
                 case State.Looping:
-                    MusicPlayer.LiftHush = true;
+                    MusicPlayer.Silence = true;
                     if (game.Mode != UIMode.Gameplay) break;
                     // (If he's somehow got out of the gallery, let him go.)
                     if (pp.y < Y - 3f || pp.x < 31f || pp.x > 41f || pp.z < -43f || pp.z > -8f) { End(); state = State.Idle; straight = false; straightened = 0; if (Spot != null) Spot.gameObject.SetActive(true); break; }
@@ -376,7 +407,8 @@ namespace Patchwork
                     for (int i = 0; i < own.Length; i++)
                     {
                         own[i].color = stage >= 4 ? new Color(1f, 0.35f, 0.3f) : new Color(0.6f, 0.65f, 1f);
-                        own[i].intensity = (stage >= 4 ? 0.5f : 0.7f) * (0.85f + Mathf.Sin(t * 13f + i * 2f) * 0.08f + (Mathf.Sin(t * 1.7f + i) > 0.96f ? -0.6f : 0f));
+                        float flick = 0.85f + Mathf.Sin(t * 13f + i * 2f) * 0.08f + (Mathf.Sin(t * 1.7f + i) > 0.96f ? -0.6f : 0f);
+                        own[i].intensity = i == lampOut ? 0f : (stage >= 4 ? 0.55f : 0.75f) * flick;
                     }
                     // The ducks: at first they just sit. Later they all look at you.
                     if (stage >= 4)
@@ -405,7 +437,7 @@ namespace Patchwork
                     break;
 
                 case State.Reveal:
-                    MusicPlayer.LiftHush = true;
+                    MusicPlayer.Silence = true;
                     timer += dt;
                     if (timer < 1.25f) game.Blackout(1f);
                     if (timer >= 1f && party == null)
@@ -419,7 +451,7 @@ namespace Patchwork
                     if (timer >= 1.3f)
                     {
                         state = State.Done;
-                        MusicPlayer.LiftHush = false;
+                        MusicPlayer.Silence = false;
                         Vector3 c = figure.position + Vector3.up * 2f;
                         FxBurst.Spawn(FxBurst.Kind.Pompoms, c, new Color(0.95f, 0.35f, 0.45f));
                         FxBurst.Spawn(FxBurst.Kind.Pompoms, c + Vector3.up * 0.6f, new Color(1f, 0.8f, 0.3f));
@@ -490,19 +522,180 @@ namespace Patchwork
             else Sfx.PlayNear(SfxId.Squeak, from, 0.25f, 30f);
         }
 
-        // The dark, and the fog that hides how short the gallery really is. (After the museum's
+        // Everything that makes the gallery frightening, and lets go of it again afterwards.
+        void Dread(PatchworkGame game, float dt, Vector3 pp)
+        {
+            bool inside = state == State.Looping || (state == State.Reveal && party == null);
+            float want = inside ? 0.62f + stage * 0.075f : 0f;
+            dread = Mathf.MoveTowards(dread, want, dt * (inside ? 0.5f : 0.7f));
+            if (drone != null)
+            {
+                drone.volume = dread * 0.85f;
+                drone.pitch = 1f - stage * 0.035f;
+                if (dread <= 0f && drone.isPlaying) drone.Stop();
+            }
+            LevelLook.SetGloom(dread);
+            if (state != State.Looping || game.Mode != UIMode.Gameplay) return;
+
+            // A heartbeat, from the ducks on; quicker as it goes on.
+            if (stage >= 3)
+            {
+                beatTimer -= dt;
+                if (beatTimer <= 0f) { beatTimer = stage >= 5 ? 0.75f : stage >= 4 ? 0.95f : 1.2f; beat.volume = 0.55f + stage * 0.06f; beat.Play(); }
+            }
+            // Footsteps that keep pace a few yards behind, and stop a moment after you do.
+            if (stage >= 2)
+            {
+                var motor = game.Player.Motor;
+                bool walking = motor.Grounded && new Vector2(motor.Velocity.x, motor.Velocity.z).magnitude > 1.2f;
+                stepTimer -= dt;
+                if (walking && stepTimer <= 0f)
+                {
+                    stepTimer = 0.52f;
+                    Vector3 behind = pp - game.Player.transform.forward * 4.5f + Vector3.up * 0.2f;
+                    Sfx.PlayNear(SfxId.StepWood, behind, 0.3f + stage * 0.04f, 12f);
+                }
+                if (!walking) stepTimer = Mathf.Max(stepTimer, 0.6f);
+            }
+            // One of the three lamps goes out for a moment, now and then.
+            if (stage >= 1)
+            {
+                if (lampOut >= 0) { lampOutLeft -= dt; if (lampOutLeft <= 0f) { lampOut = -1; Sfx.Play(SfxId.PadClick, 0.25f); } }
+                else if (Random.value < dt * 0.09f) { lampOut = Random.Range(0, own.Length); lampOutLeft = Random.Range(0.8f, 2.2f); Sfx.Play(SfxId.PadClick, 0.3f); }
+            }
+            // The Founder's eyes, from the ducks on: red.
+            if (stage >= 3 && !eyesRed)
+            {
+                eyesRed = true;
+                var red = PatchworkAssets.Glow(new Color(1f, 0.15f, 0.1f), 2.6f);
+                for (int i = 0; i < 3; i++)
+                    for (int e = 0; e < 2; e++) eyes[i][e].GetComponent<Renderer>().sharedMaterial = red;
+            }
+            // Something standing at the edge of the dark, ahead. Gone when you look again.
+            if (stage >= 2 && stage < 5)
+            {
+                if (watcherLeft > 0f)
+                {
+                    watcherLeft -= dt;
+                    if (watcherLeft <= 0f) watcher.gameObject.SetActive(false);
+                }
+                else
+                {
+                    glimpseTimer -= dt;
+                    if (glimpseTimer <= 0f)
+                    {
+                        glimpseTimer = Random.Range(10f, 16f);
+                        if (watcher == null) BuildWatcher();
+                        float ahead = game.Player.transform.forward.z >= 0f ? 1f : -1f;
+                        watcher.position = new Vector3(MidX + Random.Range(-1.4f, 1.4f), Y, pp.z + ahead * 8.5f);
+                        watcher.rotation = Quaternion.Euler(0f, ahead > 0f ? 180f : 0f, 0f);
+                        watcher.gameObject.SetActive(true);
+                        watcherLeft = 0.55f;
+                    }
+                }
+            }
+        }
+
+        void BuildWatcher()
+        {
+            watcher = new GameObject("SomethingInTheDark").transform;
+            watcher.SetParent(transform, false);
+            var dark = PatchworkAssets.Plain(new Color(0.01f, 0.01f, 0.015f), 0.05f);
+            Part(PrimitiveType.Capsule, watcher, new Vector3(0f, 1.4f, 0f), new Vector3(0.7f, 1.4f, 0.5f), dark);
+            Part(PrimitiveType.Sphere, watcher, new Vector3(0f, 2.75f, 0f), new Vector3(0.55f, 0.6f, 0.55f), dark);
+            for (int s = -1; s <= 1; s += 2)
+                Part(PrimitiveType.Sphere, watcher, new Vector3(s * 0.12f, 2.8f, 0.24f), new Vector3(0.07f, 0.09f, 0.03f), PatchworkAssets.Glow(new Color(0.9f, 0.95f, 1f), 2f));
+            watcher.gameObject.SetActive(false);
+        }
+
+        // ---------------------------------------------------------------- The sound of it
+
+        static AudioClip droneClip, beatClip;
+
+        // A low, slow, uneasy hum: two deep notes not quite in tune with each other (so they
+        // throb), a cold fifth above that wavers, and a draught of brown noise that swells and
+        // dies. Twenty seconds long, and it loops without a seam.
+        static AudioClip DroneClip()
+        {
+            if (droneClip != null) return droneClip;
+            const int Rate = 44100;
+            const float Len = 20f, Fade = 1f;
+            int n = (int)(Rate * Len), extra = (int)(Rate * Fade);
+            var data = new float[n + extra];
+            var rng = new System.Random(7);
+            float brown = 0f, low = 0f;
+            for (int i = 0; i < data.Length; i++)
+            {
+                float t = i / (float)Rate;
+                float w = 2f * Mathf.PI * t;
+                float hum = 0.34f * Mathf.Sin(w * 55f) + 0.3f * Mathf.Sin(w * 55.65f);
+                float fifth = 0.16f * Mathf.Sin(w * 82.4f + 0.6f * Mathf.Sin(w * 0.1f)) * (0.6f + 0.4f * Mathf.Sin(w * 0.05f));
+                float high = 0.05f * Mathf.Sin(w * 233.1f) * Mathf.Max(0f, Mathf.Sin(w * 0.1f + 1f));
+                float white = (float)(rng.NextDouble() * 2.0 - 1.0);
+                brown = Mathf.Clamp(brown * 0.997f + white * 0.03f, -1f, 1f);
+                low += (brown - low) * 0.05f;
+                float draught = low * 0.9f * (0.35f + 0.65f * Mathf.Max(0f, Mathf.Sin(w * 0.05f - 0.5f)));
+                data[i] = hum + fifth + high + draught;
+            }
+            // Fold the extra second back over the start, so the end runs into the beginning.
+            var clip = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                if (i < extra)
+                {
+                    float k = i / (float)extra;
+                    clip[i] = data[i] * k + data[n + i] * (1f - k);
+                }
+                else clip[i] = data[i];
+            }
+            float peak = 0.001f;
+            for (int i = 0; i < n; i++) peak = Mathf.Max(peak, Mathf.Abs(clip[i]));
+            for (int i = 0; i < n; i++) clip[i] *= 0.8f / peak;
+            droneClip = AudioClip.Create("GalleryDrone", n, 1, Rate, false);
+            droneClip.SetData(clip, 0);
+            return droneClip;
+        }
+
+        // Lub-dub: two soft, deep thumps.
+        static AudioClip BeatClip()
+        {
+            if (beatClip != null) return beatClip;
+            const int Rate = 44100;
+            int n = Rate;
+            var clip = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)Rate;
+                float a = t * Mathf.Exp(-t * 22f) * 22f;
+                float t2 = t - 0.27f;
+                float b = t2 > 0f ? t2 * Mathf.Exp(-t2 * 26f) * 26f * 0.75f : 0f;
+                clip[i] = (a * Mathf.Sin(2f * Mathf.PI * 48f * t) + b * Mathf.Sin(2f * Mathf.PI * 44f * t2)) * 0.9f;
+            }
+            beatClip = AudioClip.Create("GalleryHeartbeat", n, 1, Rate, false);
+            beatClip.SetData(clip, 0);
+            return beatClip;
+        }
+
+        // The dark. Not a flat grey fog: an exponential falloff to near-black, so the far end of
+        // the gallery (which is only twelve yards off) simply isn't there. (After the museum's
         // own moods have set theirs for the frame.)
         void LateUpdate()
         {
             if (state != State.Looping && state != State.Reveal) return;
             if (state == State.Reveal && party != null) return;
+            var game = PatchworkGame.Instance;
             bool red = stage >= 4;
-            RenderSettings.fogColor = red ? new Color(0.05f, 0.012f, 0.012f) : new Color(0.012f, 0.012f, 0.03f);
-            RenderSettings.fogStartDistance = 1f;
-            RenderSettings.fogEndDistance = red ? 7f : 8.5f;
-            RenderSettings.ambientSkyColor = new Color(0.04f, 0.04f, 0.08f);
-            RenderSettings.ambientEquatorColor = red ? new Color(0.08f, 0.04f, 0.05f) : new Color(0.05f, 0.05f, 0.09f);
-            RenderSettings.ambientGroundColor = new Color(0.02f, 0.02f, 0.04f);
+            RenderSettings.fogMode = FogMode.ExponentialSquared;
+            RenderSettings.fogDensity = red ? 0.19f : 0.165f;
+            RenderSettings.fogColor = red ? new Color(0.02f, 0.004f, 0.004f) : new Color(0.004f, 0.004f, 0.01f);
+            RenderSettings.ambientSkyColor = new Color(0.03f, 0.03f, 0.05f);
+            RenderSettings.ambientEquatorColor = red ? new Color(0.06f, 0.025f, 0.03f) : new Color(0.035f, 0.035f, 0.06f);
+            RenderSettings.ambientGroundColor = new Color(0.015f, 0.015f, 0.025f);
+            if (game != null && game.CameraRig != null)
+            {
+                var cam = game.CameraRig.GetComponent<Camera>();
+                if (cam != null) cam.backgroundColor = RenderSettings.fogColor;
+            }
         }
     }
 

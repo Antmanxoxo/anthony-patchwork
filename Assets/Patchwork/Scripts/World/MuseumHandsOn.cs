@@ -27,7 +27,7 @@ namespace Patchwork
             Station(kit, passport, 2, new Vector3(-70f, 0f, 68f), "The Lighthouse Lens", "Wind the lens",
                 "In 1822 a French engineer, Augustin Fresnel, built a lens out of rings of glass prisms instead of one great lump of glass.",
                 "It was far thinner and lighter, and it gathered the lamp's light into a beam that could be seen for over twenty miles out at sea.");
-            Station(kit, passport, 3, new Vector3(86f, 0f, 36f), "The Ship's Bell", "Ring the bell",
+            Station(kit, passport, 3, new Vector3(80f, 0f, 22f), "The Ship's Bell", "Ring the bell",
                 "On a sailing ship the bell was struck every half hour, one more stroke each time, to keep count of the watch.",
                 "A watch lasted four hours. Eight bells meant it was over, and time for the next lot of sailors to go on deck.");
             Station(kit, passport, 4, new Vector3(-66f, 0f, 88f), "The Message Tube", "Post a message",
@@ -39,7 +39,7 @@ namespace Patchwork
         {
             Vector3 foot;
             Vector3 room = which == 2 ? new Vector3(4f, 5f, 4f) : which == 4 ? new Vector3(3f, 3f, 3f) : new Vector3(3.2f, 3.4f, 3.2f);
-            if (!RmFloor(title, want, room, 0f, 9f, out foot)) foot = want;
+            if (!RmFloor(title, want, room, 0f, 14f, out foot)) foot = want;
             // Face whichever way has the most open floor.
             float yaw = 0f;
             for (int tries = 0; tries < 4; tries++)

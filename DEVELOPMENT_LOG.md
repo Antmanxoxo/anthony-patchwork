@@ -1,5 +1,24 @@
 # Development Log
 
+## The Long Gallery, scarier
+- The music now cuts out completely (it used to only drop to a tenth). In its place is a
+  low drone made in code: two deep notes slightly out of tune with each other so they throb,
+  a wavering cold note above, and a draught of noise that swells and dies. It deepens as
+  you go further.
+- The look: instead of a flat dark-blue fog wall, the dark now falls off smoothly to near
+  black, so the gallery's real ends just disappear. The colour drains out, shadows deepen
+  and the screen's edges close in (a new "gloom" on the level's look). It eases back to
+  normal when the loop ends.
+- New frights as you walk further:
+  - a lamp cuts out for a second or two, now and then;
+  - footsteps a few yards behind you that keep pace, and stop just after you do;
+  - something tall and dark stands at the edge of the dark ahead for half a second;
+  - the Founder's eyes turn red;
+  - a heartbeat, getting quicker.
+- The ending is unchanged: it's still a coat stand with a cake.
+- The Ship's Bell (hands-on exhibit) had nowhere to fit; it now looks for room on the Ruins
+  terrace.
+
 ## Patchwork touches on the museum
 Hand-made details so the Oceanic Museum looks like it belongs in Patchwork's world.
 - Mended patches: squares of coloured felt sewn onto the stone walls here and there, a

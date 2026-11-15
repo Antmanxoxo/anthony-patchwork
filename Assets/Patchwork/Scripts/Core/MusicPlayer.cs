@@ -63,6 +63,11 @@ namespace Patchwork
         // drops right back.
         public static bool LiftHush;
         float liftHush;
+
+        // Something wants no music at all for a while (the gallery that never ends): it fades
+        // right out, not just down.
+        public static bool Silence;
+        float silence;
         float dread;
 
         // Paused / Satchel: quieter and "behind glass". Form Wheel: muffled. Normal: clear.
@@ -212,6 +217,8 @@ namespace Patchwork
             master *= spookyDuck;
             liftHush = Mathf.MoveTowards(liftHush, LiftHush ? 1f : 0f, udt * 1.2f);
             master *= 1f - 0.9f * liftHush;
+            silence = Mathf.MoveTowards(silence, Silence ? 1f : 0f, udt * 0.8f);
+            master *= 1f - silence;
             dread = Mathf.MoveTowards(dread, Mathf.Clamp01(FrayDread), udt * 0.8f);
             if (dread > 0.001f)
             {

@@ -11,7 +11,9 @@ namespace Patchwork
     {
         static DepthOfField miniature;
         static ColorAdjustments colours;
-        static float baseSaturation, baseContrast;
+        static Vignette vignette;
+        static float baseSaturation, baseContrast, baseVignette, lastDrain, gloom;
+        static Color baseVignetteColour;
 
         // The Fray drains the colour out of things. amount: 0 (the level's own colours) to 1
         // (nearly grey, flatter and a touch dimmer). flash: a moment of extra colour as it comes
@@ -20,11 +22,26 @@ namespace Patchwork
         {
             if (colours == null) return;
             amount = Mathf.Clamp01(amount);
+            lastDrain = amount;
             // (Only part of the way to grey even at its strongest: you should still be able to
             // tell what colour things are, just that it's being sucked out of them.)
-            colours.saturation.Override(Mathf.Lerp(baseSaturation, -38f, amount) + flash * 18f);
-            colours.contrast.Override(Mathf.Lerp(baseContrast, baseContrast - 5f, amount));
-            colours.postExposure.Override(0.1f - amount * 0.07f + flash * 0.06f);
+            colours.saturation.Override(Mathf.Lerp(baseSaturation, -38f, amount) + flash * 18f - gloom * 55f);
+            colours.contrast.Override(Mathf.Lerp(baseContrast, baseContrast - 5f, amount) + gloom * 14f);
+            colours.postExposure.Override(0.1f - amount * 0.07f + flash * 0.06f - gloom * 0.25f);
+        }
+
+        // Somewhere it's frightening to be: the colour goes out, the shadows deepen and the edges
+        // of the screen close in (0 = none, 1 = as dark as it gets).
+        public static void SetGloom(float k)
+        {
+            gloom = Mathf.Clamp01(k);
+            if (vignette != null)
+            {
+                vignette.intensity.Override(Mathf.Lerp(baseVignette, 0.52f, gloom));
+                vignette.smoothness.Override(Mathf.Lerp(0.5f, 0.85f, gloom));
+                vignette.color.Override(Color.Lerp(baseVignetteColour, Color.black, gloom));
+            }
+            SetDrain(lastDrain);
         }
 
         // Switch the soft-focus distance off for a while (a cutscene that shows the whole town
@@ -45,6 +62,9 @@ namespace Patchwork
         {
             miniature = null;
             colours = null;
+            vignette = null;
+            gloom = 0f;
+            lastDrain = 0f;
             var go = new GameObject("Look");
             var vol = go.AddComponent<Volume>();
             vol.isGlobal = true;
@@ -83,6 +103,9 @@ namespace Patchwork
             vig.intensity.Override(level.Vignette);
             vig.smoothness.Override(0.5f);
             vig.color.Override(new Color(0.16f, 0.08f, 0.2f));
+            vignette = vig;
+            baseVignette = level.Vignette;
+            baseVignetteColour = new Color(0.16f, 0.08f, 0.2f);
 
             // The miniature look: like a close-up photo of a model on a table, the far distance
             // goes softly out of focus, so the world reads as small and handmade. (Skipped on
