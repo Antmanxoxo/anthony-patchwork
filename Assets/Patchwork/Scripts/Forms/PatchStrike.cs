@@ -14,6 +14,8 @@ namespace Patchwork
     public class PatchStrike
     {
         public const int Moves = 3;
+        // A strike has landed on this many things at once (for anyone who's counting).
+        public static System.Action<int> Landed;
         static readonly float[] Duration = { 0.26f, 0.28f, 0.5f };
         static readonly float[] HitAt = { 0.1f, 0.11f, 0.3f };
         const float ChainWindow = 0.55f;
@@ -239,6 +241,7 @@ namespace Patchwork
             }
             if (wet) FxBurst.Spawn(FxBurst.Kind.Sparkle, c + aim, pale);
             if (hits > 0) Connected();
+            if (hits > 0 && Landed != null) Landed(hits);
         }
 
         void Shake(float amount)
@@ -339,7 +342,7 @@ namespace Patchwork
         Vector3[] drift;
         float life, age, size;
 
-        public static void ResetStatics() { mats.Clear(); }
+        public static void ResetStatics() { mats.Clear(); PatchStrike.Landed = null; }
 
         static Material Mat(Color c)
         {

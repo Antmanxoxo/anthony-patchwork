@@ -1,5 +1,28 @@
 # Development Log
 
+## The museum shows the night going by
+The level itself now changes as the quest goes on, with more to find.
+- Colour: the whole museum starts a little grey and the colour comes back in steps, one for
+  each lens, and fully once the telescope is safe.
+- Grey creep: patches of grey floor with loose threads growing out of them sit wherever the
+  Fray is still at work (the Hall of Arms plinths and doorway, the aisle by each tank, each
+  open seam, the Helmet Crab's haunts, round the Observatory). Each shrivels away when its
+  bit of trouble is beaten.
+- The museum clock: a longcase clock by Wick whose hands show the same time as the quest
+  panel, moving toward midnight.
+- The lens rack: three empty brass rings in the Observatory that fill when Stella fits
+  the lenses.
+- Wick's round: eight night lamps around the museum, all out. Walk up to one to light it:
+  a pool of warm light and a heart back. The panel counts them.
+- The lost property shelf, by Wick: a rosette appears on it for every secret found.
+- Four more secrets (thirteen now):
+  - June's Torch (where she left it): Keeper June
+  - The Unpicker's Larder (the Mangrove hollow): Professor Plume, who works out that he is
+    collecting the colour, not destroying it
+  - Wick's Round (light all eight lamps): Wick
+  - Three at a Blow (hit three Fray with one strike): Sergeant Stanchion
+- "Midnight: The Great Seam" title card when the ending begins.
+
 ## Nine secrets in the Night Glass
 Optional things you can do in Level 2's quest, each of which gets somebody to say something
 they otherwise never would. The quest panel counts them (Secrets n / 9).

@@ -190,6 +190,94 @@ namespace Patchwork
                 if (RmFloor("a seam", seam[i], new Vector3(3.6f, 1.6f, 2f), 0f, 7f, out foot)) seam[i] = foot;
             quest.SeamSpots = seam;
 
+            // ----- The museum clock, by Wick's post: its hands follow the night -----
+            Vector3 clockAt = wickAt + new Vector3(-3.4f, 0f, 1.6f);
+            if (RmFloor("the museum clock", clockAt, new Vector3(1.5f, 3.6f, 1.1f), 180f, 5f, out foot)) clockAt = foot;
+            var clock = kit.Group("MuseumClock", clockAt);
+            clock.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            var caseWood = PatchworkAssets.Wood(new Color(0.34f, 0.22f, 0.15f));
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.2f, 0f), new Vector3(1.3f, 0.4f, 0.8f), caseWood, default(Vector3), clock);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.3f, 0f), new Vector3(0.9f, 1.8f, 0.6f), caseWood, default(Vector3), clock);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 2.7f, 0f), new Vector3(1.25f, 1.25f, 0.7f), caseWood, default(Vector3), clock);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 3.4f, 0f), new Vector3(1.45f, 0.14f, 0.85f), caseWood, default(Vector3), clock);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 3.6f, 0f), Vector3.one * 0.26f, Brass, default(Vector3), clock);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 2.7f, 0.355f), new Vector3(1.05f, 0.01f, 1.05f), PatchworkAssets.Felt(new Color(0.96f, 0.93f, 0.84f)), new Vector3(90f, 0f, 0f), clock);
+            for (int i = 0; i < 12; i++)
+            {
+                float a = i * Mathf.PI / 6f;
+                kit.Deco(PrimitiveType.Cube, new Vector3(Mathf.Sin(a) * 0.43f, 2.7f + Mathf.Cos(a) * 0.43f, 0.37f), new Vector3(i % 3 == 0 ? 0.05f : 0.03f, i % 3 == 0 ? 0.12f : 0.07f, 0.01f), IronMat, new Vector3(0f, 0f, -a * Mathf.Rad2Deg), clock);
+            }
+            // (A dark window in the trunk, with the pendulum bob behind it.)
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.3f, 0.305f), new Vector3(0.5f, 1.3f, 0.01f), PatchworkAssets.Plain(new Color(0.08f, 0.07f, 0.1f), 0.6f), default(Vector3), clock);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.95f, 0.32f), new Vector3(0.3f, 0.01f, 0.3f), Brass, new Vector3(90f, 0f, 0f), clock);
+            quest.ClockHands = new Transform[2];
+            for (int i = 0; i < 2; i++)
+            {
+                var hand = new GameObject(i == 0 ? "MinuteHand" : "HourHand").transform;
+                hand.SetParent(clock, false);
+                hand.localPosition = new Vector3(0f, 2.7f, 0.38f + i * 0.012f);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, i == 0 ? 0.19f : 0.13f, 0f), new Vector3(i == 0 ? 0.04f : 0.06f, i == 0 ? 0.42f : 0.28f, 0.01f), IronMat, default(Vector3), hand);
+                quest.ClockHands[i] = hand;
+            }
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 2.7f, 0.4f), Vector3.one * 0.07f, Brass, default(Vector3), clock);
+
+            // ----- The lost property shelf: something turns up on it for every secret found -----
+            Vector3 shelfAt = wickAt + new Vector3(3.2f, 0f, -1.6f);
+            if (RmFloor("the lost property shelf", shelfAt, new Vector3(2.8f, 2.4f, 0.9f), 180f, 5f, out foot)) shelfAt = foot;
+            var shelf = kit.Group("LostProperty", shelfAt);
+            shelf.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.1f, -0.25f), new Vector3(2.7f, 2.2f, 0.08f), caseWood, default(Vector3), shelf);
+            for (int s = -1; s <= 1; s += 2) kit.Deco(PrimitiveType.Cube, new Vector3(s * 1.33f, 1.1f, 0f), new Vector3(0.08f, 2.2f, 0.58f), caseWood, default(Vector3), shelf);
+            for (int r = 0; r < 4; r++) kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.12f + r * 0.68f, 0f), new Vector3(2.7f, 0.07f, 0.58f), caseWood, default(Vector3), shelf);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 2.32f, 0.2f), new Vector3(1.5f, 0.24f, 0.04f), PatchworkAssets.Felt(new Color(0.2f, 0.3f, 0.5f)), default(Vector3), shelf);
+            quest.ShelfItems = new Transform[Level2Quest.Secrets];
+            Color[] rosette = { new Color(0.95f, 0.45f, 0.5f), new Color(1f, 0.8f, 0.35f), new Color(0.4f, 0.75f, 0.7f), new Color(0.45f, 0.6f, 0.95f), new Color(0.75f, 0.55f, 0.95f) };
+            for (int i = 0; i < Level2Quest.Secrets; i++)
+            {
+                int row = i / 5, col = i % 5;
+                var item = new GameObject("Found" + i).transform;
+                item.SetParent(shelf, false);
+                item.localPosition = new Vector3(-1f + col * 0.5f, 1.52f - row * 0.68f + 0.04f, 0.05f);
+                // A prize rosette with two tails, and on top of it something that says which secret.
+                var rm = PatchworkAssets.Felt(rosette[i % rosette.Length]);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.3f, -0.12f), new Vector3(0.3f, 0.015f, 0.3f), rm, new Vector3(90f, 0f, 0f), item);
+                kit.Deco(PrimitiveType.Cube, new Vector3(-0.06f, 0.1f, -0.12f), new Vector3(0.07f, 0.22f, 0.012f), rm, new Vector3(0f, 0f, -12f), item);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0.06f, 0.1f, -0.12f), new Vector3(0.07f, 0.22f, 0.012f), rm, new Vector3(0f, 0f, 12f), item);
+                NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.3f, -0.1f), new Vector3(0.14f, 0.14f, 0.04f), PatchworkAssets.Glow(Color.Lerp(rosette[i % rosette.Length], Color.white, 0.5f), 1.2f), default(Vector3), item));
+                item.gameObject.SetActive(false);
+                quest.ShelfItems[i] = item;
+            }
+
+            // ----- The lens rack in the Observatory: three empty rings, till Stella fills them -----
+            Vector3 rackAt = new Vector3(6.5f, 14f, -9.5f);
+            if (RmFloor("the lens rack", rackAt, new Vector3(1.2f, 2.6f, 1.2f), 0f, 4f, out foot)) rackAt = foot;
+            var rack = kit.Group("LensRack", rackAt);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.05f, 0f), new Vector3(0.8f, 0.05f, 0.8f), Brass, default(Vector3), rack);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.2f, -0.2f), new Vector3(0.08f, 1.2f, 0.08f), Brass, default(Vector3), rack);
+            quest.SocketGlows = new Transform[3];
+            for (int i = 0; i < 3; i++)
+            {
+                float ry = 2.1f - i * 0.62f, rs = 0.62f - i * 0.1f;
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, ry, -0.1f), new Vector3(0.06f, 0.06f, 0.2f), Brass, default(Vector3), rack);
+                for (int k = 0; k < 10; k++)
+                {
+                    float a = k * Mathf.PI / 5f;
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * rs * 0.5f, ry + Mathf.Sin(a) * rs * 0.5f, 0.05f), Vector3.one * 0.08f, Brass, default(Vector3), rack);
+                }
+                quest.SocketGlows[i] = NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, ry, 0.05f), new Vector3(rs * 0.92f, 0.012f, rs * 0.92f), PatchworkAssets.Glow(new Color(0.55f, 0.85f, 1f), 1.5f), new Vector3(90f, 0f, 0f), rack));
+                quest.SocketGlows[i].gameObject.SetActive(false);
+            }
+
+            // ----- Wick's round: eight night lamps, all out -----
+            Vector3[] lampAt = { new Vector3(0f, 0f, -72f), new Vector3(-46f, 0f, -68f), new Vector3(-58f, 0f, 22f), new Vector3(-52f, 0f, 62f),
+                new Vector3(-56f, 0f, 92f), new Vector3(-60f, 0f, 142f), new Vector3(58f, 0f, 16f), new Vector3(84f, 0f, 11f) };
+            quest.Lamps = new NightLamp[lampAt.Length];
+            for (int i = 0; i < lampAt.Length; i++)
+            {
+                if (RmFloor("a night lamp", lampAt[i], new Vector3(1.5f, 3f, 1.5f), 0f, 6f, out foot)) lampAt[i] = foot;
+                quest.Lamps[i] = NightLamp.Create(kit, lampAt[i], IronMat, Brass);
+            }
+
             // ----- The Helmet Crab, and the three places it turns up -----
             Vector3[] want = { new Vector3(2f, 0f, -90f), new Vector3(-46f, 0f, 66f), new Vector3(72f, 0f, 16f) };
             for (int i = 0; i < 3; i++)
@@ -214,7 +302,8 @@ namespace Patchwork
         public GreyClot[] Clots;
         public string[] TankNames;
         public Vector3[] PageSpots, SeamSpots;
-        public Transform[] LampGlows;
+        public Transform[] LampGlows, ClockHands, ShelfItems, SocketGlows;
+        public NightLamp[] Lamps;
 
         const string K = "L2_q_";
         public static string ClotKey(int i) { return K + "clot" + i; }
@@ -227,6 +316,10 @@ namespace Patchwork
         readonly List<Chessling> escorts = new List<Chessling>();
         UnpickerVisit visitor;
         FraySeam[] seams;
+        // Patches of grey creep, and what each lot belongs to.
+        readonly List<FrayCreep> armsCreep = new List<FrayCreep>(), crabCreep = new List<FrayCreep>(), domeCreep = new List<FrayCreep>();
+        readonly FrayCreep[] tankCreep = new FrayCreep[4], seamCreep = new FrayCreep[Seams];
+        public int LampsLit { get { int n = 0; if (Lamps != null) foreach (var l in Lamps) if (l != null && l.IsLit) n++; return n; } }
         FraySeam greatSeam;
         bool defending, toldHeld;
         static readonly string[] SeamPlaces = { "the Atrium", "Deep Time", "the Kelp Galleries", "the Sunken Ruins", "the keepers' aisle" };
@@ -269,8 +362,56 @@ namespace Patchwork
         int CrabStage { get { return Seen("crab2") ? 2 : Seen("crab1") ? 1 : 0; } }
         bool CrabBeaten { get { return Seen("crab"); } }
 
-        void Awake() { Instance = this; }
-        void OnDestroy() { if (Instance == this) Instance = null; }
+        void Awake() { Instance = this; PatchStrike.Landed += StrikeLanded; }
+        void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+            PatchStrike.Landed -= StrikeLanded;
+            GreyStain.Baseline = 0f;
+        }
+
+        // Three or more with one blow.
+        void StrikeLanded(int hits) { if (hits >= 3) Secret("skittles"); }
+
+        static void Shrivel(List<FrayCreep> lot) { foreach (var c in lot) if (c != null) c.Clear(); lot.Clear(); }
+        static void Shrivel(FrayCreep one) { if (one != null) one.Clear(); }
+
+        void Creep(List<FrayCreep> lot, Vector3 at, float radius)
+        {
+            var c = FrayCreep.Make(FoeRoot, at, radius, at.x * 0.37f + at.z * 0.61f);
+            if (c != null) lot.Add(c);
+        }
+
+        // Everything in the museum that shows how the night is going: how grey the air is, the
+        // clock, the lens lamps by Wick, the rack in the Observatory, the lost property shelf.
+        void RefreshWorld()
+        {
+            bool over = Defended || GameState.IsLevelComplete(Level2Builder.SceneName);
+            int n = LensCount;
+            GreyStain.Baseline = over ? 0f : Fitted ? 0.06f : n >= 3 ? 0.08f : n == 2 ? 0.15f : n == 1 ? 0.22f : 0.3f;
+            RefreshLamps();
+            if (ClockHands != null && ClockHands.Length == 2)
+            {
+                float minutes = over ? 60f : Fitted ? 58f : n >= 3 ? 50f : n == 2 ? 35f : n == 1 ? 20f : 0f;
+                ClockHands[0].localRotation = Quaternion.Euler(0f, 0f, -minutes * 6f);
+                ClockHands[1].localRotation = Quaternion.Euler(0f, 0f, -(330f + minutes * 0.5f));
+            }
+            if (SocketGlows != null)
+                foreach (var g in SocketGlows) if (g != null) g.gameObject.SetActive(Fitted || over);
+            if (ShelfItems != null)
+                for (int i = 0; i < ShelfItems.Length && i < SecretKeys.Length; i++)
+                    if (ShelfItems[i] != null) ShelfItems[i].gameObject.SetActive(HasSecret(SecretKeys[i]));
+        }
+
+        void LampLit(int which)
+        {
+            Mark("lamp" + which);
+            int n = LampsLit;
+            var game = PatchworkGame.Instance;
+            if (n >= Lamps.Length) Secret("rounds");
+            else if (game != null) game.ShowToast("Night lamp lit.  (" + n + " of " + Lamps.Length + " on Wick's round)");
+            if (n == 1) Narrator.Say("Patch turned the little brass wheel, and the lamp remembered what it was for. The grey drew back to the edge of the light and waited there, like a cat that has been told no.");
+        }
 
         void Start()
         {
@@ -300,6 +441,40 @@ namespace Patchwork
             HideKeepsake("Secret_Biscuits", Keepsake.Kind.King, "king", "In among the biscuits sat a very small ivory king with his sword across his knees and his eyes shut tight. He was not possessed by anything except good sense.");
             HideKeepsake("Secret_IceCave", Keepsake.Kind.Jar, "jar", "A jam jar, lid screwed down, with something red going round and round inside it like a goldfish. Somebody tall had put it down here and forgotten it. The label said ENSIGN.");
 
+            HideKeepsake("Secret_JunesTorch", Keepsake.Kind.Torch, "torch", "A keeper's torch, still switched on, shining at nothing. JUNE was painted on it in red, in the careful letters of somebody who has lost a torch before.");
+            HideKeepsake("Secret_MangroveHollow", Keepsake.Kind.Larder, "larder", "Tucked in the hollow, out of the current: a rack of jam jars, each with a colour in it, each with a label. CORAL. LANTERN. ICE. MANGROVE. He had been taking the tanks home a jar at a time.");
+
+            // The night lamps.
+            for (int i = 0; Lamps != null && i < Lamps.Length; i++)
+            {
+                if (Lamps[i] == null) continue;
+                int lampNo = i;
+                if (Seen("lamp" + i)) Lamps[i].SetLit();
+                Lamps[i].Lit = l => LampLit(lampNo);
+            }
+
+            // Grey creep, wherever the Fray is still at work.
+            if (!ArmsWon)
+            {
+                Creep(armsCreep, new Vector3(80f, 0f, 2.5f), 2.2f);
+                Creep(armsCreep, new Vector3(80f, 0f, 9f), 1.6f);
+                for (int i = 0; i < 8; i++) Creep(armsCreep, new Vector3(i < 4 ? 69.3f : 90.7f, 0f, -4f - (i % 4) * 9f + 1.6f), 1.2f);
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                if (Clots == null || Clots[i] == null) continue;
+                tankCreep[i] = FrayCreep.Make(FoeRoot, new Vector3(i % 2 == 0 ? -61.6f : -58.4f, 0f, i < 2 ? 112f : 154f), 1.5f, i * 2.3f);
+            }
+            if (!CrabBeaten && CrabSpots != null)
+                foreach (var spot in CrabSpots) Creep(crabCreep, spot + new Vector3(1.8f, 0f, -1.4f), 1.4f);
+            if (!Defended)
+                for (int i = 0; i < 5; i++)
+                {
+                    float a = i * Mathf.PI * 2f / 5f + 0.3f;
+                    Creep(domeCreep, ObservatoryCentre + new Vector3(Mathf.Cos(a) * 11f, 1.5f, Mathf.Sin(a) * 11f), 1.5f);
+                }
+            RefreshWorld();
+
             // The seams: open ones let things out; shut ones are a row of stitches.
             seams = new FraySeam[Seams];
             for (int i = 0; i < Seams && SeamSpots != null; i++)
@@ -316,6 +491,7 @@ namespace Patchwork
                 s.Birth = p => Hatch(p, rollers);
                 s.Beaten = f => SeamShut(shut);
                 seams[i] = s;
+                seamCreep[i] = FrayCreep.Make(FoeRoot, at + Quaternion.Euler(0f, yaw, 0f) * new Vector3(0f, 0f, 2.2f), 1.6f, i * 3.1f);
             }
 
             // Anything won on an earlier visit but not picked up is waiting where it fell.
@@ -377,6 +553,22 @@ namespace Patchwork
                 "Mind the Lantern Deep. Something down there has a light on, and it isn't one of ours. When the light flares, swim sideways.", null);
             Flavour("Keeper Pippa", () => HasLens(1),
                 "The Frozen Sea's got one too. I saw teeth. I've never been so glad to be on this side of the glass.", null);
+            WrapNpc("Keeper June", () => Tell("torch") ? new[]
+            {
+                "My torch! It's still ON. That's a week of batteries, that is.",
+                "I put it down to tie a knot and the knot took longer than I thought. They always do. Thank you. I'll write my name on it bigger."
+            } : null, null);
+            WrapNpc("Professor Plume", () => Tell("larder") ? new[]
+            {
+                "Jars? Labelled? With the tanks' own colours in them? Oh, that is very interesting. That is very interesting indeed.",
+                "He isn't destroying it, you see. He's COLLECTING it. One doesn't label what one means to throw away.",
+                "Which raises the question of what he wants it all for. I have a theory. I don't like my theory."
+            } : null, null);
+            WrapNpc("Sergeant Stanchion", () => Tell("skittles") ? new[]
+            {
+                "Three with one blow! I saw that. That was not in the drill. I am putting it in the drill.",
+                "Henceforth it shall be known as the Patch Manoeuvre. Dismissed. Well done. Dismissed."
+            } : null, null);
             WrapNpc("Professor Hoot", () => Tell("tidy", "hoot") ? new[]
             {
                 "All five seams, before a single lens? Most people run after the shiny thing first. You mended the hole in the bag before you picked up the marbles.",
@@ -404,7 +596,7 @@ namespace Patchwork
             PatchworkHUD.ShowGet(LensNames[which], n >= 3 ? "All three lenses of the Night Glass!" : n + " of 3 lenses of the Night Glass", LensBlue, 0);
             Sfx.Play(SfxId.PrizeFanfare, 0.6f);
             Haptics.Pulse(0.4f, 0.5f, 0.3f);
-            RefreshLamps();
+            RefreshWorld();
             // The first lens Patch wins, somebody notices.
             if (n == 1 && which == 0 && visitor == null)
             {
@@ -427,6 +619,7 @@ namespace Patchwork
         public void ArmsBeaten(Vector3 at)
         {
             Mark("arms");
+            Shrivel(armsCreep);
             DropLens(0, new Vector3(at.x, 1.3f, at.z), true);
         }
 
@@ -435,6 +628,7 @@ namespace Patchwork
         void ClotBeaten(int which, Vector3 at)
         {
             GameState.SetHintSeen(ClotKey(which));
+            Shrivel(tankCreep[which]);
             int n = ClotsCleared;
             var game = PatchworkGame.Instance;
             if (n >= 4)
@@ -459,9 +653,9 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ Secrets
 
-        static readonly string[] SecretKeys = { "flawless", "crab", "thimble", "nomoth", "tidy", "stranger", "whistle", "king", "jar" };
-        static readonly string[] SecretNames = { "Not a Scratch", "Caught Napping", "Hats Off", "Not One Moth", "A Stitch in Time", "No Introductions", "Marlow's Whistle", "The King in the Biscuits", "A Jar of Red" };
-        public const int Secrets = 9;
+        static readonly string[] SecretKeys = { "flawless", "crab", "thimble", "nomoth", "tidy", "stranger", "whistle", "king", "jar", "torch", "larder", "rounds", "skittles" };
+        static readonly string[] SecretNames = { "Not a Scratch", "Caught Napping", "Hats Off", "Not One Moth", "A Stitch in Time", "No Introductions", "Marlow's Whistle", "The King in the Biscuits", "A Jar of Red", "June's Torch", "The Unpicker's Larder", "Wick's Round", "Three at a Blow" };
+        public const int Secrets = 13;
         public int SecretsFound { get { int n = 0; foreach (var k in SecretKeys) if (Seen("s_" + k)) n++; return n; } }
         public bool HasSecret(string key) { return Seen("s_" + key); }
 
@@ -475,6 +669,7 @@ namespace Patchwork
             Sfx.Play(SfxId.Checkpoint, 0.45f);
             var game = PatchworkGame.Instance;
             if (game != null && game.Player != null) ScoreKeeper.Bonus(1500, game.Player.Motor.Center);
+            RefreshWorld();
         }
 
         // True the first time somebody gets to mention a secret that's been done.
@@ -527,6 +722,7 @@ namespace Patchwork
         void SeamShut(int which)
         {
             Mark("seam" + which);
+            Shrivel(seamCreep[which]);
             int n = SeamsShut;
             var game = PatchworkGame.Instance;
             if (game == null) return;
@@ -610,6 +806,7 @@ namespace Patchwork
         void CrabFell(Vector3 at)
         {
             Mark("crab");
+            Shrivel(crabCreep);
             DropLens(2, new Vector3(at.x, at.y + 0.4f, at.z), true);
             if (Crab != null && Crab.CaughtEarly) Secret("crab");
         }
@@ -620,6 +817,8 @@ namespace Patchwork
         {
             if (LensCount < 3 || Fitted) return;
             Mark("fitted");
+            RefreshWorld();
+            Narrator.Card("Midnight", "The Great Seam");
             PatchworkHUD.ShowGet("The Night Glass", "Stella has fitted all three lenses.", LensBlue, 0);
             Sfx.Play(SfxId.Lever, 0.5f);
             if (visitor == null)
@@ -697,6 +896,8 @@ namespace Patchwork
                 {
                     defending = false;
                     Mark("defended");
+                    Shrivel(domeCreep);
+                    RefreshWorld();
                     game.ShowToast("The Night Glass is ready. Go and look!");
                     Sfx.Play(SfxId.PrizeFanfare, 0.5f);
                     if (greatSeam != null && greatSeam.Births == 0) Secret("nomoth");
@@ -826,6 +1027,13 @@ namespace Patchwork
             if (n >= 3) return new[] { "All three! Up to Stella with them, quick as you can. The lift's at the far end of the Sunken Ruins." };
             var lines = new List<string>();
             // Things he's heard about that he wasn't expecting to.
+            if (Tell("rounds")) return new[]
+            {
+                "Every lamp on my round. All eight. I could see them coming on from here, one after another, like somebody walking home.",
+                "That's my job you've done. I ought to mind. I find I don't.",
+                "Have a look at the shelf behind me, by the by. Lost property. Things keep turning up on it tonight, and I don't put them there."
+            };
+            if (Lamps != null && LampsLit > 0 && LampsLit < Lamps.Length && !Seen("lamps_said")) { Mark("lamps_said"); lines.Add("Somebody's been lighting my lamps. There's eight on the round, and they all went out at dusk. Every one you turn up, the grey backs off a bit. I'd do it myself, but I'm holding this door."); }
             if (Tell("flawless", "wick")) lines.Add("The Castellan says you went through the whole Hollow Guard and they never laid a gauntlet on you. He's told me four times. He's started acting it out.");
             if (Tell("crab")) lines.Add("You caught the helmet before it could run? Flat on its back, first go? I chased that thing round the Atrium for an hour. I'm not jealous. I'm a little jealous.");
             if (Tell("tidy", "wick")) lines.Add("All five seams stitched, and not a lens in your pocket yet. You're a tidy sort. Shut the doors before you chase the burglars. My mother was the same.");

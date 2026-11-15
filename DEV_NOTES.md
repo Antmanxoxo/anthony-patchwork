@@ -651,6 +651,12 @@ Stuff I need to remember about how Patchwork is put together.
   `Keepsake`s spawned at the `Secret_CoralCave`, `Secret_Biscuits` and `Secret_IceCave`
   markers; if a marker is renamed the keepsake silently doesn't appear.
 
+- **The level's look follows the quest** through `Level2Quest.RefreshWorld()`: it sets
+  `GreyStain.Baseline` (how grey the air is with no Fray near), the clock hands, lens lamps,
+  lens rack and lost property shelf. Call it after anything that changes progress.
+  `FrayCreep` and `NightLamp` are in `MuseumDressing.cs`. Lamp keys are `L2_q_lamp0-7`.
+  `PatchStrike.Landed` reports how many things one strike hit.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

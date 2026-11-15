@@ -309,6 +309,9 @@ namespace Patchwork
         const float Life = 11f, GrowTime = 0.5f, FadeTime = 1.6f, Step = 1f;
 
         public static GreyStain Instance { get; private set; }
+        // How grey the whole level is even with no Fray near (a level whose story is the colour
+        // going out of it sets this, and lowers it as things are put right).
+        public static float Baseline;
 
         Transform[] blot;
         float[] born, size;
@@ -321,7 +324,7 @@ namespace Patchwork
         public static void ResetStatics() { Instance = null; MusicPlayer.FrayDread = 0f; }
 
         void Awake() { Instance = this; }
-        void OnDestroy() { if (Instance == this) Instance = null; LevelLook.SetDrain(0f); MusicPlayer.FrayDread = 0f; }
+        void OnDestroy() { if (Instance == this) Instance = null; Baseline = 0f; LevelLook.SetDrain(0f); MusicPlayer.FrayDread = 0f; }
 
         void Start()
         {
@@ -415,13 +418,13 @@ namespace Patchwork
                     if (knot == null || knot.IsPopped || !knot.isActiveAndEnabled) continue;
                     nearest = Mathf.Min(nearest, (knot.transform.position - pp).magnitude + 1.5f);
                 }
-                float want = 0.75f * (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(3f, 13f, nearest)));
+                float want = Mathf.Max(Baseline, 0.75f * (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(3f, 13f, nearest))));
                 drainTarget = game.Mode == UIMode.Gameplay || game.Mode == UIMode.FormWheel ? want : 0f;
             }
             drain = Mathf.MoveTowards(drain, drainTarget, dt * 1.4f);
             flash = Mathf.MoveTowards(flash, 0f, dt * 1.6f);
             LevelLook.SetDrain(drain, flash);
-            MusicPlayer.FrayDread = drain;
+            MusicPlayer.FrayDread = Mathf.Max(0f, drain - Baseline);
 
             for (int i = 0; i < Count; i++)
             {

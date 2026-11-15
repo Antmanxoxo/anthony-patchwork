@@ -1804,7 +1804,7 @@ namespace Patchwork
     // its hiding places. Bringing it up in conversation gets you a different conversation.
     public class Keepsake : PlayerVolume
     {
-        public enum Kind { Whistle, King, Jar }
+        public enum Kind { Whistle, King, Jar, Torch, Larder }
         public System.Action Taken;
         Transform thing;
         float t;
@@ -1843,6 +1843,27 @@ namespace Patchwork
                 Monsters.Part(PrimitiveType.Cube, k.thing, new Vector3(0f, 0.06f, 0.14f), new Vector3(0.4f, 0.04f, 0.05f), PatchworkAssets.Plain(new Color(0.8f, 0.82f, 0.88f), 0.9f));
                 for (int s = -1; s <= 1; s += 2)
                     Monsters.Part(PrimitiveType.Sphere, k.thing, new Vector3(s * 0.045f, 0.4f, 0.09f), new Vector3(0.04f, 0.055f, 0.02f), PatchworkAssets.Plain(new Color(0.1f, 0.08f, 0.12f), 0.8f));
+            }
+            else if (kind == Kind.Torch)
+            {
+                // A keeper's torch: a stubby brass tube, still switched on.
+                Monsters.Part(PrimitiveType.Cylinder, k.thing, Vector3.zero, new Vector3(0.14f, 0.24f, 0.14f), brass, new Vector3(0f, 0f, 90f));
+                Monsters.Part(PrimitiveType.Cylinder, k.thing, new Vector3(0.26f, 0f, 0f), new Vector3(0.24f, 0.05f, 0.24f), brass, new Vector3(0f, 0f, 90f));
+                Monsters.Part(PrimitiveType.Sphere, k.thing, new Vector3(0.31f, 0f, 0f), new Vector3(0.08f, 0.2f, 0.2f), PatchworkAssets.Glow(new Color(1f, 0.95f, 0.7f), 2.6f));
+                Monsters.Part(PrimitiveType.Cube, k.thing, new Vector3(-0.05f, 0.08f, 0f), new Vector3(0.08f, 0.03f, 0.05f), PatchworkAssets.Felt(new Color(0.8f, 0.25f, 0.25f)));
+            }
+            else if (kind == Kind.Larder)
+            {
+                // The Unpicker's larder: a little rack of jars, a different stolen colour in each.
+                Color[] stolen = { new Color(1f, 0.5f, 0.6f), new Color(1f, 0.8f, 0.3f), new Color(0.4f, 0.85f, 0.9f), new Color(0.45f, 0.8f, 0.45f) };
+                Monsters.Part(PrimitiveType.Cube, k.thing, new Vector3(0f, -0.16f, 0f), new Vector3(0.9f, 0.04f, 0.26f), PatchworkAssets.Wood(new Color(0.3f, 0.2f, 0.14f)));
+                for (int i = 0; i < 4; i++)
+                {
+                    float x = (i - 1.5f) * 0.22f;
+                    Monsters.Part(PrimitiveType.Cylinder, k.thing, new Vector3(x, 0f, 0f), new Vector3(0.18f, 0.13f, 0.18f), PatchworkAssets.Bubble(new Color(0.8f, 0.9f, 1f, 0.35f)));
+                    Monsters.Part(PrimitiveType.Sphere, k.thing, new Vector3(x, -0.02f, 0f), new Vector3(0.12f, 0.18f, 0.12f), PatchworkAssets.Glow(stolen[i], 1.8f));
+                    Monsters.Part(PrimitiveType.Cylinder, k.thing, new Vector3(x, 0.14f, 0f), new Vector3(0.19f, 0.02f, 0.19f), PatchworkAssets.Plain(new Color(0.45f, 0.44f, 0.5f), 0.7f));
+                }
             }
             else
             {
