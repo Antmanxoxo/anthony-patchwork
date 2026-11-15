@@ -277,10 +277,10 @@ namespace Patchwork
             Color[] rosette = { new Color(0.95f, 0.45f, 0.5f), new Color(1f, 0.8f, 0.35f), new Color(0.4f, 0.75f, 0.7f), new Color(0.45f, 0.6f, 0.95f), new Color(0.75f, 0.55f, 0.95f) };
             for (int i = 0; i < Level2Quest.Secrets; i++)
             {
-                int row = i / 5, col = i % 5;
+                int row = i / 6, col = i % 6;
                 var item = new GameObject("Found" + i).transform;
                 item.SetParent(shelf, false);
-                item.localPosition = new Vector3(-1f + col * 0.5f, 1.52f - row * 0.68f + 0.04f, 0.05f);
+                item.localPosition = new Vector3(-1.1f + col * 0.44f, 1.52f - row * 0.68f + 0.04f, 0.05f);
                 // A prize rosette with two tails, and on top of it something that says which secret.
                 var rm = PatchworkAssets.Felt(rosette[i % rosette.Length]);
                 kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.3f, -0.12f), new Vector3(0.3f, 0.015f, 0.3f), rm, new Vector3(90f, 0f, 0f), item);
@@ -596,6 +596,71 @@ namespace Patchwork
                 "Mind the Lantern Deep. Something down there has a light on, and it isn't one of ours. When the light flares, swim sideways.", null);
             Flavour("Keeper Pippa", () => HasLens(1),
                 "The Frozen Sea's got one too. I saw teeth. I've never been so glad to be on this side of the glass.", null);
+            // The Curator's Audit: Professor Plume sets it, keeps count, and marks it at the end.
+            WrapNpc("Professor Plume", () =>
+            {
+                var audit = ExhibitAudit.Instance;
+                if (audit == null) return null;
+                if (Tell("connoisseur")) return new[]
+                {
+                    "Five fakes found, and not one real exhibit so much as dusted in error. Do you know how rare that is?",
+                    "I have a doctorate, and I hit the nautilus. Twice. In my defence it was looking at me.",
+                    "A perfect eye. I shall say so in the annual report, and the annual report is read by as many as four people."
+                };
+                if (Tell("audit")) return new[]
+                {
+                    "All five! The compass, the Moon, the shark, the starfish and the seahorse. Every one of them a fraud with a card it wrote itself.",
+                    audit.Mistakes == 0 ? "And never a wrong guess." : "And only " + audit.Mistakes + (audit.Mistakes == 1 ? " real exhibit" : " real exhibits") + " walloped by mistake, which I shall overlook. They're sturdier than they look.",
+                    "That's the trouble with the Fray, you see. They can copy the look of a thing. They cannot be bothered to find out what's true about it."
+                };
+                if (HasSecret("audit")) return null;
+                int found = audit.Found;
+                if (found == 0 && audit.Mistakes == 0) return new[]
+                {
+                    "Ah. You. You have the look of somebody who reads the cards. Good. I need somebody who reads the cards.",
+                    "There are twelve small exhibits on plinths about the museum: the Atrium, the History hall, the Kelp Galleries, the Sunken Ruins. I catalogued seven. I did not catalogue the other five.",
+                    "Five of them are the Fray, sitting very still. And they have written their own cards, and the Fray never check their facts.",
+                    "Read each card. If what it says is true, leave the thing alone. If it's nonsense, hit it: once to make it rattle, and again to say you're sure.",
+                    "Be sure. Wallop a real one and the alarm goes, and it'll cost you. If you truly can't tell from the card, watch the thing itself from a little way off. A fake cannot keep perfectly still."
+                };
+                return new[]
+                {
+                    found + " of the five fakes found" + (audit.Mistakes > 0 ? ", and " + audit.Mistakes + " real " + (audit.Mistakes == 1 ? "exhibit" : "exhibits") + " hit by mistake. Read the cards twice." : ". No mistakes yet. Keep reading."),
+                    "Remember: once to rattle it, twice to accuse it. And a fake blinks, when it thinks you're not close."
+                };
+            }, null);
+
+            // The two Easter eggs: a hint from whoever's nearest, and what they say afterwards.
+            WrapNpc("Professor Hoot", () =>
+            {
+                if (Tell("hall", "hoot")) return new[]
+                {
+                    "Hoo! There you are! You walked into that wall nine times. I counted. I didn't like to say anything.",
+                    "And there's a coat stand in my gallery now, in a party hat, with a cake. I shall say nothing about that either.",
+                    "...Is the cake for anyone in particular?"
+                };
+                if (HasSecret("hall")) return null;
+                return new[]
+                {
+                    "One thing. The Founder's portrait, between the windows. It hangs crooked. Leave it crooked.",
+                    "I have straightened it twice. Each time I turned my back, crooked again. I have never straightened it a third time, and I am not going to tell you why, because I don't know why, and that is worse."
+                };
+            }, null);
+            WrapNpc("Mrs. Sudsbury", () =>
+            {
+                if (Tell("dusties")) return new[]
+                {
+                    "My dust bunnies! All five! I've been after those since spring cleaning.",
+                    "Oh, don't look at me like that, I'm not going to throw them out. They go under the bed in the Bedroom exhibit. It doesn't look lived-in without.",
+                    "Hoovered them, did you? With the wind? Well. I never thought of being the wind."
+                };
+                if (HasSecret("dusties")) return null;
+                return new[]
+                {
+                    "And another thing. Something keeps giggling under the dust sheets in the History hall. Five of them.",
+                    "I'm not lifting those sheets. You lift them. You'd want a good puff of wind to do it, and another to catch whatever comes out."
+                };
+            }, null);
             WrapNpc("Keeper June", () => Tell("torch") ? new[]
             {
                 "My torch! It's still ON. That's a week of batteries, that is.",
@@ -696,9 +761,9 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ Secrets
 
-        static readonly string[] SecretKeys = { "flawless", "crab", "thimble", "nomoth", "tidy", "stranger", "whistle", "king", "jar", "torch", "larder", "rounds", "skittles" };
-        static readonly string[] SecretNames = { "Not a Scratch", "Caught Napping", "Hats Off", "Not One Moth", "A Stitch in Time", "No Introductions", "Marlow's Whistle", "The King in the Biscuits", "A Jar of Red", "June's Torch", "The Unpicker's Larder", "Wick's Round", "Three at a Blow" };
-        public const int Secrets = 13;
+        static readonly string[] SecretKeys = { "flawless", "crab", "thimble", "nomoth", "tidy", "stranger", "whistle", "king", "jar", "torch", "larder", "rounds", "skittles", "hall", "dusties", "audit", "connoisseur" };
+        static readonly string[] SecretNames = { "Not a Scratch", "Caught Napping", "Hats Off", "Not One Moth", "A Stitch in Time", "No Introductions", "Marlow's Whistle", "The King in the Biscuits", "A Jar of Red", "June's Torch", "The Unpicker's Larder", "Wick's Round", "Three at a Blow", "The Long Gallery", "The Dust Sheet Five", "The Curator's Audit", "A Perfect Eye" };
+        public const int Secrets = 17;
         public int SecretsFound { get { int n = 0; foreach (var k in SecretKeys) if (Seen("s_" + k)) n++; return n; } }
         public bool HasSecret(string key) { return Seen("s_" + key); }
 

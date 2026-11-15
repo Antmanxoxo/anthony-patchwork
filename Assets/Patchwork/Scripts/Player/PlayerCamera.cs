@@ -114,6 +114,14 @@ namespace Patchwork
             return best;
         }
 
+        // Patch has been slid sideways through the world without anything seeming to move (the
+        // gallery that never ends): slide the camera exactly the same way.
+        public void Shift(Vector3 delta)
+        {
+            focus += delta;
+            transform.position += delta;
+        }
+
         public void SnapBehind(float targetYaw)
         {
             yaw = targetYaw;

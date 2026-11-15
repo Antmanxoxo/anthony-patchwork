@@ -686,7 +686,7 @@ namespace Patchwork
 
         // A brass plaque on a little stand. Walk up and press Ability to read it.
         // yaw is the way the plaque faces (towards the reader).
-        static void Plaque(LevelKit kit, Vector3 foot, float yaw, string title, params string[] text)
+        static ExhibitPlaque Plaque(LevelKit kit, Vector3 foot, float yaw, string title, params string[] text)
         {
             var g = kit.Group("Plaque", foot);
             g.rotation = Rot(yaw);
@@ -708,6 +708,7 @@ namespace Patchwork
             Vector3 stand = foot + Rot(yaw) * new Vector3(0f, 0f, 0.9f);
             var zone = kit.Volume<TalkZone>(stand + Vector3.up * 1.2f, new Vector3(2.6f, 3f, 2.6f), "Read_" + title);
             zone.Npc = plaque;
+            return plaque;
         }
 
         static ToyNpc Person(LevelKit kit, Vector3 feet, float yaw, ToyNpc.Kind kind, string name, Color main, Color accent, float pitch, System.Func<string[]> lines)

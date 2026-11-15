@@ -1,5 +1,41 @@
 # Development Log
 
+## The Curator's Audit, the Long Gallery and the Dust Sheet Five
+Three new things to do in the Oceanic Museum.
+- The Curator's Audit (a reason to read the cards):
+  - Twelve small exhibits on plinths in the Atrium, History hall, Kelp Galleries and Sunken
+    Ruins, each with a brass card. Seven are real and their cards are true. Five are the Fray
+    pretending, with cards the Fray wrote, and those cards are false.
+  - Professor Plume sets the task and keeps count.
+  - To call something a fake, hit it twice: once makes it rattle and asks if you're sure,
+    the second (within four seconds) is the accusation.
+  - A fake grows legs and has to be beaten; its card is then corrected and the Storyteller
+    gives the true fact. Each one gives a heart back.
+  - Hitting a real one twice sets off the alarm, costs a heart and counts as a mistake.
+  - For players who don't know the answer: fakes breathe slightly, have a loose grey thread at
+    the foot, and blink when Patch is a little way off.
+  - Real: sextant, octopus, ship's biscuit, message in a bottle, nautilus, mariner's
+    astrolabe, narwhal tusk. Fake: compass, the Moon, shark jaws, starfish, seahorse.
+  - Two secrets: The Curator's Audit (all five) and A Perfect Eye (all five, no mistakes).
+- The Long Gallery (an endless-hallway Easter egg, in the Night Sky Gallery before the
+  Observatory):
+  - Straighten the Founder's crooked portrait three times (it slips again the first two
+    times you walk off). Professor Hoot hints at it.
+  - The lamps go out, the music stops, Hoot vanishes and the gallery loops for ever. It gets
+    stranger the further you walk: the portrait's eyes follow, every picture becomes the same
+    picture, they turn upside down, ducks appear, the ducks all turn to look at you.
+  - Finally somebody tall waits at the end of the hall. Walk up, the screen goes black, and
+    it is a coat stand under a dust sheet in a party hat, holding a cake.
+  - Reward: the Party Hat (or 5000 points if you already have it), full hearts and a secret.
+    The coat stand and the ducks stay there afterwards.
+- The Dust Sheet Five (a vacuum-the-ghosts Easter egg, in the History hall):
+  - Five pieces of furniture under dust sheets, each with something giggling under it.
+    Mrs. Sudsbury hints at it.
+  - Only wind shifts a sheet: a Wind strike or gust blows it off and a dust bunny shoots out.
+    A second Wind strike hoovers it up before it gets back under cover.
+  - Catch all five for a secret, full hearts and a new line from Mrs. Sudsbury.
+- Seventeen secrets now. The quest panel also counts fakes found.
+
 ## More detail on the Fray, the fights and Wick's post
 - Fighting reads better:
   - Anything with more than one hit point shows a row of small lights over its head when

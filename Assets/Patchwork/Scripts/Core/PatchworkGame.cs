@@ -849,6 +849,13 @@ namespace Patchwork
             return yarn != null && yarn.Attached;
         }
 
+        // The screen goes black (and fades back by itself over half a second or so).
+        public void Blackout(float amount)
+        {
+            FadeColor = Color.black;
+            Fade = Mathf.Max(Fade, amount);
+        }
+
         // Moves Patch somewhere else in the level (homeward hoops) with a quick fade, and makes
         // that spot the new respawn point.
         public void WarpPlayer(Vector3 feet, float yaw)

@@ -148,6 +148,8 @@ namespace Patchwork
             Life(kit);
             Rooms(kit);   // (last of all: six more things in every room, fitted in round the rest)
             Quest(kit);   // the story: the three lenses of the Night Glass, and the Fray that has them
+            Eggs(kit);    // the Long Gallery, and the Dust Sheet Five
+            Audit(kit);   // the Curator's Audit: twelve exhibits, five of them fakes
             RmDone();
 
             // The hush of the halls, and the deep rumble by the big tanks.

@@ -17,6 +17,7 @@ namespace Patchwork
             Narrator.ResetStatics();
             StrikeFx.ResetStatics();
             Level2Quest.ResetStatics();
+            ExhibitAudit.ResetStatics();
             GlobeDetail.ResetStatics();
             ToyNpc.Focus = null;
             FrayBodies.ResetStatics();

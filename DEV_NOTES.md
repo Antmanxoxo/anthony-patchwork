@@ -671,6 +671,17 @@ Stuff I need to remember about how Patchwork is put together.
   `BlockHint` to give a one-time tip when a hit is blocked; `HintOnce(key, text)` for any
   other one-time tip (keys `L2_q_hint_...`).
 
+- **The audit** is `MuseumAudit.cs` (`Audit(kit)`, `ExhibitAudit`, `ExhibitCase`, `Mimic`).
+  The list in `Audit` and the `switch` in `ExhibitCase.BuildModel` are in the same order:
+  add to both. Keys `L2_q_fake<i>` (unmasked) and `L2_q_tested<i>` (a real one hit by
+  mistake). Real cards must be true; a fake needs a `Truth` line for when it's caught.
+- **The Easter eggs** are `MuseumEggs.cs`. The Long Gallery loops Patch between z -29 and -23
+  of the Night Sky Gallery in steps of 6 (the spacing of the paintings and globes there), and
+  overrides the fog and ambient light in LateUpdate. If that gallery's furniture is moved,
+  the loop will show. `PlayerCamera.Shift` and `PatchworkGame.Blackout` were added for it.
+- **Exhibit cases and dust sheets carry a FrayCreature** (marked Quiet) only so strikes and
+  gusts can reach them. They aren't enemies.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark
