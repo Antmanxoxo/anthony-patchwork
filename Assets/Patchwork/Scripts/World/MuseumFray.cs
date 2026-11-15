@@ -1286,6 +1286,7 @@ namespace Patchwork
         public System.Func<Vector3, GameObject> Birth;
         public float Every = 9f;
         public int Most = 2;
+        public int Births { get; private set; }
 
         readonly List<GameObject> brood = new List<GameObject>();
         Transform lips;
@@ -1396,6 +1397,7 @@ namespace Patchwork
             var born = Birth(at);
             if (born == null) return;
             brood.Add(born);
+            Births++;
             FxBurst.Spawn(FxBurst.Kind.Threads, pos + Vector3.up * 0.6f, SnarlKnot.FrayGrey);
             Sfx.PlayNear(SfxId.Unravel, pos, 0.35f, 30f);
         }
@@ -1502,6 +1504,8 @@ namespace Patchwork
         public bool Standing { get; private set; }   // true at the last place: no more running
         // Tucked down inside its helmet while its chessmen are still about: it won't budge.
         public bool Guarded;
+        // It was knocked over somewhere other than the last place (a secret).
+        public bool CaughtEarly { get; private set; }
 
         State state;
         float st, cooldown = 2f, walk;
@@ -1578,6 +1582,7 @@ namespace Patchwork
         public void Appear(Vector3 at, bool stand)
         {
             Restore(at);
+            CaughtEarly = false;
             spot = at;
             Standing = stand;
             state = State.Lurk;
@@ -1611,7 +1616,18 @@ namespace Patchwork
 
         protected override void OnHurt(bool finisher)
         {
-            if (!Standing) { state = State.Startle; st = 0f; stun = 0f; return; }
+            if (!Standing)
+            {
+                // Caught before it could bolt (it takes the third hit to do it): it's on its
+                // back, and this is where it makes its stand after all.
+                Standing = true;
+                CaughtEarly = true;
+                spot = pos;
+                state = State.Dizzy;
+                st = 0f;
+                Sfx.PlayNear(SfxId.Clack, pos, 0.6f, 30f);
+                return;
+            }
             if (finisher && state != State.Dizzy) { state = State.Dizzy; st = 0f; Sfx.PlayNear(SfxId.Clack, pos, 0.6f, 30f); }
         }
 
@@ -1784,11 +1800,87 @@ namespace Patchwork
         }
     }
 
+    // A keepsake: something small that somebody in the museum has lost, tucked away in one of
+    // its hiding places. Bringing it up in conversation gets you a different conversation.
+    public class Keepsake : PlayerVolume
+    {
+        public enum Kind { Whistle, King, Jar }
+        public System.Action Taken;
+        Transform thing;
+        float t;
+
+        public static Keepsake Spawn(Transform parent, Vector3 at, Kind kind)
+        {
+            var go = new GameObject("Keepsake" + kind);
+            go.transform.SetParent(parent, false);
+            go.transform.position = at;
+            var k = go.AddComponent<Keepsake>();
+            k.Size = new Vector3(1.8f, 2.2f, 1.8f);
+            k.thing = new GameObject("Thing").transform;
+            k.thing.SetParent(go.transform, false);
+            var brass = PatchworkAssets.Plain(new Color(0.85f, 0.65f, 0.3f), 0.85f);
+            if (kind == Kind.Whistle)
+            {
+                // A keeper's brass whistle on a loop of blue cord.
+                Monsters.Part(PrimitiveType.Capsule, k.thing, Vector3.zero, new Vector3(0.16f, 0.24f, 0.16f), brass, new Vector3(0f, 0f, 90f));
+                Monsters.Part(PrimitiveType.Sphere, k.thing, new Vector3(-0.2f, 0.03f, 0f), Vector3.one * 0.24f, brass);
+                Monsters.Part(PrimitiveType.Cube, k.thing, new Vector3(0.05f, 0.09f, 0f), new Vector3(0.1f, 0.03f, 0.1f), PatchworkAssets.Plain(new Color(0.1f, 0.08f, 0.06f), 0.4f));
+                for (int i = 0; i < 8; i++)
+                {
+                    float a = i * Mathf.PI / 4f;
+                    Monsters.Part(PrimitiveType.Sphere, k.thing, new Vector3(-0.3f + Mathf.Cos(a) * 0.2f, 0.26f + Mathf.Sin(a) * 0.2f, 0f), Vector3.one * 0.05f, PatchworkAssets.Yarn(new Color(0.3f, 0.5f, 0.85f)));
+                }
+            }
+            else if (kind == Kind.King)
+            {
+                // The king off the chessboard: ivory, seated, sword across his knees, not possessed at all, only frightened.
+                var ivory = PatchworkAssets.Felt(new Color(0.92f, 0.88f, 0.78f));
+                Monsters.Part(PrimitiveType.Cube, k.thing, new Vector3(0f, -0.1f, -0.03f), new Vector3(0.3f, 0.3f, 0.3f), ivory);
+                Monsters.Part(PrimitiveType.Capsule, k.thing, new Vector3(0f, 0.14f, 0f), new Vector3(0.24f, 0.2f, 0.22f), ivory);
+                Monsters.Part(PrimitiveType.Sphere, k.thing, new Vector3(0f, 0.38f, 0f), Vector3.one * 0.2f, ivory);
+                for (int i = 0; i < 4; i++)
+                    Monsters.Part(PrimitiveType.Cube, k.thing, new Vector3(Mathf.Cos(i * Mathf.PI / 2f) * 0.07f, 0.5f, Mathf.Sin(i * Mathf.PI / 2f) * 0.07f), new Vector3(0.05f, 0.08f, 0.05f), brass);
+                Monsters.Part(PrimitiveType.Cube, k.thing, new Vector3(0f, 0.06f, 0.14f), new Vector3(0.4f, 0.04f, 0.05f), PatchworkAssets.Plain(new Color(0.8f, 0.82f, 0.88f), 0.9f));
+                for (int s = -1; s <= 1; s += 2)
+                    Monsters.Part(PrimitiveType.Sphere, k.thing, new Vector3(s * 0.045f, 0.4f, 0.09f), new Vector3(0.04f, 0.055f, 0.02f), PatchworkAssets.Plain(new Color(0.1f, 0.08f, 0.12f), 0.8f));
+            }
+            else
+            {
+                // A jam jar with the lid screwed down tight, and something red going round and round inside it.
+                Monsters.Part(PrimitiveType.Cylinder, k.thing, Vector3.zero, new Vector3(0.34f, 0.22f, 0.34f), PatchworkAssets.Bubble(new Color(0.8f, 0.9f, 1f, 0.35f)));
+                Monsters.Part(PrimitiveType.Sphere, k.thing, new Vector3(0f, -0.03f, 0f), new Vector3(0.24f, 0.3f, 0.24f), PatchworkAssets.Glow(new Color(0.95f, 0.2f, 0.2f), 1.8f));
+                Monsters.Part(PrimitiveType.Cylinder, k.thing, new Vector3(0f, 0.24f, 0f), new Vector3(0.36f, 0.03f, 0.36f), PatchworkAssets.Plain(new Color(0.45f, 0.44f, 0.5f), 0.7f));
+                Monsters.Part(PrimitiveType.Cube, k.thing, new Vector3(0f, 0f, 0.172f), new Vector3(0.2f, 0.12f, 0.005f), PatchworkAssets.Felt(new Color(0.95f, 0.92f, 0.85f)));
+            }
+            k.t = at.x;
+            return k;
+        }
+
+        protected override void OnPlayerStay(PatchworkPlayer player, float dt)
+        {
+            FxBurst.Spawn(FxBurst.Kind.Sparkle, transform.position, new Color(1f, 0.9f, 0.6f));
+            var taken = Taken;
+            Destroy(gameObject);
+            if (taken != null) taken();
+        }
+
+        void Update()
+        {
+            t += Time.deltaTime;
+            thing.localPosition = Vector3.up * Mathf.Sin(t * 1.9f) * 0.12f;
+            thing.localRotation = Quaternion.Euler(0f, t * 60f, Mathf.Sin(t * 1.2f) * 8f);
+            thing.localScale = Vector3.one * 1.6f;
+        }
+    }
+
     // The Unpicker, come to see how his work's getting on. He stands somewhere and watches
     // with all his eyes; come close, or wait long enough, and he folds up thin and is gone.
     public class UnpickerVisit : MonoBehaviour
     {
+        // Somebody actually hit him (nobody's meant to be able to). His thimble comes off.
+        public System.Action Knocked;
         float left, flee, fold = -1f;
+        bool hit;
 
         // Stands him on whatever is under "from" (within "drop" of it). Null if there's nothing.
         public static UnpickerVisit Show(Transform parent, Vector3 from, float drop, float seconds, float fleeDistance)
@@ -1802,8 +1894,24 @@ namespace Patchwork
             var v = go.AddComponent<UnpickerVisit>();
             v.left = seconds;
             v.flee = fleeDistance;
+            var fc = go.AddComponent<FrayCreature>();
+            fc.Radius = 1.2f;
+            fc.Quiet = true;
+            fc.Center = () => go.transform.position + Vector3.up * 1.6f;
+            fc.Struck = (p, power, from, finisher) => v.Hit();
             FxBurst.Spawn(FxBurst.Kind.Threads, hit.point + Vector3.up * 3f, SnarlKnot.FrayDark);
             return v;
+        }
+
+        bool Hit()
+        {
+            if (hit || fold >= 0f) return false;
+            hit = true;
+            FxBurst.Spawn(FxBurst.Kind.Sparkle, transform.position + Vector3.up * 5.4f, new Color(0.85f, 0.85f, 0.9f));
+            Sfx.PlayNear(SfxId.Clack, transform.position, 0.7f, 60f);
+            if (Knocked != null) Knocked();
+            Leave();
+            return true;
         }
 
         public void Leave()

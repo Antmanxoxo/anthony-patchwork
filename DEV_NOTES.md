@@ -646,6 +646,11 @@ Stuff I need to remember about how Patchwork is put together.
   is the same class, bigger, hatching moths. `Flavour(name, over, during, after)` gives a
   bystander one line during the trouble and one after.
 
+- **Secrets**: `Level2Quest.Secret(key)` marks one (`L2_q_s_<key>`), `Tell(key)` /
+  `Tell(key, who)` is true the first time somebody mentions it. The three found objects are
+  `Keepsake`s spawned at the `Secret_CoralCave`, `Secret_Biscuits` and `Secret_IceCave`
+  markers; if a marker is renamed the keepsake silently doesn't appear.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

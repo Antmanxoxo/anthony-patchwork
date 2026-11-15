@@ -1,5 +1,21 @@
 # Development Log
 
+## Nine secrets in the Night Glass
+Optional things you can do in Level 2's quest, each of which gets somebody to say something
+they otherwise never would. The quest panel counts them (Secrets n / 9).
+- Not a Scratch: win the Hall of Arms without losing a heart. (The Castellan, Wick)
+- Caught Napping: land the third hit of a combo on the Helmet Crab before it bolts, and
+  finish it there instead of chasing it to the Ruins. (Wick, Dr. Trowel)
+- Hats Off: actually hit the Unpicker on one of his two visits. (Wick, Stella, and the
+  Storyteller's last line changes)
+- Not One Moth: shut the Great Seam before anything climbs out of it. (Stella)
+- A Stitch in Time: stitch all five seams before winning any lens. (Wick, Professor Hoot)
+- No Introductions: win a lens without ever having spoken to Wick. (Wick gets a different
+  first conversation)
+- Marlow's Whistle: in the cave in the Coral Nursery. (Marlow)
+- The King in the Biscuits: the chess king, hiding in the biscuit stash. (Button)
+- A Jar of Red: in the Frozen Sea's ice cave. (Old Barnacle, who now hints at it)
+
 ## Seams, rollers, lurkers and a rallying Captain
 More Fray in the museum, and a bigger ending.
 - Seams: five rips in the floor (Atrium, Deep Time, Kelp Galleries, Sunken Ruins, keepers'

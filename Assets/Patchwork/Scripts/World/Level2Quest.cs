@@ -42,6 +42,18 @@ namespace Patchwork
     //   - The Hollow Captain, at half strength, calls two beaten armours back up.
     //   - The end is the Great Seam in the Observatory: moths pour out of it until it's shut.
     //
+    // And nine secrets, each of which gets somebody to say something they otherwise wouldn't
+    // (keys "L2_q_s_..."; the same key with "_told" once they've said it):
+    //   flawless - win the Hall of Arms without losing a heart      (the Castellan, Wick)
+    //   crab     - land the third hit on the Helmet Crab before it bolts, and finish it there (Wick, Dr. Trowel)
+    //   thimble  - actually hit the Unpicker on one of his visits   (Wick, Stella, the Storyteller)
+    //   nomoth   - shut the Great Seam before a single moth climbs out (Stella)
+    //   tidy     - stitch all five seams before winning any lens     (Wick, Professor Hoot)
+    //   stranger - win a lens without ever having spoken to Wick     (Wick)
+    //   whistle  - Marlow's whistle, in the cave in the Coral Nursery (Marlow)
+    //   king     - the chess king, hiding in the biscuit stash       (Button)
+    //   jar      - a jar of stolen red, in the Frozen Sea's ice cave (Old Barnacle)
+    //
     // Everything saved here starts "L2_q_".
     public static partial class Level2Builder
     {
@@ -283,6 +295,11 @@ namespace Patchwork
             }
             RefreshLamps();
 
+            // Three lost things, in three of the museum's hiding places.
+            HideKeepsake("Secret_CoralCave", Keepsake.Kind.Whistle, "whistle", "A brass whistle on a blue cord, at the back of a cave in the coral. It had M. scratched on it, and it had been there some time.");
+            HideKeepsake("Secret_Biscuits", Keepsake.Kind.King, "king", "In among the biscuits sat a very small ivory king with his sword across his knees and his eyes shut tight. He was not possessed by anything except good sense.");
+            HideKeepsake("Secret_IceCave", Keepsake.Kind.Jar, "jar", "A jam jar, lid screwed down, with something red going round and round inside it like a goldfish. Somebody tall had put it down here and forgotten it. The label said ENSIGN.");
+
             // The seams: open ones let things out; shut ones are a row of stitches.
             seams = new FraySeam[Seams];
             for (int i = 0; i < Seams && SeamSpots != null; i++)
@@ -317,8 +334,17 @@ namespace Patchwork
             WrapNpc("Keeper Marlow", MarlowLines, null);
             WrapNpc("The Castellan", CastellanLines, null);
             WrapNpc("Stella", StellaLines, StellaTalked);
-            WrapNpc("Button", () => CrabGossip(1, "Button"), null);
-            WrapNpc("Dr. Trowel", () => CrabGossip(2, "Trowel"), null);
+            WrapNpc("Button", () => Tell("king") ? new[]
+            {
+                "The king! You found the king! He wasn't taken at all, he was HIDING!",
+                "In the biscuits. Of course in the biscuits. That's where I'd go.",
+                "He says thank you. Well, he doesn't say anything, he's a chess piece. But he's stopped shutting his eyes."
+            } : CrabGossip(1, "Button"), null);
+            WrapNpc("Dr. Trowel", () => Tell("crab", "trowel") ? new[]
+            {
+                "You caught it in one go? Before it reached the Ruins? Oh. Well. Good. Very good.",
+                "It's only that I had a chair set up. And a notebook. I was rather looking forward to observing it."
+            } : CrabGossip(2, "Trowel"), null);
             WrapNpc("Thimble", () => CrabGossip(0, "Thimble"), null);
             Flavour("Ticket-master Tock", () => Seen("seam0"),
                 "No tickets tonight. Museum's closed, on account of the floor has a hole in it and things keep coming out. Three good thumps closes it, Wick says. I am a ticket-master. I do not thump.",
@@ -331,8 +357,17 @@ namespace Patchwork
             Flavour("Sergeant Stanchion", () => Seen("seam1"),
                 "The big spiral fossils are out of their case and they are ROLLING. Stand aside when they rock. Hit them when they fall over. That is the whole of the drill.",
                 "Deep Time is secure. The fossils are fossils again. Carry on.");
-            Flavour("Old Barnacle", () => Defended,
-                "Scissors. I heard scissors. Snip, snip, up in the rigging, and when I looked, the red had gone clean out of the ensign.", null);
+            WrapNpc("Old Barnacle", () =>
+            {
+                if (Tell("jar")) return new[]
+                {
+                    "What've ye got there? A jam jar? ...That's red. That's MY red. That's the red off the ensign, I'd know it anywhere, I've saluted it every morning for sixty years.",
+                    "He bottled it. Like plums. Unscrew it, lad. Go on. Stand back.",
+                    "...There she is. Look at that. Red as the day she was run up. Ye can keep the jar."
+                };
+                if (HasSecret("jar") || GameState.IsLevelComplete(Level2Builder.SceneName)) return null;
+                return new[] { "Scissors. I heard scissors. Snip, snip, up in the rigging, and when I looked, the red had gone clean out of the ensign. If ye find it, it'll be somewhere cold. Colour keeps better in the cold. He'd know that." };
+            }, null);
             Flavour("Squire Pim", () => ArmsWon,
                 "I'm not hiding. I'm guarding this corner. From behind this plinth.",
                 "Did you see the Captain call the others back up? I did. I had my eyes shut, but I saw it.");
@@ -342,6 +377,11 @@ namespace Patchwork
                 "Mind the Lantern Deep. Something down there has a light on, and it isn't one of ours. When the light flares, swim sideways.", null);
             Flavour("Keeper Pippa", () => HasLens(1),
                 "The Frozen Sea's got one too. I saw teeth. I've never been so glad to be on this side of the glass.", null);
+            WrapNpc("Professor Hoot", () => Tell("tidy", "hoot") ? new[]
+            {
+                "All five seams, before a single lens? Most people run after the shiny thing first. You mended the hole in the bag before you picked up the marbles.",
+                "I shall put that in the lecture. I don't have a lecture. I shall write a lecture and put that in it."
+            } : null, null);
             Flavour("Professor Hoot", () => SeamsShut >= Seams,
                 "The seams? The Fray lives on the back of everything. The Underside, where all the knots are. A seam is where it has picked its way through to the front. Stitch it and it has to find another way round.",
                 "Five seams shut. Do you know, I can hear the building settle. Like a quilt when you've finished the border.");
@@ -360,6 +400,7 @@ namespace Patchwork
             if (HasLens(which)) return;
             Mark("lens" + which);
             int n = LensCount;
+            if (!Met) Secret("stranger");
             PatchworkHUD.ShowGet(LensNames[which], n >= 3 ? "All three lenses of the Night Glass!" : n + " of 3 lenses of the Night Glass", LensBlue, 0);
             Sfx.Play(SfxId.PrizeFanfare, 0.6f);
             Haptics.Pulse(0.4f, 0.5f, 0.3f);
@@ -367,9 +408,10 @@ namespace Patchwork
             // The first lens Patch wins, somebody notices.
             if (n == 1 && which == 0 && visitor == null)
             {
-                visitor = UnpickerVisit.Show(FoeRoot, new Vector3(80f, 18.5f, -44f), 19f, 16f, 13f);
+                visitor = UnpickerVisit.Show(FoeRoot, new Vector3(80f, 18.5f, -44f), 19f, 20f, 5.5f);
                 if (visitor != null)
                 {
+                    visitor.Knocked = UnpickerKnocked;
                     Narrator.Say("The Object Glass, still warm from the Captain's chest. And at the far end of the hall, up on the toy castle, something very tall unfolded itself, looked at Patch with all its eyes, and folded away again.");
                     return;
                 }
@@ -415,6 +457,60 @@ namespace Patchwork
             if (game != null) game.ShowToast("It's held fast! Follow its three ropes and break the anchor knots first.");
         }
 
+        // ------------------------------------------------------------------ Secrets
+
+        static readonly string[] SecretKeys = { "flawless", "crab", "thimble", "nomoth", "tidy", "stranger", "whistle", "king", "jar" };
+        static readonly string[] SecretNames = { "Not a Scratch", "Caught Napping", "Hats Off", "Not One Moth", "A Stitch in Time", "No Introductions", "Marlow's Whistle", "The King in the Biscuits", "A Jar of Red" };
+        public const int Secrets = 9;
+        public int SecretsFound { get { int n = 0; foreach (var k in SecretKeys) if (Seen("s_" + k)) n++; return n; } }
+        public bool HasSecret(string key) { return Seen("s_" + key); }
+
+        // Something secret has been done (once only).
+        public void Secret(string key)
+        {
+            if (Seen("s_" + key)) return;
+            Mark("s_" + key);
+            int i = System.Array.IndexOf(SecretKeys, key);
+            PatchworkHUD.ShowGet("Secret: " + (i >= 0 ? SecretNames[i] : key), SecretsFound + " of " + Secrets + " secrets of the Night Glass", new Color(0.75f, 0.55f, 0.95f), 0);
+            Sfx.Play(SfxId.Checkpoint, 0.45f);
+            var game = PatchworkGame.Instance;
+            if (game != null && game.Player != null) ScoreKeeper.Bonus(1500, game.Player.Motor.Center);
+        }
+
+        // True the first time somebody gets to mention a secret that's been done.
+        bool Tell(string key)
+        {
+            if (!Seen("s_" + key) || Seen("s_" + key + "_told")) return false;
+            Mark("s_" + key + "_told");
+            return true;
+        }
+
+        // True the first time ONE particular person mentions it (several people can).
+        bool Tell(string key, string who)
+        {
+            if (!Seen("s_" + key) || Seen("s_" + key + "_told_" + who)) return false;
+            Mark("s_" + key + "_told_" + who);
+            return true;
+        }
+
+        void HideKeepsake(string marker, Keepsake.Kind kind, string key, string say)
+        {
+            if (Seen("s_" + key)) return;
+            var m = GameObject.Find(marker);
+            if (m == null) return;
+            Keepsake.Spawn(FoeRoot, m.transform.position + Vector3.up * 0.9f, kind).Taken = () =>
+            {
+                Secret(key);
+                Narrator.Say(say);
+            };
+        }
+
+        void UnpickerKnocked()
+        {
+            Secret("thimble");
+            Narrator.Say("Nobody had ever hit the Unpicker before. You could tell, because he didn't know what to do about it. His thimble rang on the floor like a dropped bell, and he was gone before it stopped.");
+        }
+
         // ------------------------------------------------------------------ The seams
 
         // Something climbs out of a seam: a chessman, or (in the stony galleries) an ammonite.
@@ -436,6 +532,7 @@ namespace Patchwork
             if (game == null) return;
             if (n >= Seams)
             {
+                if (LensCount == 0) Secret("tidy");
                 game.ShowToast("All five seams stitched! Nothing more can come up that way.");
                 game.Heal(PatchworkGame.MaxHearts);
                 if (game.Player != null) ScoreKeeper.Bonus(2000, game.Player.Motor.Center);
@@ -514,6 +611,7 @@ namespace Patchwork
         {
             Mark("crab");
             DropLens(2, new Vector3(at.x, at.y + 0.4f, at.z), true);
+            if (Crab != null && Crab.CaughtEarly) Secret("crab");
         }
 
         // ------------------------------------------------------------------ The Observatory
@@ -524,7 +622,11 @@ namespace Patchwork
             Mark("fitted");
             PatchworkHUD.ShowGet("The Night Glass", "Stella has fitted all three lenses.", LensBlue, 0);
             Sfx.Play(SfxId.Lever, 0.5f);
-            if (visitor == null) visitor = UnpickerVisit.Show(FoeRoot, ObservatoryCentre + new Vector3(-11f, 7f, -11f), 12f, 600f, 7f);
+            if (visitor == null)
+            {
+                visitor = UnpickerVisit.Show(FoeRoot, ObservatoryCentre + new Vector3(-11f, 7f, -11f), 12f, 600f, 5.5f);
+                if (visitor != null) visitor.Knocked = UnpickerKnocked;
+            }
             Narrator.Say(visitor != null
                 ? "Click, click, click: three lenses home. And on the far side of the dome a tall shape with a thimble for a hat lifted one long arm, and pointed. Out of the dark came the moths."
                 : "Click, click, click: three lenses home. And the moment the Night Glass could see again, everything grey in the museum knew it, and came.");
@@ -597,7 +699,9 @@ namespace Patchwork
                     Mark("defended");
                     game.ShowToast("The Night Glass is ready. Go and look!");
                     Sfx.Play(SfxId.PrizeFanfare, 0.5f);
-                    if (visitor != null)
+                    if (greatSeam != null && greatSeam.Births == 0) Secret("nomoth");
+                    if (HasSecret("thimble")) Narrator.Say("And that was the last of them. Nobody bowed this time. Somewhere below, a clock began to strike, and on the Observatory floor a thimble the size of a bucket lay on its side, still rocking. Midnight.");
+                    else if (visitor != null)
                     {
                         visitor.Leave();
                         Narrator.Say("The last moth went out like a candle. The tall shape took off its thimble, which may have been a bow, and stepped backward into a seam. Somewhere below, a clock began to strike. Midnight.");
@@ -693,6 +797,13 @@ namespace Patchwork
 
         public string[] WickLines()
         {
+            if (!Met && LensCount > 0) return new[]
+            {
+                "Halt! Who goes... is that... that's one of the LENSES. Where did you... who ARE you?",
+                "No, don't tell me. I don't want to know. You walked in off the street and started putting my museum right without so much as a how-d'you-do. Forty years a watchman. Nobody tells me anything.",
+                "Wick. Night watchman. There are three of those, they go in the telescope at the top of the house, and they need to be there by midnight or the Great Whale goes over unsung and we all go grey. But I expect you'd worked that out.",
+                "Stella's up in the Observatory. The lift's at the far end of the Sunken Ruins. Carry on, then. As you were. Whoever you are."
+            };
             if (!Met) return new[]
             {
                 "Halt! Who goes... oh. You're not grey. Thank the stars. Wick, night watchman. Forty years and I never lost so much as a teaspoon, until tonight.",
@@ -705,9 +816,19 @@ namespace Patchwork
                 "You've a good arm on you. Three quick hits, and make the third one count: it's the only thing that shifts a shield. Bring the lenses up to Stella in the Observatory. I'll hold the door."
             };
             int n = LensCount;
+            if (Tell("thimble", "wick")) return new[]
+            {
+                "You HIT him? The tall one? With the thimble?",
+                "Forty years I've walked these halls and I never so much as raised my voice to a burglar. And you knocked his hat off.",
+                "I'd like it for the lost property cupboard, when you've done with it. Just to know it's in there."
+            };
             if (Defended) return new[] { "It's ready? Then what are you doing down here talking to me? Go and look, before she's gone over!" };
             if (n >= 3) return new[] { "All three! Up to Stella with them, quick as you can. The lift's at the far end of the Sunken Ruins." };
             var lines = new List<string>();
+            // Things he's heard about that he wasn't expecting to.
+            if (Tell("flawless", "wick")) lines.Add("The Castellan says you went through the whole Hollow Guard and they never laid a gauntlet on you. He's told me four times. He's started acting it out.");
+            if (Tell("crab")) lines.Add("You caught the helmet before it could run? Flat on its back, first go? I chased that thing round the Atrium for an hour. I'm not jealous. I'm a little jealous.");
+            if (Tell("tidy", "wick")) lines.Add("All five seams stitched, and not a lens in your pocket yet. You're a tidy sort. Shut the doors before you chase the burglars. My mother was the same.");
             int pages = PagesFound;
             if (pages >= Pages && !Seen("pages_told"))
             {
@@ -732,6 +853,12 @@ namespace Patchwork
 
         string[] MarlowLines()
         {
+            if (Tell("whistle")) return new[]
+            {
+                "My whistle! Where on earth... the cave in the Coral Nursery? That's where I dropped it. Nineteen years ago. I was feeding the wrasse.",
+                "I've been betting it ever since. \"I'd bet my whistle.\" I never had a whistle to bet. Don't tell June.",
+                "Listen. ...Still works. The fish used to come to that. I wonder if they remember."
+            };
             if (HasLens(1)) return null;
             int n = ClotsCleared;
             if (n >= 4) return new[] { "Clear! All four! And there's something shining in the water where the last knot was. Go on, it's yours." };
@@ -748,6 +875,12 @@ namespace Patchwork
 
         string[] CastellanLines()
         {
+            if (Tell("flawless", "castellan")) return new[]
+            {
+                "Not a scratch. Not ONE. I watched from behind the cabinet. Eleven armed opponents, counting the two that got up again, and you came out the far end without a thread out of place.",
+                "I have been Castellan of this hall for thirty years and I have never seen it done. I have never seen it attempted. Strictly speaking there has never been any call.",
+                "I shall have a small brass plate made. \"On this spot.\" It will not say what happened on this spot. People will have to ask."
+            };
             if (HasLens(0)) return new[] { "They're back on their plinths. A little dented. I shall be up all night with the polish, and I shan't mind one bit. Thank you." };
             if (ArmsWon) return new[] { "It's over? It's over. He dropped something, the Captain. Round and blue. It's lying in the aisle; I didn't dare touch it." };
             return new[]
@@ -760,6 +893,16 @@ namespace Patchwork
 
         string[] StellaLines()
         {
+            if (Defended && Tell("nomoth")) return new[]
+            {
+                "Not one. Not one moth got out. You had that seam shut before it could so much as cough.",
+                "I had a broom ready and everything. I feel a bit silly holding it now. Go on. Go and look."
+            };
+            if (Tell("thimble", "stella")) return new[]
+            {
+                "Is that HIS? The thimble? You knocked it off his head?",
+                "Put it under the telescope. No, really. It's exactly the right height for a footstool, and I have wanted a footstool up here for years."
+            };
             if (Defended) return new[] { "It's ready. Every lens where it belongs. Go on, up the steps. You earned the first look." };
             if (Fitted) return new[] { "The floor! It's come open! Stitch it, stitch it shut, or the moths will have the lenses out again!" };
             int n = LensCount;
@@ -841,7 +984,8 @@ namespace Patchwork
         State state;
         int wave;
         float timer;
-        bool fell, rallied;
+        bool fell, rallied, scratched;
+        int hearts;
         Vector3 lastFall = new Vector3(80f, 0f, -12f);
 
         public bool Busy { get { return state == State.Closing || state == State.Fighting || state == State.Between; } }
@@ -881,6 +1025,11 @@ namespace Patchwork
             if (game == null || game.Player == null || state == State.Won) return;
             float dt = Time.deltaTime;
             Vector3 pp = game.Player.transform.position;
+            if (Busy)
+            {
+                if (game.Hearts < hearts || game.Unravelling) scratched = true;
+                hearts = game.Hearts;
+            }
 
             switch (state)
             {
@@ -940,6 +1089,7 @@ namespace Patchwork
             state = State.Closing;
             timer = 0f;
             fell = false;
+            hearts = game.Hearts;
             Gate.gameObject.SetActive(true);
             Gate.position = new Vector3(80f, 8.2f, 5f);
             Sfx.Play(SfxId.GateRumble, 0.6f);
@@ -997,6 +1147,7 @@ namespace Patchwork
             Sfx.Play(SfxId.GateRumble, 0.5f);
             Sfx.Play(SfxId.PrizeFanfare, 0.5f);
             game.ShowToast("The Hollow Guard is beaten! The portcullis is up.");
+            if (!scratched && Quest != null) Quest.Secret("flawless");
             Narrator.Say("Then it was quiet. Eight suits of armour stood on eight plinths, looking as if they had never moved, and would thank you not to mention it.");
             if (Quest != null) Quest.ArmsBeaten(lastFall);
         }
