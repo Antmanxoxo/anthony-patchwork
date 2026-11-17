@@ -103,6 +103,8 @@ namespace Patchwork
             GameState.Outfit = myOutfit;
             vis.ApplyLook();
             vis.SetForm(player.Forms.Current, false);
+            pinned = null;
+            shotCam = null;
             game.CameraRig.enabled = true;
             if (game.Hud != null) game.Hud.enabled = true;
             Debug.Log("[Wardrobe] Photo tour done: " + n + " pictures in " + dir);
@@ -119,36 +121,54 @@ namespace Patchwork
 
         void Finish()
         {
+            pinned = null;
+            shotCam = null;
             if (System.IO.File.Exists(AskFile)) System.IO.File.Delete(AskFile);
             running = false;
             Destroy(gameObject);
+        }
+
+        // Keeps him still and facing the same way while the pictures are taken (after
+        // everything else has moved him each frame).
+        static Transform pinned;
+        static Vector3 pinPos;
+        static Quaternion pinRot;
+        static Camera shotCam;
+        static Vector3 camPos;
+        static Quaternion camRot;
+
+        void LateUpdate()
+        {
+            if (pinned != null) pinned.SetPositionAndRotation(pinPos, pinRot);
+            if (shotCam != null) shotCam.transform.SetPositionAndRotation(camPos, camRot);
         }
 
         // Looks at Patch from an angle round him (0 = straight in front), held for a moment
         // so the new look settles, then takes the picture. zoom < 1 comes in closer.
         static IEnumerator Shot(PatchworkGame game, Camera cam, Transform who, float angle, float zoom, string dir, string file)
         {
+            if (pinned != who) { pinned = who; pinPos = who.position; pinRot = who.rotation; }
+            shotCam = cam;
+            var vis = game.Player.Visuals;
             float until = Time.realtimeSinceStartup + 0.5f;
             while (true)
             {
-                Bounds b = new Bounds(who.position + Vector3.up * 0.5f, Vector3.one * 0.2f);
-                bool any = false;
-                foreach (var r in who.GetComponentsInChildren<Renderer>())
-                {
-                    if (!r.enabled || !r.gameObject.activeInHierarchy || r is ParticleSystemRenderer || r is TrailRenderer || r is LineRenderer) continue;
-                    if (!any) { b = r.bounds; any = true; } else b.Encapsulate(r.bounds);
-                }
-                float size = Mathf.Clamp(Mathf.Max(b.size.y, b.size.x * 0.8f), 0.4f, 6f);
-                Vector3 dirOut = Quaternion.AngleAxis(angle, Vector3.up) * Vector3.ProjectOnPlane(who.forward, Vector3.up).normalized;
-                float dist = (size * 1.35f + 0.6f) * zoom;
-                Vector3 look = b.center + Vector3.up * size * 0.08f;
-                Vector3 from = look + dirOut * dist + Vector3.up * size * 0.25f;
+                Bounds b = vis.LookBounds();
+                float size = Mathf.Clamp(Mathf.Max(b.size.y, b.size.x * 0.9f), 0.3f, 3f);
+                Vector3 front = Vector3.ProjectOnPlane(vis.Root.forward, Vector3.up).normalized;
+                Vector3 dirOut = Quaternion.AngleAxis(angle, Vector3.up) * front;
+                // (A 60 degree view fits him with a little room round him.)
+                float fov = cam.fieldOfView > 1f ? cam.fieldOfView : 60f;
+                float dist = size * 0.62f / Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad) * 1.25f * zoom + cam.nearClipPlane;
+                Vector3 look = b.center + Vector3.up * size * (zoom < 0.8f ? 0.12f : 0f);
+                camPos = look + dirOut * dist + Vector3.up * size * 0.18f;
+                camRot = Quaternion.LookRotation(look - camPos, Vector3.up);
                 game.CameraRig.enabled = false;
-                cam.transform.position = from;
-                cam.transform.rotation = Quaternion.LookRotation(look - from, Vector3.up);
+                cam.transform.SetPositionAndRotation(camPos, camRot);
                 if (Time.realtimeSinceStartup >= until) break;
-                yield return new WaitForEndOfFrame();
+                yield return null;
             }
+            yield return new WaitForEndOfFrame();
             ScreenCapture.CaptureScreenshot(System.IO.Path.Combine(dir, file));
             yield return new WaitForSecondsRealtime(0.25f);
         }

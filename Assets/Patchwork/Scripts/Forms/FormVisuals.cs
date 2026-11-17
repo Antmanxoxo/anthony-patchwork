@@ -87,6 +87,24 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ API
 
+        public Transform Root { get { return root; } }
+
+        // The box round the form he's in now, with his hat and outfit (for framing him in pictures).
+        public Bounds LookBounds()
+        {
+            var b = new Bounds(root.position + root.up * 0.6f, Vector3.one * 0.3f);
+            bool any = false;
+            var list = new List<Renderer>(BodyFor(form).Renderers);
+            if (neckRoot != null) { list.AddRange(neckRoot.GetComponentsInChildren<Renderer>()); list.AddRange(torsoRoot.GetComponentsInChildren<Renderer>()); }
+            list.AddRange(accessoryRoot.GetComponentsInChildren<Renderer>());
+            foreach (var r in list)
+            {
+                if (r == null || !r.enabled || !r.gameObject.activeInHierarchy) continue;
+                if (!any) { b = r.bounds; any = true; } else b.Encapsulate(r.bounds);
+            }
+            return b;
+        }
+
         // World position of Yarn's right hand (where the tether starts).
         public Vector3 HandPosition
         {
@@ -384,7 +402,7 @@ namespace Patchwork
                         m.SetTexture("_BaseMap", weave != null ? weave : lookTex[m]);
                         m.SetTextureScale("_BaseMap", weave != null ? new Vector2(3f, 3f) : lookScale[m]);
                     }
-                    Wardrobe.Finish(m);
+                    FinishSoftly(m);
                     SetGlitter(m, 3f);
                     body.Colors[i] = c;
                 }
@@ -393,6 +411,24 @@ namespace Patchwork
             int pick = Mathf.Clamp(GameState.Outfit, 0, outfitParts.Length - 1);
             for (int i = 0; i < outfitParts.Length; i++)
                 if (outfitParts[i] != null) foreach (var g in outfitParts[i]) if (g != null) g.SetActive(i == pick);
+        }
+
+        // Water and Wind: the fabric changes how shiny they are only part way, so the jelly stays
+        // glossy and the cloud stays soft (their own finish comes back with the plain knit).
+        readonly Dictionary<Material, Vector2> lookFinish = new Dictionary<Material, Vector2>();
+        void FinishSoftly(Material m)
+        {
+            if (!m.HasProperty("_Smoothness")) return;
+            Vector2 own;
+            if (!lookFinish.TryGetValue(m, out own))
+            {
+                own = new Vector2(m.GetFloat("_Smoothness"), m.HasProperty("_Metallic") ? m.GetFloat("_Metallic") : 0f);
+                lookFinish[m] = own;
+            }
+            int f = Mathf.Clamp(GameState.Fabric, 0, Wardrobe.FabricNames.Length - 1);
+            float k = f == 0 ? 0f : 0.6f;
+            m.SetFloat("_Smoothness", Mathf.Lerp(own.x, Wardrobe.FabricSmooth[f], k));
+            if (m.HasProperty("_Metallic")) m.SetFloat("_Metallic", Mathf.Lerp(own.y, Wardrobe.FabricMetal[f], k));
         }
 
         static void SetGlitter(Material m, float tiles)
@@ -413,50 +449,132 @@ namespace Patchwork
             }
         }
 
+        // How the outfit fits a form: where his neck and the middle of his body are (kept
+        // relative to a bone, so they follow him as he moves) and how big round each is, all
+        // measured from the form's own shape the first time it's dressed.
+        class OutfitFit
+        {
+            public Transform NeckBone, BodyBone;
+            public Vector3 NeckAt, BodyAt;        // in the bones' own spaces
+            public Vector3 NeckSize, BodySize;    // half-widths across, up, and front to back (in root units)
+            public float Height;
+        }
+        readonly Dictionary<FormType, OutfitFit> fits = new Dictionary<FormType, OutfitFit>();
+
+        public float FormHeight { get { var f = FitFor(form); return f != null ? f.Height * root.lossyScale.y : 1.2f; } }
+
+        OutfitFit FitFor(FormType f)
+        {
+            OutfitFit fit;
+            if (fits.TryGetValue(f, out fit)) return fit;
+            fit = MeasureFit(f);
+            if (fit != null) fits[f] = fit;
+            return fit;
+        }
+
+        // Reads the shape of the form (every point of its meshes, in the root's space) in thin
+        // slices from the feet up. The neck is the narrowest slice between the body and the
+        // head; the body is the part under it.
+        OutfitFit MeasureFit(FormType f)
+        {
+            var body = BodyFor(f);
+            var pts = new List<Vector3>();
+            var baked = new Mesh();
+            foreach (var r in body.Renderers)
+            {
+                if (r == null) continue;
+                var smr = r as SkinnedMeshRenderer;
+                Mesh m;
+                Transform t = r.transform;
+                if (smr != null) { smr.BakeMesh(baked, true); m = baked; }
+                else { var mf = r.GetComponent<MeshFilter>(); if (mf == null || mf.sharedMesh == null) continue; m = mf.sharedMesh; }
+                if (!m.isReadable && smr == null) continue;
+                var v = m.vertices;
+                for (int i = 0; i < v.Length; i += (v.Length > 6000 ? 3 : 1)) pts.Add(root.InverseTransformPoint(t.TransformPoint(v[i])));
+            }
+            Object.Destroy(baked);
+            if (pts.Count < 20) return null;
+            float y0 = float.MaxValue, y1 = float.MinValue;
+            foreach (var p in pts) { y0 = Mathf.Min(y0, p.y); y1 = Mathf.Max(y1, p.y); }
+            float h = Mathf.Max(0.05f, y1 - y0);
+            const int N = 48;
+            var sx = new float[N]; var sz = new float[N]; var cx = new float[N]; var cz = new float[N]; var cnt = new int[N];
+            var lists = new List<Vector3>[N];
+            for (int i = 0; i < N; i++) lists[i] = new List<Vector3>();
+            foreach (var p in pts) lists[Mathf.Clamp((int)((p.y - y0) / h * N), 0, N - 1)].Add(p);
+            for (int i = 0; i < N; i++)
+            {
+                var l = lists[i];
+                cnt[i] = l.Count;
+                if (l.Count < 3) continue;
+                float mx = 0f, mz = 0f;
+                foreach (var p in l) { mx += p.x; mz += p.z; }
+                cx[i] = mx / l.Count; cz[i] = mz / l.Count;
+                var dz = new List<float>(); foreach (var p in l) dz.Add(Mathf.Abs(p.z - cz[i]));
+                dz.Sort();
+                sz[i] = dz[(int)(dz.Count * 0.9f)];
+                // (Arms hanging at his sides would make him look wider than he is, so only the
+                // points near enough the middle count across.)
+                var dx = new List<float>(); foreach (var p in l) { float d = Mathf.Abs(p.x - cx[i]); if (d < sz[i] * 2.2f + 0.02f) dx.Add(d); }
+                dx.Sort();
+                sx[i] = dx.Count > 0 ? dx[(int)(dx.Count * 0.9f)] : sz[i];
+            }
+            System.Func<int, float> R = i => Mathf.Max(sx[i], sz[i]);
+            // The neck: the narrowest slice in the upper part of him that has a fair bit of
+            // him both above and below.
+            int neck = -1;
+            for (int i = (int)(N * 0.45f); i < (int)(N * 0.88f); i++)
+                if (cnt[i] >= 3 && (neck < 0 || R(i) < R(neck))) neck = i;
+            if (neck < 0) neck = (int)(N * 0.6f);
+            // The body: the widest slice below the neck (down to a third of his height under it).
+            int widest = -1;
+            for (int i = neck - 1; i >= Mathf.Max(0, neck - (int)(N * 0.33f)); i--)
+                if (cnt[i] >= 3 && (widest < 0 || R(i) > R(widest))) widest = i;
+            if (widest < 0) widest = Mathf.Max(0, neck - 4);
+            float neckY = y0 + (neck + 0.5f) / N * h;
+            float bodyR = Mathf.Max(sx[widest], sz[widest]);
+            // The middle of the body sits about one body-radius under the neck.
+            float bodyY = Mathf.Max(y0 + h * 0.12f, neckY - bodyR * 0.85f);
+            int bi = Mathf.Clamp((int)((bodyY - y0) / h * N), 0, N - 1);
+
+            var fit = new OutfitFit();
+            fit.Height = h;
+            float nr = Mathf.Max(R(neck), bodyR * 0.55f);
+            fit.NeckSize = new Vector3(Mathf.Max(sx[neck], nr * 0.85f), nr, Mathf.Max(sz[neck], nr * 0.85f));
+            float bx = Mathf.Max(sx[bi], sx[widest] * 0.9f), bz = Mathf.Max(sz[bi], sz[widest] * 0.9f);
+            fit.BodySize = new Vector3(bx, (bx + bz) * 0.5f, bz);
+            Vector3 neckPt = root.TransformPoint(new Vector3(cx[neck], neckY, cz[neck]));
+            Vector3 bodyPt = root.TransformPoint(new Vector3(cx[bi], bodyY, cz[bi]));
+            switch (f)
+            {
+                case FormType.Water: fit.NeckBone = wHead; fit.BodyBone = wBody; break;
+                case FormType.Wind: fit.NeckBone = windHead; fit.BodyBone = windHead; break;
+                default:
+                    if (patchModel != null) { fit.NeckBone = patchModel.HeadBone; fit.BodyBone = patchModel.SpineBone != null ? patchModel.SpineBone : patchModel.HeadBone; }
+                    else { fit.NeckBone = yarnHead; fit.BodyBone = yarnTorso; }
+                    break;
+            }
+            if (fit.NeckBone == null) fit.NeckBone = root;
+            if (fit.BodyBone == null) fit.BodyBone = root;
+            fit.NeckAt = fit.NeckBone.InverseTransformPoint(neckPt);
+            fit.BodyAt = fit.BodyBone.InverseTransformPoint(bodyPt);
+            Debug.Log("[Wardrobe] " + f + " fit: height " + h.ToString("0.00") + ", neck at " + neckY.ToString("0.00") + " size " + fit.NeckSize.ToString("0.000") + ", body at " + bodyY.ToString("0.00") + " size " + fit.BodySize.ToString("0.000"));
+            return fit;
+        }
+
         // Each frame: the outfit to the neck and body of whichever form he's in. The neck
         // pieces are built round a neck one unit across, the body pieces round a body one unit
-        // across, and each is scaled to fit the form.
+        // across, and each is stretched to fit the form.
         void PlaceOutfit()
         {
             if (neckRoot == null || GameState.Outfit <= 0) return;
-            Vector3 neck, up, torso;
-            float rn, rb;
-            float s = root.lossyScale.x;
-            switch (form)
-            {
-                case FormType.Water:
-                    neck = wHead.position;
-                    up = wHead.up;
-                    torso = wBody.TransformPoint(new Vector3(0f, 0.12f, 0f));
-                    rn = 0.13f * s;
-                    rb = 0.175f * s;
-                    break;
-                case FormType.Wind:
-                    neck = windHead.position + windHead.up * 0.03f * s;
-                    up = windHead.up;
-                    torso = neck - up * 0.16f * s;
-                    rn = 0.2f * s;
-                    rb = 0.25f * s;
-                    break;
-                default:
-                    if (patchModel == null || !patchModel.BodyPose(out neck, out up, out torso, out rn, out rb))
-                    {
-                        neck = root.position + root.up * 1.05f * s;
-                        up = root.up;
-                        torso = root.position + root.up * 0.68f * s;
-                        rn = 0.16f * s;
-                        rb = 0.36f * s;
-                    }
-                    break;
-            }
-            Vector3 fwd = Vector3.ProjectOnPlane(root.forward, up);
-            if (fwd.sqrMagnitude < 0.001f) fwd = root.forward;
-            var rot = Quaternion.LookRotation(fwd.normalized, up);
-            float ps = Mathf.Max(0.0001f, root.lossyScale.x);
-            neckRoot.SetPositionAndRotation(neck, rot);
-            neckRoot.localScale = Vector3.one * (rn / ps);
-            torsoRoot.SetPositionAndRotation(torso, rot);
-            torsoRoot.localScale = Vector3.one * (rb / ps);
+            var fit = FitFor(form);
+            if (fit == null) return;
+            var rot = root.rotation;
+            neckRoot.SetPositionAndRotation(fit.NeckBone.TransformPoint(fit.NeckAt), rot);
+            neckRoot.localScale = fit.NeckSize;
+            torsoRoot.SetPositionAndRotation(fit.BodyBone.TransformPoint(fit.BodyAt), rot);
+            torsoRoot.localScale = fit.BodySize;
         }
 
         GameObject OutfitPart(int outfit, Transform space, string name)

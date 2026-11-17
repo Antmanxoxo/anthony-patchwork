@@ -30,8 +30,8 @@ namespace Patchwork
 
         public static readonly string[] FabricNames = { "Knit", "Felt", "Velvet", "Satin", "Corduroy", "Patent Leather", "Glitter" };
         // Smoothness, metallic, and how deep the stitches and bumps look.
-        static readonly float[] FabricSmooth = { 0.12f, 0.04f, 0.32f, 0.62f, 0.08f, 0.86f, 0.78f };
-        static readonly float[] FabricMetal = { 0f, 0f, 0f, 0.05f, 0f, 0.08f, 0.55f };
+        public static readonly float[] FabricSmooth = { 0.12f, 0.04f, 0.32f, 0.62f, 0.08f, 0.86f, 0.78f };
+        public static readonly float[] FabricMetal = { 0f, 0f, 0f, 0.05f, 0f, 0.08f, 0.55f };
         static readonly float[] FabricBump = { 1f, 0.45f, 0.7f, 0.35f, 2f, 0.2f, 1.2f };
         static readonly float[] FabricShade = { 1f, 1f, 0.86f, 1.04f, 0.92f, 0.95f, 1.05f };
         public static readonly int[] FabricPrices = { 0, 1200, 3000, 3000, 2500, 5000, 8000 };

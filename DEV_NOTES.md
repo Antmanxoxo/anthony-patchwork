@@ -752,6 +752,8 @@ Stuff I need to remember about how Patchwork is put together.
 
 - Wardrobe photo tour: `Forms/WardrobeTour.cs`, started by `Screenshots/take_wardrobe.txt` (editor only, deleted when done) once the game is in Gameplay mode. Forms are switched for looks only (`Visuals.SetForm`), and the camera frames Patch from his renderer bounds.
 
+- Outfit fit: `FormVisuals.MeasureFit` bakes the form's meshes into root space, slices them (48 slices, 90th-percentile half-width and depth, arms ignored across), takes the narrowest slice between 45% and 88% of his height as the neck and the widest slice under it as the body. The anchors are kept in the head and body bones' spaces; `neckRoot`/`torsoRoot` get the measured half-sizes as their scale. The measurements are logged as `[Wardrobe] <form> fit:`.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

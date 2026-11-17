@@ -1,5 +1,12 @@
 # Development Log
 
+## Outfits measured to fit each form
+
+- From the first wardrobe photos: the outfits sat too low and too wide on Patch, and were tiny or hidden on the Water form. Now each form's shape is measured the first time he's dressed in it: it's read in slices from his feet up, his neck is the narrowest point between body and head, and his body is the part under it. Every outfit is stretched to that neck and body (wider than deep where he is), and follows his head and body bones as he moves.
+- Fabrics on the Water and Wind forms only change how shiny they are part of the way, so the jelly stays glossy and the cloud stays soft. Their own finish comes back with the plain knit.
+- The wardrobe photo tour now holds Patch still and facing the same way, and frames him close up, so front and back pictures really are front and back.
+
+
 ## Wardrobe photo tour
 
 - A photo tour for the wardrobe, like the Level 2 one. Put a file called `take_wardrobe.txt` in the Screenshots folder and play any level: the camera turns to Patch and photographs every outfit (front and back), every colour scheme, and every fabric (in his own colours and dyed) on all three forms, into `Screenshots/Wardrobe`. Then his own look and the camera are put back.
