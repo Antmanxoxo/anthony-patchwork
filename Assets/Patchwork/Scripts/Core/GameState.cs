@@ -90,8 +90,17 @@ namespace Patchwork
             set { if (Data.hat != value) { Data.hat = value; dirty = true; } }
         }
 
+        // ----- Dev mode: everything unlocked, as many points as you like, no damage -----
+        // (A setting on this computer, not part of the save: turn it off and it's all as it was.)
+        const string DevKey = "pw_dev_mode";
+        public static bool DevMode
+        {
+            get { return PlayerPrefs.GetInt(DevKey, 0) == 1; }
+            set { PlayerPrefs.SetInt(DevKey, value ? 1 : 0); PlayerPrefs.Save(); }
+        }
+
         // ----- The wardrobe (points to spend, and what's been bought) -----
-        public static int Purse { get { return Mathf.Max(0, Data.pointsEarned - Data.pointsSpent); } }
+        public static int Purse { get { return DevMode ? 999999 : Mathf.Max(0, Data.pointsEarned - Data.pointsSpent); } }
         public static int PointsEarned { get { return Data.pointsEarned; } }
 
         public static void EarnPoints(int v)
@@ -101,7 +110,7 @@ namespace Patchwork
             dirty = true;
         }
 
-        public static bool Owns(string item) { return Data.owned.Contains(item); }
+        public static bool Owns(string item) { return DevMode || Data.owned.Contains(item); }
 
         // Pays for something if there's enough in the purse (and saves).
         public static bool Buy(string item, int price)
@@ -194,6 +203,7 @@ namespace Patchwork
         public static bool IsHatUnlocked(int hat)
         {
             if (hat <= 1) return true;
+            if (DevMode) return true;
             // The God Mode Halo is a testing tool: always there in the editor (and in test
             // builds), never in the finished game.
             if (hat == FormVisuals.GodHat) return Application.isEditor || Debug.isDebugBuild;

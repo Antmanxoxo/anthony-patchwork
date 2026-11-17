@@ -10,7 +10,7 @@ namespace Patchwork
     {
         enum Item { Resume, Restart, ReturnToHub, Settings, Quit,
                     Music, Sounds, Rumble, CameraSpeed, InvertY, InvertX, SwingMode, Prompts, WheelButton, VSync, Back,
-                    Look, Photo, Merits, Graphics }
+                    Look, Photo, Merits, Graphics, DevMode }
 
         readonly PatchworkGame game;
         readonly List<Item> items = new List<Item>();
@@ -81,6 +81,7 @@ namespace Patchwork
             items.Add(Item.Prompts);
             items.Add(Item.WheelButton);
             items.Add(Item.VSync);
+            items.Add(Item.DevMode);
             items.Add(Item.Back);
             index = 0;
             highlightPos = 0f;
@@ -112,6 +113,7 @@ namespace Patchwork
                 case Item.InvertX: return "Invert Camera Left/Right:  " + OnOff(GameSettings.InvertX);
                 case Item.SwingMode: return "Yarn Swing:  " + (GameSettings.SwingToggle ? "Tap on / tap off" : "Hold button");
                 case Item.VSync: return "VSync:  " + OnOff(GameSettings.VSync);
+                case Item.DevMode: return "Dev Mode (everything unlocked):  " + OnOff(GameState.DevMode);
                 case Item.Back: return "Back";
                 case Item.Resume: return "Resume";
                 case Item.Restart: return "Restart from Checkpoint";
@@ -192,7 +194,7 @@ namespace Patchwork
         // On/off and multiple-choice settings: X or left/right flips them.
         static bool IsToggle(Item item)
         {
-            return item == Item.InvertY || item == Item.InvertX || item == Item.SwingMode || item == Item.VSync
+            return item == Item.InvertY || item == Item.InvertX || item == Item.SwingMode || item == Item.VSync || item == Item.DevMode
                 || item == Item.Prompts || item == Item.WheelButton || item == Item.Look || item == Item.Graphics;
         }
 
@@ -205,6 +207,11 @@ namespace Patchwork
                 case Item.InvertX: GameSettings.InvertX = !GameSettings.InvertX; break;
                 case Item.SwingMode: GameSettings.SwingToggle = !GameSettings.SwingToggle; break;
                 case Item.VSync: GameSettings.VSync = !GameSettings.VSync; GameSettings.ApplyVSync(); break;
+                case Item.DevMode:
+                    GameState.DevMode = !GameState.DevMode;
+                    if (game.Player != null) { game.Player.Visuals.ApplyLook(); game.Player.Visuals.SetHat(GameState.HatIndex); }
+                    game.ShowToast(GameState.DevMode ? "Dev mode on: every hat, sticker, colour, fabric and outfit, 999,999 points, no damage, and the Observatory lift always open." : "Dev mode off.");
+                    break;
                 case Item.Prompts: input.Prompts = (PatchworkInput.PromptMode)(((int)input.Prompts + (dir < 0 ? 2 : 1)) % 3); break;
                 case Item.WheelButton: input.FormWheelOnR1 = !input.FormWheelOnR1; break;
                 case Item.Look: GameSettings.Look = (GameSettings.Look + (dir < 0 ? 2 : 1)) % 3; GameSettings.ApplyLook(); break;

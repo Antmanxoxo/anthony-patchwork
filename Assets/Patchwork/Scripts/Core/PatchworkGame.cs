@@ -891,6 +891,7 @@ namespace Patchwork
         public void Hurt(Vector3 from)
         {
             if (Level == null || Level.IsHub || HurtTimer > 0f || Unravelling || Mode != UIMode.Gameplay || PodLaunch.Busy) return;
+            if (GameState.DevMode) { SnarlKnot.Bump(Player, from); return; }   // (dev mode: bumped, never hurt)
             Hearts = Mathf.Max(0, Hearts - 1);
             HurtTimer = 1.6f;
             HeartsShake = 1f;
@@ -1124,6 +1125,9 @@ namespace Patchwork
             if (Mode != UIMode.Gameplay && Mode != UIMode.FormWheel) return;
             GameState.SetLevelComplete(Level.Id);
             if (Level.Id == Level1Builder.SceneName) Merits.Earn(Merits.Id.WeddingBells);
+            // A sticker to remember it by.
+            if (Level.Id == Level1Builder.SceneName) Prizes.GrantSticker(StickerId.Cake);
+            if (Level.Id == Level2Builder.SceneName) Prizes.GrantSticker(StickerId.Whale);
             // Best thread count unlocks hats.
             bool topHat = GameState.IsHatUnlocked(2), daisy = GameState.IsHatUnlocked(3);
             bool newBest = GameState.RecordThreads(Level.Id, ThreadsCollected, Level.ThreadTotal);

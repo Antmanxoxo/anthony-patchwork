@@ -3,7 +3,9 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    public enum StickerId { Star, Heart, Flower, Smiley, Moon, Music, Crown, Fish, Rainbow, Paw }
+    public enum StickerId { Star, Heart, Flower, Smiley, Moon, Music, Crown, Fish, Rainbow, Paw,
+        // Story stickers (earned for the big moments in each level).
+        Lute, Trumpet, Feather, Cake, Shield, Lens, Helmet, Telescope, Whale, ButtonMoon }
 
     // The sticker pictures, drawn in code: a shape, a thick white die-cut border round it, a soft
     // shadow and a glossy shine, like a real sheet of puffy stickers. Also draws the dashed
@@ -29,6 +31,16 @@ namespace Patchwork
                 case StickerId.Crown: return "Little Crown";
                 case StickerId.Fish: return "Goldfish";
                 case StickerId.Rainbow: return "Rainbow";
+                case StickerId.Lute: return "Lute";
+                case StickerId.Trumpet: return "Trumpet";
+                case StickerId.Feather: return "Wisp's Feather";
+                case StickerId.Cake: return "Wedding Cake";
+                case StickerId.Shield: return "Hall of Arms Shield";
+                case StickerId.Lens: return "Night Glass Lens";
+                case StickerId.Helmet: return "Helmet Crab";
+                case StickerId.Telescope: return "The Night Glass";
+                case StickerId.Whale: return "The Great Whale";
+                case StickerId.ButtonMoon: return "Button Moon";
                 default: return "Paw Print";
             }
         }
@@ -252,6 +264,144 @@ namespace Patchwork
                         if (r < outer && r > outer - 0.11f) { c = bands[i]; return 1f; }
                     }
                     return 0f;
+                }
+                case StickerId.Lute:
+                {
+                    // A round wooden body with a sound hole, and a neck going up to the right.
+                    c = new Color(0.78f, 0.5f, 0.25f);
+                    float bx = (u + 0.2f) / 0.5f, by = (v + 0.25f) / 0.55f;
+                    if (bx * bx + by * by < 1f)
+                    {
+                        float hx = u + 0.15f, hy = v + 0.15f;
+                        if (hx * hx + hy * hy < 0.02f) c = new Color(0.3f, 0.18f, 0.1f);
+                        return 1f;
+                    }
+                    float along = (u + v) * 0.7071f, across = (u - v) * 0.7071f;
+                    if (along > 0f && along < 0.95f && Mathf.Abs(across - 0.05f) < 0.08f) { c = new Color(0.5f, 0.3f, 0.15f); return 1f; }
+                    return 0f;
+                }
+                case StickerId.Trumpet:
+                {
+                    c = new Color(1f, 0.78f, 0.25f);
+                    // The tube along the middle, and the bell flaring out on the right.
+                    if (u > -0.85f && u < 0.35f && Mathf.Abs(v) < 0.08f) return 1f;
+                    if (u >= 0.25f && u < 0.85f && Mathf.Abs(v) < 0.08f + (u - 0.25f) * 0.75f) return 1f;
+                    if (u > -0.5f && u < -0.1f && v > 0.05f && v < 0.3f && Mathf.Abs(Mathf.Repeat(u + 0.5f, 0.14f) - 0.07f) < 0.03f) { c = new Color(0.85f, 0.6f, 0.2f); return 1f; }
+                    if (u > -0.95f && u < -0.8f && Mathf.Abs(v) < 0.12f) return 1f;
+                    return 0f;
+                }
+                case StickerId.Feather:
+                {
+                    c = new Color(0.45f, 0.7f, 1f);
+                    float ru = (u * 0.8f - v * 0.6f), rv = (u * 0.6f + v * 0.8f);
+                    float fx = ru / 0.28f, fy = rv / 0.85f;
+                    if (fx * fx + fy * fy < 1f)
+                    {
+                        if (Mathf.Abs(ru) < 0.025f) c = new Color(0.95f, 0.95f, 1f);
+                        else if (Mathf.Repeat(rv * 6f + Mathf.Abs(ru) * 3f, 1f) < 0.12f) c = new Color(0.35f, 0.55f, 0.9f);
+                        return 1f;
+                    }
+                    if (Mathf.Abs(ru) < 0.03f && rv < -0.8f && rv > -1.05f) { c = new Color(0.95f, 0.95f, 1f); return 1f; }
+                    return 0f;
+                }
+                case StickerId.Cake:
+                {
+                    // Three tiers, with a candle on top.
+                    if (Mathf.Abs(u) < 0.75f && v > -0.75f && v < -0.3f) { c = new Color(1f, 0.75f, 0.82f); if (Mathf.Abs(v + 0.3f) < 0.06f) c = Color.white; return 1f; }
+                    if (Mathf.Abs(u) < 0.52f && v >= -0.3f && v < 0.1f) { c = new Color(0.98f, 0.92f, 0.82f); if (Mathf.Abs(v - 0.1f) < 0.06f) c = new Color(1f, 0.6f, 0.7f); return 1f; }
+                    if (Mathf.Abs(u) < 0.3f && v >= 0.1f && v < 0.42f) { c = new Color(1f, 0.75f, 0.82f); return 1f; }
+                    if (Mathf.Abs(u) < 0.05f && v >= 0.42f && v < 0.68f) { c = new Color(0.5f, 0.7f, 1f); return 1f; }
+                    float flx = u / 0.07f, fly = (v - 0.78f) / 0.11f;
+                    if (flx * flx + fly * fly < 1f) { c = new Color(1f, 0.75f, 0.2f); return 1f; }
+                    return 0f;
+                }
+                case StickerId.Shield:
+                {
+                    c = new Color(0.8f, 0.22f, 0.28f);
+                    bool inside = Mathf.Abs(u) < 0.7f && v < 0.75f && (v > -0.1f || Mathf.Abs(u) < 0.7f * (v + 0.9f) / 0.8f);
+                    if (!inside || v < -0.9f) return 0f;
+                    if (Mathf.Abs(u) < 0.08f || Mathf.Abs(v - 0.25f) < 0.08f) c = new Color(1f, 0.82f, 0.35f);
+                    if (Mathf.Abs(u) > 0.6f || v > 0.65f) c = new Color(0.9f, 0.72f, 0.3f);
+                    return 1f;
+                }
+                case StickerId.Lens:
+                {
+                    float r = Mathf.Sqrt(u * u + v * v);
+                    if (r > 0.88f) return 0f;
+                    c = r > 0.72f ? new Color(1f, 0.78f, 0.3f) : new Color(0.45f, 0.75f, 1f);
+                    float gx = u + 0.25f, gy = v - 0.25f;
+                    if (r <= 0.72f && gx * gx / 0.02f + gy * gy / 0.06f < 1f) c = new Color(0.9f, 0.97f, 1f);
+                    return 1f;
+                }
+                case StickerId.Helmet:
+                {
+                    // A brass diving helmet with a round window, on little crab legs.
+                    float r = Mathf.Sqrt(u * u + (v - 0.15f) * (v - 0.15f));
+                    if (r < 0.62f)
+                    {
+                        c = new Color(0.85f, 0.62f, 0.25f);
+                        float wr = Mathf.Sqrt(u * u + (v - 0.15f) * (v - 0.15f));
+                        if (wr < 0.32f) c = wr > 0.26f ? new Color(0.6f, 0.4f, 0.15f) : new Color(0.4f, 0.7f, 0.85f);
+                        return 1f;
+                    }
+                    for (int s = -1; s <= 1; s += 2)
+                        for (int k = 0; k < 3; k++)
+                        {
+                            float lx = u - s * (0.35f + k * 0.18f), ly = v + 0.55f + Mathf.Abs(u) * 0.2f;
+                            if (Mathf.Abs(lx) < 0.05f && ly > -0.3f && ly < 0.1f) { c = new Color(0.75f, 0.5f, 0.2f); return 1f; }
+                        }
+                    return 0f;
+                }
+                case StickerId.Telescope:
+                {
+                    float along = (u + v) * 0.7071f, across = (v - u) * 0.7071f;
+                    if (along > -0.7f && along < 0.75f && Mathf.Abs(across - 0.1f) < 0.13f + along * 0.05f)
+                    {
+                        c = Mathf.Repeat(along * 4f, 1f) < 0.15f ? new Color(1f, 0.8f, 0.35f) : new Color(0.25f, 0.3f, 0.6f);
+                        return 1f;
+                    }
+                    for (int s = -1; s <= 1; s += 2)
+                        if (v < -0.05f && v > -0.9f && Mathf.Abs(u - s * (-v - 0.05f) * 0.6f) < 0.05f) { c = new Color(0.55f, 0.38f, 0.22f); return 1f; }
+                    return 0f;
+                }
+                case StickerId.Whale:
+                {
+                    c = new Color(0.25f, 0.35f, 0.7f);
+                    float bx = (u + 0.1f) / 0.68f, by = (v + 0.05f) / 0.4f;
+                    if (bx * bx + by * by < 1f)
+                    {
+                        if (v < -0.15f) c = new Color(0.75f, 0.85f, 0.98f);
+                        float ex = u + 0.45f, ey = v - 0.02f;
+                        if (ex * ex + ey * ey < 0.005f) c = new Color(0.1f, 0.1f, 0.15f);
+                        float[] sx = { 0.05f, 0.25f, -0.15f };
+                        float[] sy = { 0.22f, 0.12f, 0.25f };
+                        for (int i = 0; i < 3; i++)
+                        {
+                            float dx = u - sx[i], dy = v - sy[i];
+                            if (dx * dx + dy * dy < 0.0025f) c = new Color(1f, 0.9f, 0.5f);
+                        }
+                        return 1f;
+                    }
+                    if (u > 0.5f && u < 0.95f && Mathf.Abs(v - (u - 0.5f) * 0.8f) < 0.12f + (u - 0.5f) * 0.4f) return 1f;
+                    return 0f;
+                }
+                case StickerId.ButtonMoon:
+                {
+                    float r = Mathf.Sqrt(u * u + v * v);
+                    if (r > 0.85f) return 0f;
+                    c = new Color(1f, 0.95f, 0.75f);
+                    var dark = new Color(0.4f, 0.35f, 0.35f);
+                    // Two buttonholes for glaring eyes, two more below, and a stitched grimace.
+                    for (int s = -1; s <= 1; s += 2)
+                    {
+                        float ex = u - s * 0.25f, ey = v - 0.25f;
+                        if (ex * ex + ey * ey < 0.012f) c = new Color(1f, 0.55f, 0.2f);
+                        if (Mathf.Abs(ex + s * 0.02f) < 0.12f && Mathf.Abs(ey - 0.16f + s * ex * 0.5f) < 0.025f) c = dark;
+                        float hx = u - s * 0.12f, hy = v + 0.05f;
+                        if (hx * hx + hy * hy < 0.004f) c = dark;
+                    }
+                    if (Mathf.Abs(u) < 0.45f && Mathf.Abs(v + 0.4f) < 0.06f) c = Mathf.Repeat(u * 6f, 1f) < 0.5f ? dark : Color.white;
+                    return 1f;
                 }
                 default:
                 {

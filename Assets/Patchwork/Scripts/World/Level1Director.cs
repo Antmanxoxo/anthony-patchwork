@@ -184,6 +184,7 @@ namespace Patchwork
             // The big moment: he holds it up over his head.
             string title = piece.Kind == BandPiece.Part.Lute ? "The Lute String!" : piece.Kind == BandPiece.Part.Trumpet ? "Valve Dew!" : "Wisp is Safe!";
             LensCelebration.PlayItem(title, n >= BandIds.Length ? "The whole band" : "Band " + n + " of " + BandIds.Length, new Color(1f, 0.82f, 0.4f));
+            Prizes.GrantSticker(piece.Kind == BandPiece.Part.Lute ? StickerId.Lute : piece.Kind == BandPiece.Part.Trumpet ? StickerId.Trumpet : StickerId.Feather);
             if (game != null)
             {
                 if (n >= BandIds.Length) game.ShowToast(msg + " The whole band is ready! Go and tell the Mayor.");

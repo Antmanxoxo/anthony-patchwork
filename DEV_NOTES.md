@@ -744,6 +744,9 @@ Stuff I need to remember about how Patchwork is put together.
 - Wardrobe.cs has the catalogue (names, prices, tints, fabric settings). FormVisuals.ApplyLook() puts it on; call it after changing GameState.ColourScheme/Fabric/Outfit. Outfits hang under the hat root (head 0.6 across, top at 0, neck about -0.62).
 - ScoreKeeper banks every point it adds with GameState.EarnPoints. GameState.Buy(item, price) spends them.
 
+- GameState.DevMode unlocks everything (hats, Owns, OwnsSticker, HasDecoration, Purse), stops Hurt, and opens the museum lift. Check it before adding new locks.
+- Story stickers: Prizes.GrantSticker(StickerId) for a big moment. Add the id to StickerId, a PrizeDef with kind Sticker, a name in StickerArt.Name and a shape in StickerArt.Shape.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

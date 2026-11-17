@@ -36,6 +36,17 @@ namespace Patchwork
             new PrizeDef("prize_fish", "Goldfish", PrizeKind.Sticker, (int)StickerId.Fish),
             new PrizeDef("prize_rainbow", "Rainbow", PrizeKind.Sticker, (int)StickerId.Rainbow),
             new PrizeDef("prize_paw", "Paw Print", PrizeKind.Sticker, (int)StickerId.Paw),
+            // Story stickers: earned for the big moments (see GrantSticker).
+            new PrizeDef("sticker_lute", "Lute", PrizeKind.Sticker, (int)StickerId.Lute),
+            new PrizeDef("sticker_trumpet", "Trumpet", PrizeKind.Sticker, (int)StickerId.Trumpet),
+            new PrizeDef("sticker_feather", "Wisp's Feather", PrizeKind.Sticker, (int)StickerId.Feather),
+            new PrizeDef("sticker_cake", "Wedding Cake", PrizeKind.Sticker, (int)StickerId.Cake),
+            new PrizeDef("sticker_shield", "Hall of Arms Shield", PrizeKind.Sticker, (int)StickerId.Shield),
+            new PrizeDef("sticker_lens", "Night Glass Lens", PrizeKind.Sticker, (int)StickerId.Lens),
+            new PrizeDef("sticker_helmet", "Helmet Crab", PrizeKind.Sticker, (int)StickerId.Helmet),
+            new PrizeDef("sticker_telescope", "The Night Glass", PrizeKind.Sticker, (int)StickerId.Telescope),
+            new PrizeDef("sticker_whale", "The Great Whale", PrizeKind.Sticker, (int)StickerId.Whale),
+            new PrizeDef("sticker_buttonmoon", "Button Moon", PrizeKind.Sticker, (int)StickerId.ButtonMoon),
             new PrizeDef("prize_partyhat", "Party Hat", PrizeKind.Hat, 5),
             new PrizeDef("prize_piratehat", "Pirate Hat", PrizeKind.Hat, 6),
             new PrizeDef("prize_propeller", "Propeller Cap", PrizeKind.Hat, 7),
@@ -47,6 +58,21 @@ namespace Patchwork
             new PrizeDef("deco_plush", "Grumblewool Plush", PrizeKind.Decoration, 4),
             new PrizeDef("deco_owl", "Sleepy Owl", PrizeKind.Decoration, 5),
         };
+
+        // A story sticker, the first time something big happens. Shows what you got.
+        public static void GrantSticker(StickerId id)
+        {
+            foreach (var p in All)
+            {
+                if (p.Kind != PrizeKind.Sticker || p.Value != (int)id) continue;
+                if (GameState.HasPrize(p.Id)) return;
+                Grant(p);
+                var game = PatchworkGame.Instance;
+                if (game != null) game.ShowToast("New sticker: " + p.Name + "!  (Stick it anywhere with the Sticker button.)");
+                Sfx.Play(SfxId.StickerSlap, 0.5f);
+                return;
+            }
+        }
 
         public static PrizeDef Get(string id)
         {
@@ -63,6 +89,7 @@ namespace Patchwork
 
         public static bool HasDecoration(int index)
         {
+            if (GameState.DevMode) return true;
             foreach (var p in All)
                 if (p.Kind == PrizeKind.Decoration && p.Value == index) return GameState.HasPrize(p.Id);
             return false;
@@ -84,6 +111,7 @@ namespace Patchwork
         // Stickers you can use: the four starters plus every sticker prize found.
         public static bool OwnsSticker(StickerId id)
         {
+            if (GameState.DevMode) return true;
             foreach (var s in StickerArt.Starters) if (s == id) return true;
             foreach (var p in All)
                 if (p.Kind == PrizeKind.Sticker && p.Value == (int)id) return GameState.HasPrize(p.Id);

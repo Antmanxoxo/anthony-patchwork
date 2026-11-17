@@ -605,7 +605,7 @@ namespace Patchwork
             var game = PatchworkGame.Instance;
             if (game == null || game.Level == null) return;
             int hearts = game.Level.HeartstringCount();
-            bool open = hearts >= game.Level.HeartstringsNeeded;
+            bool open = hearts >= game.Level.HeartstringsNeeded || GameState.DevMode;   // (dev mode: the lift is always open)
             if (open && !liftOpen)
             {
                 liftOpen = true;

@@ -1164,12 +1164,18 @@ namespace Patchwork
             // The sticker book along the bottom.
             var owned = st.Owned;
             float cell = 96f;
-            float total = owned.Count * (cell + 12f) + 40f;
+            // (As many as fit across the screen, scrolling along with the one picked.)
+            int fit = Mathf.Max(1, Mathf.FloorToInt((W - 120f) / (cell + 12f)));
+            int shownN = Mathf.Min(owned.Count, fit);
+            int first = Mathf.Clamp(st.Selected - shownN / 2, 0, Mathf.Max(0, owned.Count - shownN));
+            float total = shownN * (cell + 12f) + 40f;
             var strip = new Rect((W - total) * 0.5f, H - 220f, total, cell + 60f);
             UIKit.Panel(strip, new Color(0.99f, 0.96f, 0.9f, 0.95f), UIKit.Thread, 24f);
-            for (int i = 0; i < owned.Count; i++)
+            if (first > 0) UIKit.Label(new Rect(strip.x - 40f, strip.y + 30f, 36f, 50f), "<", UIKit.Style(40, true, TextAnchor.MiddleCenter, Color.white), true);
+            if (first + shownN < owned.Count) UIKit.Label(new Rect(strip.xMax + 4f, strip.y + 30f, 36f, 50f), ">", UIKit.Style(40, true, TextAnchor.MiddleCenter, Color.white), true);
+            for (int i = first; i < first + shownN; i++)
             {
-                var r = new Rect(strip.x + 20f + i * (cell + 12f), strip.y + 14f, cell, cell);
+                var r = new Rect(strip.x + 20f + (i - first) * (cell + 12f), strip.y + 14f, cell, cell);
                 bool sel = i == st.Selected;
                 if (sel) UIKit.Fill(new Rect(r.x - 6f, r.y - 6f, r.width + 12f, r.height + 12f), new Color(1f, 0.8f, 0.35f, 0.9f), 18f);
                 float bob = sel ? Mathf.Sin(Time.unscaledTime * 6f) * 3f : 0f;

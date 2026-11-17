@@ -1,5 +1,10 @@
 # Development Log
 
+## Dev mode, and story stickers
+- Dev Mode (Pause > Settings > Dev Mode): every hat, sticker, Pod decoration, colour, fabric and outfit unlocked, 999,999 points to spend (nothing is taken off), no damage, and the Observatory lift always open. It's a setting on the computer (PlayerPrefs "pw_dev_mode"), not part of the save, so turning it off puts everything back as it was.
+- Ten new story stickers, each earned for a big moment and drawn in code like the others: Lute, Trumpet and Wisp's Feather (each band piece in Toybox Town), Wedding Cake (finishing Toybox Town), Hall of Arms Shield, Night Glass Lens and Helmet Crab (the three lenses), The Night Glass (setting the star dials), The Great Whale (finishing the museum) and Button Moon (the moon egg). A toast says when you get one.
+- The sticker book along the bottom of the screen now scrolls when there are more stickers than fit across it.
+
 ## The wardrobe (points buy looks), no Pod checkpoint, and Level 2's helpers in Level 1
 - Points now mean something: every point scored anywhere goes into Patch's purse (GameState.Purse, saved), and the Satchel has a Wardrobe to spend it in. Up and down picks a row (Hat, Colours, Fabric, Outfit), left and right looks along it (owned things go straight on), Confirm buys.
   - Colours: Classic, Sky, Mint, Sunflower, Lavender, Coral, Cocoa, Midnight, Seafoam, Rosewood (1,500 to 5,000), dyeing every form.

@@ -416,6 +416,7 @@ namespace Patchwork
         {
             if (DialsSet) return;
             Mark("dials");
+            Prizes.GrantSticker(StickerId.Telescope);
             Sfx.Play(SfxId.PrizeFanfare, 0.55f);
             var game = PatchworkGame.Instance;
             if (game != null) game.ShowToast("Click, click, click: the Night Glass swings round and settles. She's in the glass. Go and look!");
@@ -598,6 +599,7 @@ namespace Patchwork
             PatchworkHUD.ShowGet(LensNames[which], n >= 3 ? "All three lenses of the Night Glass!" : n + " of 3 lenses of the Night Glass", LensBlue, 0);
             // The big moment: he holds it up over his head.
             LensCelebration.Play(LensNames[which], n);
+            Prizes.GrantSticker(which == 0 ? StickerId.Shield : which == 1 ? StickerId.Lens : StickerId.Helmet);
             Sfx.Play(SfxId.PrizeFanfare, 0.6f);
             Haptics.Pulse(0.4f, 0.5f, 0.3f);
             RefreshWorld();
@@ -668,6 +670,7 @@ namespace Patchwork
         {
             if (Seen("s_" + key)) return;
             Mark("s_" + key);
+            if (key == "moon") Prizes.GrantSticker(StickerId.ButtonMoon);
             int i = System.Array.IndexOf(SecretKeys, key);
             PatchworkHUD.ShowGet("Secret: " + (i >= 0 ? SecretNames[i] : key), SecretsFound + " of " + Secrets + " secrets of the Night Glass", new Color(0.75f, 0.55f, 0.95f), 0);
             Sfx.Play(SfxId.Checkpoint, 0.45f);
