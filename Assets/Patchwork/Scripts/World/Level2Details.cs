@@ -640,7 +640,7 @@ namespace Patchwork
             int seed = 0;
             foreach (float x in new[] { -24f, -18f, -12f, 12f, 18f, 24f })
                 Painting(kit, new Vector3(x, 4.2f + (seed % 2) * 0.5f, -107.9f), 0f, 3.4f, 2.4f, seed++);
-            foreach (float z in new[] { -95f, -72f, -62f })
+            foreach (float z in new[] { -91f, -65.5f, -62f })   // (between the banners, not under them)
                 Painting(kit, new Vector3(-29.9f, 11f, z), 90f, 3f, 2.2f, seed++);
             foreach (float z in new[] { -98f, -86f, -70f, -60f })
                 Painting(kit, new Vector3(-29.9f, 3.6f, z), 90f, 2.6f, 2f, seed++);

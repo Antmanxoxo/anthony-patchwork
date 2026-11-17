@@ -189,7 +189,7 @@ namespace Patchwork
             }
 
             // ----- The five seams the Fray came up through -----
-            Vector3[] seam = { new Vector3(8f, 0f, -98f), new Vector3(-45f, 0f, -74f), new Vector3(-44f, 0f, 60f), new Vector3(60f, 0f, 27f), new Vector3(-60f, 0f, 130f) };
+            Vector3[] seam = { new Vector3(-8f, 0f, -97f), new Vector3(-45f, 0f, -74f), new Vector3(-44f, 0f, 60f), new Vector3(60f, 0f, 27f), new Vector3(-60f, 0f, 130f) };
             for (int i = 0; i < seam.Length; i++)
                 if (RmFloor("a seam", seam[i], new Vector3(3.6f, 1.6f, 2f), 0f, 14f, out foot)) seam[i] = foot;
             quest.SeamSpots = seam;

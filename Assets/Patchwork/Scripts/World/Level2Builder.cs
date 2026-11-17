@@ -630,7 +630,7 @@ namespace Patchwork
                 "In 1872 this little ship set off to find out what was at the bottom of the sea. She sailed for nearly four years and went right round the world.",
                 "Her crew discovered more than four thousand kinds of animal nobody had seen before, and found the deepest place in any ocean, which still carries her name: the Challenger Deep.");
             // The way west, and where you are if you fall.
-            kit.AddCheckpoint(new Vector3(0f, 0f, -104f), 0f);
+            kit.AddCheckpoint(new Vector3(-3f, 0f, -101.5f), 0f);   // (its easel stands off the carpet, clear of the turnstile gap)
             TrailLine(kit, new Vector3(-6f, 1.2f, -80f), new Vector3(-26f, 1.2f, -78f), 7);
             Person(kit, new Vector3(-22f, 0f, -90f), 60f, ToyNpc.Kind.Bunny, "Thimble", new Color(0.95f, 0.85f, 0.75f), new Color(0.9f, 0.5f, 0.6f), 1.5f, () => new[]
             {

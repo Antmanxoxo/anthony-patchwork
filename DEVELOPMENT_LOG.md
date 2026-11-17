@@ -1,5 +1,12 @@
 # Development Log
 
+## Level 2 photo tour review fixes
+- Walked through all 45 photo tour pictures and the level audit (0 flickering faces, 0 invisible walls).
+- Grand Atrium checkpoint moved to (-3, -101.5) so its hoop easel stands off the carpet and out of the turnstile gap by the front doors.
+- Hall of Arms checkpoint moved to beside the aisle carpet, so the easel no longer stands in the doorway.
+- Two upper paintings on the Atrium's west wall moved between the hanging banners instead of behind them.
+- The Atrium's Fray seam now looks for its spot on the west side, away from the mop bucket and wet-floor sign.
+
 ## More Level 2 clean-up from the level check
 - The Great Window's glass shared a face with its iron frame (flicker along every bar).
   The glass is now thinner than the frame and sits inside it.

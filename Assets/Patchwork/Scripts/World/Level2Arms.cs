@@ -61,7 +61,7 @@ namespace Patchwork
             Rug(kit, new Vector3(cx, 0f, -6f), new Vector2(5f, 19f), red, 0f, PatchworkAssets.Felt(new Color(1f, 0.82f, 0.4f)));
             Rug(kit, new Vector3(cx - 6.5f, 0f, -29f), new Vector2(4f, 22f), red);
             Rug(kit, new Vector3(cx + 6.5f, 0f, -29f), new Vector2(4f, 22f), red);
-            kit.AddCheckpoint(new Vector3(cx, 0f, 1f), 180f);
+            kit.AddCheckpoint(new Vector3(cx + 1.7f, 0f, -1f), 180f);   // (its easel stands beside the aisle carpet, not in the doorway)
             TrailLine(kit, new Vector3(cx, 1.2f, 2f), new Vector3(cx, 1.2f, -14f), 6);
             kit.Hint(new Vector3(cx, 1.5f, 0f), new Vector3(10f, 4f, 7f), "The Hall of Arms",
                 "Armour from all over the world, and a model castle at the far end you're allowed to climb. (Mind the helmets. They look.)");
