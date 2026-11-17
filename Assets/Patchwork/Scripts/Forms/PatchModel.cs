@@ -260,7 +260,6 @@ namespace Patchwork
 
             // Face forward. In Blender he faces -Y with his rope arm ("arm.R") on +X. Importing into
             // Unity mirrors the handedness, so his front is up x (arm.R - arm.L) here.
-            var armL = FindDeep(modelRoot, "arm.L");
             armLeft = armL;
             handLeft = FindDeep(modelRoot, "hand.L");
             float yaw = 0f;
