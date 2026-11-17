@@ -1,5 +1,10 @@
 # Development Log
 
+## Wardrobe photo tour
+
+- A photo tour for the wardrobe, like the Level 2 one. Put a file called `take_wardrobe.txt` in the Screenshots folder and play any level: the camera turns to Patch and photographs every outfit (front and back), every colour scheme, and every fabric (in his own colours and dyed) on all three forms, into `Screenshots/Wardrobe`. Then his own look and the camera are put back.
+
+
 ## Wardrobe fine-tuning: real dye, fabrics you can see, outfits that fit
 
 - **Colours dye Patch properly.** The Yarn form's own texture is re-dyed: the gold knit takes the scheme's main colour and the teal patches its second colour, keeping all the light and shade of the stitches, instead of a coloured filter laid over everything. Water and Wind keep the tint, which already looked right.

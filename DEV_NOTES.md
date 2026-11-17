@@ -750,6 +750,8 @@ Stuff I need to remember about how Patchwork is put together.
 - Wardrobe looks: `Wardrobe.DyedAlbedo` re-dyes the Yarn texture (gold hue 0.045-0.17 to the scheme's colour, teal 0.4-0.6 to `SecondTints`) and bakes in the fabric weave, worked at up to 1024 px, latest one cached. Water and Wind get `Wardrobe.WeaveTexture` (tiled 3x) on top of the tint; glitter uses the `Sparkle` emission map.
 - Outfits live under two roots on `root`: `OutfitNeck` (neck radius = 1) and `OutfitBody` (body radius = 1), placed each frame by `FormVisuals.PlaceOutfit` from `PatchModel.BodyPose` (Yarn) or the Water/Wind head and body anchors.
 
+- Wardrobe photo tour: `Forms/WardrobeTour.cs`, started by `Screenshots/take_wardrobe.txt` (editor only, deleted when done) once the game is in Gameplay mode. Forms are switched for looks only (`Visuals.SetForm`), and the camera frames Patch from his renderer bounds.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark
