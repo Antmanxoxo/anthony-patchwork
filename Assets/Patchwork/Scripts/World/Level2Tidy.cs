@@ -15,7 +15,7 @@ namespace Patchwork
     {
         static readonly List<Bounds> doorways = new List<Bounds>();
         const float DoorClear = 3f;        // how far into each room a doorway is kept clear
-        const float Spacing = 0.15f;       // the least gap left round anything placed
+        const float Spacing = 0.4f;        // the least gap left round anything placed after the room details
 
         static void FindDoorways(LevelKit kit)
         {

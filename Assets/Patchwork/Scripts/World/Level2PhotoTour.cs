@@ -12,6 +12,16 @@ namespace Patchwork
     {
         public const string TourPref = "pw_l2_tour";
 
+        // Asked for from the menu, or by a file called take_tour.txt in the project's
+        // Screenshots folder (so it can be asked for from outside Unity too).
+        static string TourFile { get { return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Application.dataPath), "Screenshots", "take_tour.txt"); } }
+
+        static bool TourWanted()
+        {
+            if (!Application.isEditor) return false;
+            return PlayerPrefs.GetInt(TourPref, 0) == 1 || System.IO.File.Exists(TourFile);
+        }
+
         struct TourShot
         {
             public string Name;
@@ -103,6 +113,7 @@ namespace Patchwork
             if (game.Hud != null) game.Hud.enabled = true;
             PlayerPrefs.SetInt(TourPref, 0);
             PlayerPrefs.Save();
+            if (System.IO.File.Exists(TourFile)) System.IO.File.Delete(TourFile);
             Debug.Log("[Level2] Photo tour done: " + shots.Count + " pictures in " + dir);
             game.ShowToast("Photo tour done: " + shots.Count + " pictures saved.");
         }

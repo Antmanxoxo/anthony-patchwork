@@ -942,7 +942,8 @@ namespace Patchwork
             var r = Rot(yaw);
             if (glass)
             {
-                var pane = kit.Block(glassFoot + Vector3.up * height * 0.5f, new Vector3(width, height, 0.3f), Color.white, "TankGlass", GlassMat);
+                // (Thinner than its iron frame, so the glass sits inside it with no face shared.)
+                var pane = kit.Block(glassFoot + Vector3.up * height * 0.5f, new Vector3(width, height, 0.12f), Color.white, "TankGlass", GlassMat);
                 pane.rotation = r;
                 NoShadow(pane);
             }

@@ -18,12 +18,14 @@ namespace Patchwork
         static List<Bounds> rmTaken;
         static Dictionary<long, List<int>> rmGrid;
         static int rmPlaced, rmMissed;
+        static bool rmSpaced;
 
         static void Rooms(LevelKit kit)
         {
             rmTaken = new List<Bounds>();
             rmGrid = new Dictionary<long, List<int>>();
             rmPlaced = rmMissed = 0;
+            rmSpaced = false;
             foreach (var r in kit.Root.GetComponentsInChildren<Renderer>(true))
             {
                 Vector3 s = r.bounds.size;
@@ -55,6 +57,7 @@ namespace Patchwork
             RoomsMangrove(kit);
 
             Debug.Log("[Level2] Room details: " + rmPlaced + " placed" + (rmMissed > 0 ? ", " + rmMissed + " left out for want of room." : "."));
+            rmSpaced = true;
             // (The record of what's where is kept for Quest, which fits its things in round all
             // this too. RmDone lets it go once everything's built.)
         }
@@ -114,7 +117,9 @@ namespace Patchwork
             Vector3 half = new Vector3(Mathf.Max(0.01f, size.x * 0.5f - 0.02f), Mathf.Max(0.01f, size.y * 0.5f - 0.02f), Mathf.Max(0.01f, size.z * 0.5f - 0.02f));
             if (Physics.CheckBox(center, half, rot, RmMask, QueryTriggerInteraction.Ignore)) return false;
             var room = RmBox(center, size, rot);
-            room.Expand(new Vector3(Spacing, 0f, Spacing));   // (a little elbow room round everything)
+            // (A little elbow room round everything placed after the room details: those were
+            // each fitted by hand into their rooms, some of them very snugly.)
+            if (rmSpaced) room.Expand(new Vector3(Spacing, 0f, Spacing));
             return RmClear(room);
         }
 

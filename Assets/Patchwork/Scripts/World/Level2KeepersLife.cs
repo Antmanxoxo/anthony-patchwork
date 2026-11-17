@@ -250,7 +250,7 @@ namespace Patchwork
 
             // ----- A young stargazer at the Comet Gallery's windows -----
             float Y = DeckY;
-            Person(kit, new Vector3(40.6f, Y, 1.5f), 0f, ToyNpc.Kind.JackInBox, "Pip", new Color(0.9f, 0.55f, 0.3f), new Color(0.35f, 0.5f, 0.9f), 1.45f, () => new[]
+            Person(kit, new Vector3(39.6f, Y, -1.8f), 0f, ToyNpc.Kind.JackInBox, "Pip", new Color(0.9f, 0.55f, 0.3f), new Color(0.35f, 0.5f, 0.9f), 1.45f, () => new[]
             {
                 "Shh! I'm waiting for a comet. They're very shy.",
                 "Halley's Comet only comes round every seventy-six years. The next time is 2061. I'll be ready.",

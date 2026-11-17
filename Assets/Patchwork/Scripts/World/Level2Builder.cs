@@ -153,7 +153,7 @@ namespace Patchwork
             HandsOn(kit); // five machines you're allowed to touch, and the Museum Passport
             PatchworkTouches(kit);   // mended patches on the walls, bunting across the halls
             TidyUp(kit);  // last of all: clear any doorway that still has something in it
-            if (PlayerPrefs.GetInt(TourPref, 0) == 1) kit.Root.gameObject.AddComponent<Level2PhotoTour>();
+            if (TourWanted()) kit.Root.gameObject.AddComponent<Level2PhotoTour>();
             RmDone();
 
             // The hush of the halls, and the deep rumble by the big tanks.

@@ -1,5 +1,17 @@
 # Development Log
 
+## More Level 2 clean-up from the level check
+- The Great Window's glass shared a face with its iron frame (flicker along every bar).
+  The glass is now thinner than the frame and sits inside it.
+- Pip the stargazer and a star-chart table were standing in the doorway between the comet
+  gallery and the east landing; both moved back from it.
+- The room details are placed exactly as before (no extra spacing), so the eight that had
+  stopped fitting (the undercroft's speaking tube, binoculars, field guides, fire bucket and
+  sign, the drying net, the moonflowers and the phases of the Moon) are back. Everything
+  added after them still keeps 40 cm clear.
+- The photo tour can also be started by a file called take_tour.txt in the project's
+  Screenshots folder, so it just runs the next time Level 2 is played.
+
 ## Fix: the tidy pass was taking the building apart
 The last run's log showed the automatic tidy-up removing over 400 pieces of the museum.
 The building is made of many separate blocks that overlap on purpose (the entrance
