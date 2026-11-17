@@ -1,5 +1,11 @@
 # Development Log
 
+## Solid easels and a bigger photo tour
+- Checkpoint hoop easels are now solid (a box collider on the easel), so you walk round them instead of through their wooden legs. This covers every checkpoint in both levels.
+- The Orrery Bridge checkpoint moved to beside the east wall, so its easel is out of the way in from the Star Corridor door.
+- The party coat stand in the Night Sky Gallery (left after the Long Gallery secret) is solid now too.
+- The Level 2 photo tour takes 23 more pictures: the Star Corridor at walking height every few yards both ways, each corridor room, the Orrery Bridge, the middle of the Atrium and the Hall of Arms aisle. The two gallery end shots no longer start inside the grandfather clock.
+
 ## Level 2 photo tour review fixes
 - Walked through all 45 photo tour pictures and the level audit (0 flickering faces, 0 invisible walls).
 - Grand Atrium checkpoint moved to (-3, -101.5) so its hoop easel stands off the carpet and out of the turnstile gap by the front doors.

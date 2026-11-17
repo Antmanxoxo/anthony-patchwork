@@ -59,8 +59,26 @@ namespace Patchwork
             AddCorners(s, "Ruins", RuinX0, RuinX1, RuinZ0, RuinZ1, 0f, RuinTop);
             AddCorners(s, "HallOfArms", ArmsX0, ArmsX1, ArmsZ0, ArmsZ1, 0f, ArmsTop);
             s.Add(new TourShot("HallOfArms_door", new Vector3(80f, 3f, -6f), new Vector3(80f, 2f, 6f)));
-            s.Add(new TourShot("Gallery_north", new Vector3(36f, DeckY + 2.5f, -41f), new Vector3(36f, DeckY + 1.5f, -10f)));
-            s.Add(new TourShot("Gallery_south", new Vector3(36f, DeckY + 2.5f, -10f), new Vector3(36f, DeckY + 1.5f, -41f)));
+            s.Add(new TourShot("Gallery_north", new Vector3(36f, DeckY + 2.5f, -38.5f), new Vector3(36f, DeckY + 1.5f, -10f)));
+            s.Add(new TourShot("Gallery_south", new Vector3(36f, DeckY + 2.5f, -11f), new Vector3(36f, DeckY + 1.5f, -41f)));
+            // The Star Corridor at a walking camera's height, every few yards, both ways.
+            foreach (float z in new[] { -36f, -31f, -26f, -21f, -16f })
+            {
+                s.Add(new TourShot("Corridor_walk_n" + (int)-z, new Vector3(36f, DeckY + 2.2f, z - 2f), new Vector3(36f, DeckY + 1.8f, z + 6f)));
+                s.Add(new TourShot("Corridor_walk_s" + (int)-z, new Vector3(36f, DeckY + 2.2f, z + 2f), new Vector3(36f, DeckY + 1.8f, z - 6f)));
+            }
+            s.Add(new TourShot("Corridor_clocks", new Vector3(37.5f, DeckY + 2.2f, -38f), new Vector3(47f, DeckY + 1.6f, -38f)));
+            s.Add(new TourShot("Corridor_planets", new Vector3(38f, DeckY + 2.2f, -13f), new Vector3(52f, DeckY + 1.8f, -13f)));
+            s.Add(new TourShot("Corridor_moon", new Vector3(51f, DeckY + 2.2f, -14f), new Vector3(51f, DeckY + 1.8f, -2f)));
+            s.Add(new TourShot("Corridor_comets", new Vector3(52f, DeckY + 2.2f, 0f), new Vector3(36f, DeckY + 1.8f, 0f)));
+            s.Add(new TourShot("Bridge_in", new Vector3(36f, DeckY + 2.4f, 6f), new Vector3(30f, DeckY + 1.6f, 12f)));
+            s.Add(new TourShot("Bridge_doorway", new Vector3(36f, DeckY + 2.2f, 1f), new Vector3(36f, DeckY + 1.8f, 12f)));
+            s.Add(new TourShot("Bridge_landing", new Vector3(31f, DeckY + 2.2f, 12f), new Vector3(42f, DeckY + 1.4f, 11f)));
+            s.Add(new TourShot("Bridge_across", new Vector3(30f, DeckY + 3f, 12.5f), new Vector3(2f, DeckY + 1.5f, 11f)));
+            s.Add(new TourShot("Bridge_west", new Vector3(6f, DeckY + 2.4f, 13f), new Vector3(1f, DeckY + 1.5f, 5f)));
+            s.Add(new TourShot("Atrium_middle_n", new Vector3(0f, 3f, -95f), new Vector3(0f, 2f, -50f)));
+            s.Add(new TourShot("Atrium_middle_w", new Vector3(10f, 3f, -78f), new Vector3(-30f, 2f, -78f)));
+            s.Add(new TourShot("HallOfArms_aisle", new Vector3(80f, 2.6f, 1f), new Vector3(80f, 1.6f, -45f)));
             Vector3 obs = new Vector3(0f, DeckY, -20f);
             for (int i = 0; i < 4; i++)
             {

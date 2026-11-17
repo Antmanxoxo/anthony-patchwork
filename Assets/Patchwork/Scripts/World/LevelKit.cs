@@ -436,6 +436,11 @@ namespace Patchwork
             look.SetParent(cp.transform, false);   // (under the checkpoint, so it stays movable)
             look.position = at;
             look.rotation = turn * Quaternion.Euler(0f, 125f, 0f);   // turned to face the spot, and back the way you came
+            // Solid, so you walk round the easel rather than through its legs.
+            var solid = new GameObject("EaselSolid");
+            solid.transform.SetParent(look, false);
+            solid.transform.localPosition = new Vector3(0f, 1.2f, -0.1f);
+            solid.AddComponent<BoxCollider>().size = new Vector3(1.2f, 2.4f, 0.8f);
             var wood = PatchworkAssets.Wood(new Color(0.74f, 0.54f, 0.34f));
             var dark = PatchworkAssets.Wood(new Color(0.46f, 0.32f, 0.2f));
             var brass = PatchworkAssets.Plain(new Color(0.9f, 0.72f, 0.36f), 0.75f);

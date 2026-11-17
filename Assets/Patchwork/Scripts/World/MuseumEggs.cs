@@ -237,6 +237,10 @@ namespace Patchwork
             party.SetParent(figure, false);
             var wood = PatchworkAssets.Wood(new Color(0.4f, 0.27f, 0.18f));
             var sheet = PatchworkAssets.Fabric(new Color(0.95f, 0.93f, 0.88f));
+            // Solid, so you can't walk through the pole.
+            var stand = party.gameObject.AddComponent<BoxCollider>();
+            stand.center = new Vector3(0f, 1.3f, 0f);
+            stand.size = new Vector3(0.8f, 2.6f, 0.7f);
             // The coat stand: a pole on three feet with pegs at the top.
             Part(PrimitiveType.Cylinder, party, new Vector3(0f, 1.25f, 0f), new Vector3(0.09f, 1.25f, 0.09f), wood);
             for (int i = 0; i < 3; i++)

@@ -722,6 +722,8 @@ Stuff I need to remember about how Patchwork is put together.
 - Checkpoint easels stand 1.8 to the left of the checkpoint spot (turned with its yaw), so pick the spot so the easel lands off carpets and out of doorways.
 - After a big change, run the Level 2 Photo Tour and read Logs/PatchworkAudit_Level2.txt; overlaps of moving things (fish, kelp, foes) are fine, overlaps of fixed displays are not.
 
+- Props built from Deco pieces have no colliders. Anything standing where the player walks (easels, coat stands, poles) needs its own solid box, or the player walks straight through it.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

@@ -480,7 +480,7 @@ namespace Patchwork
             Hoop(kit, outer, 5.3f, 0.08f, Brass, 36);
 
             // ----- Along the way -----
-            kit.AddCheckpoint(new Vector3(39f, DeckY, 12f), 270f);
+            kit.AddCheckpoint(new Vector3(40.6f, DeckY, 12f), 270f);   // (its easel by the east wall, clear of the way in from the corridor door)
             Trail(kit, 10, new Vector3(40f, DeckY + 1.2f, 11f), new Vector3(36f, DeckY + 1.2f, 12f), new Vector3(32f, DeckY + 1.2f, 12.6f));
             Trail(kit, 10, new Vector3(11f, DeckY + 1.2f, 12.6f), new Vector3(7f, DeckY + 1.2f, 11.6f), new Vector3(3f, DeckY + 1.2f, 10f), new Vector3(0f, DeckY + 1.2f, 7.6f));
             kit.ThreadLine(new Vector3(15.5f, low + 1.3f, 10.2f), new Vector3(26.5f, low + 1.3f, 10.2f), 6);
