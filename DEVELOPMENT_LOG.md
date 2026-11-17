@@ -1,5 +1,12 @@
 # Development Log
 
+## Outfit fit fixes, and his eyes keep their colours
+
+- On the Yarn form the outfit's "neck" was being found up at his eyes (his round head narrows towards the top), so scarves and garlands stuck out of his face. Now the head is found first (the widest part of his top half) and the neck is the narrowest point under it.
+- On the Water and Wind forms the outfits didn't show at all: they were measured while the body was shrunk to nothing mid-change, so they were sized to nothing. The measuring now ignores that shrink, and the outfit shrinks and grows with him while he changes form.
+- The dye no longer turns his teal button eye another colour: on his head only the gold knit takes the dye.
+
+
 ## Outfits measured to fit each form
 
 - From the first wardrobe photos: the outfits sat too low and too wide on Patch, and were tiny or hidden on the Water form. Now each form's shape is measured the first time he's dressed in it: it's read in slices from his feet up, his neck is the narrowest point between body and head, and his body is the part under it. Every outfit is stretched to that neck and body (wider than deep where he is), and follows his head and body bones as he moves.

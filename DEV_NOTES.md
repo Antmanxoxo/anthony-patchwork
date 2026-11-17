@@ -754,6 +754,8 @@ Stuff I need to remember about how Patchwork is put together.
 
 - Outfit fit: `FormVisuals.MeasureFit` bakes the form's meshes into root space, slices them (48 slices, 90th-percentile half-width and depth, arms ignored across), takes the narrowest slice between 45% and 88% of his height as the neck and the widest slice under it as the body. The anchors are kept in the head and body bones' spaces; `neckRoot`/`torsoRoot` get the measured half-sizes as their scale. The measurements are logged as `[Wardrobe] <form> fit:`.
 
+- Fit measuring uses `RestMatrix` (each transform's local TRS up to `root`, with the body root's own scale left out) so a body that is mid-change still measures at full size. The neck is the narrowest slice under the widest slice of the top half. `HeadMask` rasterises the UVs of the Yarn triangles above the neck, and `Wardrobe.SetHeadMask` stops the teal dye there.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

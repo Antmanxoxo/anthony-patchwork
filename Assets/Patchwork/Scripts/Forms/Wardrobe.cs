@@ -75,6 +75,14 @@ namespace Patchwork
         static Texture2D dyed;
         static int dyedKey = -1;
 
+        // The size the dye works at, for a texture.
+        public static int DyeSize(Texture source) { return source == null ? 0 : Mathf.Min(Mathf.Max(source.width, source.height), 1024); }
+
+        // keepHead: one per pixel at DyeSize; true for the bits of his head, where only the gold
+        // knit takes the dye (his button eyes stay their own colours).
+        static bool[] headMask;
+        public static void SetHeadMask(bool[] mask) { if (headMask != mask) { headMask = mask; dyedKey = -1; } }
+
         public static Texture2D DyedAlbedo(Texture source)
         {
             int c = Mathf.Clamp(GameState.ColourScheme, 0, ColourTints.Length - 1);
@@ -83,7 +91,7 @@ namespace Patchwork
             int key = c * 100 + f;
             if (dyed != null && dyedKey == key) return dyed;
             // (Worked at up to 1024 across, so choosing in the wardrobe stays quick.)
-            int w = Mathf.Min(source.width, 1024), h = Mathf.Min(source.height, 1024);
+            int w = DyeSize(source), h = w;
             var rt = RenderTexture.GetTemporary(w, h, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
             var was = RenderTexture.active;
             Graphics.Blit(source, rt);
@@ -104,7 +112,7 @@ namespace Patchwork
                 if (c != 0)
                 {
                     if (ss > 0.3f && hh > 0.045f && hh < 0.17f) { hh = h1; ss = Mathf.Clamp01(ss * s1 / 0.75f); vv = Mathf.Clamp01(vv * Mathf.Lerp(1f, v1 / 0.85f, 0.85f)); }
-                    else if (ss > 0.22f && hh > 0.4f && hh < 0.6f) { hh = h2; ss = Mathf.Clamp01(ss * s2 / 0.7f); vv = Mathf.Clamp01(vv * Mathf.Lerp(1f, v2 / 0.6f, 0.75f)); }
+                    else if (ss > 0.22f && hh > 0.4f && hh < 0.6f && (headMask == null || headMask.Length != px.Length || !headMask[i])) { hh = h2; ss = Mathf.Clamp01(ss * s2 / 0.7f); vv = Mathf.Clamp01(vv * Mathf.Lerp(1f, v2 / 0.6f, 0.75f)); }
                 }
                 vv = Mathf.Clamp01(vv * WeaveAt(f, i % w, i / w));
                 if (Weave(f) == 4 && Speck(i % w, i / w)) { ss *= 0.15f; vv = 1f; }   // glitter: little white-gold specks

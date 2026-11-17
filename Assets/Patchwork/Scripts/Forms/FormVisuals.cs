@@ -371,6 +371,7 @@ namespace Patchwork
                     if (pm != null)
                     {
                         if (yarnOriginal == null) yarnOriginal = pm.GetTexture("_BaseMap");
+                        if (GameState.ColourScheme != 0) Wardrobe.SetHeadMask(HeadMask(Wardrobe.DyeSize(yarnOriginal)));
                         var dyedTex = Wardrobe.DyedAlbedo(yarnOriginal);
                         var use = dyedTex != null ? (Texture)dyedTex : yarnOriginal;
                         pm.SetTexture("_BaseMap", use);
@@ -463,7 +464,8 @@ namespace Patchwork
             OutfitFit fit;
             if (fits.TryGetValue(f, out fit)) return fit;
             fit = MeasureFit(f);
-            if (fit != null) fits[f] = fit;
+            if (fit != null && fit.Height > 0.2f) fits[f] = fit;
+            else fit = null;
             return fit;
         }
 
@@ -485,7 +487,8 @@ namespace Patchwork
                 else { var mf = r.GetComponent<MeshFilter>(); if (mf == null || mf.sharedMesh == null) continue; m = mf.sharedMesh; }
                 if (!m.isReadable && smr == null) continue;
                 var v = m.vertices;
-                for (int i = 0; i < v.Length; i += (v.Length > 6000 ? 3 : 1)) pts.Add(root.InverseTransformPoint(t.TransformPoint(v[i])));
+                var toRoot = RestMatrix(t, body.Root);
+                for (int i = 0; i < v.Length; i += (v.Length > 6000 ? 3 : 1)) pts.Add(toRoot.MultiplyPoint3x4(v[i]));
             }
             Object.Destroy(baked);
             if (pts.Count < 20) return null;
@@ -515,12 +518,16 @@ namespace Patchwork
                 sx[i] = dx.Count > 0 ? dx[(int)(dx.Count * 0.9f)] : sz[i];
             }
             System.Func<int, float> R = i => Mathf.Max(sx[i], sz[i]);
-            // The neck: the narrowest slice in the upper part of him that has a fair bit of
-            // him both above and below.
+            // The head: the widest slice in the top half. The neck: the narrowest slice under
+            // the head (and above his middle), where the head meets the body.
+            int headI = -1;
+            for (int i = N / 2; i < N; i++)
+                if (cnt[i] >= 3 && (headI < 0 || R(i) > R(headI))) headI = i;
+            if (headI < 0) headI = (int)(N * 0.75f);
             int neck = -1;
-            for (int i = (int)(N * 0.45f); i < (int)(N * 0.88f); i++)
+            for (int i = headI - 1; i >= Mathf.Max(1, headI - (int)(N * 0.4f)); i--)
                 if (cnt[i] >= 3 && (neck < 0 || R(i) < R(neck))) neck = i;
-            if (neck < 0) neck = (int)(N * 0.6f);
+            if (neck < 0) neck = Mathf.Max(1, headI - N / 6);
             // The body: the widest slice below the neck (down to a third of his height under it).
             int widest = -1;
             for (int i = neck - 1; i >= Mathf.Max(0, neck - (int)(N * 0.33f)); i--)
@@ -538,8 +545,8 @@ namespace Patchwork
             fit.NeckSize = new Vector3(Mathf.Max(sx[neck], nr * 0.85f), nr, Mathf.Max(sz[neck], nr * 0.85f));
             float bx = Mathf.Max(sx[bi], sx[widest] * 0.9f), bz = Mathf.Max(sz[bi], sz[widest] * 0.9f);
             fit.BodySize = new Vector3(bx, (bx + bz) * 0.5f, bz);
-            Vector3 neckPt = root.TransformPoint(new Vector3(cx[neck], neckY, cz[neck]));
-            Vector3 bodyPt = root.TransformPoint(new Vector3(cx[bi], bodyY, cz[bi]));
+            Vector3 neckPt = new Vector3(cx[neck], neckY, cz[neck]);
+            Vector3 bodyPt = new Vector3(cx[bi], bodyY, cz[bi]);
             switch (f)
             {
                 case FormType.Water: fit.NeckBone = wHead; fit.BodyBone = wBody; break;
@@ -551,10 +558,79 @@ namespace Patchwork
             }
             if (fit.NeckBone == null) fit.NeckBone = root;
             if (fit.BodyBone == null) fit.BodyBone = root;
-            fit.NeckAt = fit.NeckBone.InverseTransformPoint(neckPt);
-            fit.BodyAt = fit.BodyBone.InverseTransformPoint(bodyPt);
+            fit.NeckAt = RestMatrix(fit.NeckBone, body.Root).inverse.MultiplyPoint3x4(neckPt);
+            fit.BodyAt = RestMatrix(fit.BodyBone, body.Root).inverse.MultiplyPoint3x4(bodyPt);
             Debug.Log("[Wardrobe] " + f + " fit: height " + h.ToString("0.00") + ", neck at " + neckY.ToString("0.00") + " size " + fit.NeckSize.ToString("0.000") + ", body at " + bodyY.ToString("0.00") + " size " + fit.BodySize.ToString("0.000"));
             return fit;
+        }
+
+        // Which pixels of his texture are on his head (above the neck), so the dye can leave his
+        // button eyes alone.
+        bool[] headMaskCache;
+        bool[] HeadMask(int size)
+        {
+            if (size <= 0 || patchModel == null) return null;
+            if (headMaskCache != null && headMaskCache.Length == size * size) return headMaskCache;
+            var fit = FitFor(FormType.Yarn);
+            if (fit == null) return null;
+            float neckY = RestMatrix(fit.NeckBone, yarn.Root).MultiplyPoint3x4(fit.NeckAt).y;
+            var mask = new bool[size * size];
+            var baked = new Mesh();
+            foreach (var r in yarn.Renderers)
+            {
+                var smr = r as SkinnedMeshRenderer;
+                if (smr == null) continue;
+                smr.BakeMesh(baked, true);
+                var v = baked.vertices;
+                var uv = baked.uv;
+                var tri = baked.triangles;
+                if (uv == null || uv.Length != v.Length) continue;
+                var toRoot = RestMatrix(r.transform, yarn.Root);
+                var y = new float[v.Length];
+                for (int i = 0; i < v.Length; i++) y[i] = toRoot.MultiplyPoint3x4(v[i]).y;
+                for (int t = 0; t + 2 < tri.Length; t += 3)
+                {
+                    int a = tri[t], b = tri[t + 1], c = tri[t + 2];
+                    if (y[a] < neckY && y[b] < neckY && y[c] < neckY) continue;
+                    FillUV(mask, size, uv[a], uv[b], uv[c]);
+                }
+            }
+            Object.Destroy(baked);
+            headMaskCache = mask;
+            return mask;
+        }
+
+        static void FillUV(bool[] mask, int size, Vector2 a, Vector2 b, Vector2 c)
+        {
+            a = Frac(a) * size; b = Frac(b) * size; c = Frac(c) * size;
+            int x0 = Mathf.Max(0, Mathf.FloorToInt(Mathf.Min(a.x, Mathf.Min(b.x, c.x))) - 1), x1 = Mathf.Min(size - 1, Mathf.CeilToInt(Mathf.Max(a.x, Mathf.Max(b.x, c.x))) + 1);
+            int y0 = Mathf.Max(0, Mathf.FloorToInt(Mathf.Min(a.y, Mathf.Min(b.y, c.y))) - 1), y1 = Mathf.Min(size - 1, Mathf.CeilToInt(Mathf.Max(a.y, Mathf.Max(b.y, c.y))) + 1);
+            if (x1 - x0 > size / 2 || y1 - y0 > size / 2) return;   // (wraps round the edge: skip)
+            float area = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
+            for (int py = y0; py <= y1; py++)
+                for (int px = x0; px <= x1; px++)
+                {
+                    var p = new Vector2(px + 0.5f, py + 0.5f);
+                    if (Mathf.Abs(area) < 1e-6f) { mask[py * size + px] = true; continue; }
+                    float w0 = ((b.x - p.x) * (c.y - p.y) - (c.x - p.x) * (b.y - p.y)) / area;
+                    float w1 = ((c.x - p.x) * (a.y - p.y) - (a.x - p.x) * (c.y - p.y)) / area;
+                    float w2 = 1f - w0 - w1;
+                    const float e = -0.08f;   // a hair over the edges, so no seam pixels are missed
+                    if (w0 >= e && w1 >= e && w2 >= e) mask[py * size + px] = true;
+                }
+        }
+
+        static Vector2 Frac(Vector2 v) { return new Vector2(v.x - Mathf.Floor(v.x), v.y - Mathf.Floor(v.y)); }
+
+        // From something on a body into the root's space, as if the body were at its full size
+        // (it shrinks to nothing and grows back while he changes form, which would squash
+        // every measurement flat).
+        Matrix4x4 RestMatrix(Transform t, Transform bodyRoot)
+        {
+            var m = Matrix4x4.identity;
+            for (var x = t; x != null && x != root; x = x.parent)
+                m = Matrix4x4.TRS(x.localPosition, x.localRotation, x == bodyRoot ? Vector3.one : x.localScale) * m;
+            return m;
         }
 
         // Each frame: the outfit to the neck and body of whichever form he's in. The neck
@@ -567,9 +643,10 @@ namespace Patchwork
             if (fit == null) return;
             var rot = root.rotation;
             neckRoot.SetPositionAndRotation(fit.NeckBone.TransformPoint(fit.NeckAt), rot);
-            neckRoot.localScale = fit.NeckSize;
+            Vector3 grow = BodyFor(form).Root.localScale;   // (small while he's changing form)
+            neckRoot.localScale = Vector3.Scale(fit.NeckSize, grow);
             torsoRoot.SetPositionAndRotation(fit.BodyBone.TransformPoint(fit.BodyAt), rot);
-            torsoRoot.localScale = fit.BodySize;
+            torsoRoot.localScale = Vector3.Scale(fit.BodySize, grow);
         }
 
         GameObject OutfitPart(int outfit, Transform space, string name)
