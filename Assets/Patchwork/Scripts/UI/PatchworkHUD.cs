@@ -530,7 +530,7 @@ namespace Patchwork
                     UIKit.Fill(chip, got ? new Color(0.4f, 0.75f, 1f) : new Color(0.62f, 0.6f, 0.66f, 0.55f), 19f);
                     UIKit.Label(chip, lensNames[i], UIKit.Style(18, true, TextAnchor.MiddleCenter, got ? new Color(0.08f, 0.2f, 0.4f) : new Color(1f, 1f, 1f, 0.9f)));
                 }
-                UIKit.Label(new Rect(qr.x + 14f, qr.y + 86f, 360f, 24f), "Seams " + quest.SeamsShut + "/" + Level2Quest.Seams + "  Pages " + quest.PagesFound + "/6  Lamps " + quest.LampsLit + "/8  Fakes " + (ExhibitAudit.Instance != null ? ExhibitAudit.Instance.Found : 0) + "/" + ExhibitAudit.Fakes + "  Secrets " + quest.SecretsFound + "/" + Level2Quest.Secrets,
+                UIKit.Label(new Rect(qr.x + 14f, qr.y + 86f, 360f, 24f), "Seams " + quest.SeamsShut + "/" + Level2Quest.Seams + "  Pages " + quest.PagesFound + "/6  Lamps " + quest.LampsLit + "/" + quest.LampsTotal + "  Fakes " + (ExhibitAudit.Instance != null ? ExhibitAudit.Instance.Found : 0) + "/" + ExhibitAudit.Fakes + "  Secrets " + quest.SecretsFound + "/" + Level2Quest.Secrets,
                     UIKit.Style(13, true, TextAnchor.MiddleLeft, new Color(0.35f, 0.4f, 0.6f, 0.9f)));
                 UIKit.Label(new Rect(qr.x + 20f, qr.y + 112f, 344f, 54f), quest.Objective(),
                     UIKit.Style(17, true, TextAnchor.UpperLeft, new Color(0.15f, 0.25f, 0.5f, 0.9f), true));

@@ -32,6 +32,9 @@ namespace Patchwork
                 RmClaim(r.bounds);
             }
             Physics.SyncTransforms();
+            // Keep every doorway clear (see Level2Tidy).
+            FindDoorways(kit);
+            foreach (var d in doorways) RmClaim(d);
 
             RoomsForecourt(kit);
             RoomsAtrium(kit);
@@ -110,7 +113,9 @@ namespace Patchwork
         {
             Vector3 half = new Vector3(Mathf.Max(0.01f, size.x * 0.5f - 0.02f), Mathf.Max(0.01f, size.y * 0.5f - 0.02f), Mathf.Max(0.01f, size.z * 0.5f - 0.02f));
             if (Physics.CheckBox(center, half, rot, RmMask, QueryTriggerInteraction.Ignore)) return false;
-            return RmClear(RmBox(center, size, rot));
+            var room = RmBox(center, size, rot);
+            room.Expand(new Vector3(Spacing, 0f, Spacing));   // (a little elbow room round everything)
+            return RmClear(room);
         }
 
         static void RmMiss(string what, Vector3 want)

@@ -1,5 +1,24 @@
 # Development Log
 
+## Tidying the museum
+- Doorways are kept clear. The level now finds every doorway from its walls (two wall
+  pieces on one line with a gap between them) and keeps a space as wide as the door and
+  three metres deep on each side free. Everything that finds its own spot (room details,
+  quest props, exhibits, lamps) now stays out of it.
+- A last look round after everything is built takes any loose decoration out of a doorway,
+  and names in the log anything solid that's still in one, so it can be moved by hand.
+- Spacing: everything that finds its own spot now keeps at least 45 cm from its
+  neighbours, so displays no longer sit right on top of each other.
+- No more "put it there anyway": quest lamps and the Observatory lens rack are now left out
+  if there's no room. The Curator's real exhibits are too; the five fakes, the hands-on
+  machines and the dust sheets search much further for a clear spot.
+- Displays face the room: the Curator's plinths and the hands-on machines turn their backs
+  to the nearest wall.
+- Wick's post was standing in the Grand Atrium's great doorway. It's now laid out as one
+  arrangement along the south wall, east of the doors: clock, sentry box, Wick and his
+  lantern, the lens lamps, and the lost property shelf. The clock and shelf are now solid.
+- Removed the checkpoint easel at the landed pod. You start there anyway.
+
 ## The Long Gallery, scarier
 - The music now cuts out completely (it used to only drop to a tenth). In its place is a
   low drone made in code: two deep notes slightly out of tune with each other so they throb,

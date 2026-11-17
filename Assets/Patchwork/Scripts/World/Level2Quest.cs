@@ -67,10 +67,14 @@ namespace Patchwork
             quest.FoeRoot = root;
             if (kit.Root.GetComponent<GreyStain>() == null) kit.Root.gameObject.AddComponent<GreyStain>();
 
-            // ----- Wick, the night watchman, by the atrium checkpoint -----
-            Vector3 wickAt = new Vector3(-3.6f, 0f, -108f), foot;
-            if (RmFloor("the night watchman", wickAt, new Vector3(1.6f, 2.2f, 1.6f), 0f, 5f, out foot)) wickAt = foot;
-            var wick = Person(kit, wickAt, 150f, ToyNpc.Kind.TinSoldier, "Wick", new Color(0.2f, 0.24f, 0.4f), new Color(1f, 0.8f, 0.35f), 0.78f, () => quest.WickLines());
+            // ----- Wick's post -----
+            // All of it laid out together along the Atrium's south wall, east of the great doors
+            // (and clear of them): from west to east, the museum clock, his sentry box, Wick
+            // himself with his lantern, the three lens lamps, and the lost property shelf.
+            Vector3 post = new Vector3(11f, 0f, -106.45f), foot;
+            if (RmFloor("Wick's post", post, new Vector3(10f, 3.7f, 3f), 0f, 10f, out foot)) post = foot;
+            Vector3 wickAt = post + new Vector3(0.2f, 0f, 0.5f);
+            var wick = Person(kit, wickAt, 330f, ToyNpc.Kind.TinSoldier, "Wick", new Color(0.2f, 0.24f, 0.4f), new Color(1f, 0.8f, 0.35f), 0.78f, () => quest.WickLines());
             wick.TalkEnded = quest.WickTalked;
             // His lantern, set down beside him.
             var lamp = kit.Group("WicksLantern", wickAt + new Vector3(0.9f, 0f, 0.3f));
@@ -80,7 +84,7 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.66f, 0f), new Vector3(0.16f, 0.2f, 0.16f), Brass, default(Vector3), lamp);
             PointLight(kit, wickAt + new Vector3(0.9f, 0.6f, 0.3f), new Color(1f, 0.75f, 0.4f), 7f, 1.6f);
             // The three lens lamps on a stand behind him: one lights for each lens that comes home.
-            var stand = kit.Group("LensLamps", wickAt + new Vector3(-1.3f, 0f, -0.5f));
+            var stand = kit.Group("LensLamps", post + new Vector3(1.2f, 0f, -1f));
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.05f, 0f), new Vector3(0.7f, 0.05f, 0.7f), IronMat, default(Vector3), stand);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.2f, 0f), new Vector3(0.09f, 1.2f, 0.09f), IronMat, default(Vector3), stand);
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 2.3f, 0f), new Vector3(1.9f, 0.08f, 0.08f), IronMat, default(Vector3), stand);
@@ -97,7 +101,7 @@ namespace Patchwork
             }
 
             // ----- Six pages of his night book, blown about the museum -----
-            Vector3[] pageAt = { wickAt + new Vector3(3f, 0f, 5f), new Vector3(-48f, 0f, -77f), new Vector3(-63f, 0f, 17.5f), new Vector3(-47f, 0f, 73f), new Vector3(-52f, 0f, 88f), new Vector3(77f, 0f, 10f) };
+            Vector3[] pageAt = { post + new Vector3(-2f, 0f, 6f), new Vector3(-48f, 0f, -77f), new Vector3(-63f, 0f, 17.5f), new Vector3(-47f, 0f, 73f), new Vector3(-52f, 0f, 88f), new Vector3(77f, 0f, 10f) };
             for (int i = 0; i < pageAt.Length; i++)
                 if (RmFloor("a page of the night book", pageAt[i], new Vector3(1.2f, 2f, 1.2f), 0f, 5f, out foot)) pageAt[i] = foot;
             quest.PageSpots = pageAt;
@@ -187,14 +191,13 @@ namespace Patchwork
             // ----- The five seams the Fray came up through -----
             Vector3[] seam = { new Vector3(8f, 0f, -98f), new Vector3(-45f, 0f, -74f), new Vector3(-44f, 0f, 60f), new Vector3(60f, 0f, 27f), new Vector3(-60f, 0f, 130f) };
             for (int i = 0; i < seam.Length; i++)
-                if (RmFloor("a seam", seam[i], new Vector3(3.6f, 1.6f, 2f), 0f, 7f, out foot)) seam[i] = foot;
+                if (RmFloor("a seam", seam[i], new Vector3(3.6f, 1.6f, 2f), 0f, 14f, out foot)) seam[i] = foot;
             quest.SeamSpots = seam;
 
             // ----- The museum clock, by Wick's post: its hands follow the night -----
-            Vector3 clockAt = wickAt + new Vector3(-3.4f, 0f, 1.6f);
-            if (RmFloor("the museum clock", clockAt, new Vector3(1.5f, 3.6f, 1.1f), 180f, 5f, out foot)) clockAt = foot;
+            Vector3 clockAt = post + new Vector3(-4f, 0f, -1.05f);
             var clock = kit.Group("MuseumClock", clockAt);
-            clock.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            TownKit.Solid(kit, clockAt + Vector3.up * 1.8f, new Vector3(1.3f, 3.6f, 0.8f), 0f);
             var caseWood = PatchworkAssets.Wood(new Color(0.34f, 0.22f, 0.15f));
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.2f, 0f), new Vector3(1.3f, 0.4f, 0.8f), caseWood, default(Vector3), clock);
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.3f, 0f), new Vector3(0.9f, 1.8f, 0.6f), caseWood, default(Vector3), clock);
@@ -217,11 +220,8 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.98f, 0f), new Vector3(0.3f, 0.01f, 0.3f), Brass, new Vector3(90f, 0f, 0f), swing);
 
             // ----- Wick's sentry box: striped, with his stool, his mug and his keys -----
-            Vector3 boxAt = wickAt + new Vector3(-1.4f, 0f, -2.6f);
-            if (RmFloor("the sentry box", boxAt, new Vector3(2f, 3.4f, 1.8f), 180f, 5f, out foot))
             {
-                var box = kit.Group("SentryBox", foot);
-                box.localRotation = Quaternion.Euler(0f, 180f, 0f);
+                var box = kit.Group("SentryBox", post + new Vector3(-2f, 0f, -0.65f));
                 var navy = PatchworkAssets.Wood(new Color(0.2f, 0.24f, 0.42f));
                 var cream = PatchworkAssets.Wood(new Color(0.9f, 0.85f, 0.72f));
                 kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.06f, 0f), new Vector3(1.8f, 0.12f, 1.6f), caseWood, default(Vector3), box);
@@ -265,10 +265,8 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 2.7f, 0.4f), Vector3.one * 0.07f, Brass, default(Vector3), clock);
 
             // ----- The lost property shelf: something turns up on it for every secret found -----
-            Vector3 shelfAt = wickAt + new Vector3(3.2f, 0f, -1.6f);
-            if (RmFloor("the lost property shelf", shelfAt, new Vector3(2.8f, 2.4f, 0.9f), 180f, 5f, out foot)) shelfAt = foot;
-            var shelf = kit.Group("LostProperty", shelfAt);
-            shelf.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            var shelf = kit.Group("LostProperty", post + new Vector3(3.6f, 0f, -1.1f));
+            TownKit.Solid(kit, shelf.position + new Vector3(0f, 1.15f, -0.05f), new Vector3(2.75f, 2.3f, 0.6f), 0f);
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.1f, -0.25f), new Vector3(2.7f, 2.2f, 0.08f), caseWood, default(Vector3), shelf);
             for (int s = -1; s <= 1; s += 2) kit.Deco(PrimitiveType.Cube, new Vector3(s * 1.33f, 1.1f, 0f), new Vector3(0.08f, 2.2f, 0.58f), caseWood, default(Vector3), shelf);
             for (int r = 0; r < 4; r++) kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.12f + r * 0.68f, 0f), new Vector3(2.7f, 0.07f, 0.58f), caseWood, default(Vector3), shelf);
@@ -293,8 +291,9 @@ namespace Patchwork
 
             // ----- The lens rack in the Observatory: three empty rings, till Stella fills them -----
             Vector3 rackAt = new Vector3(6.5f, 14f, -9.5f);
-            if (RmFloor("the lens rack", rackAt, new Vector3(1.2f, 2.6f, 1.2f), 0f, 4f, out foot)) rackAt = foot;
-            var rack = kit.Group("LensRack", rackAt);
+            if (RmFloor("the lens rack", rackAt, new Vector3(1.2f, 2.6f, 1.2f), 0f, 8f, out foot))
+            {
+            var rack = kit.Group("LensRack", foot);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.05f, 0f), new Vector3(0.8f, 0.05f, 0.8f), Brass, default(Vector3), rack);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.2f, -0.2f), new Vector3(0.08f, 1.2f, 0.08f), Brass, default(Vector3), rack);
             quest.SocketGlows = new Transform[3];
@@ -310,6 +309,7 @@ namespace Patchwork
                 quest.SocketGlows[i] = NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, ry, 0.05f), new Vector3(rs * 0.92f, 0.012f, rs * 0.92f), PatchworkAssets.Glow(new Color(0.55f, 0.85f, 1f), 1.5f), new Vector3(90f, 0f, 0f), rack));
                 quest.SocketGlows[i].gameObject.SetActive(false);
             }
+            }
 
             // ----- Wick's round: eight night lamps, all out -----
             Vector3[] lampAt = { new Vector3(0f, 0f, -72f), new Vector3(-46f, 0f, -68f), new Vector3(-58f, 0f, 22f), new Vector3(-52f, 0f, 62f),
@@ -317,8 +317,8 @@ namespace Patchwork
             quest.Lamps = new NightLamp[lampAt.Length];
             for (int i = 0; i < lampAt.Length; i++)
             {
-                if (RmFloor("a night lamp", lampAt[i], new Vector3(1.5f, 3f, 1.5f), 0f, 6f, out foot)) lampAt[i] = foot;
-                quest.Lamps[i] = NightLamp.Create(kit, lampAt[i], IronMat, Brass);
+                if (RmFloor("a night lamp", lampAt[i], new Vector3(1.5f, 3f, 1.5f), 0f, 10f, out foot))
+                    quest.Lamps[i] = NightLamp.Create(kit, foot, IronMat, Brass);
             }
 
             // ----- The Helmet Crab, and the three places it turns up -----
@@ -362,6 +362,7 @@ namespace Patchwork
         // Patches of grey creep, and what each lot belongs to.
         readonly List<FrayCreep> armsCreep = new List<FrayCreep>(), crabCreep = new List<FrayCreep>(), domeCreep = new List<FrayCreep>();
         readonly FrayCreep[] tankCreep = new FrayCreep[4], seamCreep = new FrayCreep[Seams];
+        public int LampsTotal { get { int n = 0; if (Lamps != null) foreach (var l in Lamps) if (l != null) n++; return n; } }
         public int LampsLit { get { int n = 0; if (Lamps != null) foreach (var l in Lamps) if (l != null && l.IsLit) n++; return n; } }
         FraySeam greatSeam;
         bool defending, toldHeld;
@@ -451,8 +452,8 @@ namespace Patchwork
             Mark("lamp" + which);
             int n = LampsLit;
             var game = PatchworkGame.Instance;
-            if (n >= Lamps.Length) Secret("rounds");
-            else if (game != null) game.ShowToast("Night lamp lit.  (" + n + " of " + Lamps.Length + " on Wick's round)");
+            if (n >= LampsTotal) Secret("rounds");
+            else if (game != null) game.ShowToast("Night lamp lit.  (" + n + " of " + LampsTotal + " on Wick's round)");
             if (n == 1) Narrator.Say("Patch turned the little brass wheel, and the lamp remembered what it was for. The grey drew back to the edge of the light and waited there, like a cat that has been told no.");
         }
 

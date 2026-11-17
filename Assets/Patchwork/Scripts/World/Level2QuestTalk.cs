@@ -245,11 +245,11 @@ namespace Patchwork
             // Things he's heard about that he wasn't expecting to.
             if (Tell("rounds")) return new[]
             {
-                "Every lamp on my round. All eight. I could see them coming on from here, one after another, like somebody walking home.",
+                "Every lamp on my round. Every one. I could see them coming on from here, one after another, like somebody walking home.",
                 "That's my job you've done. I ought to mind. I find I don't.",
                 "Have a look at the shelf behind me, by the by. Lost property. Things keep turning up on it tonight, and I don't put them there."
             };
-            if (Lamps != null && LampsLit > 0 && LampsLit < Lamps.Length && !Seen("lamps_said")) { Mark("lamps_said"); lines.Add("Somebody's been lighting my lamps. There's eight on the round, and they all went out at dusk. Every one you turn up, the grey backs off a bit. I'd do it myself, but I'm holding this door."); }
+            if (Lamps != null && LampsLit > 0 && LampsLit < LampsTotal && !Seen("lamps_said")) { Mark("lamps_said"); lines.Add("Somebody's been lighting my lamps. There's eight on the round, and they all went out at dusk. Every one you turn up, the grey backs off a bit. I'd do it myself, but I'm holding this door."); }
             if (Tell("flawless", "wick")) lines.Add("The Castellan says you went through the whole Hollow Guard and they never laid a gauntlet on you. He's told me four times. He's started acting it out.");
             if (Tell("crab")) lines.Add("You caught the helmet before it could run? Flat on its back, first go? I chased that thing round the Atrium for an hour. I'm not jealous. I'm a little jealous.");
             if (Tell("tidy", "wick")) lines.Add("All five seams stitched, and not a lens in your pocket yet. You're a tidy sort. Shut the doors before you chase the burglars. My mother was the same.");

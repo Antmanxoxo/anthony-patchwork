@@ -705,6 +705,12 @@ Stuff I need to remember about how Patchwork is put together.
   **`LevelLook.SetGloom(0..1)`** drains colour, darkens and closes the vignette on top of
   whatever else the look is doing; whoever sets it must set it back to 0.
 
+- **Doorways and spacing** (`Level2Tidy.cs`): `FindDoorways` runs at the start of `Rooms`
+  and claims a keep-clear box at every gap between two `Wall` blocks on one line. `RmFits`
+  adds `Spacing` (0.45 m) round every check. `TidyUp` runs last (before `RmDone`) and logs
+  `[Level2] Tidy: ...` lines for anything left in a doorway. Hand-placed things in a doorway
+  that have a collider or a script are only logged, never removed.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

@@ -38,16 +38,11 @@ namespace Patchwork
         static void Station(LevelKit kit, MuseumPassport passport, int which, Vector3 want, string title, string verb, string factA, string factB)
         {
             Vector3 foot;
-            Vector3 room = which == 2 ? new Vector3(4f, 5f, 4f) : which == 4 ? new Vector3(3f, 3f, 3f) : new Vector3(3.2f, 3.4f, 3.2f);
-            if (!RmFloor(title, want, room, 0f, 14f, out foot)) foot = want;
-            // Face whichever way has the most open floor.
-            float yaw = 0f;
-            for (int tries = 0; tries < 4; tries++)
-            {
-                Vector3 front = foot + Rot(yaw) * new Vector3(0f, 1.2f, 2.4f);
-                if (!Physics.CheckSphere(front, 0.7f, ~(1 << 2), QueryTriggerInteraction.Ignore)) break;
-                yaw += 90f;
-            }
+            // (Room for the machine, its card beside it, and somewhere to stand in front.)
+            Vector3 room = which == 2 ? new Vector3(5f, 5f, 5f) : new Vector3(4.4f, 3.6f, 4.4f);
+            if (!RmFloor(title, want, room, 0f, 18f, out foot)) foot = want;
+            // Back to the nearest wall, front to the room.
+            float yaw = FaceTheRoom(foot, 0f);
             var g = kit.Group("HandsOn_" + which, foot);
             g.rotation = Rot(yaw);
             var ex = g.gameObject.AddComponent<HandsOnExhibit>();
@@ -63,7 +58,7 @@ namespace Patchwork
             spot.Label = verb;
             spot.PromptPoint = foot + Vector3.up * 2.4f;
             spot.Used = p => ex.Use();
-            Plaque(kit, foot + Rot(yaw) * new Vector3(1.7f, 0f, 1.2f), yaw - 20f, title, factA, factB);
+            Plaque(kit, foot + Rot(yaw) * new Vector3(1.6f, 0f, 0.9f), yaw - 20f, title, factA, factB);
         }
     }
 

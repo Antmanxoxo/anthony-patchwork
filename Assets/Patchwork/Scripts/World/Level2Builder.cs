@@ -152,6 +152,7 @@ namespace Patchwork
             Audit(kit);   // the Curator's Audit: twelve exhibits, five of them fakes
             HandsOn(kit); // five machines you're allowed to touch, and the Museum Passport
             PatchworkTouches(kit);   // mended patches on the walls, bunting across the halls
+            TidyUp(kit);  // last of all: clear any doorway that still has something in it
             RmDone();
 
             // The hush of the halls, and the deep rumble by the big tanks.
@@ -361,7 +362,7 @@ namespace Patchwork
 
             // ----- Arriving -----
             var pod = LandedPod.Build(kit, PodLanding, 0f);
-            kit.AddCheckpoint(SpawnPoint, 0f);
+            // (No checkpoint here: you start at the pod anyway, and it was just in the way.)
             var home = kit.Volume<UseSpot>(pod.DoorStep + new Vector3(0f, 0.4f, 0.4f), new Vector3(2.8f, 3f, 2.4f), "PodHome");
             home.Label = "Head back to the Pod";
             home.PromptPoint = pod.DoorStep + Vector3.up * 2.6f;

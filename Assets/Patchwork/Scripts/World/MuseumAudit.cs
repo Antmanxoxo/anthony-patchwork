@@ -85,15 +85,14 @@ namespace Patchwork
             {
                 var e = list[i];
                 Vector3 foot;
-                float yaw = (i % 4) * 90f;
-                if (!RmFloor("an audit exhibit", e.At, new Vector3(2.6f, 2.6f, 2.6f), 0f, 8f, out foot)) foot = e.At;
-                // (Turn the card to face whichever way has the most open floor in front of it.)
-                for (int tries = 0; tries < 4; tries++)
+                if (!RmFloor("an audit exhibit", e.At, new Vector3(2.8f, 2.6f, 3f), 0f, 16f, out foot))
                 {
-                    Vector3 front = foot + Rot(yaw) * new Vector3(0f, 1.2f, 2f);
-                    if (!Physics.CheckSphere(front, 0.6f, ~(1 << 2), QueryTriggerInteraction.Ignore)) break;
-                    yaw += 90f;
+                    // (A real one can simply be left out. A fake can't: the audit needs all five.)
+                    if (!e.Fake) continue;
+                    foot = e.At;
                 }
+                // Back to the nearest wall, card to the room.
+                float yaw = FaceTheRoom(foot, (i % 4) * 90f);
 
                 var g = kit.Group("AuditCase", foot);
                 g.rotation = Rot(yaw);
@@ -108,7 +107,7 @@ namespace Patchwork
                 var card = Plaque(kit, foot + Rot(yaw) * new Vector3(0f, 0f, 1.15f), yaw, e.Title, e.A, e.B);
                 var c = g.gameObject.AddComponent<ExhibitCase>();
                 c.Setup(audit, i, e.Title, e.Fake, e.Truth, card);
-                audit.Cases[i] = c;
+                audit.Cases[i] = c;   // (left empty for a real one that didn't fit)
             }
         }
     }

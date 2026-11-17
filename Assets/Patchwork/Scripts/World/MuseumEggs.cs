@@ -45,7 +45,7 @@ namespace Patchwork
             {
                 Vector3 foot;
                 hunt.Yaws[i] = i * 67f;
-                hunt.Spots[i] = RmFloor("a dust sheet", want[i], new Vector3(2.2f, 2.2f, 2.2f), 0f, 8f, out foot) ? foot : want[i];
+                hunt.Spots[i] = RmFloor("a dust sheet", want[i], new Vector3(2.2f, 2.2f, 2.2f), 0f, 14f, out foot) ? foot : want[i];
             }
         }
     }
