@@ -350,6 +350,9 @@ namespace Patchwork
         public Vector3[] PageSpots, SeamSpots;
         public Transform[] LampGlows, ClockHands, ShelfItems, SocketGlows;
         public NightLamp[] Lamps;
+        public Vector3 DialsSpot;
+        public Transform FrayDressing;
+        public Vector3[] PatrolSpots;
 
         const string K = "L2_q_";
         public static string ClotKey(int i) { return K + "clot" + i; }
@@ -405,6 +408,19 @@ namespace Patchwork
         public bool ArmsWon { get { return Seen("arms"); } }
         public bool Fitted { get { return Seen("fitted"); } }
         public bool Defended { get { return Seen("defended"); } }
+        public bool DialsSet { get { return Seen("dials"); } }
+        public bool RiddleGiven { get { return Seen("riddle"); } }
+
+        // All three star dials right: the Night Glass is aimed.
+        public void SetDials()
+        {
+            if (DialsSet) return;
+            Mark("dials");
+            Sfx.Play(SfxId.PrizeFanfare, 0.55f);
+            var game = PatchworkGame.Instance;
+            if (game != null) game.ShowToast("Click, click, click: the Night Glass swings round and settles. She's in the glass. Go and look!");
+            Narrator.Say("Four moons, the comet's year, and the stars in hundreds. The great telescope turned on its brass, slow as a sunflower, and stopped exactly where the rhyme said she'd be.");
+        }
         public int ClotsCleared { get { int n = 0; for (int i = 0; i < 4; i++) if (GameState.IsHintSeen(ClotKey(i))) n++; return n; } }
         int CrabStage { get { return Seen("crab2") ? 2 : Seen("crab1") ? 1 : 0; } }
         bool CrabBeaten { get { return Seen("crab"); } }
@@ -437,6 +453,8 @@ namespace Patchwork
             int n = LensCount;
             GreyStain.Baseline = over ? 0f : Fitted ? 0.06f : n >= 3 ? 0.08f : n == 2 ? 0.15f : n == 1 ? 0.22f : 0.3f;
             RefreshLamps();
+            // The extra grey about the place withers once the Night Glass is safe.
+            if (FrayDressing != null) FrayDressing.gameObject.SetActive(!over);
             if (ClockHands != null && ClockHands.Length == 2)
             {
                 float minutes = over ? 60f : Fitted ? 58f : n >= 3 ? 50f : n == 2 ? 35f : n == 1 ? 20f : 0f;
@@ -556,6 +574,8 @@ namespace Patchwork
 
             WireTalk();
             WireGuide();
+            SpawnPatrols();
+            WirePlaques();
         }
 
         // ------------------------------------------------------------------ The lenses
@@ -575,6 +595,8 @@ namespace Patchwork
             int n = LensCount;
             if (!Met) Secret("stranger");
             PatchworkHUD.ShowGet(LensNames[which], n >= 3 ? "All three lenses of the Night Glass!" : n + " of 3 lenses of the Night Glass", LensBlue, 0);
+            // The big moment: he holds it up over his head.
+            LensCelebration.Play(LensNames[which], n);
             Sfx.Play(SfxId.PrizeFanfare, 0.6f);
             Haptics.Pulse(0.4f, 0.5f, 0.3f);
             RefreshWorld();
@@ -847,9 +869,15 @@ namespace Patchwork
         // The telescope's "Look" spot asks this first.
         public bool TelescopeReady()
         {
-            if (Defended || GameState.IsLevelComplete(Level2Builder.SceneName)) return true;
+            if (GameState.IsLevelComplete(Level2Builder.SceneName) || Defended && DialsSet) return true;
             var game = PatchworkGame.Instance;
             if (game == null) return false;
+            if (Defended)
+            {
+                game.ShowToast(RiddleGiven ? "Nothing but dark water. The three star dials behind the telescope must be set first (Stella's rhyme)." : "Nothing but dark water. Ask Stella: the Night Glass needs aiming.");
+                Sfx.Play(SfxId.TransformFail, 0.4f);
+                return false;
+            }
             if (!Fitted)
             {
                 int n = LensCount;
@@ -940,7 +968,8 @@ namespace Patchwork
         public string Objective()
         {
             var game = PatchworkGame.Instance;
-            if (Defended) return "Look through the Night Glass.";
+            if (Defended)
+                return DialsSet ? "Look through the Night Glass." : RiddleGiven ? "Set the three star dials behind the telescope. The answers are on museum plaques: look for the gold stars." : "Talk to Stella: the Night Glass needs aiming.";
             if (Fitted) return "Stitch the Great Seam shut and clear the moths!";
             if (LensCount >= 3)
             {

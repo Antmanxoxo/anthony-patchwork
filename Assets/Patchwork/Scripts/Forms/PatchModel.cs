@@ -359,7 +359,7 @@ namespace Patchwork
 
             // Step lengths match his speed so his feet don't slide.
             if (hasClip[(int)Anim.Walk]) clips[(int)Anim.Walk].SetSpeed(Mathf.Clamp(speed / (maxSpeed * 0.42f), 0.6f, 1.5f));
-            if (hasClip[(int)Anim.Run]) clips[(int)Anim.Run].SetSpeed(Mathf.Clamp(speed / (maxSpeed * 0.85f), 0.8f, 1.4f));
+            if (hasClip[(int)Anim.Run]) clips[(int)Anim.Run].SetSpeed(Mathf.Clamp(speed / (maxSpeed * 0.85f), 0.8f, 1.9f));   // (up to a proper sprint when holding Run)
 
             // What each clip should be weighted towards this frame.
             for (int i = 0; i < targets.Length; i++) targets[i] = 0f;

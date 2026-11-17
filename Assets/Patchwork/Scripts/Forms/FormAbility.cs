@@ -14,6 +14,8 @@ namespace Patchwork
         public bool GrabPressed;
         public bool GrabHeld;
         public bool AttackPressed;
+        public bool AttackHeld;
+        public bool RunHeld;
 
         public static PlayerInputFrame Empty
         {

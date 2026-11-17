@@ -212,7 +212,7 @@ namespace Patchwork
             Shooting(kit, new Vector3(35f, Y + CorH - 0.5f, -12f), new Vector3(37f, Y + CorH - 0.4f, -38f), new Vector3(1.5f, 0.15f, 2f), 7f, 2.7f, 2.4f, 0.07f, new Color(0.8f, 0.9f, 1f));
             foreach (float z in new[] { -35f, -25.5f, -15f })
                 PointLight(kit, new Vector3(36f, Y + 5f, z), new Color(0.8f, 0.8f, 1f), 12f, 1.1f);
-            Plaque(kit, new Vector3(33.9f, Y, -33f), 90f, "The First Star Catalogue",
+            riddlePlaques[2] = Plaque(kit, new Vector3(33.9f, Y, -33f), 90f, "The First Star Catalogue",
                 "More than two thousand years ago a Greek astronomer called Hipparchus wrote down the places of about eight hundred and fifty stars, and how bright each one looked.",
                 "Comparing his notes with much older ones, he found the stars had all shifted a little: the whole sky slowly wobbles, once round every twenty-six thousand years.");
             Plaque(kit, new Vector3(33.9f, Y, -14.2f), 90f, "A New Planet",
@@ -399,7 +399,7 @@ namespace Patchwork
             Painting(kit, new Vector3(37f, Y + 3.4f, -2.95f), 0f, 2.4f, 1.9f, 46);
             Painting(kit, new Vector3(43f, Y + 3.4f, -2.95f), 0f, 2.4f, 1.9f, 47);
             PointLight(kit, new Vector3(38f, Y + 5f, 0f), LampGold, 11f, 1.1f);
-            Plaque(kit, new Vector3(44.5f, Y, 2.2f), 180f, "Halley's Comet",
+            riddlePlaques[1] = Plaque(kit, new Vector3(44.5f, Y, 2.2f), 180f, "Halley's Comet",
                 "Edmond Halley noticed that the comets seen in 1531, 1607 and 1682 followed the same path, and guessed they were one comet, coming back every seventy-six years or so.",
                 "He said it would return in 1758. He didn't live to see it, but on Christmas night 1758 it came back, right on time. It's due again in 2061.");
             // The way out, with a lamp each side.

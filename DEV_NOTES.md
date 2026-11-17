@@ -735,6 +735,12 @@ Stuff I need to remember about how Patchwork is put together.
 - Cutscene captions need time: a line takes length / 34 seconds to write out, then needs about 2.8 seconds to read. MuseumIntro sizes every shot from its line; do the same for any new cutscene.
 - Level 2 HUD: DrawNightGlassCard. Full details only when paused. Heartstrings show once Level2Quest.LiftKnown ("L2_q_liftknown").
 
+- Run is PatchworkInput.Run (L2, L3, Left Ctrl); PlayerMotor.Running multiplies MoveSpeed by FormDefinition.RunMultiplier.
+- PatchStrike: Combo/ComboAge and Words (static) are drawn by PatchworkHUD.DrawCombat. Spin() is the charged attack.
+- ExhibitPlaque.Read is a multicast action (use +=): StarDials and Level2Quest.WirePlaques both listen.
+- Level 2 ending order: lenses, Stella fits them, Great Seam (Defended), Stella's rhyme (RiddleGiven), star dials (DialsSet), then the telescope.
+- Anything outside the Observatory's glass must skip the north side (about 52 to 128 degrees): the Orrery Bridge is there.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

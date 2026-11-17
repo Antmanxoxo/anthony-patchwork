@@ -43,6 +43,34 @@ namespace Patchwork
             return player;
         }
 
+        // Little puffs kicked up behind him while he runs, in his form's own colour.
+        float dustTimer;
+        float runTipTimer;
+        void RunDust(float dt)
+        {
+            // The first time he's been walking a while, say how to run.
+            if (!Motor.Running && Motor.Grounded && Game != null && Game.Mode == UIMode.Gameplay && !GameState.IsHintSeen("pw_run_tip"))
+            {
+                Vector3 hv = Motor.Velocity;
+                hv.y = 0f;
+                runTipTimer = hv.sqrMagnitude > 16f ? runTipTimer + dt : 0f;
+                if (runTipTimer > 4f)
+                {
+                    GameState.SetHintSeen("pw_run_tip");
+                    Game.ShowToast(Game.Input.UsingKeyboard ? "Hold Left Ctrl to run!" : "Hold L2 to run!");
+                }
+            }
+            if (!Motor.Running || !Motor.Grounded) return;
+            Vector3 v = Motor.Velocity;
+            v.y = 0f;
+            if (v.sqrMagnitude < 25f) return;
+            dustTimer -= dt;
+            if (dustTimer > 0f) return;
+            dustTimer = 0.2f;
+            var col = Forms.Current == FormType.Water ? new Color(0.75f, 0.9f, 1f) : Forms.Current == FormType.Wind ? Color.white : new Color(0.92f, 0.86f, 0.8f);
+            FxBurst.Spawn(Forms.Current == FormType.Water ? FxBurst.Kind.Drips : FxBurst.Kind.Puff, transform.position + Vector3.up * 0.15f - v.normalized * 0.4f, col, -v.normalized);
+        }
+
         public void Tick(PlayerInputFrame input, float dt)
         {
             RideCarrier();
@@ -51,6 +79,10 @@ namespace Patchwork
             PlayerVolume.UpdateAll(this, dt);
             Hand.Tick(input, dt);
             Strike.Tick(input, dt);
+            // Running: hold Run with the stick well over. (In the air it keeps the run it had.)
+            bool wantRun = input.RunHeld && input.Move.sqrMagnitude > 0.3f;
+            Motor.Running = Motor.Grounded || Motor.Swimming ? wantRun : Motor.Running && wantRun;
+            RunDust(dt);
             Motor.Step(input.MoveWorld, input.JumpPressed, input.JumpHeld, dt);
             Forms.Ability.PostMove(dt);
 

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Patchwork
 {
@@ -79,6 +80,14 @@ namespace Patchwork
             if (Defended || Fitted)
             {
                 if (!upstairs) { at = LiftDoor; label = "The lift"; return true; }
+                if (Defended && !DialsSet && !RiddleGiven)
+                {
+                    if (stellaNpc == null) stellaNpc = FindNpc("Stella");
+                    at = stellaNpc != null ? stellaNpc.transform.position : ObservatoryCentre;
+                    label = "Stella";
+                    return true;
+                }
+                if (Defended && !DialsSet) { at = DialsSpot; label = "The star dials"; return true; }
                 at = ObservatoryCentre + new Vector3(0f, 1f, -2.4f);
                 label = Defended ? "The Night Glass" : "The Great Seam";
                 return true;
@@ -173,7 +182,7 @@ namespace Patchwork
             Barks("Button", () => HasSecret("king") ? "The king says hello. He doesn't. But he would." : "Have you seen a very small king? Asking for a friend.");
             Barks("Dr. Trowel", () => HasLens(2) ? "Was it crab-shaped? Write it down. Write everything down." : "If you see the crab, don't startle it. I want notes.");
             Barks("Thimble", () => Pick("Shh! I'm not here. I'm a coat.", "I've got the WHOLE museum. Except the scary bits."));
-            Barks("Ticket-master Tock", () => Pick("Don't wind that little clock tower by the Pod. Wick wound it once. Very long night.", "Tickets! ...Nobody? Right. Habit."));
+            Barks("Ticket-master Tock", () => Pick("Don't wind that little clock tower in the corner of the forecourt. Wick wound it once. Very long night.", "Tickets! ...Nobody? Right. Habit."));
             Barks("Professor Plume", () => HasSecret("audit") ? "Five fakes! I shall write a paper." : "Read the card. Then read it again.");
             Barks("Mrs. Sudsbury", () => Pick("Mind my clean floor. Well. Cleanish.", "That grey comes back worse every time. It isn't dirt."));
             Barks("Sergeant Stanchion", () => Pick("Left, right, left... who goes there? Carry on.", "Stand aside when they rock. Hit them when they fall. That is the drill."));
@@ -184,6 +193,50 @@ namespace Patchwork
             Barks("Keeper Pippa", () => "Brr. The Frozen Sea's colder than usual tonight.");
             Barks("Professor Hoot", () => HasSecret("hall") ? "Hoo! Is the cake for anyone in particular?" : "Hoo! A visitor! Mind the portrait. It's crooked.");
             Barks("Pip", () => Pick("Boing! ...Sorry. Habit.", "Pop goes the... no. Not tonight."));
+        }
+
+        // Reading the museum's cards is worth something: each one read for the first time is a
+        // little sparkle and a few points, and the pause card keeps the tally.
+        int plaquesTotal;
+        public int PlaquesTotal { get { return plaquesTotal; } }
+        public int PlaquesRead { get { int n = 0; foreach (var p in plaques) if (p != null && Seen("read_" + p.Title)) n++; return n; } }
+        readonly List<ExhibitPlaque> plaques = new List<ExhibitPlaque>();
+
+        void WirePlaques()
+        {
+            foreach (var p in FindObjectsByType<ExhibitPlaque>(FindObjectsInactive.Include))
+            {
+                if (p == null) continue;
+                plaques.Add(p);
+                var plaque = p;
+                p.Read += () =>
+                {
+                    if (Seen("read_" + plaque.Title)) return;
+                    Mark("read_" + plaque.Title);
+                    var game = PatchworkGame.Instance;
+                    int n = PlaquesRead;
+                    if (game != null && game.Player != null)
+                    {
+                        ScoreKeeper.Bonus(150, plaque.Head + Vector3.up);
+                        FxBurst.Spawn(FxBurst.Kind.Sparkle, plaque.Head + Vector3.up * 0.6f, new Color(1f, 0.85f, 0.45f));
+                        if (n % 5 == 0 || n == plaquesTotal) game.ShowToast("Facts read: " + n + " of " + plaquesTotal + (n == plaquesTotal ? ". Every card in the museum!" : ""));
+                    }
+                };
+            }
+            plaquesTotal = plaques.Count;
+        }
+
+        // The little Fray patrols waiting in the halls (until the Night Glass is safe).
+        void SpawnPatrols()
+        {
+            if (PatrolSpots == null || Defended || GameState.IsLevelComplete(Level2Builder.SceneName)) return;
+            for (int i = 0; i < PatrolSpots.Length; i++)
+            {
+                Vector3 p = PatrolSpots[i];
+                if (i % 3 == 2) { AmmoniteRoller.Create(FoeRoot, p); continue; }
+                Chessling.Create(FoeRoot, p, i % 2 == 0);
+                Chessling.Create(FoeRoot, p + new Vector3(1.6f, 0f, 1.1f), false, i % 4 == 1);
+            }
         }
 
         static string Pick(params string[] lines) { return lines[Random.Range(0, lines.Length)]; }

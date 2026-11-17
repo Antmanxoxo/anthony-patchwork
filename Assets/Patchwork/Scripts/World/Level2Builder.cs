@@ -151,6 +151,12 @@ namespace Patchwork
             TouringNow = TourWanted();
             Intro(kit);   // the opening of Chapter Two, the first time you come
             MoonEgg(kit); // the little clock tower on the quay, and the moon's secret face
+            var questNow = kit.Root.GetComponentInChildren<Level2Quest>();
+            if (questNow != null)
+            {
+                StarDialsAt(kit, questNow);   // aiming the Night Glass: Stella's rhyme, and three plaques
+                MoreFray(kit, questNow);      // tears, tendrils and patrols about the halls
+            }
             Eggs(kit);    // the Long Gallery, and the Dust Sheet Five
             Audit(kit);   // the Curator's Audit: twelve exhibits, five of them fakes
             HandsOn(kit); // five machines you're allowed to touch, and the Museum Passport

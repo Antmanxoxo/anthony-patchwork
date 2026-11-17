@@ -22,6 +22,7 @@ namespace Patchwork
 
         // Movement
         public float MoveSpeed = 6.5f;
+        public float RunMultiplier = 1.5f;   // how much faster holding Run goes
         public float GroundAcceleration = 60f;
         public float AirAcceleration = 22f;
         public float JumpHeight = 2.0f;
@@ -69,6 +70,7 @@ namespace Patchwork
                 PrimaryColor = new Color(0.36f, 0.66f, 0.95f),
                 SecondaryColor = new Color(0.78f, 0.92f, 1f),
                 MoveSpeed = 7.2f,
+                RunMultiplier = 1.45f,   // a quick slithering slide
                 JumpHeight = 1.3f,
                 GravityScale = 1.1f,
                 ControllerHeight = 0.8f,

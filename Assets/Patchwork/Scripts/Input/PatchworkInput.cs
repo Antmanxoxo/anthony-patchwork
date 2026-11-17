@@ -24,6 +24,7 @@ namespace Patchwork
         public readonly InputAction Jump;
         public readonly InputAction Ability;
         public readonly InputAction Attack;
+        public readonly InputAction Run;
         public readonly InputAction FormWheel;
         public readonly InputAction Confirm;
         public readonly InputAction Cancel;
@@ -89,6 +90,8 @@ namespace Patchwork
             Ability = Button("Ability", "<Gamepad>/buttonWest", "<Keyboard>/e");
             // (Circle is only "back" in the menus, so out in the world it's free for hitting things.)
             Attack = Button("Attack", "<Gamepad>/buttonEast", "<Mouse>/leftButton", "<Keyboard>/r");
+            // Run: hold L2 (or click in the left stick), or Left Ctrl.
+            Run = Button("Run", "<Gamepad>/leftTrigger", "<Gamepad>/leftStickPress", "<Keyboard>/leftCtrl");
             FormWheel = Button("FormWheel", DefaultFormWheelGamepadPath, "<Keyboard>/q");
             Confirm = Button("Confirm", "<Gamepad>/buttonSouth", "<Keyboard>/enter", "<Keyboard>/space", "<Keyboard>/numpadEnter");
             Cancel = Button("Cancel", "<Gamepad>/buttonEast", "<Keyboard>/backspace", "<Keyboard>/escape");

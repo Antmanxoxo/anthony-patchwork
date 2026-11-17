@@ -606,6 +606,7 @@ namespace Patchwork
             {
                 float deg = -30f + i * 12.6f;
                 if (deg > 208f) break;
+                if (Mathf.Abs(Mathf.DeltaAngle(deg, 90f)) < 34f) continue;   // (not in the Orrery Bridge, just outside the north side)
                 float a = deg * Mathf.Deg2Rad;
                 Jelly(kit, C + new Vector3(Mathf.Cos(a) * (R + 2.4f), 2.6f + (i % 4) * 1.5f, Mathf.Sin(a) * (R + 2.4f)), 0.7f + (i % 3) * 0.25f, jc[i % jc.Length], i * 1.7f, i % 5 == 0);
             }
@@ -637,7 +638,7 @@ namespace Patchwork
             director.TelescopeEye = mount + new Vector3(0f, 4.4f, -1.4f);
             director.TelescopeLook = C + new Vector3(0f, 30f, 12.5f);
             director.ObservatoryCentre = C;
-            Plaque(kit, C + new Vector3(3.2f, 1f, -2.6f), 200f, "The Great Telescope",
+            riddlePlaques[0] = Plaque(kit, C + new Vector3(3.2f, 1f, -2.6f), 200f, "The Great Telescope",
                 "In the winter of 1609 Galileo pointed a telescope at the night sky, which almost nobody had thought to do. He saw mountains on the Moon. He saw that the Milky Way is made of stars. And he saw four little moons going round Jupiter.",
                 "That last one changed everything. If moons could circle Jupiter, then not everything in the heavens went round the Earth.");
             kit.Hint(C + new Vector3(0f, 1.5f, 14f), new Vector3(14f, 4f, 10f), "The Observatory",

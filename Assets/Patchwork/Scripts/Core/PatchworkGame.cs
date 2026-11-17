@@ -503,6 +503,8 @@ namespace Patchwork
             f.GrabPressed = Input.Grab.WasPressedThisFrame();
             f.GrabHeld = Input.Grab.IsPressed();
             f.AttackPressed = Input.Attack.WasPressedThisFrame();
+            f.AttackHeld = Input.Attack.IsPressed();
+            f.RunHeld = Input.Run.IsPressed();
             return f;
         }
 

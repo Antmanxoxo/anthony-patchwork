@@ -16,6 +16,7 @@ namespace Patchwork
             LoadingScreen.ResetStatics();
             Narrator.ResetStatics();
             StrikeFx.ResetStatics();
+            PatchStrike.ResetStatics();
             Level2Quest.ResetStatics();
             ExhibitAudit.ResetStatics();
             MuseumPassport.ResetStatics();

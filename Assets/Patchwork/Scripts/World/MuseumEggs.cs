@@ -480,7 +480,8 @@ namespace Patchwork
         // What changes, the further Patch walks.
         void Stages(PatchworkGame game)
         {
-            int want = wraps >= 15 ? 5 : wraps >= 12 ? 4 : wraps >= 9 ? 3 : wraps >= 6 ? 2 : wraps >= 3 ? 1 : 0;
+            // (About a hundred and seventy yards of the same six yards of gallery before the end turns up.)
+            int want = wraps >= 28 ? 5 : wraps >= 22 ? 4 : wraps >= 16 ? 3 : wraps >= 10 ? 2 : wraps >= 5 ? 1 : 0;
             if (want <= stage) return;
             stage = want;
             Vector3 pp = game.Player.transform.position;

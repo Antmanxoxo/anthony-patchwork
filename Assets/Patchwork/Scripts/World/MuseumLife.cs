@@ -444,6 +444,9 @@ namespace Patchwork
         public override string PromptVerb { get { return "Read"; } }
         public override string[] NextLines() { return Text; }
         public override void Blip() { }
+        // Somebody has just read this card (see StarDials: some of them hold answers).
+        public System.Action Read;
+        public override void OnTalkEnd() { if (Read != null) Read(); }
     }
 
     // The light, the haze and the sound of each part of the museum. Each zone is a box; the one

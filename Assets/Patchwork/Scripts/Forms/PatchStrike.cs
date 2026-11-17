@@ -11,8 +11,24 @@ namespace Patchwork
     //   Wind:  a puff that shoves, a whirl that hits all round, then a gale burst straight through.
     // Small Fray pop in one hit. Bigger ones take several, and some can only be hurt by the
     // third hit (it knocks a shield aside, or tips a thing in armour over).
+    // And to make a scrap more fun:
+    //   - Hits chain into a combo (the HUD counts them, and cheers at 5, 10, 15 and 25).
+    //   - Every hit that lands pops a word into the air (BOP! SPLOSH! FWOOSH!).
+    //   - A hit in mid-air that lands bounces Patch back up off it, so he can bop along a row.
+    //   - Running into a fight: the first hit is a lunge that goes further and hits harder.
+    //   - Hold Attack and let go for a spin that hits everything round him (the third hit's
+    //     strength, so it knocks shields aside too).
     public class PatchStrike
     {
+        // The combo: hits that landed with no more than a moment between them.
+        public static int Combo { get; private set; }
+        public static float ComboAge { get; private set; }
+        static float comboTimer;
+        public struct Word { public Vector3 At; public string Text; public float Age; public Color Col; }
+        public static readonly List<Word> Words = new List<Word>();
+        public static void ResetStatics() { Combo = 0; comboTimer = 0f; ComboAge = 0f; Words.Clear(); }
+        float holdT;
+        bool charged, lunge;
         public const int Moves = 3;
         // A strike has landed on this many things at once (for anyone who's counting).
         public static System.Action<int> Landed;
@@ -64,6 +80,31 @@ namespace Patchwork
         public void Tick(PlayerInputFrame input, float dt)
         {
             if (rest > 0f) rest -= dt;
+            if (comboTimer > 0f) { comboTimer -= dt; ComboAge += dt; if (comboTimer <= 0f) Combo = 0; }
+            for (int i = Words.Count - 1; i >= 0; i--)
+            {
+                var w = Words[i];
+                w.Age += dt;
+                if (w.Age > 0.9f) Words.RemoveAt(i); else Words[i] = w;
+            }
+            // The charged spin: hold Attack, and let go.
+            if (input.AttackHeld && CanStrike())
+            {
+                holdT += dt;
+                if (!charged && holdT > 0.6f)
+                {
+                    charged = true;
+                    Sfx.PlayPitched(SfxId.Twinkle, 0.35f, 1.2f);
+                    FxBurst.Spawn(FxBurst.Kind.Sparkle, player.Motor.Center, FormLibrary.Get(player.Forms.Current).PrimaryColor);
+                }
+                if (charged && Mathf.Repeat(holdT, 0.2f) < dt) FxBurst.Spawn(FxBurst.Kind.Sparkle, player.Motor.Center + Vector3.down * 0.3f, Color.Lerp(FormLibrary.Get(player.Forms.Current).PrimaryColor, Color.white, 0.4f));
+            }
+            else
+            {
+                if (charged && CanStrike()) Spin();
+                holdT = 0f;
+                charged = false;
+            }
             if (!Active)
             {
                 if (chain > 0f) { chain -= dt; if (chain <= 0f) next = 0; }
@@ -134,6 +175,9 @@ namespace Patchwork
             motor.FacingOverride = aim;
 
             bool wet = motor.Swimming || motor.Submerged;
+            // Running into it: the first hit is a lunge.
+            lunge = Move == 0 && motor.Running && motor.Grounded && !wet;
+            if (lunge) { motor.StartDash(aim * 10f, 0.14f); Sfx.Play(SfxId.Whoosh, 0.3f); }
             float pitch = Move == 0 ? 1f : Move == 1 ? 1.18f : 0.82f;
             switch (moveForm)
             {
@@ -169,7 +213,7 @@ namespace Patchwork
                 case FormType.Yarn:
                     if (Move == 0)
                     {
-                        hits = Sweep(2.9f, 0.1f, 1, false);
+                        hits = Sweep(lunge ? 3.4f : 2.9f, 0.1f, lunge ? 2 : 1, false);
                         StrikeFx.Arc(c + Vector3.up * 0.15f, aim, 100f, -70f, 2.5f, col, 0.2f);
                     }
                     else if (Move == 1)
@@ -193,7 +237,7 @@ namespace Patchwork
                 case FormType.Water:
                     if (Move == 0)
                     {
-                        hits = Sweep(2.3f, -0.05f, 1, false);
+                        hits = Sweep(lunge ? 3f : 2.3f, -0.05f, lunge ? 2 : 1, false);
                         StrikeFx.Arc(c, aim, 95f, -65f, 1.9f, pale, 0.22f);
                         FxBurst.Spawn(FxBurst.Kind.Splash, c + aim * 1.2f, pale);
                     }
@@ -217,7 +261,7 @@ namespace Patchwork
                 default:
                     if (Move == 0)
                     {
-                        hits = Sweep(3.4f, 0.25f, 1, false);
+                        hits = Sweep(lunge ? 3.9f : 3.4f, 0.25f, lunge ? 2 : 1, false);
                         FxBurst.Spawn(FxBurst.Kind.Puff, c + aim * 0.8f, Color.white, aim);
                         StrikeFx.Line(c + aim * 0.6f, aim, 2.8f, Color.white, 0.5f);
                     }
@@ -240,8 +284,60 @@ namespace Patchwork
                     break;
             }
             if (wet) FxBurst.Spawn(FxBurst.Kind.Sparkle, c + aim, pale);
-            if (hits > 0) Connected();
+            if (hits > 0)
+            {
+                Connected(hits);
+                Pop(c + aim * 1.4f + Vector3.up * 0.8f, lunge ? "DASH!" : HitWord(moveForm, Move), col);
+                // Bopped something in mid-air: bounce back up off it.
+                if (!motor.Grounded && !wet) motor.Bounce(Move == 2 ? 8f : 6.5f);
+            }
             if (hits > 0 && Landed != null) Landed(hits);
+        }
+
+        static readonly string[][] HitWords =
+        {
+            new[] { "SPLISH!", "SPLASH!", "SPLOSH!" },   // Water
+            new[] { "BOP!", "THWAP!", "BONK!" },         // Yarn
+            new[] { "PUFF!", "WHIRL!", "FWOOSH!" },      // Wind
+        };
+
+        static string HitWord(FormType form, int move)
+        {
+            int f = form == FormType.Water ? 0 : form == FormType.Yarn ? 1 : 2;
+            return HitWords[f][Mathf.Clamp(move, 0, 2)];
+        }
+
+        public static void Pop(Vector3 at, string text, Color col)
+        {
+            if (Words.Count > 8) Words.RemoveAt(0);
+            Words.Add(new Word { At = at, Text = text, Age = 0f, Col = Color.Lerp(col, Color.white, 0.25f) });
+        }
+
+        // The charged spin: round and round, hitting everything near, at full strength.
+        void Spin()
+        {
+            var motor = player.Motor;
+            if (Active) Cancel();
+            struck.Clear();
+            moveForm = player.Forms.Current;
+            Vector3 c = motor.Center;
+            Color col = FormLibrary.Get(moveForm).PrimaryColor;
+            int hits = Burst(c, 3.8f, 2, true);
+            StrikeFx.Ring(c + Vector3.down * 0.3f, 3.6f, col, 0.3f);
+            StrikeFx.Ring(c + Vector3.up * 0.2f, 2.8f, Color.Lerp(col, Color.white, 0.5f), 0.22f);
+            FxBurst.Spawn(FxBurst.Kind.Sparkle, c, col);
+            FxBurst.Spawn(moveForm == FormType.Water ? FxBurst.Kind.Splash : moveForm == FormType.Wind ? FxBurst.Kind.Puff : FxBurst.Kind.Threads, c, Color.Lerp(col, Color.white, 0.4f));
+            Sfx.PlayPitched(SfxId.Whoosh, 0.6f, 1.3f);
+            Sfx.Voice(SfxId.VoiceYay, moveForm, 0.4f);
+            Shake(0.3f);
+            if (hits > 0)
+            {
+                Connected(hits);
+                Pop(c + Vector3.up * 1.4f, "SPIN!", col);
+                if (Landed != null) Landed(hits);
+            }
+            rest = 0.3f;
+            next = 0;
         }
 
         void Shake(float amount)
@@ -251,10 +347,13 @@ namespace Patchwork
             player.Visuals.PunchScale(new Vector3(1.25f, 0.78f, 1.25f));
         }
 
-        void Connected()
+        void Connected(int hits)
         {
             var game = player.Game;
-            if (game != null) game.HitStop(Move == 2 ? 0.07f : 0.035f);
+            Combo += hits;
+            comboTimer = 2.2f;
+            ComboAge = 0f;
+            if (game != null) game.HitStop(Move == 2 || Move < 0 ? 0.08f : 0.04f);
             Haptics.Pulse(Move == 2 ? 0.6f : 0.3f, 0.3f, 0.1f);
             Merits.Add("strikes");
         }

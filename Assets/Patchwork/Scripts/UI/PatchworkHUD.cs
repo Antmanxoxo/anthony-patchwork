@@ -312,6 +312,7 @@ namespace Patchwork
                 DrawCountChip();
                 DrawQuestPointer();
                 DrawBarks();
+                DrawCombat();
                 ButtonMoonEgg.DrawOverlay();
                 if (stackA > 0.001f) Shifted(-(1f - UIKit.EaseOutCubic(stackA)) * 420f, 0f, DrawButtons);
                 if (controlsA > 0.001f) Shifted(0f, (1f - UIKit.EaseOutCubic(controlsA)) * 120f, () => DrawControls(kb));
@@ -564,7 +565,7 @@ namespace Patchwork
                 UIKit.Label(new Rect(sr.x + 20f, sr.y + 36f, 344f, 48f), quest.Objective(), UIKit.Style(17, true, TextAnchor.UpperLeft, new Color(ink.r, ink.g, ink.b, 0.9f), true));
                 return y + 100f;
             }
-            float h = full ? 226f : 118f;
+            float h = full ? 250f : 118f;
             var qr = new Rect(28f, y, 400f, h);
             UIKit.Panel(qr, new Color(0.93f, 0.97f, 1f, 0.95f), new Color(0.3f, 0.55f, 0.85f, 0.9f), 20f);
             UIKit.Label(new Rect(qr.x + 20f, qr.y + 6f, 200f, 34f), "The Night Glass", UIKit.Style(22, true, TextAnchor.MiddleLeft, ink));
@@ -592,9 +593,10 @@ namespace Patchwork
                     UIKit.Label(new Rect(qr.x + 48f, ry, 130f, 26f), lensNames[i], UIKit.Style(17, true, TextAnchor.MiddleLeft, got ? new Color(0.15f, 0.35f, 0.6f) : new Color(0.25f, 0.28f, 0.4f)));
                     UIKit.Label(new Rect(qr.x + 172f, ry, 216f, 26f), quest.LensStatus(i), UIKit.Style(15, got, TextAnchor.MiddleLeft, got ? new Color(0.25f, 0.55f, 0.4f) : new Color(0.4f, 0.4f, 0.55f, 0.95f)));
                 }
-                UIKit.Label(new Rect(qr.x + 14f, qr.y + 138f, 380f, 24f), "Seams " + quest.SeamsShut + "/" + Level2Quest.Seams + "  Pages " + quest.PagesFound + "/6  Lamps " + quest.LampsLit + "/" + quest.LampsTotal + "  Fakes " + (ExhibitAudit.Instance != null ? ExhibitAudit.Instance.Found : 0) + "/" + ExhibitAudit.Fakes + "  Secrets " + quest.SecretsFound + "/" + Level2Quest.Secrets,
-                    UIKit.Style(13, true, TextAnchor.MiddleLeft, new Color(0.35f, 0.4f, 0.6f, 0.9f)));
-                ny = qr.y + 164f;
+                var tally = UIKit.Style(14, true, TextAnchor.MiddleLeft, new Color(0.35f, 0.4f, 0.6f, 0.9f));
+                UIKit.Label(new Rect(qr.x + 20f, qr.y + 136f, 370f, 22f), "Seams " + quest.SeamsShut + "/" + Level2Quest.Seams + "   Pages " + quest.PagesFound + "/6   Lamps " + quest.LampsLit + "/" + quest.LampsTotal, tally);
+                UIKit.Label(new Rect(qr.x + 20f, qr.y + 158f, 370f, 22f), "Fakes " + (ExhibitAudit.Instance != null ? ExhibitAudit.Instance.Found : 0) + "/" + ExhibitAudit.Fakes + "   Facts " + quest.PlaquesRead + "/" + quest.PlaquesTotal + "   Secrets " + quest.SecretsFound + "/" + Level2Quest.Secrets, tally);
+                ny = qr.y + 186f;
             }
             UIKit.Label(new Rect(qr.x + 20f, ny, 364f, 60f), "Next: " + quest.Objective(), UIKit.Style(17, true, TextAnchor.UpperLeft, new Color(ink.r, ink.g, ink.b, 0.9f), true));
             return y + h + 12f;
@@ -666,7 +668,11 @@ namespace Patchwork
                     break;
             }
 
-            float w = 940f, h = 182f;
+            // Tall enough for the whole of the text (long hints used to run out of the bottom).
+            float w = 940f;
+            float bodyW = w - 140f - (hint.Theme == HintTheme.Neutral ? 40f : 110f);
+            float bodyH = UIKit.RichTextHeight(bodyW, hint.Body, 24, false, Game.Input.UsingKeyboard);
+            float h = Mathf.Max(182f, 64f + bodyH + 24f);
             float y = Mathf.LerpUnclamped(-h - 20f, 24f, tin) - tout * (h + 60f);
             var r = new Rect((UIKit.Width - w) * 0.5f, y, w, h);
             float t = Time.unscaledTime;
@@ -728,7 +734,7 @@ namespace Patchwork
             float tx = r.x + 140f;
             float tw = w - 140f - (hint.Theme == HintTheme.Neutral ? 40f : 110f);
             UIKit.Label(new Rect(tx, r.y + 22f, tw, 40f), hint.Title, UIKit.Style(29, true, TextAnchor.MiddleLeft, title));
-            UIKit.RichText(new Rect(tx, r.y + 64f, tw, 104f), hint.Body, 24, false,
+            UIKit.RichText(new Rect(tx, r.y + 64f, tw, h - 78f), hint.Body, 24, false,
                 new Color(title.r * 0.6f + 0.1f, title.g * 0.6f + 0.1f, title.b * 0.6f + 0.1f, 0.95f), Game.Input.UsingKeyboard);
 
             // Thread "timer" along the bottom: full while you're in the zone, runs down once you leave.
@@ -900,6 +906,42 @@ namespace Patchwork
             var r = new Rect(Mathf.Clamp(p.x - tw * 0.5f, 8f, w - tw - 8f), ty, tw, 30f);
             UIKit.Fill(r, new Color(0.18f, 0.14f, 0.28f, 0.75f * alpha), 15f);
             UIKit.Label(r, text, style);
+        }
+
+        // The fun of a scrap: the words that pop off each hit, and the combo count.
+        void DrawCombat()
+        {
+            if (Game.Mode != UIMode.Gameplay || Game.CameraRig == null) return;
+            var cam = Game.CameraRig.Cam;
+            if (cam != null)
+                foreach (var w in PatchStrike.Words)
+                {
+                    Vector3 sp = cam.WorldToScreenPoint(w.At + Vector3.up * w.Age * 1.2f);
+                    if (sp.z <= 0f) continue;
+                    float k = w.Age / 0.9f;
+                    float pop = k < 0.15f ? UIKit.EaseOutBack(k / 0.15f) * 1.15f : 1.15f - (k - 0.15f) * 0.25f;
+                    float a = 1f - Mathf.Clamp01((k - 0.6f) / 0.4f);
+                    float gx = sp.x / UIKit.Scale, gy = (Screen.height - sp.y) / UIKit.Scale;
+                    var saved = GUI.matrix;
+                    var pivot = new Vector3(gx, gy, 0f);
+                    GUI.matrix = saved * Matrix4x4.TRS(pivot, Quaternion.Euler(0f, 0f, (w.Text.Length % 2 == 0 ? -8f : 8f)), new Vector3(pop, pop, 1f)) * Matrix4x4.Translate(-pivot);
+                    var style = UIKit.Style(38, true, TextAnchor.MiddleCenter, new Color(w.Col.r, w.Col.g, w.Col.b, a));
+                    UIKit.Label(new Rect(gx - 120f, gy - 30f, 240f, 60f), w.Text, style, true);
+                    GUI.matrix = saved;
+                }
+            int combo = PatchStrike.Combo;
+            if (combo < 2) return;
+            // The count, right of centre: it jumps each time it goes up.
+            float age = PatchStrike.ComboAge;
+            float bump = 1f + Mathf.Max(0f, 0.35f - age) * 1.2f;
+            string cheer = combo >= 25 ? "Unravelling!" : combo >= 15 ? "Stitchtastic!" : combo >= 10 ? "Super!" : combo >= 5 ? "Nice!" : null;
+            float cx = UIKit.Width - 200f, cy = UIKit.Height * 0.38f;
+            var saved2 = GUI.matrix;
+            var piv = new Vector3(cx, cy, 0f);
+            GUI.matrix = saved2 * Matrix4x4.TRS(piv, Quaternion.Euler(0f, 0f, -6f), new Vector3(bump, bump, 1f)) * Matrix4x4.Translate(-piv);
+            UIKit.Label(new Rect(cx - 150f, cy - 44f, 300f, 70f), combo + " HITS", UIKit.Style(52, true, TextAnchor.MiddleCenter, new Color(1f, 0.85f, 0.35f)), true);
+            if (cheer != null) UIKit.Label(new Rect(cx - 150f, cy + 20f, 300f, 44f), cheer, UIKit.Style(30, true, TextAnchor.MiddleCenter, new Color(1f, 0.6f, 0.7f)), true);
+            GUI.matrix = saved2;
         }
 
         // What people say as Patch goes by: a little paper speech bubble over their heads.

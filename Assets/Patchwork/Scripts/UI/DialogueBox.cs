@@ -106,7 +106,14 @@ namespace Patchwork
             float a = Mathf.Clamp01(openTime / 0.25f);
             float rise = (1f - UIKit.EaseOutCubic(a)) * 60f;
             var ink = UIKit.Ink;
-            var box = new Rect((W - 1240f) * 0.5f, H - 300f + rise, 1240f, 240f);
+            // Tall enough for the whole line (a long one grows the box upward instead of running out
+            // of the bottom), and smaller writing for a very long one.
+            string whole = Current ?? "";
+            int size = whole.Length > 260 ? 26 : 30;
+            var bodyStyle = UIKit.Style(size, false, TextAnchor.UpperLeft, new Color(ink.r, ink.g, ink.b, a), true);
+            float textH = bodyStyle.CalcHeight(new GUIContent(whole), 1240f - 120f);
+            float boxH = Mathf.Max(240f, textH + 120f);
+            var box = new Rect((W - 1240f) * 0.5f, H - 60f - boxH + rise, 1240f, boxH);
             UIKit.Panel(box, new Color(0.99f, 0.96f, 0.9f, 0.97f * a), new Color(0.66f, 0.3f, 0.32f, 0.85f * a));
 
             // Name tag.
@@ -121,7 +128,7 @@ namespace Patchwork
             string text = Current;
             int count = Mathf.Clamp(Mathf.FloorToInt(shown), 0, text.Length);
             UIKit.Label(new Rect(box.x + 60f, box.y + 46f, box.width - 120f, box.height - 80f), text.Substring(0, count),
-                UIKit.Style(30, false, TextAnchor.UpperLeft, new Color(ink.r, ink.g, ink.b, a), true));
+                UIKit.Style(size, false, TextAnchor.UpperLeft, new Color(ink.r, ink.g, ink.b, a), true));
 
             if (count >= text.Length && text.Length > 0)
             {

@@ -357,6 +357,33 @@ namespace Patchwork
 
         // Word-wrapped text where {Jump}, {Ability}, {Wheel}, {Satchel} and {Pause} are drawn as the
         // actual button for the controller (or key) being used, so hints always match the controls.
+        // How tall RichText will come out for this text at this width (it wraps the same way).
+        public static float RichTextHeight(float width, string text, int size, bool bold, bool keyboard)
+        {
+            if (string.IsNullOrEmpty(text)) return 0f;
+            var style = Style(size, bold, TextAnchor.MiddleLeft, Color.white);
+            float lineH = size * 1.4f, iconH = size * 1.3f;
+            float space = Mathf.Max(4f, TextWidth("a a", style) - TextWidth("aa", style));
+            float x = 0f;
+            int lines = 1;
+            foreach (var raw in text.Split(' '))
+            {
+                if (raw.Length == 0) continue;
+                float w;
+                PromptAction action;
+                int close = raw.StartsWith("{") ? raw.IndexOf('}') : -1;
+                if (close > 1 && TokenAction(raw.Substring(1, close - 1), out action))
+                {
+                    string after = raw.Substring(close + 1);
+                    w = PromptWidth(action, iconH, keyboard) + (after.Length > 0 ? TextWidth(after, style) : 0f);
+                }
+                else w = TextWidth(raw, style);
+                if (x + w > width && x > 0f) { x = 0f; lines++; }
+                x += w + space;
+            }
+            return lines * lineH;
+        }
+
         public static void RichText(Rect r, string text, int size, bool bold, Color color, bool keyboard)
         {
             var style = Style(size, bold, TextAnchor.MiddleLeft, color);

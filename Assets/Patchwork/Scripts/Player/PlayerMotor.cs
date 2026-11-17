@@ -36,6 +36,9 @@ namespace Patchwork
         // Set each frame by deep water while Water Form is swimming: faster moves, and Jump works
         // from the surface. Both reset every frame.
         [System.NonSerialized] public float SpeedBoost;
+        // Holding Run (set each frame by the player). Keeps going through a jump, so a running
+        // jump goes further.
+        [System.NonSerialized] public bool Running;
 
         // Wearing the God Mode Halo (the testing hat): over three times the speed, much higher
         // jumps, jump again in mid-air as often as you like, hold Jump to fly upward, a
@@ -186,8 +189,9 @@ namespace Patchwork
             else
             {
                 bool godSpeed = GodMode;
-                Vector3 target = moveWorld * Params.MoveSpeed * (1f + SpeedBoost) * (godSpeed ? GodSpeed : 1f) + (Grounded ? Vector3.zero : AirCarry);
-                float accel = Grounded || Swimming || godSpeed ? Params.GroundAcceleration * (1f + SpeedBoost) * (godSpeed ? 3f : 1f) : Params.AirAcceleration;
+                float run = Running && !Swimming ? Params.RunMultiplier : 1f;
+                Vector3 target = moveWorld * Params.MoveSpeed * run * (1f + SpeedBoost) * (godSpeed ? GodSpeed : 1f) + (Grounded ? Vector3.zero : AirCarry);
+                float accel = Grounded || Swimming || godSpeed ? Params.GroundAcceleration * (1f + SpeedBoost) * (godSpeed ? 3f : 1f) * (run > 1f ? 1.15f : 1f) : Params.AirAcceleration * (run > 1f ? 1.3f : 1f);
                 horizontal = Vector3.MoveTowards(horizontal, target, accel * dt);
             }
 

@@ -28,7 +28,9 @@ namespace Patchwork
             // side, where the balcony looks out over the atrium.)
             for (float deg = -32f; deg <= 212f; deg += 4f, step++)
             {
-                if (Mathf.Abs(Mathf.DeltaAngle(deg, 90f)) < 9f) continue;
+                // (Nothing on the north side at all: that's where the way in from the Orrery Bridge
+                // is, and the bridge's own floor and walls are just outside the glass there.)
+                if (Mathf.Abs(Mathf.DeltaAngle(deg, 90f)) < 38f) continue;
                 float a = deg * Mathf.Deg2Rad;
                 Vector3 dir = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
                 // Rocks: low near the glass, piled higher towards the back.
@@ -124,10 +126,11 @@ namespace Patchwork
             }
 
             // ----- More life outside the glass -----
-            Swim(kit, Swimmer.Turtle, C + Vector3.up * 12.5f, 28f, 28f, 5f, 0.9f, new Color(0.35f, 0.55f, 0.4f), new Color(0.85f, 0.78f, 0.55f), 40f).Bob = 0.6f;
-            Swim(kit, Swimmer.Turtle, C + Vector3.up * 15.5f, 27.5f, 27.5f, -4f, 0.7f, new Color(0.4f, 0.6f, 0.45f), new Color(0.9f, 0.82f, 0.6f), 150f).Bob = 0.6f;
-            Shoal(kit, C + Vector3.up * 4.5f, 28.2f, 28.2f, 11f, 34, 0.32f, new Color(1f, 0.75f, 0.35f), 93, 20f);
-            Shoal(kit, C + Vector3.up * 9.5f, 28.4f, 28.4f, -8f, 28, 0.36f, new Color(0.55f, 0.85f, 1f), 94, 120f);
+            // (All of these go round high enough to pass over the Orrery Bridge's roof on the north side.)
+            Swim(kit, Swimmer.Turtle, C + Vector3.up * 18.5f, 27.5f, 27.5f, 5f, 0.9f, new Color(0.35f, 0.55f, 0.4f), new Color(0.85f, 0.78f, 0.55f), 40f).Bob = 0.6f;
+            Swim(kit, Swimmer.Turtle, C + Vector3.up * 21f, 26.5f, 26.5f, -4f, 0.7f, new Color(0.4f, 0.6f, 0.45f), new Color(0.9f, 0.82f, 0.6f), 150f).Bob = 0.6f;
+            Shoal(kit, C + Vector3.up * 18f, 28.2f, 28.2f, 11f, 34, 0.32f, new Color(1f, 0.75f, 0.35f), 93, 20f);
+            Shoal(kit, C + Vector3.up * 22.5f, 27.6f, 27.6f, -8f, 28, 0.36f, new Color(0.55f, 0.85f, 1f), 94, 120f);
             Motes(kit, C + Vector3.up * 34f, new Vector3(56f, 22f, 56f), 90, new Color(0.85f, 0.95f, 1f), 1.4f, 0.09f, new Vector3(0.05f, -0.22f, 0.02f));
 
             // ----- The Great Whale -----

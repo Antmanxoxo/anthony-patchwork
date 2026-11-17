@@ -339,6 +339,8 @@ namespace Patchwork
             };
         }
 
+        bool riddleTurn;
+
         string[] StellaLines()
         {
             if (Defended && Tell("nomoth")) return new[]
@@ -351,7 +353,25 @@ namespace Patchwork
                 "Is that HIS? The thimble? You knocked it off his head?",
                 "Put it under the telescope. No, really. It's exactly the right height for a footstool, and I have wanted a footstool up here for years."
             };
-            if (Defended) return new[] { "It's ready. Every lens where it belongs. Go on, up the steps. You earned the first look." };
+            if (Defended && !DialsSet)
+            {
+                // The rhyme for the star dials (two ways of telling it, so she'll always say it again).
+                Mark("riddle");
+                riddleTurn = !riddleTurn;
+                if (riddleTurn) return new[]
+                {
+                    "Every lens where it belongs. But she's not in the glass yet: it's pointing at empty sea. The Fray spun the star dials.",
+                    "There are three dials on the console behind the telescope, and every keeper sets them by the old rhyme:",
+                    "\"Moons of the giant, as Galileo saw them. The year the comet kept its promise. And the stars of the first catalogue, in hundreds.\"",
+                    "My memory is all stars and no numbers, I'm afraid. But the answers are written on the museum's own cards: the telescope's, one in the Comet Gallery, and one in the Night Sky Gallery. I've put a gold star over each."
+                };
+                return new[]
+                {
+                    "The rhyme again? \"Moons of the giant, as Galileo saw them. The year the comet kept its promise. The stars of the first catalogue, in hundreds.\"",
+                    "The telescope's own card, the Comet Gallery, the Night Sky Gallery. Read them, then turn the dials. Gold stars over all three."
+                };
+            }
+            if (Defended) return new[] { "She's in the glass. Every lens where it belongs, every dial right. Go on, up the steps. You earned the first look." };
             if (Fitted) return new[] { "The floor! It's come open! Stitch it, stitch it shut, or the moths will have the lenses out again!" };
             int n = LensCount;
             if (n >= 3) return new[]

@@ -241,15 +241,16 @@ namespace Patchwork
         {
             if (skyMoon == null) return;
             Vector3 foot;
-            // Right beside the path from the Pod, where you can't miss it (just ahead and to the right).
-            if (!RmFloor("the wind-up clock tower", new Vector3(4.6f, 0f, -141f), new Vector3(1.6f, 2.6f, 1.6f), 0f, 5f, out foot)) return;
+            // In the back right-hand corner of the forecourt, where the front of the museum meets
+            // the railings on the right as you walk up from the Pod.
+            if (!RmFloor("the wind-up clock tower", new Vector3(53.5f, 0f, -114f), new Vector3(1.6f, 2.6f, 1.6f), 0f, 6f, out foot)) return;
             Debug.Log("[Level2] Wind-up clock tower on the quay at " + foot);
             var egg = kit.Root.gameObject.AddComponent<ButtonMoonEgg>();
             egg.Moon = skyMoon;
 
             // ----- The toy: a clock tower about as tall as Patch, on a little plinth -----
             var toy = kit.Group("WindUpClockTower", foot);
-            toy.rotation = Rot(270f);   // its clock face toward the path up to the doors
+            toy.rotation = Rot(225f);   // its clock face out across the forecourt
             egg.Toy = toy;
             var cream = PatchworkAssets.Felt(CreamCol);
             var red = PatchworkAssets.Felt(new Color(0.78f, 0.3f, 0.32f));
@@ -280,7 +281,7 @@ namespace Patchwork
             spot.Label = "Wind the little clock tower";
             spot.PromptPoint = foot + Vector3.up * 3f;
             egg.Spot = spot;
-            Plaque(kit, foot + Rot(270f) * new Vector3(1.4f, 0f, 0.6f), 270f, "The Clock Tower",
+            Plaque(kit, foot + Rot(225f) * new Vector3(1.5f, 0f, 0.6f), 225f, "The Clock Tower",
                 "The very first clocks in church towers had no faces at all. They simply rang a bell on the hour, and the word clock comes from an old word for bell.",
                 "Clock faces with hands came later, so that people could tell the time between the bells.");
 
