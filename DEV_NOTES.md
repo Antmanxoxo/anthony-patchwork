@@ -711,6 +711,13 @@ Stuff I need to remember about how Patchwork is put together.
   `[Level2] Tidy: ...` lines for anything left in a doorway. Hand-placed things in a doorway
   that have a collider or a script are only logged, never removed.
 
+- **Photo tour**: `Level2PhotoTour.cs`. The menu sets the PlayerPrefs key `pw_l2_tour`;
+  the builder adds the tour component when it's set, and the tour clears it when done.
+  Shots are in `TourShots()`. Pictures go to `<project>/Screenshots/Level2Tour`.
+- **Crowding check** (`Crowding` in `Level2Tidy.cs`) only looks at direct children of the
+  level root of furniture size; `TakeAway` also turns off any `Solid` lying inside what it
+  hides.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

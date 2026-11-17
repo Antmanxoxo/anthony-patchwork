@@ -1,5 +1,18 @@
 # Development Log
 
+## Finishing pass on Level 2: floors, crowding, and a photo tour
+- Floor seams: where two floors overlap, boards that ran into the earlier floor used to be
+  either doubled (flicker) or dropped (a bare strip). They're now cut off exactly at the
+  earlier floor's edge, so floors meet cleanly.
+- Crowding: after the level is built, it now looks for any two pieces of furniture standing
+  in much the same spot. If one of them is only decoration it is taken away (along with the
+  invisible block that made it solid, so no invisible wall is left). Anything else is named
+  in the log.
+- Photo tour (Patchwork > Level 2 Photo Tour in the editor): plays Level 2, then takes the
+  camera round every room (four corners each, plus the doors, Wick's post, the tunnel, the
+  gallery, the Observatory and inside each tank) and saves about 60 pictures to
+  Screenshots/Level2Tour, so the whole level can be checked over at once.
+
 ## Tidying the museum
 - Doorways are kept clear. The level now finds every doorway from its walls (two wall
   pieces on one line with a gap between them) and keeps a space as wide as the door and

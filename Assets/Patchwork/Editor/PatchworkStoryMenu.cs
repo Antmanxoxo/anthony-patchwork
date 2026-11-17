@@ -105,5 +105,17 @@ namespace Patchwork
             EditorUtility.DisplayDialog("Stop the game first", "Press Play again to stop the game, then use this menu.", "OK");
             return false;
         }
+
+        // Patchwork > Level 2 Photo Tour: plays Level 2 and, once it's built, takes the camera
+        // round every room and saves a picture of each to Screenshots/Level2Tour (for checking
+        // the whole level over). Open the Level 2 scene first.
+        [MenuItem("Patchwork/Level 2 Photo Tour", false, 45)]
+        static void PhotoTour()
+        {
+            PlayerPrefs.SetInt(Level2Builder.TourPref, 1);
+            PlayerPrefs.Save();
+            if (!EditorApplication.isPlaying) EditorApplication.isPlaying = true;
+            Debug.Log("Patchwork: the photo tour will run as soon as Level 2 is built.");
+        }
     }
 }

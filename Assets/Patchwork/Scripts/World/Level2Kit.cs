@@ -240,10 +240,38 @@ namespace Patchwork
             // Where two floors overlap (the keepers' decks are laid in strips that cross), only the
             // first one laid gets boards there: two sets of boards in the same place flicker.
             Vector3 o = slab.position;
+            // (A board that runs into an earlier floor is cut short at its edge, so the two meet
+            // cleanly with nothing doubled and no gap.)
             void Lay(MeshBatch mb, Vector3 c, float len, float w, bool lengthwiseX, float u, float v, float grainAcross = 1.1f, float grainAlong = 2.6f)
             {
-                if (FloorTaken(o.x + c.x, o.z + c.z, top)) return;
-                mb.Board(c, len, w, lengthwiseX, u, v, grainAcross, grainAlong);
+                float along = lengthwiseX ? o.x + c.x : o.z + c.z, across = lengthwiseX ? o.z + c.z : o.x + c.x;
+                float b0 = across - w * 0.5f, b1 = across + w * 0.5f;
+                var pieces = new List<Vector2> { new Vector2(along - len * 0.5f, along + len * 0.5f) };
+                for (int i = 0; i < floorsLaid.Count; i++)
+                {
+                    if (Mathf.Abs(floorTops[i] - top) > 0.05f) continue;
+                    var r = floorsLaid[i];
+                    float ra0 = lengthwiseX ? r.x : r.z, ra1 = lengthwiseX ? r.y : r.w;
+                    float rb0 = lengthwiseX ? r.z : r.x, rb1 = lengthwiseX ? r.w : r.y;
+                    if (rb1 <= b0 + 0.02f || rb0 >= b1 - 0.02f) continue;
+                    var cut = new List<Vector2>();
+                    foreach (var p in pieces)
+                    {
+                        if (ra1 <= p.x || ra0 >= p.y) { cut.Add(p); continue; }
+                        if (ra0 > p.x) cut.Add(new Vector2(p.x, ra0));
+                        if (ra1 < p.y) cut.Add(new Vector2(ra1, p.y));
+                    }
+                    pieces = cut;
+                    if (pieces.Count == 0) return;
+                }
+                foreach (var p in pieces)
+                {
+                    float l = p.y - p.x;
+                    if (l < 0.08f) continue;
+                    float mid = (p.x + p.y) * 0.5f;
+                    Vector3 lc = lengthwiseX ? new Vector3(mid - o.x, c.y, c.z) : new Vector3(c.x, c.y, mid - o.z);
+                    mb.Board(lc, l, w, lengthwiseX, u + (mid - along) * 0.01f, v, grainAcross, grainAlong);
+                }
             }
             int seed = Mathf.RoundToInt(Mathf.Abs(x0 * 3f + z0 * 7f + top * 11f));
             if (stone)
@@ -336,16 +364,6 @@ namespace Patchwork
 
         static readonly List<Vector4> floorsLaid = new List<Vector4>();
         static readonly List<float> floorTops = new List<float>();
-
-        static bool FloorTaken(float x, float z, float top)
-        {
-            for (int i = 0; i < floorsLaid.Count; i++)
-            {
-                var r = floorsLaid[i];
-                if (Mathf.Abs(floorTops[i] - top) < 0.05f && x > r.x && x < r.y && z > r.z && z < r.w) return true;
-            }
-            return false;
-        }
 
         static int FloorHash(int a, int b)
         {
