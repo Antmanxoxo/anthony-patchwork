@@ -1,5 +1,9 @@
 # Development Log
 
+## Fix the rail poking through the Star Corridor
+- The panelling rail, gilt line and cornice on the Star Corridor's north-south walls were made longer than their walls (1.2 to 3 times), when they were only meant to be thicker. The rail stuck out past the wall ends at waist height, across the doorways and through the pillars, and the long west wall's rail ran on into the Orrery Bridge.
+- Now each one is exactly as long as its wall and only sticks out further from it.
+
 ## Solid easels and a bigger photo tour
 - Checkpoint hoop easels are now solid (a box collider on the easel), so you walk round them instead of through their wooden legs. This covers every checkpoint in both levels.
 - The Orrery Bridge checkpoint moved to beside the east wall, so its easel is out of the way in from the Star Corridor door.

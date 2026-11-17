@@ -58,14 +58,16 @@ namespace Patchwork
                 {
                     Vector3 off = alongX ? new Vector3(0f, 0f, s2 * 0.54f) : new Vector3(s2 * 0.54f, 0f, 0f);
                     Vector3 size = alongX ? new Vector3(len, 1f, 0.08f) : new Vector3(0.08f, 1f, len);
+                    // (Only ever thicker out from the wall, never longer than the wall itself.)
+                    System.Func<float, Vector3> Thick = thickBy => alongX ? new Vector3(size.x, 1f, size.z * thickBy) : new Vector3(size.x * thickBy, 1f, size.z);
                     if (y0 <= Y)
                     {
                         dado.Box(new Vector3(mid.x, Y + 0.55f, mid.z) + off, new Vector3(size.x, 1.1f, size.z), Quaternion.identity);
-                        rail.Box(new Vector3(mid.x, Y + 1.14f, mid.z) + off * 1.04f, new Vector3(size.x, 0.08f, size.z * 1.6f), Quaternion.identity);
+                        rail.Box(new Vector3(mid.x, Y + 1.14f, mid.z) + off * 1.04f, Vector3.Scale(Thick(1.6f), new Vector3(1f, 0.08f, 1f)), Quaternion.identity);
                     }
-                    gilt.Box(new Vector3(mid.x, Y + CorH - 0.5f, mid.z) + off * 1.02f, new Vector3(size.x, 0.1f, size.z * 1.2f), Quaternion.identity);
-                    cove.Box(new Vector3(mid.x, Y + CorH - 0.13f, mid.z) + off * 1.12f, new Vector3(size.x, 0.26f, size.z * 3f), Quaternion.identity);
-                    cove.Box(new Vector3(mid.x, Y + CorH - 0.3f, mid.z) + off * 1.05f, new Vector3(size.x, 0.1f, size.z * 1.8f), Quaternion.identity);
+                    gilt.Box(new Vector3(mid.x, Y + CorH - 0.5f, mid.z) + off * 1.02f, Vector3.Scale(Thick(1.2f), new Vector3(1f, 0.1f, 1f)), Quaternion.identity);
+                    cove.Box(new Vector3(mid.x, Y + CorH - 0.13f, mid.z) + off * 1.12f, Vector3.Scale(Thick(3f), new Vector3(1f, 0.26f, 1f)), Quaternion.identity);
+                    cove.Box(new Vector3(mid.x, Y + CorH - 0.3f, mid.z) + off * 1.05f, Vector3.Scale(Thick(1.8f), new Vector3(1f, 0.1f, 1f)), Quaternion.identity);
                 }
             };
             // (Laid end to end without overlapping, each corner belonging to just one wall, so no

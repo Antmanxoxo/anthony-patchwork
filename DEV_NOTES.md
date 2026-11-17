@@ -724,6 +724,8 @@ Stuff I need to remember about how Patchwork is put together.
 
 - Props built from Deco pieces have no colliders. Anything standing where the player walks (easels, coat stands, poles) needs its own solid box, or the player walks straight through it.
 
+- When trim follows a wall that can run along x or along z, scale its thickness (the axis out from the wall), never a fixed axis: on a wall along z, `size.z` is the wall's length.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark
