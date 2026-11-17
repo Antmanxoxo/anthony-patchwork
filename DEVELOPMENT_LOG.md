@@ -1,5 +1,16 @@
 # Development Log
 
+## Outfits tuned from the second wardrobe photos
+
+- The Water and Wind forms now use their own known shapes for the outfit fit (the neck is where the head joins, the body is the jelly tummy or the top of the twister). Measuring them had put everything down at the Water form's belly and at the tip of the Wind twister.
+- Bow tie: bigger, and moved up under his chin. On Patch it covers his own little bow.
+- Backpack: higher up his back and properly deep, with a flap, pocket, buckle and bedroll, plus straps over his shoulders and down his front.
+- Hero cape: three overlapping panels from his shoulders down to his knees with a gold hem, instead of a stack of thin strips.
+- Star sash: runs from his shoulder to the other hip, with a back half and a piece over the shoulder, and a bigger star.
+- Lifebuoy: a touch higher and rounder.
+- The wardrobe tour frames Patch by his height, so the camera can't end up out in space.
+
+
 ## Outfit fit fixes, and his eyes keep their colours
 
 - On the Yarn form the outfit's "neck" was being found up at his eyes (his round head narrows towards the top), so scarves and garlands stuck out of his face. Now the head is found first (the widest part of his top half) and the neck is the narrowest point under it.

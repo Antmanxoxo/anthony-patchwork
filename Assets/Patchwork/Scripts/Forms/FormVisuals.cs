@@ -463,6 +463,21 @@ namespace Patchwork
         {
             OutfitFit fit;
             if (fits.TryGetValue(f, out fit)) return fit;
+            // Water and Wind are built here from round pieces, so their sizes are known: the
+            // head's pivot is the neck, and the body is the jelly tummy (Water) or the top of
+            // the twister (Wind). Yarn is the Blender model, so he's measured.
+            if (f == FormType.Water && wHead != null)
+            {
+                fit = new OutfitFit { NeckBone = wHead, NeckAt = Vector3.zero, NeckSize = new Vector3(0.135f, 0.13f, 0.13f), BodyBone = wBody, BodyAt = new Vector3(0f, 0.12f, 0f), BodySize = new Vector3(0.175f, 0.155f, 0.155f), Height = 0.94f };
+                fits[f] = fit;
+                return fit;
+            }
+            if (f == FormType.Wind && windHead != null)
+            {
+                fit = new OutfitFit { NeckBone = windHead, NeckAt = new Vector3(0f, 0.02f, 0f), NeckSize = new Vector3(0.27f, 0.2f, 0.26f), BodyBone = cloud, BodyAt = new Vector3(0f, 0.47f, 0f), BodySize = new Vector3(0.28f, 0.17f, 0.28f), Height = 1.45f };
+                fits[f] = fit;
+                return fit;
+            }
             fit = MeasureFit(f);
             if (fit != null && fit.Height > 0.2f) fits[f] = fit;
             else fit = null;
@@ -681,29 +696,34 @@ namespace Patchwork
             }
             Prim(PrimitiveType.Cube, tail, new Vector3(0.3f, -0.36f, Mathf.Sqrt(Mathf.Max(0.05f, 1.1f - 0.13f - 0.09f)) + 0.04f), new Vector3(0.3f, 0.05f, 0.09f), red);
 
-            // 2. A bow tie, sitting at the top of his front.
-            var bow = OutfitPart(2, torsoRoot, "BowTie").transform;
-            bow.localPosition = new Vector3(0f, 0.66f, 0.78f);
-            bow.localRotation = Quaternion.Euler(-40f, 0f, 0f);
+            // 2. A bow tie, just under his chin.
+            var bow = OutfitPart(2, neckRoot, "BowTie").transform;
+            bow.localPosition = new Vector3(0f, -0.55f, 1.12f);
+            bow.localRotation = Quaternion.Euler(-15f, 0f, 0f);
             var plum = PatchworkAssets.Felt(new Color(0.45f, 0.25f, 0.6f));
             for (int s = -1; s <= 1; s += 2)
-                Prim(PrimitiveType.Cube, bow, new Vector3(s * 0.17f, 0f, 0f), new Vector3(0.28f, 0.22f, 0.08f), plum, new Vector3(0f, 0f, s * 16f));
-            Prim(PrimitiveType.Sphere, bow, new Vector3(0f, 0f, 0.03f), new Vector3(0.12f, 0.12f, 0.08f), PatchworkAssets.Felt(new Color(0.3f, 0.15f, 0.42f)));
+            {
+                Prim(PrimitiveType.Cube, bow, new Vector3(s * 0.3f, 0f, 0f), new Vector3(0.48f, 0.4f, 0.14f), plum, new Vector3(0f, 0f, s * 14f));
+                Prim(PrimitiveType.Cube, bow, new Vector3(s * 0.5f, 0f, 0.02f), new Vector3(0.1f, 0.46f, 0.14f), PatchworkAssets.Felt(new Color(0.36f, 0.19f, 0.5f)), new Vector3(0f, 0f, s * 14f));
+            }
+            Prim(PrimitiveType.Sphere, bow, new Vector3(0f, 0f, 0.05f), new Vector3(0.22f, 0.24f, 0.16f), PatchworkAssets.Felt(new Color(0.3f, 0.15f, 0.42f)));
 
-            // 3. An explorer's backpack on his back, straps over the shoulders.
+            // 3. An explorer's backpack high on his back, with a rolled blanket on top and
+            // straps over his shoulders and down his front.
             var pack = OutfitPart(3, torsoRoot, "Backpack").transform;
             var canvas = PatchworkAssets.Fabric(new Color(0.55f, 0.45f, 0.3f));
             var strap = PatchworkAssets.Fabric(new Color(0.35f, 0.25f, 0.15f));
-            Prim(PrimitiveType.Cube, pack, new Vector3(0f, 0.05f, -1.08f), new Vector3(0.95f, 1.05f, 0.45f), canvas);
-            Prim(PrimitiveType.Cube, pack, new Vector3(0f, 0.32f, -1.32f), new Vector3(0.85f, 0.4f, 0.08f), PatchworkAssets.Fabric(new Color(0.45f, 0.35f, 0.22f)), new Vector3(-8f, 0f, 0f));
-            Prim(PrimitiveType.Cube, pack, new Vector3(0f, -0.25f, -1.33f), new Vector3(0.5f, 0.32f, 0.08f), PatchworkAssets.Fabric(new Color(0.5f, 0.4f, 0.26f)));
-            Prim(PrimitiveType.Cylinder, pack, new Vector3(0f, 0.68f, -1.05f), new Vector3(0.28f, 0.48f, 0.28f), PatchworkAssets.Knit(new Color(0.3f, 0.55f, 0.4f)), new Vector3(0f, 0f, 90f));
+            Prim(PrimitiveType.Cube, pack, new Vector3(0f, 0.45f, -1.45f), new Vector3(0.8f, 1.25f, 0.9f), canvas);
+            Prim(PrimitiveType.Cube, pack, new Vector3(0f, 0.86f, -1.93f), new Vector3(0.76f, 0.45f, 0.08f), PatchworkAssets.Fabric(new Color(0.45f, 0.35f, 0.22f)));
+            Prim(PrimitiveType.Cube, pack, new Vector3(0f, 0.15f, -1.93f), new Vector3(0.5f, 0.42f, 0.1f), PatchworkAssets.Fabric(new Color(0.5f, 0.4f, 0.26f)));
+            Prim(PrimitiveType.Sphere, pack, new Vector3(0f, 0.68f, -1.99f), Vector3.one * 0.1f, PatchworkAssets.Plain(new Color(0.85f, 0.7f, 0.35f), 0.7f));
+            Prim(PrimitiveType.Cylinder, pack, new Vector3(0f, 1.2f, -1.4f), new Vector3(0.34f, 0.46f, 0.6f), PatchworkAssets.Knit(new Color(0.3f, 0.55f, 0.4f)), new Vector3(0f, 0f, 90f));
             for (int s = -1; s <= 1; s += 2)
-                for (int k = 0; k < 5; k++)
-                {
-                    float a = Mathf.Lerp(-150f, 40f, k / 4f) * Mathf.Deg2Rad;   // over the shoulder, from the back round to the front
-                    Prim(PrimitiveType.Cube, pack, new Vector3(s * 0.42f, Mathf.Sin(-a + Mathf.PI * 0.5f) * 0.08f + 0.55f * Mathf.Cos(a * 0.5f), Mathf.Cos(a) * -1.02f), new Vector3(0.12f, 0.1f, 0.4f), strap, new Vector3(a * Mathf.Rad2Deg, 0f, 0f));
-                }
+            {
+                Prim(PrimitiveType.Cube, pack, new Vector3(s * 0.38f, 1.12f, -0.2f), new Vector3(0.16f, 0.14f, 1.7f), strap);
+                Prim(PrimitiveType.Cube, pack, new Vector3(s * 0.38f, 0.45f, 1.0f), new Vector3(0.16f, 1.3f, 0.12f), strap);
+                Prim(PrimitiveType.Cube, pack, new Vector3(s * 0.38f, 0.3f, 1.07f), new Vector3(0.2f, 0.1f, 0.06f), PatchworkAssets.Plain(new Color(0.85f, 0.7f, 0.35f), 0.7f));
+            }
 
             // 4. A hero's cape: from a collar round the neck, down over his back.
             var collar = OutfitPart(4, neckRoot, "CapeCollar").transform;
@@ -713,14 +733,12 @@ namespace Patchwork
                 float a = Mathf.Lerp(100f, 260f, i / 8f) * Mathf.Deg2Rad;
                 Prim(PrimitiveType.Cube, collar, new Vector3(Mathf.Sin(a) * 1.1f, -0.2f, Mathf.Cos(a) * 1.1f), new Vector3(0.42f, 0.28f, 0.16f), capeRed, new Vector3(-20f, a * Mathf.Rad2Deg, 0f));
             }
-            Prim(PrimitiveType.Sphere, collar, new Vector3(0f, -0.25f, 1.05f), Vector3.one * 0.3f, PatchworkAssets.Plain(new Color(1f, 0.82f, 0.35f), 0.85f));
+            Prim(PrimitiveType.Sphere, collar, new Vector3(0f, -0.3f, 1.1f), Vector3.one * 0.3f, PatchworkAssets.Plain(new Color(1f, 0.82f, 0.35f), 0.85f));
             var cape = OutfitPart(4, torsoRoot, "Cape").transform;
-            for (int i = 0; i < 6; i++)
-            {
-                float y = 0.75f - i * 0.36f;
-                float z = -Mathf.Sqrt(Mathf.Max(0.05f, 1.12f - y * y * 0.5f)) - 0.05f - i * 0.03f;
-                Prim(PrimitiveType.Cube, cape, new Vector3(0f, y, z), new Vector3(1.5f + i * 0.08f, 0.38f, 0.06f), capeRed, new Vector3(8f + i * 3f, 0f, 0f));
-            }
+            float[] capeY = { 0.85f, 0.15f, -0.55f };
+            for (int i = 0; i < capeY.Length; i++)
+                Prim(PrimitiveType.Cube, cape, new Vector3(0f, capeY[i], -1.12f - i * 0.12f), new Vector3(1.35f + i * 0.15f, 0.82f, 0.08f), capeRed, new Vector3(6f + i * 4f, 0f, 0f));
+            Prim(PrimitiveType.Cube, cape, new Vector3(0f, -0.97f, -1.5f), new Vector3(1.66f, 0.06f, 0.1f), PatchworkAssets.Plain(new Color(1f, 0.82f, 0.35f), 0.6f), new Vector3(14f, 0f, 0f));
 
             // 5. A garland of felt flowers round the neck.
             var garland = OutfitPart(5, neckRoot, "Garland").transform;
@@ -733,25 +751,29 @@ namespace Patchwork
                 Prim(PrimitiveType.Sphere, garland, p * 1.08f, Vector3.one * 0.16f, PatchworkAssets.Felt(new Color(1f, 0.95f, 0.6f)));
             }
 
-            // 6. A sash from one shoulder to the other hip, hugging the curve of him, with a star.
+            // 6. A sash over one shoulder and down to the other hip, front and back, with a
+            // gold star on the front.
             var sash = OutfitPart(6, torsoRoot, "Sash").transform;
             var blue = PatchworkAssets.Fabric(new Color(0.25f, 0.4f, 0.8f));
-            Vector2 d = new Vector2(Mathf.Cos(-50f * Mathf.Deg2Rad), Mathf.Sin(-50f * Mathf.Deg2Rad));
-            for (int i = 0; i < 11; i++)
-            {
-                float k = (i / 10f) * 2f - 1f;
-                Vector2 q = d * k * 0.95f;
-                float z = Mathf.Sqrt(Mathf.Max(0.02f, 1.1f - q.sqrMagnitude));
-                var p = new Vector3(q.x, q.y + 0.05f, z);
-                var normal = p.normalized;
-                var along = Vector3.ProjectOnPlane(new Vector3(d.x, d.y, 0f), normal).normalized;
-                Prim(PrimitiveType.Cube, sash, p, new Vector3(0.28f, 0.22f, 0.06f), blue, Quaternion.LookRotation(normal, along).eulerAngles);
-            }
-            var starAt = new Vector3(0.18f, 0.02f, 1.07f);
+            Vector2 from = new Vector2(-0.62f, 1.05f), to = new Vector2(0.7f, -0.5f);
+            Vector2 along2 = (to - from).normalized;
+            for (int side = -1; side <= 1; side += 2)
+                for (int i = 0; i < 9; i++)
+                {
+                    Vector2 q = Vector2.Lerp(from, to, i / 8f);
+                    float z = Mathf.Sqrt(Mathf.Max(0.3f, 1.2f - q.x * q.x)) * side;
+                    var p = new Vector3(q.x, q.y, z);
+                    var normal = new Vector3(q.x, 0f, z).normalized;
+                    var along = Vector3.ProjectOnPlane(new Vector3(along2.x, along2.y, 0f), normal).normalized;
+                    Prim(PrimitiveType.Cube, sash, p, new Vector3(0.3f, 0.26f, 0.07f), blue, Quaternion.LookRotation(normal, along).eulerAngles);
+                }
+            Prim(PrimitiveType.Cube, sash, new Vector3(from.x, from.y + 0.08f, 0f), new Vector3(0.3f, 0.08f, 1.9f), blue);
+            var mid = Vector2.Lerp(from, to, 0.45f);
+            var starAt = new Vector3(mid.x, mid.y, Mathf.Sqrt(Mathf.Max(0.3f, 1.2f - mid.x * mid.x)) + 0.06f);
             for (int arm = 0; arm < 5; arm++)
             {
                 var r = Quaternion.Euler(0f, 0f, arm * 72f);
-                Prim(PrimitiveType.Cube, sash, starAt + r * new Vector3(0f, 0.07f, 0f), new Vector3(0.07f, 0.15f, 0.04f), PatchworkAssets.Glow(new Color(1f, 0.85f, 0.35f), 1.2f), r.eulerAngles);
+                Prim(PrimitiveType.Cube, sash, starAt + r * new Vector3(0f, 0.1f, 0f), new Vector3(0.1f, 0.22f, 0.05f), PatchworkAssets.Glow(new Color(1f, 0.85f, 0.35f), 1.2f), r.eulerAngles);
             }
 
             // 7. A lifebuoy round his middle.
@@ -759,7 +781,7 @@ namespace Patchwork
             for (int i = 0; i < 18; i++)
             {
                 float a = i / 18f * Mathf.PI * 2f;
-                Prim(PrimitiveType.Sphere, buoy, new Vector3(Mathf.Sin(a) * 1.2f, -0.2f, Mathf.Cos(a) * 1.2f), new Vector3(0.5f, 0.42f, 0.5f), PatchworkAssets.Felt((i / 3) % 2 == 0 ? new Color(0.95f, 0.3f, 0.3f) : new Color(0.98f, 0.96f, 0.9f)));
+                Prim(PrimitiveType.Sphere, buoy, new Vector3(Mathf.Sin(a) * 1.25f, -0.1f, Mathf.Cos(a) * 1.25f), new Vector3(0.55f, 0.5f, 0.55f), PatchworkAssets.Felt((i / 3) % 2 == 0 ? new Color(0.95f, 0.3f, 0.3f) : new Color(0.98f, 0.96f, 0.9f)));
             }
             foreach (var list in outfitParts)
                 if (list != null) foreach (var g in list) foreach (var col in g.GetComponentsInChildren<Collider>()) Object.Destroy(col);

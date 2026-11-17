@@ -153,13 +153,16 @@ namespace Patchwork
             float until = Time.realtimeSinceStartup + 0.5f;
             while (true)
             {
-                Bounds b = vis.LookBounds();
-                float size = Mathf.Clamp(Mathf.Max(b.size.y, b.size.x * 0.9f), 0.3f, 3f);
+                // (Framed by how tall the form is, not by the box round everything on him:
+                // a stray bubble or a mesh with an out-of-date box once sent the camera out
+                // into space.)
+                float size = Mathf.Clamp(vis.FormHeight, 0.4f, 2.5f);
+                Bounds b = new Bounds(vis.Root.position + vis.Root.up * size * 0.5f, Vector3.one * size);
                 Vector3 front = Vector3.ProjectOnPlane(vis.Root.forward, Vector3.up).normalized;
                 Vector3 dirOut = Quaternion.AngleAxis(angle, Vector3.up) * front;
                 // (A 60 degree view fits him with a little room round him.)
                 float fov = cam.fieldOfView > 1f ? cam.fieldOfView : 60f;
-                float dist = size * 0.62f / Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad) * 1.25f * zoom + cam.nearClipPlane;
+                float dist = size * 0.5f / Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad) * 1.25f * zoom + cam.nearClipPlane;
                 Vector3 look = b.center + Vector3.up * size * (zoom < 0.8f ? 0.12f : 0f);
                 camPos = look + dirOut * dist + Vector3.up * size * 0.18f;
                 camRot = Quaternion.LookRotation(look - camPos, Vector3.up);
