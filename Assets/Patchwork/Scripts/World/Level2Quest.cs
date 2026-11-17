@@ -275,10 +275,13 @@ namespace Patchwork
             Color[] rosette = { new Color(0.95f, 0.45f, 0.5f), new Color(1f, 0.8f, 0.35f), new Color(0.4f, 0.75f, 0.7f), new Color(0.45f, 0.6f, 0.95f), new Color(0.75f, 0.55f, 0.95f) };
             for (int i = 0; i < Level2Quest.Secrets; i++)
             {
-                int row = i / 6, col = i % 6;
+                // (Three shelves of them, as many to a shelf as it takes.)
+                int perRow = (Level2Quest.Secrets + 2) / 3;
+                int row = i / perRow, col = i % perRow;
+                float gap = 2.4f / perRow;
                 var item = new GameObject("Found" + i).transform;
                 item.SetParent(shelf, false);
-                item.localPosition = new Vector3(-1.1f + col * 0.44f, 1.52f - row * 0.68f + 0.04f, 0.05f);
+                item.localPosition = new Vector3(-1.2f + gap * 0.5f + col * gap, 1.52f - row * 0.68f + 0.04f, 0.05f);
                 // A prize rosette with two tails, and on top of it something that says which secret.
                 var rm = PatchworkAssets.Felt(rosette[i % rosette.Length]);
                 kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.3f, -0.12f), new Vector3(0.3f, 0.015f, 0.3f), rm, new Vector3(90f, 0f, 0f), item);
@@ -552,6 +555,7 @@ namespace Patchwork
             if (Fitted && !Defended) StartDefence(false);
 
             WireTalk();
+            WireGuide();
         }
 
         // ------------------------------------------------------------------ The lenses
@@ -560,12 +564,14 @@ namespace Patchwork
         {
             var lens = LensPickup.Spawn(FoeRoot, at, hop);
             lens.Taken = () => TakeLens(which);
+            lensDropped[which] = at;
         }
 
         void TakeLens(int which)
         {
             if (HasLens(which)) return;
             Mark("lens" + which);
+            lensDropped[which] = null;
             int n = LensCount;
             if (!Met) Secret("stranger");
             PatchworkHUD.ShowGet(LensNames[which], n >= 3 ? "All three lenses of the Night Glass!" : n + " of 3 lenses of the Night Glass", LensBlue, 0);
@@ -628,9 +634,9 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ Secrets
 
-        static readonly string[] SecretKeys = { "flawless", "crab", "thimble", "nomoth", "tidy", "stranger", "whistle", "king", "jar", "torch", "larder", "rounds", "skittles", "hall", "dusties", "audit", "connoisseur", "passport" };
-        static readonly string[] SecretNames = { "Not a Scratch", "Caught Napping", "Hats Off", "Not One Moth", "A Stitch in Time", "No Introductions", "Marlow's Whistle", "The King in the Biscuits", "A Jar of Red", "June's Torch", "The Unpicker's Larder", "Wick's Round", "Three at a Blow", "The Long Gallery", "The Dust Sheet Five", "The Curator's Audit", "A Perfect Eye", "The Museum Passport" };
-        public const int Secrets = 18;
+        static readonly string[] SecretKeys = { "flawless", "crab", "thimble", "nomoth", "tidy", "stranger", "whistle", "king", "jar", "torch", "larder", "rounds", "skittles", "hall", "dusties", "audit", "connoisseur", "passport", "moon" };
+        static readonly string[] SecretNames = { "Not a Scratch", "Caught Napping", "Hats Off", "Not One Moth", "A Stitch in Time", "No Introductions", "Marlow's Whistle", "The King in the Biscuits", "A Jar of Red", "June's Torch", "The Unpicker's Larder", "Wick's Round", "Three at a Blow", "The Long Gallery", "The Dust Sheet Five", "The Curator's Audit", "A Perfect Eye", "The Museum Passport", "Three Stitches Remain" };
+        public const int Secrets = 19;
         public int SecretsFound { get { int n = 0; foreach (var k in SecretKeys) if (Seen("s_" + k)) n++; return n; } }
         public bool HasSecret(string key) { return Seen("s_" + key); }
 
@@ -863,6 +869,7 @@ namespace Patchwork
             tick = 0.3f;
             var game = PatchworkGame.Instance;
             if (game == null || game.Player == null) return;
+            CheckObjective(game);
 
             if (defending)
             {
@@ -942,8 +949,11 @@ namespace Patchwork
             }
             if (!Met && LensCount == 0) return "Find Wick, the night watchman, in the Atrium.";
             if (Fight != null && Fight.Busy) return "Beat the Hollow Guard!  (Wave " + Fight.WaveNumber + " of 3)";
-            if (!HasLens(0)) return ArmsWon ? "Pick up the Object Glass in the Hall of Arms." : "Hall of Arms: something is clanking in there.";
-            if (!HasLens(1)) return ClotsCleared >= 4 ? "Pick up the Field Lens in the tank." : "Keepers' tanks: cut each clot's three anchors, then break it.  (" + ClotsCleared + " of 4)";
+            // (The nearest lens still to win, so it matches the pointer on screen.)
+            int next = NextLens();
+            if (next == 0) return ArmsWon ? "Pick up the Object Glass in the Hall of Arms." : "Go to the Hall of Arms (through the Sunken Ruins) and win the Object Glass.";
+            if (next == 1) return ClotsCleared >= 4 ? "Pick up the Field Lens in the tank." : "Keepers' tanks: cut each grey clot's three anchor knots, then break it.  (" + ClotsCleared + " of 4)";
+            if (next < 0) return "Take the lenses to Stella in the Observatory.";
             if (Crab != null && Crab.Guarded) return "Kelp Galleries: pop the chessmen guarding the Helmet Crab.";
             return CrabBeaten ? "Pick up the Eye Lens." : "Catch the Helmet Crab: last seen in " + CrabPlaces[CrabStage] + ".";
         }

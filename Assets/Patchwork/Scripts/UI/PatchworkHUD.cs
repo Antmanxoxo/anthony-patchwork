@@ -310,6 +310,9 @@ namespace Patchwork
                 DrawFormBadge(kb);
                 DrawHearts();
                 DrawCountChip();
+                DrawQuestPointer();
+                DrawBarks();
+                ButtonMoonEgg.DrawOverlay();
                 if (stackA > 0.001f) Shifted(-(1f - UIKit.EaseOutCubic(stackA)) * 420f, 0f, DrawButtons);
                 if (controlsA > 0.001f) Shifted(0f, (1f - UIKit.EaseOutCubic(controlsA)) * 120f, () => DrawControls(kb));
                 DrawHintCard();
@@ -515,26 +518,29 @@ namespace Patchwork
             if (quest != null && level.Id == Level2Builder.SceneName && !GameState.IsLevelComplete(level.Id))
             {
                 // The Oceanic Museum: the three lenses of the Night Glass, and what to do next.
-                var qr = new Rect(28f, y, 380f, 172f);
+                var qr = new Rect(28f, y, 400f, 226f);
                 UIKit.Panel(qr, new Color(0.93f, 0.97f, 1f, 0.95f), new Color(0.3f, 0.55f, 0.85f, 0.9f), 20f);
                 UIKit.Label(new Rect(qr.x + 20f, qr.y + 6f, 340f, 34f), "The Night Glass  " + quest.LensCount + " / 3",
                     UIKit.Style(23, true, TextAnchor.MiddleLeft, new Color(0.15f, 0.25f, 0.5f)));
                 // The museum clock, creeping toward midnight.
                 UIKit.Label(new Rect(qr.x + 230f, qr.y + 6f, 134f, 34f), quest.Clock(),
                     UIKit.Style(20, true, TextAnchor.MiddleRight, new Color(0.7f, 0.3f, 0.25f)));
-                string[] lensNames = { "Object", "Field", "Eye" };
+                // One row per lens: a dot (filled once it's won), its name, and what it still needs.
+                string[] lensNames = { "Object Glass", "Field Lens", "Eye Lens" };
                 for (int i = 0; i < 3; i++)
                 {
                     bool got = quest.HasLens(i);
-                    var chip = new Rect(qr.x + 16f + i * 118f, qr.y + 44f, 110f, 38f);
-                    UIKit.Fill(chip, got ? new Color(0.4f, 0.75f, 1f) : new Color(0.62f, 0.6f, 0.66f, 0.55f), 19f);
-                    UIKit.Label(chip, lensNames[i], UIKit.Style(18, true, TextAnchor.MiddleCenter, got ? new Color(0.08f, 0.2f, 0.4f) : new Color(1f, 1f, 1f, 0.9f)));
+                    float ry = qr.y + 44f + i * 30f;
+                    UIKit.Circle(new Vector2(qr.x + 30f, ry + 13f), 20f, got ? new Color(0.4f, 0.75f, 1f) : new Color(0.62f, 0.6f, 0.66f, 0.55f));
+                    if (got) UIKit.Circle(new Vector2(qr.x + 30f, ry + 13f), 8f, new Color(1f, 1f, 1f, 0.9f));
+                    UIKit.Label(new Rect(qr.x + 48f, ry, 130f, 26f), lensNames[i], UIKit.Style(17, true, TextAnchor.MiddleLeft, got ? new Color(0.15f, 0.35f, 0.6f) : new Color(0.25f, 0.28f, 0.4f)));
+                    UIKit.Label(new Rect(qr.x + 172f, ry, 216f, 26f), quest.LensStatus(i), UIKit.Style(15, got, TextAnchor.MiddleLeft, got ? new Color(0.25f, 0.55f, 0.4f) : new Color(0.4f, 0.4f, 0.55f, 0.95f)));
                 }
-                UIKit.Label(new Rect(qr.x + 14f, qr.y + 86f, 360f, 24f), "Seams " + quest.SeamsShut + "/" + Level2Quest.Seams + "  Pages " + quest.PagesFound + "/6  Lamps " + quest.LampsLit + "/" + quest.LampsTotal + "  Fakes " + (ExhibitAudit.Instance != null ? ExhibitAudit.Instance.Found : 0) + "/" + ExhibitAudit.Fakes + "  Secrets " + quest.SecretsFound + "/" + Level2Quest.Secrets,
+                UIKit.Label(new Rect(qr.x + 14f, qr.y + 138f, 380f, 24f), "Seams " + quest.SeamsShut + "/" + Level2Quest.Seams + "  Pages " + quest.PagesFound + "/6  Lamps " + quest.LampsLit + "/" + quest.LampsTotal + "  Fakes " + (ExhibitAudit.Instance != null ? ExhibitAudit.Instance.Found : 0) + "/" + ExhibitAudit.Fakes + "  Secrets " + quest.SecretsFound + "/" + Level2Quest.Secrets,
                     UIKit.Style(13, true, TextAnchor.MiddleLeft, new Color(0.35f, 0.4f, 0.6f, 0.9f)));
-                UIKit.Label(new Rect(qr.x + 20f, qr.y + 112f, 344f, 54f), quest.Objective(),
+                UIKit.Label(new Rect(qr.x + 20f, qr.y + 164f, 364f, 56f), "Next: " + quest.Objective(),
                     UIKit.Style(17, true, TextAnchor.UpperLeft, new Color(0.15f, 0.25f, 0.5f, 0.9f), true));
-                y += 184f;
+                y += 238f;
             }
             if (total > 0)
             {
@@ -809,6 +815,88 @@ namespace Patchwork
         {
             if (Game.Mode != UIMode.Gameplay || Game.Talker == null || Game.Talker.Npc == null || Game.Helm != null) return;
             DrawWorldPrompt(Game.Talker.Npc.HeadPosition + Vector3.up * 1.3f, Game.Talker.Npc.PromptVerb, kb, PromptAction.Ability);
+        }
+
+        // In the Oceanic Museum: a little gold needle on screen pointing at the next thing to do
+        // (a person, a door, a lens on the floor), with its name and how far. When it's behind
+        // you or off the screen, the needle waits at the edge, pointing the way to turn.
+        void DrawQuestPointer()
+        {
+            if (Game.Mode != UIMode.Gameplay || Game.CameraRig == null) return;
+            var quest = Level2Quest.Instance;
+            Vector3 at;
+            string label;
+            if (quest == null || !quest.ObjectiveTarget(out at, out label)) return;
+            var cam = Game.CameraRig.Cam;
+            if (cam == null) return;
+            Vector3 world = at + Vector3.up * 1.8f;
+            float dist = Vector3.Distance(Game.Player.transform.position, at);
+            if (dist < 4f) return;
+            Vector3 sp = cam.WorldToScreenPoint(world);
+            bool behind = sp.z < 0f;
+            if (behind) sp = -sp;
+            Vector2 p = new Vector2(sp.x / UIKit.Scale, (Screen.height - sp.y) / UIKit.Scale);
+            float w = UIKit.Width, h = UIKit.Height, m = 70f;
+            Vector2 c = new Vector2(w * 0.5f, h * 0.5f);
+            bool off = behind || p.x < m || p.x > w - m || p.y < m + 60f || p.y > h - m - 60f;
+            Vector2 dir = (p - c);
+            if (dir.sqrMagnitude < 1f) dir = Vector2.down;
+            if (off)
+            {
+                // Pushed to the edge of the screen along the line from the middle.
+                float sx = (w * 0.5f - m) / Mathf.Max(1f, Mathf.Abs(dir.x)), sy = (h * 0.5f - m - 60f) / Mathf.Max(1f, Mathf.Abs(dir.y));
+                p = c + dir * Mathf.Min(sx, sy);
+            }
+            float alpha = Mathf.Clamp01((dist - 4f) / 4f);
+            float bob = off ? 0f : Mathf.Sin(Time.unscaledTime * 3f) * 5f;
+            var gold = new Color(1f, 0.82f, 0.32f, 0.95f * alpha);
+            // The needle: a gold disc on the spot, with a diamond tip pointing at it (from above
+            // when it's in view, outward from the edge when it isn't).
+            Vector2 at2 = new Vector2(p.x, p.y + bob);
+            Vector2 tipDir = off ? dir.normalized : Vector2.up;
+            Vector2 tip = off ? at2 + tipDir * 20f : at2 - tipDir * 20f;
+            var saved = GUI.matrix;
+            var pivot = new Vector3(tip.x, tip.y, 0f);
+            GUI.matrix = saved * Matrix4x4.TRS(pivot, Quaternion.Euler(0f, 0f, 45f), Vector3.one) * Matrix4x4.Translate(-pivot);
+            UIKit.Fill(new Rect(tip.x - 9f, tip.y - 9f, 18f, 18f), gold, 3f);
+            GUI.matrix = saved;
+            UIKit.Circle(at2, 24f, new Color(0.2f, 0.12f, 0.1f, 0.35f * alpha));
+            UIKit.Circle(at2, 20f, gold);
+            UIKit.Circle(at2, 8f, new Color(1f, 0.97f, 0.88f, alpha));
+            // The name, and how far.
+            var style = UIKit.Style(18, true, TextAnchor.MiddleCenter, new Color(1f, 0.97f, 0.9f, alpha));
+            string text = label + "  " + Mathf.RoundToInt(dist) + "m";
+            float tw = UIKit.TextWidth(text, style) + 24f;
+            float ty = off ? (p.y > c.y ? p.y - 52f : p.y + 22f) : p.y + bob - 52f;
+            var r = new Rect(Mathf.Clamp(p.x - tw * 0.5f, 8f, w - tw - 8f), ty, tw, 30f);
+            UIKit.Fill(r, new Color(0.18f, 0.14f, 0.28f, 0.75f * alpha), 15f);
+            UIKit.Label(r, text, style);
+        }
+
+        // What people say as Patch goes by: a little paper speech bubble over their heads.
+        void DrawBarks()
+        {
+            if (Game.Mode != UIMode.Gameplay || Game.CameraRig == null) return;
+            var cam = Game.CameraRig.Cam;
+            if (cam == null) return;
+            var list = ToyNpc.Barking;
+            for (int i = list.Count - 1; i >= 0; i--)
+            {
+                var npc = list[i];
+                if (npc == null || npc.BarkTime <= 0f || string.IsNullOrEmpty(npc.BarkText)) { list.RemoveAt(i); continue; }
+                Vector3 sp = cam.WorldToScreenPoint(npc.HeadPosition + Vector3.up * 0.7f);
+                if (sp.z <= 0f || sp.z > 30f) continue;
+                float a = Mathf.Clamp01(npc.BarkTime / 0.4f);
+                float gx = sp.x / UIKit.Scale, gy = (Screen.height - sp.y) / UIKit.Scale;
+                var style = UIKit.Style(18, true, TextAnchor.MiddleCenter, new Color(UIKit.Ink.r, UIKit.Ink.g, UIKit.Ink.b, a), true);
+                float bw = Mathf.Min(320f, UIKit.TextWidth(npc.BarkText, style) + 32f);
+                float bh = style.CalcHeight(new GUIContent(npc.BarkText), bw - 24f) + 18f;
+                var r = new Rect(Mathf.Clamp(gx - bw * 0.5f, 8f, UIKit.Width - bw - 8f), gy - bh - 14f, bw, bh);
+                UIKit.Fill(new Rect(r.x + 3f, r.y + 4f, r.width, r.height), new Color(0f, 0f, 0f, 0.2f * a), 16f);
+                UIKit.Fill(r, new Color(1f, 0.98f, 0.92f, 0.96f * a), 16f);
+                UIKit.Fill(new Rect(gx - 7f, r.yMax - 4f, 14f, 12f), new Color(1f, 0.98f, 0.92f, 0.96f * a), 4f);
+                UIKit.Label(new Rect(r.x + 12f, r.y, r.width - 24f, r.height), npc.BarkText, style);
+            }
         }
 
         // Floating prompt over the level-select station (the Pod's controller) while you're at it.

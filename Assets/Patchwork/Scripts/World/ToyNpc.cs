@@ -21,6 +21,15 @@ namespace Patchwork
         // While something's happening (a wedding, say), everyone not busy playing turns to
         // watch it instead of staring at Patch.
         public static Vector3? Focus;
+        // Something new to say about the story: a gold "!" bobs over their head till they've said it.
+        public System.Func<bool> HasNews;
+        // A remark when Patch comes by (shown in a little speech bubble; see PatchworkHUD).
+        public System.Func<string> Bark;
+        public string BarkText { get; private set; }
+        public float BarkTime { get; private set; }
+        public static readonly List<ToyNpc> Barking = new List<ToyNpc>();
+        Transform news;
+        float newsCheck, fidget = -1f, lookAway, lookAwayTime;
 
         float height = 1.6f;
         Transform body, head, instrumentRoot, arm;
@@ -421,9 +430,20 @@ namespace Patchwork
                 {
                     noticeCooldown = 14f;
                     hopVel = 4.4f;
-                    Emote.Kind e = instrument != Instrument.None ? Emote.Kind.Note
-                        : (Emote.Kind)(new[] { 0, 2, 3, 0 }[Random.Range(0, 4)]);
-                    Emote.Show(HeadPosition + Vector3.up * 0.4f, e);
+                    string said = Bark != null && !Talking ? Bark() : null;
+                    if (!string.IsNullOrEmpty(said))
+                    {
+                        BarkText = said;
+                        BarkTime = 3.2f + said.Length * 0.03f;
+                        if (!Barking.Contains(this)) Barking.Add(this);
+                        Blip(said[0], false);
+                    }
+                    else
+                    {
+                        Emote.Kind e = instrument != Instrument.None ? Emote.Kind.Note
+                            : (Emote.Kind)(new[] { 0, 2, 3, 0 }[Random.Range(0, 4)]);
+                        Emote.Show(HeadPosition + Vector3.up * 0.4f, e);
+                    }
                 }
                 if (near) wasNear = true;
                 else if (flat > 8f * 8f) wasNear = false;
@@ -436,6 +456,14 @@ namespace Patchwork
                 copyDelay -= dt;
                 if (copyDelay <= 0f && hopY <= 0f) hopVel = 3.8f;
             }
+
+            if (BarkTime > 0f)
+            {
+                BarkTime -= dt;
+                if (BarkTime <= 0f || Talking) { BarkTime = 0f; Barking.Remove(this); }
+            }
+            Fidget(dt);
+            UpdateNews(dt);
 
             float beat = t * MusicPlayer.ToyBpm / 60f;
             float bob, sway;
@@ -451,10 +479,74 @@ namespace Patchwork
             }
             body.localPosition = new Vector3(0f, bob + hopY, 0f);
             body.localRotation = Quaternion.Euler(-talkPulse * 4f, 0f, sway);
-            if (head != null) head.localRotation = Quaternion.Euler(Playing ? Mathf.Sin(beat * Mathf.PI) * 6f : 0f, Mathf.Sin(t * 0.7f) * 10f, 0f);
+            if (head != null) head.localRotation = Quaternion.Euler(Playing ? Mathf.Sin(beat * Mathf.PI) * 6f : 0f, Mathf.Sin(t * 0.7f) * 10f + lookAway, 0f);
             if (arm != null && Playing) arm.localRotation = Quaternion.Euler(Mathf.Sin(beat * Mathf.PI * 2f) * 25f, 0f, 20f);
             if (instrumentRoot != null && Playing && instrument == Instrument.Trumpet)
                 instrumentRoot.localRotation = Quaternion.Euler(-10f - Mathf.Abs(Mathf.Sin(beat * Mathf.PI)) * 10f, 0f, 0f);
+        }
+
+        // Now and then, when nobody's talking to them, they do something: glance over their
+        // shoulder, give a little hop, or have a think (a star) or a hum (a note).
+        void Fidget(float dt)
+        {
+            if (fidget < 0f) fidget = Random.Range(6f, 14f);
+            lookAwayTime -= dt;
+            lookAway = Mathf.MoveTowards(lookAway, lookAwayTime > 0f ? lookAwayWant : 0f, dt * 120f);
+            if (Talking || Playing) return;
+            fidget -= dt;
+            if (fidget > 0f) return;
+            fidget = Random.Range(7f, 16f);
+            switch (Random.Range(0, 4))
+            {
+                case 0: lookAwayWant = Random.value < 0.5f ? -55f : 55f; lookAwayTime = 1.6f; break;
+                case 1: if (hopY <= 0f) hopVel = 3.2f; break;
+                case 2: Emote.Show(HeadPosition + Vector3.up * 0.4f, instrument != Instrument.None ? Emote.Kind.Note : Emote.Kind.Star); break;
+                default: lookAwayWant = Random.value < 0.5f ? -25f : 25f; lookAwayTime = 0.9f; break;
+            }
+        }
+        float lookAwayWant;
+
+        // The gold "!" over somebody with news.
+        void UpdateNews(float dt)
+        {
+            newsCheck -= dt;
+            if (newsCheck <= 0f)
+            {
+                newsCheck = 0.3f;
+                bool want = HasNews != null && !Talking && HasNews();
+                if (want && news == null) news = BuildNews();
+                if (news != null && news.gameObject.activeSelf != want) news.gameObject.SetActive(want);
+            }
+            if (news != null && news.gameObject.activeSelf)
+            {
+                news.position = HeadPosition + Vector3.up * (0.75f + Mathf.Sin(t * 3f) * 0.08f);
+                news.rotation = Quaternion.Euler(0f, t * 90f, 0f);
+            }
+        }
+
+        Transform BuildNews()
+        {
+            var root = new GameObject("News").transform;
+            root.SetParent(transform, false);
+            var gold = PatchworkAssets.Glow(new Color(1f, 0.82f, 0.3f), 1.8f);
+            foreach (var part in new[] { PrimitiveType.Cube, PrimitiveType.Sphere })
+            {
+                var go = GameObject.CreatePrimitive(part);
+                Destroy(go.GetComponent<Collider>());
+                go.transform.SetParent(root, false);
+                go.transform.localPosition = part == PrimitiveType.Cube ? new Vector3(0f, 0.32f, 0f) : Vector3.zero;
+                go.transform.localScale = part == PrimitiveType.Cube ? new Vector3(0.14f, 0.42f, 0.14f) : Vector3.one * 0.17f;
+                var r = go.GetComponent<Renderer>();
+                r.sharedMaterial = gold;
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            return root;
+        }
+
+        void OnDisable()
+        {
+            BarkTime = 0f;
+            Barking.Remove(this);
         }
 
         public override string[] NextLines()

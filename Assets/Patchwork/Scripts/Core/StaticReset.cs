@@ -21,6 +21,7 @@ namespace Patchwork
             MuseumPassport.ResetStatics();
             GlobeDetail.ResetStatics();
             ToyNpc.Focus = null;
+            ToyNpc.Barking.Clear();
             FrayBodies.ResetStatics();
             GreyStain.ResetStatics();
             PatchworkHUD.ResetStatics();

@@ -609,6 +609,8 @@ namespace Patchwork
                 float a = deg * Mathf.Deg2Rad;
                 Jelly(kit, C + new Vector3(Mathf.Cos(a) * (R + 2.4f), 2.6f + (i % 4) * 1.5f, Mathf.Sin(a) * (R + 2.4f)), 0.7f + (i % 3) * 0.25f, jc[i % jc.Length], i * 1.7f, i % 5 == 0);
             }
+            // The ledge, the rest of the sea life, and the whale's calf and her life.
+            ObservatorySea(kit, C, R, whale);
 
             // ----- The great telescope -----
             RoundPlatform(kit, C + Vector3.up * 0.5f, 6.4f, 0.5f, PlumStars, PaleStone, false);
@@ -634,6 +636,7 @@ namespace Patchwork
             look.Used = p => { if (Level2Quest.Instance == null || Level2Quest.Instance.TelescopeReady()) director.LookThroughTelescope(); };
             director.TelescopeEye = mount + new Vector3(0f, 4.4f, -1.4f);
             director.TelescopeLook = C + new Vector3(0f, 30f, 12.5f);
+            director.ObservatoryCentre = C;
             Plaque(kit, C + new Vector3(3.2f, 1f, -2.6f), 200f, "The Great Telescope",
                 "In the winter of 1609 Galileo pointed a telescope at the night sky, which almost nobody had thought to do. He saw mountains on the Moon. He saw that the Milky Way is made of stars. And he saw four little moons going round Jupiter.",
                 "That last one changed everything. If moons could circle Jupiter, then not everything in the heavens went round the Earth.");

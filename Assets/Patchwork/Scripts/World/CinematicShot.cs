@@ -46,6 +46,8 @@ namespace Patchwork
                 return;
             }
             if (!pending || current != null) return;
+            // (Something else may have told this part of the story already.)
+            if (!string.IsNullOrEmpty(Key) && GameState.IsHintSeen(Key)) { pending = false; return; }
             bool ready = game.Mode == UIMode.Gameplay && !LoadingScreen.Busy && !PodLaunch.Busy && !CardboardLift.Riding && game.Fade < 0.02f;
             wait = ready ? wait + Time.unscaledDeltaTime : 0f;
             if (wait < 0.35f) return;

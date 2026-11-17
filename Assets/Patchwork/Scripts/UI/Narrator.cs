@@ -82,16 +82,36 @@ namespace Patchwork
             }
         }
 
+        // In the Oceanic Museum the story is told by an old owl (the museum's own Storyteller),
+        // so the voice is a soft hoo-hoo, and the seal on the strip is an owl's face.
+        public static bool Owl
+        {
+            get
+            {
+                var g = PatchworkGame.Instance;
+                return g != null && g.Level != null && g.Level.Id == Level2Builder.SceneName;
+            }
+        }
+
         // The murmur: a soft, low syllable every few letters as the line is written.
         static void Murmur()
         {
             int at = Mathf.FloorToInt(written);
             if (at <= lastLetter || at > lastShown.Length) return;
+            bool owl = Owl;
             for (int i = lastLetter; i < at; i++)
             {
                 char c = lastShown[i];
-                if (!char.IsLetter(c) || i % 3 != 0) continue;
+                if (!char.IsLetter(c)) continue;
                 float lift = i + 1 < lastShown.Length && lastShown[lastShown.Length - 1] == '?' && i > lastShown.Length - 8 ? 1.12f : 1f;
+                if (owl)
+                {
+                    // An owl takes its time: a soft hoot every five letters or so.
+                    if (i % 5 != 0) continue;
+                    Sfx.PlayClip(Sfx.OwlSyllable(char.ToLowerInvariant(c)), 0.24f, (0.92f + (c % 4) * 0.035f) * lift);
+                    continue;
+                }
+                if (i % 3 != 0) continue;
                 Sfx.PlayPitched(SfxId.Babble0 + char.ToLowerInvariant(c) % 6, 0.2f, (0.6f + (c % 5) * 0.022f) * lift);
             }
             lastLetter = at;
@@ -108,12 +128,31 @@ namespace Patchwork
             var r = new Rect((UIKit.Width - w) * 0.5f, UIKit.Height - (cutscene ? 46f : 150f) - h, w, h);
             UIKit.Fill(new Rect(r.x + 4f, r.y + 6f, r.width, r.height), new Color(0f, 0f, 0f, 0.28f * a), 18f);
             UIKit.Panel(r, new Color(Paper.r, Paper.g, Paper.b, 0.97f * a), new Color(Rose.r, Rose.g, Rose.b, 0.75f * a), 18f);
-            // The Storyteller's mark: a round rose seal with a quotation mark, on the corner.
+            // The Storyteller's mark: a round rose seal with a quotation mark, on the corner (or,
+            // in the museum, the old owl's face: two big round eyes and a little beak).
             var seal = new Vector2(r.x + 6f, r.y + 6f);
             UIKit.Circle(seal + new Vector2(2f, 3f), 54f, new Color(0f, 0f, 0f, 0.25f * a));
-            UIKit.Circle(seal, 54f, new Color(Rose.r, Rose.g, Rose.b, a));
-            UIKit.Circle(seal, 44f, new Color(0.9f, 0.46f, 0.5f, a));
-            UIKit.Label(new Rect(seal.x - 27f, seal.y - 20f, 54f, 54f), "“", UIKit.Style(44, true, TextAnchor.MiddleCenter, new Color(1f, 0.97f, 0.9f, a)));
+            if (Owl)
+            {
+                var brown = new Color(0.55f, 0.4f, 0.28f, a);
+                UIKit.Circle(seal, 54f, brown);
+                UIKit.Circle(seal, 46f, new Color(0.72f, 0.56f, 0.38f, a));
+                for (int s = -1; s <= 1; s += 2)
+                {
+                    var eye = seal + new Vector2(s * 10f, -4f);
+                    UIKit.Circle(eye, 20f, new Color(1f, 0.93f, 0.7f, a));
+                    UIKit.Circle(eye + new Vector2(s * 1.5f, 1f), 10f, new Color(0.15f, 0.1f, 0.12f, a));
+                    UIKit.Circle(eye + new Vector2(s * 1.5f - 2f, -1.5f), 3.5f, new Color(1f, 1f, 1f, a));
+                    UIKit.Fill(new Rect(eye.x - 8f, eye.y - 14f, 16f, 4f), new Color(0.4f, 0.28f, 0.2f, a), 2f);
+                }
+                UIKit.Fill(new Rect(seal.x - 3.5f, seal.y + 6f, 7f, 9f), new Color(1f, 0.72f, 0.3f, a), 3f);
+            }
+            else
+            {
+                UIKit.Circle(seal, 54f, new Color(Rose.r, Rose.g, Rose.b, a));
+                UIKit.Circle(seal, 44f, new Color(0.9f, 0.46f, 0.5f, a));
+                UIKit.Label(new Rect(seal.x - 27f, seal.y - 20f, 54f, 54f), "“", UIKit.Style(44, true, TextAnchor.MiddleCenter, new Color(1f, 0.97f, 0.9f, a)));
+            }
             UIKit.Label(new Rect(r.x + 60f, r.y, r.width - 120f, r.height), shown, style);
         }
 

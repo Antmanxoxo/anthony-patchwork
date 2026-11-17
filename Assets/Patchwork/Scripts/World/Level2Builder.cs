@@ -148,12 +148,15 @@ namespace Patchwork
             Life(kit);
             Rooms(kit);   // (last of all: six more things in every room, fitted in round the rest)
             Quest(kit);   // the story: the three lenses of the Night Glass, and the Fray that has them
+            TouringNow = TourWanted();
+            Intro(kit);   // the opening of Chapter Two, the first time you come
+            MoonEgg(kit); // the little clock tower on the quay, and the moon's secret face
             Eggs(kit);    // the Long Gallery, and the Dust Sheet Five
             Audit(kit);   // the Curator's Audit: twelve exhibits, five of them fakes
             HandsOn(kit); // five machines you're allowed to touch, and the Museum Passport
             PatchworkTouches(kit);   // mended patches on the walls, bunting across the halls
             TidyUp(kit);  // last of all: clear any doorway that still has something in it
-            if (TourWanted()) kit.Root.gameObject.AddComponent<Level2PhotoTour>();
+            if (TouringNow) kit.Root.gameObject.AddComponent<Level2PhotoTour>();
             RmDone();
 
             // The hush of the halls, and the deep rumble by the big tanks.
@@ -440,6 +443,7 @@ namespace Patchwork
             // The moon, with a button's four holes in it.
             Vector3 moon = new Vector3(-150f, 170f, 60f);
             var m = kit.Group("Moon", moon);
+            skyMoon = m;   // (it has a secret face: see MuseumMoon.cs)
             m.rotation = Quaternion.LookRotation((SpawnPoint - moon).normalized, Vector3.up);
             NoShadow(kit.Deco(PrimitiveType.Sphere, Vector3.zero, new Vector3(40f, 40f, 6f), PatchworkAssets.Glow(new Color(1f, 0.96f, 0.82f), 1.9f), default(Vector3), m));
             var hole = PatchworkAssets.Glow(new Color(0.7f, 0.7f, 0.68f), 0.9f);

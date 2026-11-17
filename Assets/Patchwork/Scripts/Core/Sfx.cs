@@ -222,6 +222,13 @@ namespace Patchwork
             if (voices == null) return;
             AudioClip clip;
             if (!clips.TryGetValue(id, out clip) || clip == null) return;
+            PlayClip(clip, volume, pitch);
+        }
+
+        // Any clip at all (made somewhere else) on one of the shared voices.
+        public static void PlayClip(AudioClip clip, float volume, float pitch)
+        {
+            if (voices == null || clip == null) return;
             float vol = volume * Volume / 10f;
             if (vol <= 0f) return;
 
@@ -281,6 +288,70 @@ namespace Patchwork
             AudioClip c;
             if (clips.Count == 0) Build();
             return clips.TryGetValue(id, out c) ? c : null;
+        }
+
+        // The Level 2 Storyteller's voice: a soft owl's "hoo", five ways (each a little
+        // different in pitch and shape, picked by the letter being written).
+        static AudioClip[] owlClips;
+        public static AudioClip OwlSyllable(int i)
+        {
+            if (owlClips == null)
+            {
+                owlClips = new AudioClip[5];
+                float[] f0 = { 210f, 235f, 195f, 250f, 220f };
+                float[] fall = { 0.86f, 0.8f, 0.9f, 0.76f, 0.84f };
+                for (int k = 0; k < 5; k++)
+                {
+                    float a = f0[k], b = f0[k] * fall[k];
+                    float dur = 0.16f + (k % 2) * 0.04f;
+                    owlClips[k] = Make("owl" + k, dur, (t, d) =>
+                    {
+                        float p = Mathf.Lerp(a, b, Mathf.SmoothStep(0f, 1f, t / d)) * (1f + 0.012f * Mathf.Sin(2f * Mathf.PI * 7f * t));
+                        // A round "hoo": a low, nearly pure tone with a breath of air on the front.
+                        float body = Vowel(t, p, 320f, 720f) * 0.55f + Sine(t, p) * 0.35f;
+                        float breath = Noise(t) * Mathf.Exp(-t * 45f) * 0.12f;
+                        float env = Mathf.Clamp01(t / 0.03f) * Mathf.Pow(Mathf.Clamp01(1f - t / d), 1.4f);
+                        return (body * env + breath) * 0.6f;
+                    }, 2400f);
+                }
+            }
+            return owlClips[Mathf.Abs(i) % owlClips.Length];
+        }
+
+        // The Great Whale's song: long, low swoops that rise and fall, with an echo of themselves.
+        static AudioClip whaleSong;
+        public static AudioClip WhaleSong
+        {
+            get
+            {
+                if (whaleSong != null) return whaleSong;
+                float dur = 6.5f;
+                int n = Mathf.CeilToInt(dur * Rate);
+                var data = new float[n];
+                // Four calls: (start, length, from Hz, to Hz).
+                float[,] calls = { { 0.1f, 1.7f, 110f, 260f }, { 1.9f, 1.3f, 300f, 140f }, { 3.3f, 1.4f, 90f, 120f }, { 4.8f, 1.5f, 180f, 420f } };
+                for (int c = 0; c < 4; c++)
+                {
+                    float s = calls[c, 0], len = calls[c, 1], fa = calls[c, 2], fb = calls[c, 3];
+                    float phase = 0f;
+                    int i0 = Mathf.FloorToInt(s * Rate), i1 = Mathf.Min(n, Mathf.FloorToInt((s + len) * Rate));
+                    for (int i = i0; i < i1; i++)
+                    {
+                        float k = (i - i0) / (float)(i1 - i0);
+                        float f = Mathf.Lerp(fa, fb, Mathf.SmoothStep(0f, 1f, k)) * (1f + 0.02f * Mathf.Sin(2f * Mathf.PI * 5f * k * len));
+                        phase += 2f * Mathf.PI * f / Rate;
+                        float env = Mathf.Sin(Mathf.PI * k);
+                        data[i] += (Mathf.Sin(phase) * 0.5f + Mathf.Sin(phase * 2f) * 0.18f + Mathf.Sin(phase * 3f) * 0.07f) * env * 0.55f;
+                    }
+                }
+                // A long watery echo.
+                int lag = Mathf.FloorToInt(0.42f * Rate);
+                for (int i = lag; i < n; i++) data[i] += data[i - lag] * 0.38f;
+                LowPass(data, 1400f);
+                FadeEdges(data, 0.05f);
+                whaleSong = ToClip("whalesong", data);
+                return whaleSong;
+            }
         }
 
         // A yarn bird's chirp. Birds play it from their own 3D sound source so you can hear where they are.

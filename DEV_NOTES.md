@@ -726,6 +726,12 @@ Stuff I need to remember about how Patchwork is put together.
 
 - When trim follows a wall that can run along x or along z, scale its thickness (the axis out from the wall), never a fixed axis: on a wall along z, `size.z` is the wall's length.
 
+- Level 2's opening story is MuseumIntro (seen key "L2_intro_seen"); it marks "L2_cine_arrive" seen too. CinematicShot now drops a pending shot whose key was marked seen by something else.
+- Narrator.Owl is true in Level 2: the owl voice and seal. Other levels keep the Storyteller's murmur.
+- Level2Quest.ObjectiveTarget() feeds the on-screen pointer; Objective() and the pointer both use NextLens() so they always agree.
+- ToyNpc.HasNews (gold "!") and ToyNpc.Bark (walk-by speech bubble) are set for Level 2 in Level2QuestGuide.cs.
+- Level 2 now has 19 secrets ("moon" added). The lost property shelf lays them out in three rows.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

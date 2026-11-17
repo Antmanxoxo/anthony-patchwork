@@ -571,7 +571,9 @@ namespace Patchwork
         Quaternion gateRot;
         public Vector3 LiftSpot;
         public string ObservatoryZone = "The Observatory";
-        public Vector3 TelescopeEye, TelescopeLook;
+        public Vector3 TelescopeEye, TelescopeLook, ObservatoryCentre;
+        public FishSwim SkyWhale;
+        public WhaleLife SkyWhaleLife;
         float check;
         bool liftOpen, gazing, reachedAquarium;
         float gazeTime;
@@ -670,22 +672,48 @@ namespace Patchwork
             if (game == null || gazing || game.Mode != UIMode.Gameplay) return;
             gazing = true;
             gazeTime = 0f;
+            sang = false;
             game.CutsceneSkippable = false;
-            game.CutsceneCaption = "And there, far above the glass, went the oldest thing in the whole museum, singing.";
+            game.CutsceneCaption = "Patch put his eye to the Night Glass, and turned the little brass wheel, and the sky came close.";
+            gazeLook = TelescopeLook;
             game.StartScriptedCutscene(TelescopeEye, TelescopeLook, 1.2f);
             Sfx.Play(SfxId.PrizeFanfare, 0.5f);
+            // She knows she's being looked at: she slows down to be seen properly.
+            if (SkyWhaleLife != null) SkyWhaleLife.Watched = true;
         }
 
+        Vector3 gazeLook;
+        bool sang;
+
+        // The camera follows the whale the whole way (she's going round, so it has to): first
+        // from the eyepiece, then rising up the beam of the telescope toward the top of the dome,
+        // always looking just ahead of her nose.
         void Gaze()
         {
             var game = PatchworkGame.Instance;
             if (game == null) { gazing = false; return; }
-            gazeTime += Time.unscaledDeltaTime;
-            float k = Mathf.Clamp01(gazeTime / 9f);
-            Vector3 look = TelescopeLook + new Vector3(Mathf.Sin(k * 2.2f) * 10f, k * 4f, 0f);
-            game.SetCutsceneCamera(TelescopeEye + Vector3.up * k * 1.5f, look);
-            if (gazeTime > 9f)
+            float udt = Time.unscaledDeltaTime;
+            gazeTime += udt;
+            Vector3 whale = SkyWhale != null ? SkyWhale.transform.position + SkyWhale.transform.forward * 3f : TelescopeLook;
+            // Up the telescope first, then onto her and stay on her (smoothly, never a jerk).
+            Vector3 want = gazeTime < 1.6f ? Vector3.Lerp(TelescopeLook, whale, Mathf.SmoothStep(0f, 1f, gazeTime / 1.6f)) : whale;
+            gazeLook = Vector3.Lerp(gazeLook, want, 1f - Mathf.Exp(-udt * (gazeTime < 1.6f ? 12f : 4f)));
+            float rise = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((gazeTime - 2f) / 7f));
+            Vector3 top = ObservatoryCentre + Vector3.up * 19.5f;
+            Vector3 cam = Vector3.Lerp(TelescopeEye, top, rise);
+            // (Never right on top of the thing it's looking at.)
+            if ((gazeLook - cam).sqrMagnitude < 9f) cam += (cam - gazeLook).normalized * 3f;
+            game.SetCutsceneCamera(cam, gazeLook);
+            if (!sang && gazeTime > 2.6f)
             {
+                sang = true;
+                if (SkyWhaleLife != null) SkyWhaleLife.Sing();
+            }
+            if (gazeTime > 2.6f && gazeTime < 7f) game.CutsceneCaption = "And there, far above the glass, went the oldest thing in the whole museum. She saw that she was seen, and she sang.";
+            else if (gazeTime >= 7f) game.CutsceneCaption = "Her song came down through the dome and into every tank and tapestry, and all the colour that had been going out of the place came back to it.";
+            if (gazeTime > 12f)
+            {
+                if (SkyWhaleLife != null) SkyWhaleLife.Watched = false;
                 gazing = false;
                 game.CutsceneCaption = null;
                 game.EndCutscene();
