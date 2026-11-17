@@ -15,7 +15,7 @@ namespace Patchwork
     {
         static readonly List<Bounds> doorways = new List<Bounds>();
         const float DoorClear = 3f;        // how far into each room a doorway is kept clear
-        const float Spacing = 0.45f;       // the least gap left round anything placed
+        const float Spacing = 0.15f;       // the least gap left round anything placed
 
         static void FindDoorways(LevelKit kit)
         {
@@ -86,133 +86,36 @@ namespace Patchwork
             return false;
         }
 
-        // The last look round. Anything that is only decoration (nothing solid, nothing that
-        // does anything) and stands in a doorway is taken away; anything else in a doorway is
-        // named in the log, so it can be moved by hand.
+        // The last look round: names in the log anything still standing in a doorway, so it can
+        // be moved by hand. (It only looks at whole named things, never at the loose blocks the
+        // building itself is made of, and it never takes anything away.)
+        static readonly string[] Parts = { "Cube", "Sphere", "Cylinder", "Capsule", "Quad", "Plane", "Solid", "Wall", "Lintel", "Sill" };
+
         static void TidyUp(LevelKit kit)
         {
             Physics.SyncTransforms();
-            int removed = 0, left = 0;
-            var check = new List<Transform>();
-            foreach (Transform t in kit.Root) check.Add(t);
-            foreach (var t in check)
-            {
-                if (t == null || !t.gameObject.activeSelf) continue;
-                string n = t.name;
-                if (n == "Wall" || n == "Lintel" || n == "Sill" || n.StartsWith("Floor") || n.StartsWith("Checkpoint") || n.StartsWith("Arch")) continue;
-                var rs = t.GetComponentsInChildren<Renderer>();
-                if (rs.Length == 0) continue;
-                Bounds b = rs[0].bounds;
-                for (int i = 1; i < rs.Length; i++) b.Encapsulate(rs[i].bounds);
-                Vector3 s = b.size;
-                if ((s.x > 7f ? 1 : 0) + (s.y > 7f ? 1 : 0) + (s.z > 7f ? 1 : 0) >= 2) continue;   // (part of the building)
-                // Only what stands at walking height in a doorway's clear space.
-                Bounds low = new Bounds(b.center, new Vector3(Mathf.Max(0.01f, s.x - 0.1f), s.y, Mathf.Max(0.01f, s.z - 0.1f)));
-                bool inWay = false;
-                foreach (var d in doorways)
-                {
-                    var core = new Bounds(d.center, new Vector3(Mathf.Max(0.5f, d.size.x - 0.6f), d.size.y - 0.6f, Mathf.Max(0.5f, d.size.z - 0.6f)));
-                    if (core.Intersects(low) && b.min.y < d.min.y + 2.4f && b.max.y > d.min.y + 0.15f) { inWay = true; break; }
-                }
-                if (!inWay) continue;
-                bool solid = false, alive = false;
-                foreach (var c in t.GetComponentsInChildren<Collider>()) if (!c.isTrigger) { solid = true; break; }
-                foreach (var m in t.GetComponentsInChildren<MonoBehaviour>()) if (m != null) { alive = true; break; }
-                if (!solid && !alive)
-                {
-                    TakeAway(kit, t, b);
-                    removed++;
-                    Debug.Log("[Level2] Tidy: took " + n + " out of a doorway at " + b.center.ToString("F1") + ".");
-                }
-                else
-                {
-                    left++;
-                    Debug.Log("[Level2] Tidy: " + n + " stands in a doorway at " + b.center.ToString("F1") + ".");
-                }
-            }
-            Debug.Log("[Level2] Tidy: " + removed + " removed from doorways, " + left + " still in the way.");
-            Crowding(kit);
-        }
-
-        // Two separate things standing in much the same spot: one display pushed into another.
-        // If one of them is only decoration it's taken away; otherwise both are named in the log.
-        static void Crowding(LevelKit kit)
-        {
-            var items = new List<Transform>();
-            var boxes = new List<Bounds>();
+            int left = 0;
             foreach (Transform t in kit.Root)
             {
                 if (t == null || !t.gameObject.activeSelf) continue;
                 string n = t.name;
-                if (n == "Wall" || n == "Lintel" || n == "Sill" || n.StartsWith("Floor") || n == "Solid" || n.StartsWith("Checkpoint")) continue;
+                if (System.Array.IndexOf(Parts, n) >= 0 || n.StartsWith("Floor") || n.StartsWith("Checkpoint") || n.StartsWith("Arch") || n.EndsWith("Glass")) continue;
                 var rs = t.GetComponentsInChildren<Renderer>();
                 if (rs.Length == 0) continue;
                 Bounds b = rs[0].bounds;
                 for (int i = 1; i < rs.Length; i++) b.Encapsulate(rs[i].bounds);
                 Vector3 s = b.size;
-                // Only things of furniture size (not rooms, not specks, not things hung high up).
-                if (s.x > 6f || s.z > 6f || s.x * s.z < 0.2f || s.y < 0.3f) continue;
-                items.Add(t);
-                boxes.Add(b);
-            }
-            int hidden = 0, named = 0;
-            var gone = new bool[items.Count];
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (gone[i]) continue;
-                for (int j = i + 1; j < items.Count; j++)
+                if (s.x > 6f || s.z > 6f) continue;   // (part of the building, or a whole room's worth)
+                foreach (var d in doorways)
                 {
-                    if (gone[j] || gone[i]) continue;
-                    Bounds a = boxes[i], b = boxes[j];
-                    if (!a.Intersects(b)) continue;
-                    float ox = Mathf.Min(a.max.x, b.max.x) - Mathf.Max(a.min.x, b.min.x);
-                    float oz = Mathf.Min(a.max.z, b.max.z) - Mathf.Max(a.min.z, b.min.z);
-                    float oy = Mathf.Min(a.max.y, b.max.y) - Mathf.Max(a.min.y, b.min.y);
-                    if (ox <= 0f || oz <= 0f || oy <= 0.2f) continue;
-                    float shared = ox * oz;
-                    float smaller = Mathf.Min(a.size.x * a.size.z, b.size.x * b.size.z);
-                    if (shared < smaller * 0.4f) continue;   // (touching, or one tucked a little under another, is fine)
-                    // Is either of them only decoration? Then the one added later goes.
-                    int k = Decorative(items[j]) ? j : Decorative(items[i]) ? i : -1;
-                    if (k >= 0)
-                    {
-                        TakeAway(kit, items[k], boxes[k]);
-                        gone[k] = true;
-                        hidden++;
-                        Debug.Log("[Level2] Tidy: took away " + items[k].name + " (it was standing in " + items[k == i ? j : i].name + ") at " + boxes[k].center.ToString("F1") + ".");
-                    }
-                    else
-                    {
-                        named++;
-                        Debug.Log("[Level2] Tidy: " + items[i].name + " and " + items[j].name + " overlap at " + a.center.ToString("F1") + ".");
-                    }
+                    var core = new Bounds(d.center, new Vector3(Mathf.Max(0.5f, d.size.x - 0.6f), d.size.y - 0.6f, Mathf.Max(0.5f, d.size.z - 0.6f)));
+                    if (!core.Intersects(b) || b.min.y > d.min.y + 2.2f || b.max.y < d.min.y + 0.2f) continue;
+                    left++;
+                    Debug.Log("[Level2] Tidy: " + n + " stands in a doorway at " + b.center.ToString("F1") + ".");
+                    break;
                 }
             }
-            Debug.Log("[Level2] Tidy: " + hidden + " crowded decorations taken away, " + named + " overlaps left to look at.");
-        }
-
-        // Hides something, and the invisible block that made it solid (those are kept apart from
-        // what they belong to), so no invisible wall is left behind.
-        static void TakeAway(LevelKit kit, Transform t, Bounds b)
-        {
-            t.gameObject.SetActive(false);
-            Bounds wide = b;
-            wide.Expand(0.2f);
-            foreach (Transform s in kit.Root)
-            {
-                if (s.name != "Solid" || !s.gameObject.activeSelf) continue;
-                var box = s.GetComponent<BoxCollider>();
-                if (box == null) continue;
-                Bounds sb = box.bounds;
-                if (wide.Contains(sb.min) && wide.Contains(sb.max)) s.gameObject.SetActive(false);
-            }
-        }
-
-        static bool Decorative(Transform t)
-        {
-            foreach (var c in t.GetComponentsInChildren<Collider>()) if (!c.isTrigger) return false;
-            foreach (var m in t.GetComponentsInChildren<MonoBehaviour>()) if (m != null) return false;
-            return true;
+            Debug.Log("[Level2] Tidy: " + left + " things in doorways.");
         }
 
         // Which way to face something that stands against a wall: away from the nearest wall

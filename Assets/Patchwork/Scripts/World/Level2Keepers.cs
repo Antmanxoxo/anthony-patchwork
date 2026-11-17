@@ -1376,7 +1376,7 @@ namespace Patchwork
                 var f = holder.gameObject.AddComponent<FishSwim>();
                 f.Center = c; f.RadiusX = R(4f, 8f); f.RadiusZ = R(8f, 14f); f.Speed = (i % 2 == 0 ? 1f : -1f) * R(26f, 40f); f.Angle = i * 90f; f.Bob = 1.4f; f.BobSpeed = 0.9f; f.Wiggle = 8f; f.WiggleSpeed = 4f; f.Bank = 18f;
             }
-            Plaque(kit, new Vector3(-80f, 0.37f, 170.5f), 0f, "Emperor Penguins",
+            Plaque(kit, new Vector3(-77.2f, 0.37f, 162.6f), 0f, "Emperor Penguins",
                 "All through the Antarctic winter, in the dark and the bitter wind, the emperor penguin fathers stand huddled together, each keeping an egg warm on his feet.",
                 "They go about two months without eating anything at all, until the chicks hatch and the mothers come back from the sea.");
 

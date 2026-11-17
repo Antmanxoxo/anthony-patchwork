@@ -714,9 +714,10 @@ Stuff I need to remember about how Patchwork is put together.
 - **Photo tour**: `Level2PhotoTour.cs`. The menu sets the PlayerPrefs key `pw_l2_tour`;
   the builder adds the tour component when it's set, and the tour clears it when done.
   Shots are in `TourShots()`. Pictures go to `<project>/Screenshots/Level2Tour`.
-- **Crowding check** (`Crowding` in `Level2Tidy.cs`) only looks at direct children of the
-  level root of furniture size; `TakeAway` also turns off any `Solid` lying inside what it
-  hides.
+- **Never auto-remove pieces of a level.** Levels are built from many loose overlapping
+  blocks; an overlap check can't tell a column from a crate. `TidyUp` only reports. For
+  overlaps and flicker read `Logs/PatchworkAudit_Level2.txt` (written by `LevelAudit` a
+  moment after the level loads in Play mode).
 
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);

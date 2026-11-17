@@ -67,9 +67,11 @@ namespace Patchwork
 
         public static IEnumerator RunTour()
         {
+            // (It doesn't wait for any opening scene to finish: it simply takes the camera.)
             var game = PatchworkGame.Instance;
-            while (game == null || game.Mode != UIMode.Gameplay || game.CameraRig == null) { yield return null; game = PatchworkGame.Instance; }
-            yield return new WaitForSecondsRealtime(3f);
+            while (game == null || game.CameraRig == null) { yield return null; game = PatchworkGame.Instance; }
+            yield return new WaitForSecondsRealtime(2f);
+            Debug.Log("[Level2] Photo tour starting.");
             var cam = game.CameraRig.GetComponent<Camera>();
             if (cam == null) cam = Camera.main;
             if (cam == null) yield break;
@@ -82,11 +84,20 @@ namespace Patchwork
             for (int i = 0; i < shots.Count; i++)
             {
                 var sh = shots[i];
+                // Held in place for a moment (at the end of every frame, so nothing else that moves
+                // the camera, a cutscene say, can take it back), then the picture.
+                float until = Time.realtimeSinceStartup + 0.6f;
+                while (Time.realtimeSinceStartup < until)
+                {
+                    game.CameraRig.enabled = false;
+                    cam.transform.position = sh.From;
+                    cam.transform.rotation = Quaternion.LookRotation(sh.To - sh.From, Vector3.up);
+                    yield return new WaitForEndOfFrame();
+                }
                 cam.transform.position = sh.From;
                 cam.transform.rotation = Quaternion.LookRotation(sh.To - sh.From, Vector3.up);
-                yield return new WaitForSecondsRealtime(0.6f);
                 ScreenCapture.CaptureScreenshot(System.IO.Path.Combine(dir, (i + 1).ToString("00") + "_" + sh.Name + ".png"));
-                yield return new WaitForSecondsRealtime(0.3f);
+                yield return new WaitForSecondsRealtime(0.25f);
             }
             game.CameraRig.enabled = true;
             if (game.Hud != null) game.Hud.enabled = true;

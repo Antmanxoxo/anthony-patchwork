@@ -1,5 +1,24 @@
 # Development Log
 
+## Fix: the tidy pass was taking the building apart
+The last run's log showed the automatic tidy-up removing over 400 pieces of the museum.
+The building is made of many separate blocks that overlap on purpose (the entrance
+columns, the clock over the doors, fountains, tunnel frames), and the tidy-up took those
+for crowded furniture. It now never removes anything: it only names whole named things
+still standing in a doorway. The game's own level check (Logs/PatchworkAudit_Level2.txt)
+already reports overlaps properly, and this round's fixes come from it:
+- Flicker: the dust sheets' top sat exactly level with the armchair under them; the iron
+  frames of the wall tanks had their fronts exactly level with the glass. Both fixed.
+- Keepsakes for the secrets were sitting inside the secret marbles that share their hiding
+  places; they now float just above.
+- The Emperor Penguins card was standing in the middle of the penguins; moved to the edge.
+- The message tube's pipe ran across the Keepers' Room into the raincoat on the wall; it
+  now goes straight up through the ceiling.
+- The grey creep at each seam is centred on the seam (it had spread under a wet-floor sign).
+- Spacing between placed things cut from 45 cm to 15 cm: at 45 cm eight details in the
+  narrow undercroft and the gallery no longer fitted.
+- The photo tour no longer waits for opening scenes to end (it was waiting forever).
+
 ## Fix: photo tour compile error
 The photo tour's list of camera spots used the name `Shot`, which Level 2's cutscene code
 already uses. Renamed it `TourShot`.

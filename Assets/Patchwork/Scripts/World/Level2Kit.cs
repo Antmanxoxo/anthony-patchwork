@@ -953,13 +953,13 @@ namespace Patchwork
                 {
                     float x = -width * 0.5f + width * i / panesX;
                     bool edge = i == 0 || i == panesX;
-                    NoShadow(kit.Deco(PrimitiveType.Cube, glassFoot + r * new Vector3(x, height * 0.5f, 0.1f), new Vector3(edge ? 0.5f : 0.26f, height, 0.5f), iron, new Vector3(0f, yaw, 0f)));
+                    NoShadow(kit.Deco(PrimitiveType.Cube, glassFoot + r * new Vector3(x, height * 0.5f, 0.06f), new Vector3(edge ? 0.5f : 0.26f, height, 0.5f), iron, new Vector3(0f, yaw, 0f)));
                 }
                 for (int j = 0; j <= panesY; j++)
                 {
                     float y = height * j / panesY;
                     bool edge = j == 0 || j == panesY;
-                    NoShadow(kit.Deco(PrimitiveType.Cube, glassFoot + r * new Vector3(0f, y, 0.1f), new Vector3(width + 0.5f, edge ? 0.5f : 0.22f, 0.5f), iron, new Vector3(0f, yaw, 0f)));
+                    NoShadow(kit.Deco(PrimitiveType.Cube, glassFoot + r * new Vector3(0f, y, 0.06f), new Vector3(width + 0.5f, edge ? 0.5f : 0.22f, 0.5f), iron, new Vector3(0f, yaw, 0f)));
                 }
                 // A brass kick-rail along the bottom.
                 NoShadow(kit.Deco(PrimitiveType.Cube, glassFoot + r * new Vector3(0f, 0.32f, 0.42f), new Vector3(width, 0.1f, 0.1f), Brass, new Vector3(0f, yaw, 0f)));

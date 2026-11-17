@@ -39,7 +39,7 @@ namespace Patchwork
         {
             Vector3 foot;
             // (Room for the machine, its card beside it, and somewhere to stand in front.)
-            Vector3 room = which == 2 ? new Vector3(5f, 5f, 5f) : new Vector3(4.4f, 3.6f, 4.4f);
+            Vector3 room = which == 2 ? new Vector3(5f, 5f, 5f) : which == 4 ? new Vector3(4.4f, 7.4f, 4.4f) : new Vector3(4.4f, 3.6f, 4.4f);
             if (!RmFloor(title, want, room, 0f, 18f, out foot)) foot = want;
             // Back to the nearest wall, front to the room.
             float yaw = FaceTheRoom(foot, 0f);
@@ -224,9 +224,9 @@ namespace Patchwork
                     D(kit, PrimitiveType.Cube, new Vector3(0f, 0.45f, 0f), new Vector3(1.1f, 0.9f, 0.7f), wood);
                     D(kit, PrimitiveType.Cylinder, new Vector3(0f, 1.15f, -0.15f), new Vector3(0.24f, 0.26f, 0.24f), brass);
                     D(kit, PrimitiveType.Cylinder, new Vector3(0f, 1.42f, -0.15f), new Vector3(0.3f, 0.02f, 0.3f), brass);
-                    D(kit, PrimitiveType.Cylinder, new Vector3(0f, 3.4f, -0.15f), new Vector3(0.18f, 2f, 0.18f), brass);
-                    D(kit, PrimitiveType.Sphere, new Vector3(0f, 5.4f, -0.15f), Vector3.one * 0.18f, brass);
-                    D(kit, PrimitiveType.Cylinder, new Vector3(0f, 5.4f, -3.15f), new Vector3(0.18f, 3f, 0.18f), brass, new Vector3(90f, 0f, 0f));
+                    // (Straight up from the desk and through the ceiling.)
+                    D(kit, PrimitiveType.Cylinder, new Vector3(0f, 5.2f, -0.15f), new Vector3(0.18f, 2.8f, 0.18f), brass);
+                    for (int i = 0; i < 3; i++) D(kit, PrimitiveType.Cylinder, new Vector3(0f, 2.4f + i * 1.8f, -0.15f), new Vector3(0.24f, 0.04f, 0.24f), brass);
                     // A little rack of message capsules, and a gauge.
                     for (int i = 0; i < 3; i++)
                         D(kit, PrimitiveType.Capsule, new Vector3(-0.35f + i * 0.14f, 1.0f, 0.18f), new Vector3(0.1f, 0.12f, 0.1f), PatchworkAssets.Felt(new Color(0.55f + i * 0.1f, 0.4f, 0.3f)), new Vector3(90f, 0f, 0f));
@@ -325,8 +325,7 @@ namespace Patchwork
                     crank.localRotation = Quaternion.Euler(0f, 0f, -Mathf.Min(run, 0.5f) * 400f);
                     capsule.gameObject.SetActive(run < 1.6f);
                     if (run < 0.5f) capsule.localPosition = new Vector3(0f, 1.6f - run * 0.6f, -0.15f);
-                    else if (run < 0.9f) capsule.localPosition = new Vector3(0f, 1.3f + (run - 0.5f) * 10f, -0.15f);
-                    else capsule.localPosition = new Vector3(0f, 5.4f, -0.15f - (run - 0.9f) * 12f);
+                    else capsule.localPosition = new Vector3(0f, Mathf.Min(8.3f, 1.3f + (run - 0.5f) * 12f), -0.15f);
                     if (strokes == 0 && run > 0.5f) { strokes = 1; Sfx.PlayNear(SfxId.Whoosh, transform.position + Vector3.up * 2f, 0.6f, 30f); }
                     if (strokes == 1 && run > 2.6f) { strokes = 2; Sfx.PlayNear(SfxId.PadClick, transform.position + Vector3.up * 5f, 0.4f, 40f); }
                     break;

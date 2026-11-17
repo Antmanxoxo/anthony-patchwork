@@ -790,7 +790,7 @@ namespace Patchwork
             d.sheet.SetParent(go.transform, false);
             var cloth = PatchworkAssets.Fabric(new Color(0.93f, 0.91f, 0.86f));
             var shade = PatchworkAssets.Fabric(new Color(0.82f, 0.8f, 0.76f));
-            Part(d.sheet, PrimitiveType.Cube, new Vector3(0f, 0.7f, 0f), new Vector3(1.5f, 1.4f, 1.2f), cloth);
+            Part(d.sheet, PrimitiveType.Cube, new Vector3(0f, 0.74f, 0f), new Vector3(1.5f, 1.48f, 1.2f), cloth);
             Part(d.sheet, PrimitiveType.Sphere, new Vector3(0f, 1.4f, 0f), new Vector3(1.6f, 0.7f, 1.3f), cloth);
             for (int k = 0; k < 10; k++)
             {

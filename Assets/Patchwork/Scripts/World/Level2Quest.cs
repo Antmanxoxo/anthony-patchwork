@@ -535,7 +535,7 @@ namespace Patchwork
                 s.Birth = p => Hatch(p, rollers);
                 s.Beaten = f => SeamShut(shut);
                 seams[i] = s;
-                seamCreep[i] = FrayCreep.Make(FoeRoot, at + Quaternion.Euler(0f, yaw, 0f) * new Vector3(0f, 0f, 2.2f), 1.6f, i * 3.1f);
+                seamCreep[i] = FrayCreep.Make(FoeRoot, at, 1.9f, i * 3.1f);
             }
 
             // Anything won on an earlier visit but not picked up is waiting where it fell.
@@ -668,7 +668,7 @@ namespace Patchwork
             if (Seen("s_" + key)) return;
             var m = GameObject.Find(marker);
             if (m == null) return;
-            Keepsake.Spawn(FoeRoot, m.transform.position + Vector3.up * 0.9f, kind).Taken = () =>
+            Keepsake.Spawn(FoeRoot, m.transform.position + Vector3.up * 1.8f, kind).Taken = () =>
             {
                 Secret(key);
                 Narrator.Say(say);
