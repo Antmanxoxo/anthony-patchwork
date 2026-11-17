@@ -1172,7 +1172,7 @@ namespace Patchwork
                 "In July 1969 two people climbed down a ladder and walked about on it. There is no wind there and no rain, so their footprints are still exactly as they left them, and will be for millions of years.",
                 "The Moon is also why this museum is where it is. Twice a day it pulls the whole sea up towards itself, and lets it go again.");
             // Star-chart tables on the east landing, and a comet under the roof.
-            foreach (var tpos in new[] { new Vector3(40.4f, DeckY, 16.7f), new Vector3(36f, DeckY, 11.5f) }   // (the second well back from the gallery door))
+            foreach (var tpos in new[] { new Vector3(40.4f, DeckY, 16.7f), new Vector3(36f, DeckY, 11.5f) })   // (the second well back from the gallery door)
             {
                 kit.Block(tpos + Vector3.up * 0.6f, new Vector3(3f, 1.2f, 1.6f), WoodCol, "ChartTable", DarkWood);
                 NoShadow(kit.Deco(PrimitiveType.Cube, tpos + Vector3.up * 1.22f, new Vector3(2.4f, 0.03f, 1.2f), StarCloth, new Vector3(0f, 6f, 0f)));
