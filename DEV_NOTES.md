@@ -747,6 +747,9 @@ Stuff I need to remember about how Patchwork is put together.
 - GameState.DevMode unlocks everything (hats, Owns, OwnsSticker, HasDecoration, Purse), stops Hurt, and opens the museum lift. Check it before adding new locks.
 - Story stickers: Prizes.GrantSticker(StickerId) for a big moment. Add the id to StickerId, a PrizeDef with kind Sticker, a name in StickerArt.Name and a shape in StickerArt.Shape.
 
+- Wardrobe looks: `Wardrobe.DyedAlbedo` re-dyes the Yarn texture (gold hue 0.045-0.17 to the scheme's colour, teal 0.4-0.6 to `SecondTints`) and bakes in the fabric weave, worked at up to 1024 px, latest one cached. Water and Wind get `Wardrobe.WeaveTexture` (tiled 3x) on top of the tint; glitter uses the `Sparkle` emission map.
+- Outfits live under two roots on `root`: `OutfitNeck` (neck radius = 1) and `OutfitBody` (body radius = 1), placed each frame by `FormVisuals.PlaceOutfit` from `PatchModel.BodyPose` (Yarn) or the Water/Wind head and body anchors.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

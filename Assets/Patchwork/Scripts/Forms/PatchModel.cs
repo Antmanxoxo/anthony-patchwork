@@ -36,7 +36,7 @@ namespace Patchwork
         public Transform HandR { get; private set; }
 
         readonly Renderer[] faces = new Renderer[3];
-        Transform modelRoot, head, armR;
+        Transform modelRoot, head, armR, armL, spine;
         // World units per Blender metre once the model is sized.
         float worldPerBlenderMetre = 1f;
 
@@ -84,6 +84,32 @@ namespace Patchwork
             if (head == null) return TargetHeadTop - 0.05f;
             Vector3 top = head.position + transform.up * (BlenderHeadBoneToTop * worldPerBlenderMetre * transform.lossyScale.y);
             return space.InverseTransformPoint(top).y - 0.05f;
+        }
+
+        // Where clothes go, in world space: the neck (the bottom of the head), which way is up
+        // for him, the middle of his body, and how big round the neck and the body are.
+        public bool BodyPose(out Vector3 neck, out Vector3 up, out Vector3 torso, out float neckR, out float bodyR)
+        {
+            neck = transform.position + transform.up * (TargetHeadTop - 0.5f);
+            up = transform.up;
+            torso = transform.position + transform.up * 0.5f;
+            neckR = 0.18f;
+            bodyR = 0.3f;
+            if (head == null) return false;
+            Quaternion tilt = transform.rotation * (Quaternion.Inverse(transform.rotation) * head.rotation) * Quaternion.Inverse(headRest);
+            up = (tilt * Vector3.up + transform.up).normalized;
+            neck = head.position;
+            float headSize = BlenderHeadBoneToTop * worldPerBlenderMetre * transform.lossyScale.y;
+            if (armL != null && armR != null)
+            {
+                float across = Vector3.Distance(armL.position, armR.position);
+                bodyR = Mathf.Clamp(across * 0.5f, 0.15f, 0.6f);
+                Vector3 shoulders = (armL.position + armR.position) * 0.5f;
+                torso = shoulders - transform.up * bodyR * 0.35f;
+            }
+            else if (spine != null) torso = Vector3.Lerp(spine.position, head.position, 0.4f);
+            neckR = Mathf.Clamp(headSize * 0.36f, 0.1f, 0.3f);
+            return true;
         }
 
         // Where a hat should sit, in `space`'s coordinates: on the crown of the head, tilted with
@@ -228,6 +254,8 @@ namespace Patchwork
 
             HandR = FindDeep(modelRoot, "hand.R");
             armR = FindDeep(modelRoot, "arm.R");
+            armL = FindDeep(modelRoot, "arm.L");
+            spine = FindDeep(modelRoot, "spine");
             head = FindDeep(modelRoot, "head");
 
             // Face forward. In Blender he faces -Y with his rope arm ("arm.R") on +X. Importing into

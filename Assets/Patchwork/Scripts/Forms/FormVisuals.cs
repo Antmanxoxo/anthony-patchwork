@@ -329,14 +329,22 @@ namespace Patchwork
         // ------------------------------------------------------------------ The wardrobe
 
         readonly Dictionary<Renderer, Color> lookBase = new Dictionary<Renderer, Color>();
-        Transform outfitRoot;
-        GameObject[] outfits;
+        readonly Dictionary<Material, Texture> lookTex = new Dictionary<Material, Texture>();
+        readonly Dictionary<Material, Vector2> lookScale = new Dictionary<Material, Vector2>();
+        Texture yarnOriginal;
+        Transform neckRoot, torsoRoot;
+        readonly List<GameObject>[] outfitParts = new List<GameObject>[8];
 
         // Puts on whatever's chosen in the wardrobe: the dye and the fabric on every body, and
-        // the outfit under the hat.
+        // the outfit.
+        //   Yarn: his own texture re-dyed (the gold knit and the teal patches take the scheme's
+        //         two colours) with the fabric's weave worked in.
+        //   Water and Wind: their colours tinted, and the fabric's weave laid over them.
+        // The fabric also sets how shiny and bumpy he is, and glitter sparkles on its own.
         public void ApplyLook()
         {
             Color tint = Wardrobe.Tint;
+            var weave = Wardrobe.WeaveTexture(GameState.Fabric);
             foreach (var body in new[] { yarn, water, wind })
             {
                 if (body == yarn && patchModel != null)
@@ -344,11 +352,17 @@ namespace Patchwork
                     var pm = patchModel.Material;
                     if (pm != null)
                     {
-                        pm.SetColor("_BaseColor", tint);
-                        pm.SetColor("_Color", tint);
+                        if (yarnOriginal == null) yarnOriginal = pm.GetTexture("_BaseMap");
+                        var dyedTex = Wardrobe.DyedAlbedo(yarnOriginal);
+                        var use = dyedTex != null ? (Texture)dyedTex : yarnOriginal;
+                        pm.SetTexture("_BaseMap", use);
+                        if (pm.HasProperty("_MainTex")) pm.SetTexture("_MainTex", use);
+                        pm.SetColor("_BaseColor", Color.white);
+                        pm.SetColor("_Color", Color.white);
                         Wardrobe.Finish(pm);
+                        SetGlitter(pm, 1f);
                     }
-                    for (int i = 0; i < body.Colors.Count; i++) body.Colors[i] = tint;
+                    for (int i = 0; i < body.Colors.Count; i++) body.Colors[i] = Color.white;
                     continue;
                 }
                 for (int i = 0; i < body.Renderers.Count; i++)
@@ -364,83 +378,201 @@ namespace Patchwork
                     Color c = new Color(orig.r * tint.r, orig.g * tint.g, orig.b * tint.b, orig.a);
                     if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
                     if (m.HasProperty("_Color")) m.SetColor("_Color", c);
+                    if (m.HasProperty("_BaseMap"))
+                    {
+                        if (!lookTex.ContainsKey(m)) { lookTex[m] = m.GetTexture("_BaseMap"); lookScale[m] = m.GetTextureScale("_BaseMap"); }
+                        m.SetTexture("_BaseMap", weave != null ? weave : lookTex[m]);
+                        m.SetTextureScale("_BaseMap", weave != null ? new Vector2(3f, 3f) : lookScale[m]);
+                    }
                     Wardrobe.Finish(m);
+                    SetGlitter(m, 3f);
                     body.Colors[i] = c;
                 }
             }
-            if (outfits == null) BuildOutfits();
-            int pick = Mathf.Clamp(GameState.Outfit, 0, outfits.Length - 1);
-            for (int i = 0; i < outfits.Length; i++) if (outfits[i] != null) outfits[i].SetActive(i == pick);
+            if (neckRoot == null) BuildOutfits();
+            int pick = Mathf.Clamp(GameState.Outfit, 0, outfitParts.Length - 1);
+            for (int i = 0; i < outfitParts.Length; i++)
+                if (outfitParts[i] != null) foreach (var g in outfitParts[i]) if (g != null) g.SetActive(i == pick);
         }
 
-        // The outfits, built round the neck and shoulders (just under the hat: in the hat's own
-        // space the head is 0.6 across, its top at 0).
+        static void SetGlitter(Material m, float tiles)
+        {
+            if (!m.HasProperty("_EmissionMap")) return;
+            if (Wardrobe.Glitter)
+            {
+                m.EnableKeyword("_EMISSION");
+                m.SetTexture("_EmissionMap", Wardrobe.Sparkle);
+                m.SetColor("_EmissionColor", new Color(1.4f, 1.3f, 1.1f));
+                m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+            }
+            else if (m.GetTexture("_EmissionMap") == Wardrobe.Sparkle)
+            {
+                m.SetTexture("_EmissionMap", null);
+                m.SetColor("_EmissionColor", Color.black);
+                m.DisableKeyword("_EMISSION");
+            }
+        }
+
+        // Each frame: the outfit to the neck and body of whichever form he's in. The neck
+        // pieces are built round a neck one unit across, the body pieces round a body one unit
+        // across, and each is scaled to fit the form.
+        void PlaceOutfit()
+        {
+            if (neckRoot == null || GameState.Outfit <= 0) return;
+            Vector3 neck, up, torso;
+            float rn, rb;
+            float s = root.lossyScale.x;
+            switch (form)
+            {
+                case FormType.Water:
+                    neck = wHead.position;
+                    up = wHead.up;
+                    torso = wBody.TransformPoint(new Vector3(0f, 0.12f, 0f));
+                    rn = 0.13f * s;
+                    rb = 0.175f * s;
+                    break;
+                case FormType.Wind:
+                    neck = windHead.position + windHead.up * 0.03f * s;
+                    up = windHead.up;
+                    torso = neck - up * 0.16f * s;
+                    rn = 0.2f * s;
+                    rb = 0.25f * s;
+                    break;
+                default:
+                    if (patchModel == null || !patchModel.BodyPose(out neck, out up, out torso, out rn, out rb))
+                    {
+                        neck = root.position + root.up * 1.05f * s;
+                        up = root.up;
+                        torso = root.position + root.up * 0.68f * s;
+                        rn = 0.16f * s;
+                        rb = 0.36f * s;
+                    }
+                    break;
+            }
+            Vector3 fwd = Vector3.ProjectOnPlane(root.forward, up);
+            if (fwd.sqrMagnitude < 0.001f) fwd = root.forward;
+            var rot = Quaternion.LookRotation(fwd.normalized, up);
+            float ps = Mathf.Max(0.0001f, root.lossyScale.x);
+            neckRoot.SetPositionAndRotation(neck, rot);
+            neckRoot.localScale = Vector3.one * (rn / ps);
+            torsoRoot.SetPositionAndRotation(torso, rot);
+            torsoRoot.localScale = Vector3.one * (rb / ps);
+        }
+
+        GameObject OutfitPart(int outfit, Transform space, string name)
+        {
+            var t = Pivot(name, space, Vector3.zero);
+            if (outfitParts[outfit] == null) outfitParts[outfit] = new List<GameObject>();
+            outfitParts[outfit].Add(t.gameObject);
+            return t.gameObject;
+        }
+
+        // The outfits. Neck pieces: in a space where the neck is 1 round (1 = its radius), up
+        // is up and forward is the way he faces. Body pieces: the same, round the middle of him.
         void BuildOutfits()
         {
-            outfits = new GameObject[Wardrobe.OutfitNames.Length];
-            outfitRoot = Pivot("Outfits", accessoryRoot, Vector3.zero);
-            const float neck = -0.62f;
-            // 1. A striped scarf, with its end hanging down the front.
-            var scarf = Pivot("Outfit_Scarf", outfitRoot, Vector3.zero);
+            neckRoot = Pivot("OutfitNeck", root, Vector3.zero);
+            torsoRoot = Pivot("OutfitBody", root, Vector3.zero);
             var red = PatchworkAssets.Knit(new Color(0.85f, 0.25f, 0.3f));
             var cream = PatchworkAssets.Knit(new Color(0.98f, 0.92f, 0.8f));
-            for (int i = 0; i < 12; i++)
+
+            // 1. A striped scarf round the neck, with an end hanging down his front.
+            var scarf = OutfitPart(1, neckRoot, "Scarf").transform;
+            for (int i = 0; i < 14; i++)
             {
-                float a = i / 12f * Mathf.PI * 2f;
-                Prim(PrimitiveType.Cube, scarf, new Vector3(Mathf.Sin(a) * 0.3f, neck, Mathf.Cos(a) * 0.3f), new Vector3(0.17f, 0.13f, 0.1f), i % 2 == 0 ? red : cream, new Vector3(0f, a * Mathf.Rad2Deg, 0f));
+                float a = i / 14f * Mathf.PI * 2f;
+                Prim(PrimitiveType.Cube, scarf, new Vector3(Mathf.Sin(a) * 1.05f, -0.15f, Mathf.Cos(a) * 1.05f), new Vector3(0.52f, 0.5f, 0.34f), i % 2 == 0 ? red : cream, new Vector3(0f, a * Mathf.Rad2Deg, 0f));
             }
+            var tail = OutfitPart(1, torsoRoot, "ScarfEnd").transform;
             for (int i = 0; i < 4; i++)
-                Prim(PrimitiveType.Cube, scarf, new Vector3(0.12f + i * 0.015f, neck - 0.1f - i * 0.11f, 0.32f + i * 0.01f), new Vector3(0.13f, 0.11f, 0.05f), i % 2 == 0 ? cream : red, new Vector3(6f, 0f, -8f));
-            outfits[1] = scarf.gameObject;
-            // 2. A bow tie.
-            var bow = Pivot("Outfit_BowTie", outfitRoot, new Vector3(0f, neck - 0.04f, 0.3f));
+            {
+                float y = 0.62f - i * 0.24f, z = Mathf.Sqrt(Mathf.Max(0.05f, 1.1f - (y * y) - 0.09f));
+                Prim(PrimitiveType.Cube, tail, new Vector3(0.3f, y, z + 0.02f), new Vector3(0.3f, 0.24f, 0.08f), i % 2 == 0 ? cream : red, new Vector3(-Mathf.Asin(Mathf.Clamp(y, -1f, 1f)) * Mathf.Rad2Deg * 0.8f, 0f, -6f));
+            }
+            Prim(PrimitiveType.Cube, tail, new Vector3(0.3f, -0.36f, Mathf.Sqrt(Mathf.Max(0.05f, 1.1f - 0.13f - 0.09f)) + 0.04f), new Vector3(0.3f, 0.05f, 0.09f), red);
+
+            // 2. A bow tie, sitting at the top of his front.
+            var bow = OutfitPart(2, torsoRoot, "BowTie").transform;
+            bow.localPosition = new Vector3(0f, 0.66f, 0.78f);
+            bow.localRotation = Quaternion.Euler(-40f, 0f, 0f);
             var plum = PatchworkAssets.Felt(new Color(0.45f, 0.25f, 0.6f));
             for (int s = -1; s <= 1; s += 2)
-                Prim(PrimitiveType.Cube, bow, new Vector3(s * 0.1f, 0f, 0f), new Vector3(0.16f, 0.12f, 0.05f), plum, new Vector3(0f, 0f, s * 18f));
-            Prim(PrimitiveType.Sphere, bow, new Vector3(0f, 0f, 0.02f), new Vector3(0.07f, 0.07f, 0.05f), PatchworkAssets.Felt(new Color(0.3f, 0.15f, 0.42f)));
-            outfits[2] = bow.gameObject;
-            // 3. An explorer's backpack, with a rolled blanket on top.
-            var pack = Pivot("Outfit_Backpack", outfitRoot, new Vector3(0f, neck - 0.3f, -0.38f));
+                Prim(PrimitiveType.Cube, bow, new Vector3(s * 0.17f, 0f, 0f), new Vector3(0.28f, 0.22f, 0.08f), plum, new Vector3(0f, 0f, s * 16f));
+            Prim(PrimitiveType.Sphere, bow, new Vector3(0f, 0f, 0.03f), new Vector3(0.12f, 0.12f, 0.08f), PatchworkAssets.Felt(new Color(0.3f, 0.15f, 0.42f)));
+
+            // 3. An explorer's backpack on his back, straps over the shoulders.
+            var pack = OutfitPart(3, torsoRoot, "Backpack").transform;
             var canvas = PatchworkAssets.Fabric(new Color(0.55f, 0.45f, 0.3f));
-            Prim(PrimitiveType.Cube, pack, Vector3.zero, new Vector3(0.4f, 0.44f, 0.2f), canvas);
-            Prim(PrimitiveType.Cube, pack, new Vector3(0f, 0.12f, -0.1f), new Vector3(0.36f, 0.18f, 0.04f), PatchworkAssets.Fabric(new Color(0.45f, 0.35f, 0.22f)));
-            Prim(PrimitiveType.Cylinder, pack, new Vector3(0f, 0.28f, 0f), new Vector3(0.12f, 0.22f, 0.12f), PatchworkAssets.Knit(new Color(0.3f, 0.55f, 0.4f)), new Vector3(0f, 0f, 90f));
+            var strap = PatchworkAssets.Fabric(new Color(0.35f, 0.25f, 0.15f));
+            Prim(PrimitiveType.Cube, pack, new Vector3(0f, 0.05f, -1.08f), new Vector3(0.95f, 1.05f, 0.45f), canvas);
+            Prim(PrimitiveType.Cube, pack, new Vector3(0f, 0.32f, -1.32f), new Vector3(0.85f, 0.4f, 0.08f), PatchworkAssets.Fabric(new Color(0.45f, 0.35f, 0.22f)), new Vector3(-8f, 0f, 0f));
+            Prim(PrimitiveType.Cube, pack, new Vector3(0f, -0.25f, -1.33f), new Vector3(0.5f, 0.32f, 0.08f), PatchworkAssets.Fabric(new Color(0.5f, 0.4f, 0.26f)));
+            Prim(PrimitiveType.Cylinder, pack, new Vector3(0f, 0.68f, -1.05f), new Vector3(0.28f, 0.48f, 0.28f), PatchworkAssets.Knit(new Color(0.3f, 0.55f, 0.4f)), new Vector3(0f, 0f, 90f));
             for (int s = -1; s <= 1; s += 2)
-                Prim(PrimitiveType.Cube, pack, new Vector3(s * 0.13f, 0.08f, 0.2f), new Vector3(0.05f, 0.4f, 0.03f), PatchworkAssets.Fabric(new Color(0.35f, 0.25f, 0.15f)), new Vector3(-12f, 0f, 0f));
-            outfits[3] = pack.gameObject;
-            // 4. A hero's cape, with a gold clasp.
-            var cape = Pivot("Outfit_Cape", outfitRoot, new Vector3(0f, neck, -0.28f));
-            Prim(PrimitiveType.Cube, cape, new Vector3(0f, -0.42f, -0.06f), new Vector3(0.62f, 0.86f, 0.04f), PatchworkAssets.Fabric(new Color(0.8f, 0.2f, 0.25f)), new Vector3(14f, 0f, 0f));
-            Prim(PrimitiveType.Cube, cape, new Vector3(0f, 0f, 0.02f), new Vector3(0.64f, 0.09f, 0.1f), PatchworkAssets.Fabric(new Color(0.65f, 0.15f, 0.2f)));
-            Prim(PrimitiveType.Sphere, cape, new Vector3(0f, 0f, 0.6f), Vector3.one * 0.08f, PatchworkAssets.Plain(new Color(1f, 0.82f, 0.35f), 0.85f));
-            outfits[4] = cape.gameObject;
-            // 5. A garland of felt flowers.
-            var garland = Pivot("Outfit_Garland", outfitRoot, Vector3.zero);
-            Color[] petals = { new Color(1f, 0.55f, 0.7f), new Color(1f, 0.9f, 0.4f), new Color(0.6f, 0.8f, 1f), new Color(1f, 0.7f, 0.4f) };
-            for (int i = 0; i < 10; i++)
+                for (int k = 0; k < 5; k++)
+                {
+                    float a = Mathf.Lerp(-150f, 40f, k / 4f) * Mathf.Deg2Rad;   // over the shoulder, from the back round to the front
+                    Prim(PrimitiveType.Cube, pack, new Vector3(s * 0.42f, Mathf.Sin(-a + Mathf.PI * 0.5f) * 0.08f + 0.55f * Mathf.Cos(a * 0.5f), Mathf.Cos(a) * -1.02f), new Vector3(0.12f, 0.1f, 0.4f), strap, new Vector3(a * Mathf.Rad2Deg, 0f, 0f));
+                }
+
+            // 4. A hero's cape: from a collar round the neck, down over his back.
+            var collar = OutfitPart(4, neckRoot, "CapeCollar").transform;
+            var capeRed = PatchworkAssets.Fabric(new Color(0.8f, 0.2f, 0.25f));
+            for (int i = 0; i < 9; i++)
             {
-                float a = i / 10f * Mathf.PI * 2f;
-                Prim(PrimitiveType.Sphere, garland, new Vector3(Mathf.Sin(a) * 0.31f, neck - Mathf.Cos(a) * 0.03f, Mathf.Cos(a) * 0.31f), Vector3.one * 0.12f, PatchworkAssets.Felt(petals[i % petals.Length]));
+                float a = Mathf.Lerp(100f, 260f, i / 8f) * Mathf.Deg2Rad;
+                Prim(PrimitiveType.Cube, collar, new Vector3(Mathf.Sin(a) * 1.1f, -0.2f, Mathf.Cos(a) * 1.1f), new Vector3(0.42f, 0.28f, 0.16f), capeRed, new Vector3(-20f, a * Mathf.Rad2Deg, 0f));
             }
-            outfits[5] = garland.gameObject;
-            // 6. A sash with a gold star.
-            var sash = Pivot("Outfit_Sash", outfitRoot, new Vector3(0f, neck - 0.32f, 0.31f));
-            Prim(PrimitiveType.Cube, sash, Vector3.zero, new Vector3(0.1f, 0.7f, 0.04f), PatchworkAssets.Fabric(new Color(0.25f, 0.4f, 0.8f)), new Vector3(0f, 0f, 38f));
+            Prim(PrimitiveType.Sphere, collar, new Vector3(0f, -0.25f, 1.05f), Vector3.one * 0.3f, PatchworkAssets.Plain(new Color(1f, 0.82f, 0.35f), 0.85f));
+            var cape = OutfitPart(4, torsoRoot, "Cape").transform;
+            for (int i = 0; i < 6; i++)
+            {
+                float y = 0.75f - i * 0.36f;
+                float z = -Mathf.Sqrt(Mathf.Max(0.05f, 1.12f - y * y * 0.5f)) - 0.05f - i * 0.03f;
+                Prim(PrimitiveType.Cube, cape, new Vector3(0f, y, z), new Vector3(1.5f + i * 0.08f, 0.38f, 0.06f), capeRed, new Vector3(8f + i * 3f, 0f, 0f));
+            }
+
+            // 5. A garland of felt flowers round the neck.
+            var garland = OutfitPart(5, neckRoot, "Garland").transform;
+            Color[] petals = { new Color(1f, 0.55f, 0.7f), new Color(1f, 0.9f, 0.4f), new Color(0.6f, 0.8f, 1f), new Color(1f, 0.7f, 0.4f) };
+            for (int i = 0; i < 11; i++)
+            {
+                float a = i / 11f * Mathf.PI * 2f;
+                Vector3 p = new Vector3(Mathf.Sin(a) * 1.12f, -0.25f - Mathf.Cos(a) * 0.12f, Mathf.Cos(a) * 1.12f);
+                Prim(PrimitiveType.Sphere, garland, p, Vector3.one * 0.42f, PatchworkAssets.Felt(petals[i % petals.Length]));
+                Prim(PrimitiveType.Sphere, garland, p * 1.08f, Vector3.one * 0.16f, PatchworkAssets.Felt(new Color(1f, 0.95f, 0.6f)));
+            }
+
+            // 6. A sash from one shoulder to the other hip, hugging the curve of him, with a star.
+            var sash = OutfitPart(6, torsoRoot, "Sash").transform;
+            var blue = PatchworkAssets.Fabric(new Color(0.25f, 0.4f, 0.8f));
+            Vector2 d = new Vector2(Mathf.Cos(-50f * Mathf.Deg2Rad), Mathf.Sin(-50f * Mathf.Deg2Rad));
+            for (int i = 0; i < 11; i++)
+            {
+                float k = (i / 10f) * 2f - 1f;
+                Vector2 q = d * k * 0.95f;
+                float z = Mathf.Sqrt(Mathf.Max(0.02f, 1.1f - q.sqrMagnitude));
+                var p = new Vector3(q.x, q.y + 0.05f, z);
+                var normal = p.normalized;
+                var along = Vector3.ProjectOnPlane(new Vector3(d.x, d.y, 0f), normal).normalized;
+                Prim(PrimitiveType.Cube, sash, p, new Vector3(0.28f, 0.22f, 0.06f), blue, Quaternion.LookRotation(normal, along).eulerAngles);
+            }
+            var starAt = new Vector3(0.18f, 0.02f, 1.07f);
             for (int arm = 0; arm < 5; arm++)
             {
                 var r = Quaternion.Euler(0f, 0f, arm * 72f);
-                Prim(PrimitiveType.Cube, sash, r * new Vector3(0f, 0.04f, 0.03f), new Vector3(0.04f, 0.08f, 0.02f), PatchworkAssets.Glow(new Color(1f, 0.85f, 0.35f), 1.2f), r.eulerAngles);
+                Prim(PrimitiveType.Cube, sash, starAt + r * new Vector3(0f, 0.07f, 0f), new Vector3(0.07f, 0.15f, 0.04f), PatchworkAssets.Glow(new Color(1f, 0.85f, 0.35f), 1.2f), r.eulerAngles);
             }
-            outfits[6] = sash.gameObject;
-            // 7. A lifebuoy round his middle (for the seaside).
-            var buoy = Pivot("Outfit_Lifebuoy", outfitRoot, Vector3.zero);
-            for (int i = 0; i < 16; i++)
+
+            // 7. A lifebuoy round his middle.
+            var buoy = OutfitPart(7, torsoRoot, "Lifebuoy").transform;
+            for (int i = 0; i < 18; i++)
             {
-                float a = i / 16f * Mathf.PI * 2f;
-                Prim(PrimitiveType.Sphere, buoy, new Vector3(Mathf.Sin(a) * 0.42f, neck - 0.42f, Mathf.Cos(a) * 0.42f), new Vector3(0.2f, 0.17f, 0.2f), PatchworkAssets.Felt((i / 2) % 2 == 0 ? new Color(0.95f, 0.3f, 0.3f) : new Color(0.98f, 0.96f, 0.9f)));
+                float a = i / 18f * Mathf.PI * 2f;
+                Prim(PrimitiveType.Sphere, buoy, new Vector3(Mathf.Sin(a) * 1.2f, -0.2f, Mathf.Cos(a) * 1.2f), new Vector3(0.5f, 0.42f, 0.5f), PatchworkAssets.Felt((i / 3) % 2 == 0 ? new Color(0.95f, 0.3f, 0.3f) : new Color(0.98f, 0.96f, 0.9f)));
             }
-            outfits[7] = buoy.gameObject;
-            foreach (var o in outfits) if (o != null) foreach (var c in o.GetComponentsInChildren<Collider>()) Object.Destroy(c);
+            foreach (var list in outfitParts)
+                if (list != null) foreach (var g in list) foreach (var col in g.GetComponentsInChildren<Collider>()) Object.Destroy(col);
         }
 
         // ------------------------------------------------------------------ Animation
@@ -475,6 +607,7 @@ namespace Patchwork
             // Hat follows the head of the current body (the cloud floats, so its head moves).
             // Patch's Blender model places it after his pose instead (PlaceHatOnHead).
             hatPop = Mathf.MoveTowards(hatPop, 0f, dt * 2.2f);
+            if (!(form == FormType.Yarn && patchModel != null)) PlaceOutfit();
             if (form == FormType.Yarn && patchModel != null) return;
             if (form != FormType.Yarn) { PlaceHatOnFormHead(); return; }
             float hatY = FormLibrary.Get(form).HeadHeight;
@@ -495,6 +628,7 @@ namespace Patchwork
             accessoryRoot.localPosition = pos;
             accessoryRoot.localRotation = rot;
             accessoryRoot.localScale = Vector3.one * (fit * HatPopScale);
+            PlaceOutfit();
         }
 
         void AnimateYarn(PlayerMotor motor, float speed, Vector3 localVel, float dt)

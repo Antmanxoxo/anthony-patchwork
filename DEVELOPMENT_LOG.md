@@ -1,5 +1,12 @@
 # Development Log
 
+## Wardrobe fine-tuning: real dye, fabrics you can see, outfits that fit
+
+- **Colours dye Patch properly.** The Yarn form's own texture is re-dyed: the gold knit takes the scheme's main colour and the teal patches its second colour, keeping all the light and shade of the stitches, instead of a coloured filter laid over everything. Water and Wind keep the tint, which already looked right.
+- **Fabrics look different.** Felt is speckled and fuzzy, velvet has a crushed sheen, corduroy has ribs, satin is bright and smooth, patent leather is dark and glossy, and glitter has little specks that sparkle on their own. The weave goes into Patch's texture for the Yarn form and is laid over the Water and Wind forms.
+- **Outfits fit every form.** Each outfit is now built round a neck and a body of one unit, and every frame it's moved and sized to the neck and middle of whichever form he's in (taken from the Yarn model's own bones, and from the Water and Wind heads and bodies). Scarf and garland sit round the neck, the cape hangs from a collar over his back, the backpack has straps over the shoulders, the sash hugs the curve of him from shoulder to hip, and the lifebuoy goes round his middle.
+
+
 ## Dev mode, and story stickers
 - Dev Mode (Pause > Settings > Dev Mode): every hat, sticker, Pod decoration, colour, fabric and outfit unlocked, 999,999 points to spend (nothing is taken off), no damage, and the Observatory lift always open. It's a setting on the computer (PlayerPrefs "pw_dev_mode"), not part of the save, so turning it off puts everything back as it was.
 - Ten new story stickers, each earned for a big moment and drawn in code like the others: Lute, Trumpet and Wisp's Feather (each band piece in Toybox Town), Wedding Cake (finishing Toybox Town), Hall of Arms Shield, Night Glass Lens and Helmet Crab (the three lenses), The Night Glass (setting the star dials), The Great Whale (finishing the museum) and Button Moon (the moon egg). A toast says when you get one.
