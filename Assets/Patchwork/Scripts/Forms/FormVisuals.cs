@@ -474,7 +474,7 @@ namespace Patchwork
             }
             if (f == FormType.Wind && windHead != null)
             {
-                fit = new OutfitFit { NeckBone = windHead, NeckAt = new Vector3(0f, 0.02f, 0f), NeckSize = new Vector3(0.27f, 0.2f, 0.26f), BodyBone = cloud, BodyAt = new Vector3(0f, 0.47f, 0f), BodySize = new Vector3(0.28f, 0.17f, 0.28f), Height = 1.45f };
+                fit = new OutfitFit { NeckBone = windHead, NeckAt = new Vector3(0f, 0.02f, 0f), NeckSize = new Vector3(0.27f, 0.2f, 0.26f), BodyBone = cloud, BodyAt = new Vector3(0f, 0.47f, 0f), BodySize = new Vector3(0.31f, 0.17f, 0.31f), Height = 1.45f };
                 fits[f] = fit;
                 return fit;
             }
@@ -755,17 +755,19 @@ namespace Patchwork
             // gold star on the front.
             var sash = OutfitPart(6, torsoRoot, "Sash").transform;
             var blue = PatchworkAssets.Fabric(new Color(0.25f, 0.4f, 0.8f));
-            Vector2 from = new Vector2(-0.62f, 1.05f), to = new Vector2(0.7f, -0.5f);
+            Vector2 from = new Vector2(-0.5f, 1.05f), to = new Vector2(0.56f, -0.5f);
             Vector2 along2 = (to - from).normalized;
             for (int side = -1; side <= 1; side += 2)
-                for (int i = 0; i < 9; i++)
+                for (int i = 0; i < 13; i++)
                 {
-                    Vector2 q = Vector2.Lerp(from, to, i / 8f);
+                    Vector2 q = Vector2.Lerp(from, to, i / 12f);
                     float z = Mathf.Sqrt(Mathf.Max(0.3f, 1.2f - q.x * q.x)) * side;
                     var p = new Vector3(q.x, q.y, z);
-                    var normal = new Vector3(q.x, 0f, z).normalized;
+                    // (Only half turned to follow his curve: the body space is stretched more one
+                    // way than another, which twists pieces turned too far.)
+                    var normal = new Vector3(q.x * 0.5f, 0f, z).normalized;
                     var along = Vector3.ProjectOnPlane(new Vector3(along2.x, along2.y, 0f), normal).normalized;
-                    Prim(PrimitiveType.Cube, sash, p, new Vector3(0.3f, 0.26f, 0.07f), blue, Quaternion.LookRotation(normal, along).eulerAngles);
+                    Prim(PrimitiveType.Cube, sash, p, new Vector3(0.28f, 0.3f, 0.07f), blue, Quaternion.LookRotation(normal, along).eulerAngles);
                 }
             Prim(PrimitiveType.Cube, sash, new Vector3(from.x, from.y + 0.08f, 0f), new Vector3(0.3f, 0.08f, 1.9f), blue);
             var mid = Vector2.Lerp(from, to, 0.45f);

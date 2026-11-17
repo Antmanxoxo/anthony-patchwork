@@ -1,5 +1,10 @@
 # Development Log
 
+## Last outfit touches
+
+- From the third wardrobe photos: the star sash on the Yarn form is now made of more, closer pieces that stay on his jacket, rather than blocky steps sticking out past his hip. The Wind form's outfits sit a little wider, so the lifebuoy and backpack clear its twister rings.
+
+
 ## Outfits tuned from the second wardrobe photos
 
 - The Water and Wind forms now use their own known shapes for the outfit fit (the neck is where the head joins, the body is the jelly tummy or the top of the twister). Measuring them had put everything down at the Water form's belly and at the tip of the Wind twister.
