@@ -139,6 +139,7 @@ namespace Patchwork
         // Coverage (0..1) of the picture at u,v in -1..1, and its colour there.
         static float Shape(StickerId id, float u, float v, out Color c)
         {
+            c = Color.white;   // (every shape sets its own colour; this is only so nothing is left unset)
             switch (id)
             {
                 case StickerId.Star:
