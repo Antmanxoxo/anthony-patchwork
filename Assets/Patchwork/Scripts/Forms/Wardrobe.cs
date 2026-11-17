@@ -107,6 +107,7 @@ namespace Patchwork
                     else if (ss > 0.22f && hh > 0.4f && hh < 0.6f) { hh = h2; ss = Mathf.Clamp01(ss * s2 / 0.7f); vv = Mathf.Clamp01(vv * Mathf.Lerp(1f, v2 / 0.6f, 0.75f)); }
                 }
                 vv = Mathf.Clamp01(vv * WeaveAt(f, i % w, i / w));
+                if (Weave(f) == 4 && Speck(i % w, i / w)) { ss *= 0.15f; vv = 1f; }   // glitter: little white-gold specks
                 var o = Color.HSVToRGB(hh, ss, vv);
                 px[i] = new Color32((byte)(o.r * 255f), (byte)(o.g * 255f), (byte)(o.b * 255f), 255);
             }
@@ -130,9 +131,16 @@ namespace Patchwork
                 case 1: { uint n = (uint)((x / 3) * 73856093 ^ (y / 3) * 19349663); return 0.9f + (n % 1000) / 1000f * 0.14f; }   // felt: fuzzy speckle
                 case 2: return 0.82f + 0.2f * (0.5f + 0.5f * Mathf.Sin(x * 0.021f + Mathf.Sin(y * 0.013f) * 2f) * Mathf.Sin(y * 0.017f));   // velvet: crushed sheen
                 case 3: return 0.72f + 0.3f * Mathf.Abs(Mathf.Sin(x * Mathf.PI / 7f));   // corduroy: ribs
-                case 4: return 1.04f;   // glitter: a touch brighter (the sparkle is in the light)
+                case 4: return Speck(x, y) ? 1.5f : 0.9f;   // glitter: specks on a slightly darker ground
                 default: return f == 3 ? 1.06f : f == 5 ? 0.92f : 1f;
             }
+        }
+
+        static bool Speck(int x, int y)
+        {
+            uint n = (uint)((x / 2) * 73856093 ^ (y / 2) * 19349663 ^ 0x5bd1e995);
+            n ^= n >> 13; n *= 0x5bd1e995; n ^= n >> 15;
+            return n % 23 == 0;
         }
 
         // A small tiling weave for the Water and Wind forms (null: keep their own look).

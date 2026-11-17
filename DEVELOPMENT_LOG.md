@@ -4,6 +4,7 @@
 
 - From the first wardrobe photos: the outfits sat too low and too wide on Patch, and were tiny or hidden on the Water form. Now each form's shape is measured the first time he's dressed in it: it's read in slices from his feet up, his neck is the narrowest point between body and head, and his body is the part under it. Every outfit is stretched to that neck and body (wider than deep where he is), and follows his head and body bones as he moves.
 - Fabrics on the Water and Wind forms only change how shiny they are part of the way, so the jelly stays glossy and the cloud stays soft. Their own finish comes back with the plain knit.
+- Glitter is now woven into the fabric as little white-gold specks, with a metallic shine. The glow it used before made the Yarn form shine one flat cyan all over.
 - The wardrobe photo tour now holds Patch still and facing the same way, and frames him close up, so front and back pictures really are front and back.
 
 

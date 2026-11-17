@@ -434,14 +434,9 @@ namespace Patchwork
         static void SetGlitter(Material m, float tiles)
         {
             if (!m.HasProperty("_EmissionMap")) return;
-            if (Wardrobe.Glitter)
-            {
-                m.EnableKeyword("_EMISSION");
-                m.SetTexture("_EmissionMap", Wardrobe.Sparkle);
-                m.SetColor("_EmissionColor", new Color(1.4f, 1.3f, 1.1f));
-                m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
-            }
-            else if (m.GetTexture("_EmissionMap") == Wardrobe.Sparkle)
+            // (Glitter's sparkle is now woven into the texture itself: a glow made him shine
+            // one flat colour all over. This only clears an old glow away.)
+            if (m.GetTexture("_EmissionMap") == Wardrobe.Sparkle)
             {
                 m.SetTexture("_EmissionMap", null);
                 m.SetColor("_EmissionColor", Color.black);
