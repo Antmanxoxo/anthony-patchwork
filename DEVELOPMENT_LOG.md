@@ -1,5 +1,9 @@
 # Development Log
 
+## Fix: photo tour compile error
+The photo tour's list of camera spots used the name `Shot`, which Level 2's cutscene code
+already uses. Renamed it `TourShot`.
+
 ## Finishing pass on Level 2: floors, crowding, and a photo tour
 - Floor seams: where two floors overlap, boards that ran into the earlier floor used to be
   either doubled (flicker) or dropped (a bare strip). They're now cut off exactly at the

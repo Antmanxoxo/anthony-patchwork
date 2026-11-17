@@ -12,14 +12,14 @@ namespace Patchwork
     {
         public const string TourPref = "pw_l2_tour";
 
-        struct Shot
+        struct TourShot
         {
             public string Name;
             public Vector3 From, To;
-            public Shot(string name, Vector3 from, Vector3 to) { Name = name; From = from; To = to; }
+            public TourShot(string name, Vector3 from, Vector3 to) { Name = name; From = from; To = to; }
         }
 
-        static void AddCorners(List<Shot> shots, string room, float x0, float x1, float z0, float z1, float floor, float height)
+        static void AddCorners(List<TourShot> shots, string room, float x0, float x1, float z0, float z1, float floor, float height)
         {
             float inset = 2.5f, up = Mathf.Min(6f, height * 0.45f);
             Vector3[] c =
@@ -30,38 +30,38 @@ namespace Patchwork
             for (int i = 0; i < 4; i++)
             {
                 Vector3 far = c[(i + 2) % 4];
-                shots.Add(new Shot(room + "_" + (i + 1), c[i], new Vector3(far.x, floor + 1f, far.z)));
+                shots.Add(new TourShot(room + "_" + (i + 1), c[i], new Vector3(far.x, floor + 1f, far.z)));
             }
         }
 
-        static List<Shot> TourShots()
+        static List<TourShot> TourShots()
         {
-            var s = new List<Shot>();
-            s.Add(new Shot("Arrival_pod", PodLanding + new Vector3(7f, 4f, -8f), PodLanding + Vector3.up * 1.5f));
-            s.Add(new Shot("Arrival_toDoors", SpawnPoint + new Vector3(0f, 3f, -4f), new Vector3(0f, 3f, -109f)));
+            var s = new List<TourShot>();
+            s.Add(new TourShot("Arrival_pod", PodLanding + new Vector3(7f, 4f, -8f), PodLanding + Vector3.up * 1.5f));
+            s.Add(new TourShot("Arrival_toDoors", SpawnPoint + new Vector3(0f, 3f, -4f), new Vector3(0f, 3f, -109f)));
             AddCorners(s, "Atrium", -AtriumHalf, AtriumHalf, AtriumZ0, AtriumZ1, 0f, AtriumTop);
-            s.Add(new Shot("Atrium_doors", new Vector3(0f, 4f, -96f), new Vector3(0f, 2f, -109f)));
-            s.Add(new Shot("Atrium_WicksPost", new Vector3(8f, 3f, -98f), new Vector3(11f, 1.5f, -107f)));
+            s.Add(new TourShot("Atrium_doors", new Vector3(0f, 4f, -96f), new Vector3(0f, 2f, -109f)));
+            s.Add(new TourShot("Atrium_WicksPost", new Vector3(8f, 3f, -98f), new Vector3(11f, 1.5f, -107f)));
             AddCorners(s, "DeepTime", HistX0, HistX1, HistZ0, HistZ1, 0f, HistTop);
             AddCorners(s, "Kelp", KelpX0, KelpX1, KelpZ0, KelpZ1, 0f, KelpTop);
-            s.Add(new Shot("Tunnel_east", new Vector3(-27f, 1.8f, TunnelZ), new Vector3(10f, 1.4f, TunnelZ)));
-            s.Add(new Shot("Tunnel_west", new Vector3(17f, 1.8f, TunnelZ), new Vector3(-20f, 1.4f, TunnelZ)));
+            s.Add(new TourShot("Tunnel_east", new Vector3(-27f, 1.8f, TunnelZ), new Vector3(10f, 1.4f, TunnelZ)));
+            s.Add(new TourShot("Tunnel_west", new Vector3(17f, 1.8f, TunnelZ), new Vector3(-20f, 1.4f, TunnelZ)));
             AddCorners(s, "Ruins", RuinX0, RuinX1, RuinZ0, RuinZ1, 0f, RuinTop);
             AddCorners(s, "HallOfArms", ArmsX0, ArmsX1, ArmsZ0, ArmsZ1, 0f, ArmsTop);
-            s.Add(new Shot("HallOfArms_door", new Vector3(80f, 3f, -6f), new Vector3(80f, 2f, 6f)));
-            s.Add(new Shot("Gallery_north", new Vector3(36f, DeckY + 2.5f, -41f), new Vector3(36f, DeckY + 1.5f, -10f)));
-            s.Add(new Shot("Gallery_south", new Vector3(36f, DeckY + 2.5f, -10f), new Vector3(36f, DeckY + 1.5f, -41f)));
+            s.Add(new TourShot("HallOfArms_door", new Vector3(80f, 3f, -6f), new Vector3(80f, 2f, 6f)));
+            s.Add(new TourShot("Gallery_north", new Vector3(36f, DeckY + 2.5f, -41f), new Vector3(36f, DeckY + 1.5f, -10f)));
+            s.Add(new TourShot("Gallery_south", new Vector3(36f, DeckY + 2.5f, -10f), new Vector3(36f, DeckY + 1.5f, -41f)));
             Vector3 obs = new Vector3(0f, DeckY, -20f);
             for (int i = 0; i < 4; i++)
             {
                 float a = i * Mathf.PI * 0.5f + 0.4f;
-                s.Add(new Shot("Observatory_" + (i + 1), obs + new Vector3(Mathf.Cos(a) * 19f, 6f, Mathf.Sin(a) * 19f), obs + Vector3.up * 2f));
+                s.Add(new TourShot("Observatory_" + (i + 1), obs + new Vector3(Mathf.Cos(a) * 19f, 6f, Mathf.Sin(a) * 19f), obs + Vector3.up * 2f));
             }
             AddCorners(s, "KeepersRoom", -88f, -34f, 78f, 94f, 0f, 8f);
             AddCorners(s, "TankHall", -88f, -34f, 96f, 178f, 8f, 16f);
             Vector3[] tanks = { new Vector3(-74.5f, -5f, 104f), new Vector3(-46.5f, -14f, 104f), new Vector3(-74.5f, -6f, 140f), new Vector3(-46.5f, -4f, 140f) };
             string[] names = { "Tank_Coral", "Tank_Lantern", "Tank_Frozen", "Tank_Mangrove" };
-            for (int i = 0; i < 4; i++) s.Add(new Shot(names[i], tanks[i], tanks[i] + new Vector3(0f, -1f, 14f)));
+            for (int i = 0; i < 4; i++) s.Add(new TourShot(names[i], tanks[i], tanks[i] + new Vector3(0f, -1f, 14f)));
             return s;
         }
 
