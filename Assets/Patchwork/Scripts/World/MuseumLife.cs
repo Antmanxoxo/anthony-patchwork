@@ -698,7 +698,7 @@ namespace Patchwork
             // Up the telescope first, then onto her and stay on her (smoothly, never a jerk).
             Vector3 want = gazeTime < 1.6f ? Vector3.Lerp(TelescopeLook, whale, Mathf.SmoothStep(0f, 1f, gazeTime / 1.6f)) : whale;
             gazeLook = Vector3.Lerp(gazeLook, want, 1f - Mathf.Exp(-udt * (gazeTime < 1.6f ? 12f : 4f)));
-            float rise = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((gazeTime - 2f) / 7f));
+            float rise = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((gazeTime - 2f) / 10f));
             Vector3 top = ObservatoryCentre + Vector3.up * 19.5f;
             Vector3 cam = Vector3.Lerp(TelescopeEye, top, rise);
             // (Never right on top of the thing it's looking at.)
@@ -709,9 +709,10 @@ namespace Patchwork
                 sang = true;
                 if (SkyWhaleLife != null) SkyWhaleLife.Sing();
             }
-            if (gazeTime > 2.6f && gazeTime < 7f) game.CutsceneCaption = "And there, far above the glass, went the oldest thing in the whole museum. She saw that she was seen, and she sang.";
-            else if (gazeTime >= 7f) game.CutsceneCaption = "Her song came down through the dome and into every tank and tapestry, and all the colour that had been going out of the place came back to it.";
-            if (gazeTime > 12f)
+            // (Each line stays up long enough to be written out and read.)
+            if (gazeTime > 4.5f && gazeTime < 10.5f) game.CutsceneCaption = "And there, far above the glass, went the oldest thing in the whole museum. She saw that she was seen, and she sang.";
+            else if (gazeTime >= 10.5f) game.CutsceneCaption = "Her song came down through the dome and into every tank and tapestry, and all the colour that had been going out of the place came back to it.";
+            if (gazeTime > 17.5f)
             {
                 if (SkyWhaleLife != null) SkyWhaleLife.Watched = false;
                 gazing = false;

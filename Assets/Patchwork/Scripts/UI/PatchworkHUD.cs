@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Patchwork
 {
@@ -501,9 +501,15 @@ namespace Patchwork
                 }
                 y += 124f;
             }
-            if (level.HeartstringIds.Count > 0)
+            // In the Oceanic Museum, keep it simple: the quest card first, the Heartstrings only once
+            // you've been told what they're for, and the little counts only with the game paused.
+            var quest = Level2Quest.Instance;
+            bool museum = quest != null && level.Id == Level2Builder.SceneName && !GameState.IsLevelComplete(level.Id);
+            bool menu = Game.Mode == UIMode.Paused || Game.Mode == UIMode.Satchel || Game.Mode == UIMode.Complete;
+            if (museum) y = DrawNightGlassCard(quest, y, menu);
+            if (level.HeartstringIds.Count > 0 && (!museum || quest.LiftKnown))
             {
-                // Heartstrings first: they're what the level is about.
+                // Heartstrings: what opens the way on.
                 int got = level.HeartstringCount();
                 var hr = new Rect(28f, y, 260f, 92f);
                 UIKit.Panel(hr, new Color(1f, 0.95f, 0.86f, 0.95f), new Color(0.9f, 0.6f, 0.3f, 0.9f), 20f);
@@ -514,34 +520,7 @@ namespace Patchwork
                 UIKit.Label(new Rect(hr.x + 92f, hr.y + 54f, 170f, 28f), sub, UIKit.Style(17, true, TextAnchor.MiddleLeft, new Color(0.45f, 0.25f, 0.1f, 0.8f)));
                 y += 104f;
             }
-            var quest = Level2Quest.Instance;
-            if (quest != null && level.Id == Level2Builder.SceneName && !GameState.IsLevelComplete(level.Id))
-            {
-                // The Oceanic Museum: the three lenses of the Night Glass, and what to do next.
-                var qr = new Rect(28f, y, 400f, 226f);
-                UIKit.Panel(qr, new Color(0.93f, 0.97f, 1f, 0.95f), new Color(0.3f, 0.55f, 0.85f, 0.9f), 20f);
-                UIKit.Label(new Rect(qr.x + 20f, qr.y + 6f, 340f, 34f), "The Night Glass  " + quest.LensCount + " / 3",
-                    UIKit.Style(23, true, TextAnchor.MiddleLeft, new Color(0.15f, 0.25f, 0.5f)));
-                // The museum clock, creeping toward midnight.
-                UIKit.Label(new Rect(qr.x + 230f, qr.y + 6f, 134f, 34f), quest.Clock(),
-                    UIKit.Style(20, true, TextAnchor.MiddleRight, new Color(0.7f, 0.3f, 0.25f)));
-                // One row per lens: a dot (filled once it's won), its name, and what it still needs.
-                string[] lensNames = { "Object Glass", "Field Lens", "Eye Lens" };
-                for (int i = 0; i < 3; i++)
-                {
-                    bool got = quest.HasLens(i);
-                    float ry = qr.y + 44f + i * 30f;
-                    UIKit.Circle(new Vector2(qr.x + 30f, ry + 13f), 20f, got ? new Color(0.4f, 0.75f, 1f) : new Color(0.62f, 0.6f, 0.66f, 0.55f));
-                    if (got) UIKit.Circle(new Vector2(qr.x + 30f, ry + 13f), 8f, new Color(1f, 1f, 1f, 0.9f));
-                    UIKit.Label(new Rect(qr.x + 48f, ry, 130f, 26f), lensNames[i], UIKit.Style(17, true, TextAnchor.MiddleLeft, got ? new Color(0.15f, 0.35f, 0.6f) : new Color(0.25f, 0.28f, 0.4f)));
-                    UIKit.Label(new Rect(qr.x + 172f, ry, 216f, 26f), quest.LensStatus(i), UIKit.Style(15, got, TextAnchor.MiddleLeft, got ? new Color(0.25f, 0.55f, 0.4f) : new Color(0.4f, 0.4f, 0.55f, 0.95f)));
-                }
-                UIKit.Label(new Rect(qr.x + 14f, qr.y + 138f, 380f, 24f), "Seams " + quest.SeamsShut + "/" + Level2Quest.Seams + "  Pages " + quest.PagesFound + "/6  Lamps " + quest.LampsLit + "/" + quest.LampsTotal + "  Fakes " + (ExhibitAudit.Instance != null ? ExhibitAudit.Instance.Found : 0) + "/" + ExhibitAudit.Fakes + "  Secrets " + quest.SecretsFound + "/" + Level2Quest.Secrets,
-                    UIKit.Style(13, true, TextAnchor.MiddleLeft, new Color(0.35f, 0.4f, 0.6f, 0.9f)));
-                UIKit.Label(new Rect(qr.x + 20f, qr.y + 164f, 364f, 56f), "Next: " + quest.Objective(),
-                    UIKit.Style(17, true, TextAnchor.UpperLeft, new Color(0.15f, 0.25f, 0.5f, 0.9f), true));
-                y += 238f;
-            }
+            if (museum && !menu) return;
             if (total > 0)
             {
                 var r = new Rect(28f, y, 230f, 84f);
@@ -569,6 +548,56 @@ namespace Patchwork
                 UIKit.Label(new Rect(r.x + 80f, r.y + 10f, 140f, 50f), Game.ThreadsCollected + " / " + level.ThreadTotal,
                     UIKit.Style(28, true, TextAnchor.MiddleLeft, new Color(0.5f, 0.15f, 0.3f)));
             }
+        }
+
+        // The Night Glass card. Before you've met Wick it only says to find him. After that it
+        // shows the three lenses as dots, the clock, and the next thing to do; the details (what
+        // each lens still needs, and all the little tallies) only come out with the game paused.
+        float DrawNightGlassCard(Level2Quest quest, float y, bool full)
+        {
+            var ink = new Color(0.15f, 0.25f, 0.5f);
+            if (!quest.Met && quest.LensCount == 0)
+            {
+                var sr = new Rect(28f, y, 380f, 88f);
+                UIKit.Panel(sr, new Color(0.93f, 0.97f, 1f, 0.95f), new Color(0.3f, 0.55f, 0.85f, 0.9f), 20f);
+                UIKit.Label(new Rect(sr.x + 20f, sr.y + 6f, 340f, 30f), "Tonight", UIKit.Style(21, true, TextAnchor.MiddleLeft, ink));
+                UIKit.Label(new Rect(sr.x + 20f, sr.y + 36f, 344f, 48f), quest.Objective(), UIKit.Style(17, true, TextAnchor.UpperLeft, new Color(ink.r, ink.g, ink.b, 0.9f), true));
+                return y + 100f;
+            }
+            float h = full ? 226f : 118f;
+            var qr = new Rect(28f, y, 400f, h);
+            UIKit.Panel(qr, new Color(0.93f, 0.97f, 1f, 0.95f), new Color(0.3f, 0.55f, 0.85f, 0.9f), 20f);
+            UIKit.Label(new Rect(qr.x + 20f, qr.y + 6f, 200f, 34f), "The Night Glass", UIKit.Style(22, true, TextAnchor.MiddleLeft, ink));
+            // Three dots, one per lens.
+            for (int i = 0; i < 3 && !full; i++)
+            {
+                bool got = quest.HasLens(i);
+                var c = new Vector2(qr.x + 212f + i * 26f, qr.y + 23f);
+                UIKit.Circle(c, 20f, got ? new Color(0.4f, 0.75f, 1f) : new Color(0.62f, 0.6f, 0.66f, 0.55f));
+                if (got) UIKit.Circle(c, 8f, new Color(1f, 1f, 1f, 0.9f));
+            }
+            // The museum clock, creeping toward midnight.
+            UIKit.Label(new Rect(qr.x + 250f, qr.y + 6f, 134f, 34f), quest.Clock(), UIKit.Style(20, true, TextAnchor.MiddleRight, new Color(0.7f, 0.3f, 0.25f)));
+            float ny = qr.y + 46f;
+            if (full)
+            {
+                // One row per lens: a dot (filled once it's won), its name, and what it still needs.
+                string[] lensNames = { "Object Glass", "Field Lens", "Eye Lens" };
+                for (int i = 0; i < 3; i++)
+                {
+                    bool got = quest.HasLens(i);
+                    float ry = qr.y + 44f + i * 30f;
+                    UIKit.Circle(new Vector2(qr.x + 30f, ry + 13f), 20f, got ? new Color(0.4f, 0.75f, 1f) : new Color(0.62f, 0.6f, 0.66f, 0.55f));
+                    if (got) UIKit.Circle(new Vector2(qr.x + 30f, ry + 13f), 8f, new Color(1f, 1f, 1f, 0.9f));
+                    UIKit.Label(new Rect(qr.x + 48f, ry, 130f, 26f), lensNames[i], UIKit.Style(17, true, TextAnchor.MiddleLeft, got ? new Color(0.15f, 0.35f, 0.6f) : new Color(0.25f, 0.28f, 0.4f)));
+                    UIKit.Label(new Rect(qr.x + 172f, ry, 216f, 26f), quest.LensStatus(i), UIKit.Style(15, got, TextAnchor.MiddleLeft, got ? new Color(0.25f, 0.55f, 0.4f) : new Color(0.4f, 0.4f, 0.55f, 0.95f)));
+                }
+                UIKit.Label(new Rect(qr.x + 14f, qr.y + 138f, 380f, 24f), "Seams " + quest.SeamsShut + "/" + Level2Quest.Seams + "  Pages " + quest.PagesFound + "/6  Lamps " + quest.LampsLit + "/" + quest.LampsTotal + "  Fakes " + (ExhibitAudit.Instance != null ? ExhibitAudit.Instance.Found : 0) + "/" + ExhibitAudit.Fakes + "  Secrets " + quest.SecretsFound + "/" + Level2Quest.Secrets,
+                    UIKit.Style(13, true, TextAnchor.MiddleLeft, new Color(0.35f, 0.4f, 0.6f, 0.9f)));
+                ny = qr.y + 164f;
+            }
+            UIKit.Label(new Rect(qr.x + 20f, ny, 364f, 60f), "Next: " + quest.Objective(), UIKit.Style(17, true, TextAnchor.UpperLeft, new Color(ink.r, ink.g, ink.b, 0.9f), true));
+            return y + h + 12f;
         }
 
         void DrawControls(bool kb)

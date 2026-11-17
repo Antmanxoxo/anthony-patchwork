@@ -120,9 +120,25 @@ namespace Patchwork
             return null;
         }
 
+        // The Heartstrings (and the lift they open) only come into it once somebody has said
+        // what they're for: Wick does, or you find one first.
+        public bool LiftKnown { get { return Seen("liftknown"); } }
+
+        void CheckLift(PatchworkGame game)
+        {
+            if (LiftKnown || game.Mode != UIMode.Gameplay || Narrator.Speaking) return;
+            bool found = game.Level != null && game.Level.HeartstringCount() > 0;
+            if (!Met && !found) return;
+            Mark("liftknown");
+            Narrator.Say(found && !Met
+                ? "A Heartstring: one of the golden threads the museum keeps in its big halls. The old lift up to the Observatory won't move without three of them. Hoo. Worth remembering."
+                : "About that lift: it's the only way up to the Observatory, and it's old and particular. It won't move an inch without three Heartstrings, the golden threads hidden in the museum's big halls.");
+        }
+
         // Tells you when the next thing to do changes (so you never wonder what's next).
         void CheckObjective(PatchworkGame game)
         {
+            CheckLift(game);
             string obj = Objective();
             if (lastObjective != null && obj != lastObjective && game.Mode == UIMode.Gameplay)
                 game.ShowToast("Next: " + obj);
@@ -157,7 +173,7 @@ namespace Patchwork
             Barks("Button", () => HasSecret("king") ? "The king says hello. He doesn't. But he would." : "Have you seen a very small king? Asking for a friend.");
             Barks("Dr. Trowel", () => HasLens(2) ? "Was it crab-shaped? Write it down. Write everything down." : "If you see the crab, don't startle it. I want notes.");
             Barks("Thimble", () => Pick("Shh! I'm not here. I'm a coat.", "I've got the WHOLE museum. Except the scary bits."));
-            Barks("Ticket-master Tock", () => Pick("Don't wind the little clock tower on the quay. Wick wound it once. Very long night.", "Tickets! ...Nobody? Right. Habit."));
+            Barks("Ticket-master Tock", () => Pick("Don't wind that little clock tower by the Pod. Wick wound it once. Very long night.", "Tickets! ...Nobody? Right. Habit."));
             Barks("Professor Plume", () => HasSecret("audit") ? "Five fakes! I shall write a paper." : "Read the card. Then read it again.");
             Barks("Mrs. Sudsbury", () => Pick("Mind my clean floor. Well. Cleanish.", "That grey comes back worse every time. It isn't dirt."));
             Barks("Sergeant Stanchion", () => Pick("Left, right, left... who goes there? Carry on.", "Stand aside when they rock. Hit them when they fall. That is the drill."));

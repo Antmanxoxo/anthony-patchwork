@@ -732,6 +732,9 @@ Stuff I need to remember about how Patchwork is put together.
 - ToyNpc.HasNews (gold "!") and ToyNpc.Bark (walk-by speech bubble) are set for Level 2 in Level2QuestGuide.cs.
 - Level 2 now has 19 secrets ("moon" added). The lost property shelf lays them out in three rows.
 
+- Cutscene captions need time: a line takes length / 34 seconds to write out, then needs about 2.8 seconds to read. MuseumIntro sizes every shot from its line; do the same for any new cutscene.
+- Level 2 HUD: DrawNightGlassCard. Full details only when paused. Heartstrings show once Level2Quest.LiftKnown ("L2_q_liftknown").
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

@@ -394,7 +394,7 @@ namespace Patchwork
             arrive.CameraFrom = SpawnPoint + new Vector3(-6f, 3.4f, 7f);
             arrive.CameraAt = PodLanding + new Vector3(0f, 2.2f, 0f);
             kit.Hint(SpawnPoint + new Vector3(0f, 1.5f, 3f), new Vector3(10f, 4f, 8f), "The Oceanic Museum",
-                "It's long past closing time, but the doors are open. Three Heartstrings will open the lift to the Observatory. Read the brass plaques as you go: press Ability beside one.");
+                "It's long past closing time, but the doors are open. Read the brass plaques as you go: press Ability beside one.");
 
             Person(kit, new Vector3(6.5f, 0f, -118.5f), 200f, ToyNpc.Kind.Nutcracker, "Ticket-master Tock", new Color(0.2f, 0.25f, 0.55f), new Color(1f, 0.8f, 0.35f), 0.82f, () => new[]
             {

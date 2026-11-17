@@ -219,7 +219,8 @@ namespace Patchwork
                 "Halt! Who goes... is that... that's one of the LENSES. Where did you... who ARE you?",
                 "No, don't tell me. I don't want to know. You walked in off the street and started putting my museum right without so much as a how-d'you-do. Forty years a watchman. Nobody tells me anything.",
                 "Wick. Night watchman. There are three of those, they go in the telescope at the top of the house, and they need to be there by midnight or the Great Whale goes over unsung and we all go grey. But I expect you'd worked that out.",
-                "Stella's up in the Observatory. The lift's at the far end of the Sunken Ruins. Carry on, then. As you were. Whoever you are."
+                "Stella's up in the Observatory. The only way up is the old lift at the far end of the Sunken Ruins, and it won't budge without three Heartstrings: the golden threads hidden in the big halls. Pick them up as you go.",
+                "Carry on, then. As you were. Whoever you are."
             };
             if (!Met) return new[]
             {
@@ -230,7 +231,8 @@ namespace Patchwork
                 "Well. Look at the suits of armour. Look at the tanks. It's started.",
                 "One lens went into the Hall of Arms, in the Sunken Ruins: I heard the clanking. One's somewhere in the keepers' tanks: ask Marlow, through the door behind the big aquarium. And one...",
                 "One I saw carried off by a diving helmet. On legs. I am not a fanciful man.",
-                "You've a good arm on you. Three quick hits, and make the third one count: it's the only thing that shifts a shield. Bring the lenses up to Stella in the Observatory. I'll hold the door."
+                "You've a good arm on you. Three quick hits, and make the third one count: it's the only thing that shifts a shield.",
+                "Bring the lenses up to Stella in the Observatory. The only way up is the old lift at the far end of the Sunken Ruins, and it won't budge without three Heartstrings: golden threads, hidden in the big halls. Pick them up as you go. I'll hold the door."
             };
             int n = LensCount;
             if (Tell("thimble", "wick")) return new[]

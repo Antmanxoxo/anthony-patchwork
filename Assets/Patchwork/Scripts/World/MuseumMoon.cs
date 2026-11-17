@@ -241,7 +241,9 @@ namespace Patchwork
         {
             if (skyMoon == null) return;
             Vector3 foot;
-            if (!RmFloor("the wind-up clock tower", new Vector3(8f, 0f, -139f), new Vector3(1.6f, 2.6f, 1.6f), 0f, 8f, out foot)) return;
+            // Right beside the path from the Pod, where you can't miss it (just ahead and to the right).
+            if (!RmFloor("the wind-up clock tower", new Vector3(4.6f, 0f, -141f), new Vector3(1.6f, 2.6f, 1.6f), 0f, 5f, out foot)) return;
+            Debug.Log("[Level2] Wind-up clock tower on the quay at " + foot);
             var egg = kit.Root.gameObject.AddComponent<ButtonMoonEgg>();
             egg.Moon = skyMoon;
 
@@ -258,6 +260,8 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.86f, 0f), new Vector3(0.92f, 0.14f, 0.92f), red, default(Vector3), toy);
             kit.Deco(PrimitiveType.Cube, new Vector3(0f, 2.18f, 0f), new Vector3(0.62f, 0.62f, 0.62f), roof, new Vector3(45f, 45f, 0f), toy);
             NoShadow(kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 2.66f, 0f), Vector3.one * 0.14f, PatchworkAssets.Glow(new Color(1f, 0.85f, 0.4f), 1.6f), default(Vector3), toy));
+            // A warm little light on it, so it stands out on the dark quay.
+            PointLight(kit, foot + new Vector3(0f, 3.2f, 0f), new Color(1f, 0.82f, 0.5f), 6f, 1.6f);
             // The clock face, at ten to twelve.
             NoShadow(kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.42f, 0.41f), new Vector3(0.56f, 0.02f, 0.56f), PatchworkAssets.Glow(new Color(1f, 0.96f, 0.85f), 0.6f), new Vector3(90f, 0f, 0f), toy));
             var ink = PatchworkAssets.Felt(new Color(0.15f, 0.12f, 0.18f));
