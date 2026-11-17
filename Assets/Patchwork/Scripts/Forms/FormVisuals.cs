@@ -89,22 +89,6 @@ namespace Patchwork
 
         public Transform Root { get { return root; } }
 
-        // The box round the form he's in now, with his hat and outfit (for framing him in pictures).
-        public Bounds LookBounds()
-        {
-            var b = new Bounds(root.position + root.up * 0.6f, Vector3.one * 0.3f);
-            bool any = false;
-            var list = new List<Renderer>(BodyFor(form).Renderers);
-            if (neckRoot != null) { list.AddRange(neckRoot.GetComponentsInChildren<Renderer>()); list.AddRange(torsoRoot.GetComponentsInChildren<Renderer>()); }
-            list.AddRange(accessoryRoot.GetComponentsInChildren<Renderer>());
-            foreach (var r in list)
-            {
-                if (r == null || !r.enabled || !r.gameObject.activeInHierarchy) continue;
-                if (!any) { b = r.bounds; any = true; } else b.Encapsulate(r.bounds);
-            }
-            return b;
-        }
-
         // World position of Yarn's right hand (where the tether starts).
         public Vector3 HandPosition
         {
@@ -379,7 +363,6 @@ namespace Patchwork
                         pm.SetColor("_BaseColor", Color.white);
                         pm.SetColor("_Color", Color.white);
                         Wardrobe.Finish(pm);
-                        SetGlitter(pm, 1f);
                     }
                     for (int i = 0; i < body.Colors.Count; i++) body.Colors[i] = Color.white;
                     continue;
@@ -404,7 +387,6 @@ namespace Patchwork
                         m.SetTextureScale("_BaseMap", weave != null ? new Vector2(3f, 3f) : lookScale[m]);
                     }
                     FinishSoftly(m);
-                    SetGlitter(m, 3f);
                     body.Colors[i] = c;
                 }
             }
@@ -430,19 +412,6 @@ namespace Patchwork
             float k = f == 0 ? 0f : 0.6f;
             m.SetFloat("_Smoothness", Mathf.Lerp(own.x, Wardrobe.FabricSmooth[f], k));
             if (m.HasProperty("_Metallic")) m.SetFloat("_Metallic", Mathf.Lerp(own.y, Wardrobe.FabricMetal[f], k));
-        }
-
-        static void SetGlitter(Material m, float tiles)
-        {
-            if (!m.HasProperty("_EmissionMap")) return;
-            // (Glitter's sparkle is now woven into the texture itself: a glow made him shine
-            // one flat colour all over. This only clears an old glow away.)
-            if (m.GetTexture("_EmissionMap") == Wardrobe.Sparkle)
-            {
-                m.SetTexture("_EmissionMap", null);
-                m.SetColor("_EmissionColor", Color.black);
-                m.DisableKeyword("_EMISSION");
-            }
         }
 
         // How the outfit fits a form: where his neck and the middle of his body are (kept

@@ -1,5 +1,11 @@
 # Development Log
 
+## Code clean-up
+
+- Removed code left over from the wardrobe work that nothing uses any more: the old outfit placement (`PatchModel.BodyPose`), an unused hat-height helper, the old framing box for the photo tour, the glitter glow and its sparkle texture (glitter is woven in now), and an unused list of wardrobe category names.
+- Removed `CloudDrift`, a cloud-sliding script that no scene or code uses.
+
+
 ## Last outfit touches
 
 - From the third wardrobe photos: the star sash on the Yarn form is now made of more, closer pieces that stay on his jacket, rather than blocky steps sticking out past his hip. The Wind form's outfits sit a little wider, so the lifebuoy and backpack clear its twister rings.

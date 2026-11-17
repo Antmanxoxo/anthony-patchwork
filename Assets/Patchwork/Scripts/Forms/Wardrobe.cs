@@ -11,7 +11,6 @@ namespace Patchwork
     public static class Wardrobe
     {
         public const int Colours = 0, Fabrics = 1, Outfits = 2;
-        public static readonly string[] Categories = { "Colours", "Fabric", "Outfit" };
 
         public static readonly string[] ColourNames = { "Classic", "Sky", "Mint", "Sunflower", "Lavender", "Coral", "Cocoa", "Midnight", "Seafoam", "Rosewood" };
         public static readonly Color[] ColourTints =
@@ -173,34 +172,6 @@ namespace Patchwork
             weaves[f] = t;
             return t;
         }
-
-        // Glitter: tiny bright specks that glow on their own.
-        static Texture2D sparkle;
-        public static Texture2D Sparkle
-        {
-            get
-            {
-                if (sparkle != null) return sparkle;
-                const int S = 256;
-                sparkle = new Texture2D(S, S, TextureFormat.RGBA32, true);
-                sparkle.wrapMode = TextureWrapMode.Repeat;
-                var px = new Color32[S * S];
-                var rng = new System.Random(77);
-                for (int i = 0; i < px.Length; i++) px[i] = new Color32(0, 0, 0, 255);
-                for (int i = 0; i < 900; i++)
-                {
-                    int x = rng.Next(S), y = rng.Next(S);
-                    byte b = (byte)(150 + rng.Next(105));
-                    px[y * S + x] = new Color32(b, b, b, 255);
-                    if (rng.Next(3) == 0 && x + 1 < S) px[y * S + x + 1] = new Color32((byte)(b / 2), (byte)(b / 2), (byte)(b / 2), 255);
-                }
-                sparkle.SetPixels32(px);
-                sparkle.Apply(true);
-                return sparkle;
-            }
-        }
-
-        public static bool Glitter { get { return GameState.Fabric == 6; } }
 
         // Dresses a material for the current fabric.
         public static void Finish(Material m)

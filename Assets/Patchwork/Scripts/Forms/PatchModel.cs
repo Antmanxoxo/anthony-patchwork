@@ -78,40 +78,6 @@ namespace Patchwork
             return pm;
         }
 
-        // Height of the hat spot above the feet, following the head as it bobs.
-        public float HatHeight(Transform space)
-        {
-            if (head == null) return TargetHeadTop - 0.05f;
-            Vector3 top = head.position + transform.up * (BlenderHeadBoneToTop * worldPerBlenderMetre * transform.lossyScale.y);
-            return space.InverseTransformPoint(top).y - 0.05f;
-        }
-
-        // Where clothes go, in world space: the neck (the bottom of the head), which way is up
-        // for him, the middle of his body, and how big round the neck and the body are.
-        public bool BodyPose(out Vector3 neck, out Vector3 up, out Vector3 torso, out float neckR, out float bodyR)
-        {
-            neck = transform.position + transform.up * (TargetHeadTop - 0.5f);
-            up = transform.up;
-            torso = transform.position + transform.up * 0.5f;
-            neckR = 0.18f;
-            bodyR = 0.3f;
-            if (head == null) return false;
-            Quaternion tilt = transform.rotation * (Quaternion.Inverse(transform.rotation) * head.rotation) * Quaternion.Inverse(headRest);
-            up = (tilt * Vector3.up + transform.up).normalized;
-            neck = head.position;
-            float headSize = BlenderHeadBoneToTop * worldPerBlenderMetre * transform.lossyScale.y;
-            if (armL != null && armR != null)
-            {
-                float across = Vector3.Distance(armL.position, armR.position);
-                bodyR = Mathf.Clamp(across * 0.5f, 0.15f, 0.6f);
-                Vector3 shoulders = (armL.position + armR.position) * 0.5f;
-                torso = shoulders - transform.up * bodyR * 0.35f;
-            }
-            else if (spine != null) torso = Vector3.Lerp(spine.position, head.position, 0.4f);
-            neckR = Mathf.Clamp(headSize * 0.36f, 0.1f, 0.3f);
-            return true;
-        }
-
         // Where a hat should sit, in `space`'s coordinates: on the crown of the head, tilted with
         // it (including the body lean), and how much to scale a hat so it fits his head.
         // Call it after the pose is final (PoseApplied), or it'll be a frame behind.
