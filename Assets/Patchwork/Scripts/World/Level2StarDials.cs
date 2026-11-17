@@ -139,14 +139,23 @@ namespace Patchwork
         Transform lens, rays;
         Vector3 eye, look;
 
+        Color glassCol = new Color(0.55f, 0.85f, 1f);
+
         public static void Play(string name, int count)
+        {
+            PlayItem(name + "!", count >= 3 ? "All three lenses" : count + " of 3 lenses", new Color(0.55f, 0.85f, 1f));
+        }
+
+        // The same moment for anything else that matters as much (Toybox Town's band pieces).
+        public static void PlayItem(string title, string kicker, Color glow)
         {
             var game = PatchworkGame.Instance;
             if (game == null || game.Player == null || game.Mode != UIMode.Gameplay || Busy) return;
-            var go = new GameObject("LensCelebration");
+            var go = new GameObject("ItemCelebration");
             var c = go.AddComponent<LensCelebration>();
-            c.title = name + "!";
-            c.kicker = count >= 3 ? "All three lenses" : count + " of 3 lenses";
+            c.title = title;
+            c.kicker = kicker;
+            c.glassCol = glow;
             c.Begin(game);
         }
 
@@ -166,7 +175,7 @@ namespace Patchwork
             // The lens, up over his head, with a sunburst behind it.
             lens = new GameObject("HeldLens").transform;
             lens.position = p.position + Vector3.up * 2.5f;
-            var glass = PatchworkAssets.Glow(new Color(0.55f, 0.85f, 1f), 2.4f);
+            var glass = PatchworkAssets.Glow(glassCol, 2.4f);
             var rim = PatchworkAssets.Plain(new Color(0.95f, 0.78f, 0.4f), 0.8f);
             Part(lens, PrimitiveType.Cylinder, new Vector3(0.8f, 0.05f, 0.8f), glass, new Vector3(90f, 0f, 0f), Vector3.zero);
             Part(lens, PrimitiveType.Cylinder, new Vector3(0.92f, 0.04f, 0.92f), rim, new Vector3(90f, 0f, 0f), Vector3.zero);
@@ -180,7 +189,7 @@ namespace Patchwork
             }
             Sfx.Play(SfxId.PrizeFanfare, 0.7f);
             Sfx.Voice(SfxId.VoiceYay, game.Player.Forms.Current, 0.5f);
-            FxBurst.Spawn(FxBurst.Kind.Sparkle, lens.position, new Color(0.6f, 0.85f, 1f));
+            FxBurst.Spawn(FxBurst.Kind.Sparkle, lens.position, glassCol);
             Haptics.Pulse(0.5f, 0.6f, 0.4f);
         }
 

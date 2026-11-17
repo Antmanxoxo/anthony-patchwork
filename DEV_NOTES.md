@@ -741,6 +741,9 @@ Stuff I need to remember about how Patchwork is put together.
 - Level 2 ending order: lenses, Stella fits them, Great Seam (Defended), Stella's rhyme (RiddleGiven), star dials (DialsSet), then the telescope.
 - Anything outside the Observatory's glass must skip the north side (about 52 to 128 degrees): the Orrery Bridge is there.
 
+- Wardrobe.cs has the catalogue (names, prices, tints, fabric settings). FormVisuals.ApplyLook() puts it on; call it after changing GameState.ColourScheme/Fabric/Outfit. Outfits hang under the hat root (head 0.6 across, top at 0, neck about -0.62).
+- ScoreKeeper banks every point it adds with GameState.EarnPoints. GameState.Buy(item, price) spends them.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

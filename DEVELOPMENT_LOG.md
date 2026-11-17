@@ -1,5 +1,16 @@
 # Development Log
 
+## The wardrobe (points buy looks), no Pod checkpoint, and Level 2's helpers in Level 1
+- Points now mean something: every point scored anywhere goes into Patch's purse (GameState.Purse, saved), and the Satchel has a Wardrobe to spend it in. Up and down picks a row (Hat, Colours, Fabric, Outfit), left and right looks along it (owned things go straight on), Confirm buys.
+  - Colours: Classic, Sky, Mint, Sunflower, Lavender, Coral, Cocoa, Midnight, Seafoam, Rosewood (1,500 to 5,000), dyeing every form.
+  - Fabric: Knit, Felt, Velvet, Satin, Corduroy, Patent Leather, Glitter (1,200 to 8,000): how shiny, metallic and bumpy he is.
+  - Outfit: Striped Scarf, Bow Tie, Explorer's Backpack, Hero Cape, Flower Garland, Star Sash, Lifebuoy (2,000 to 6,000), worn under the hat in every form.
+  - Hats are still found out in the world, and still chosen in the same place.
+- The checkpoint hoop inside the Pod is gone.
+- Level 1 gets Level 2's helpers: a "Next:" line on the Town Band card, the gold pointer (to the nearest band piece still missing, then the Mayor), a "Next:" pop-up when the step changes, a gold "!" over the Mayor when the band's ready and over the bride and band until you've talked to them, walk-by remarks from the band, the Mayor, the bride, Wisp and the crowd, and the hold-it-up fanfare for each band piece. Its Heartstrings and counts only show with the game paused.
+- Toybox Town's opening is retimed so every line has time to be written out and read (it runs about 73 seconds instead of 53); the crack scene's animation stretches to fit.
+- The pointer now works for any level through QuestGuide.Current (Level1Guide, Level2Quest).
+
 ## Running, livelier combat, the star dials, a lens fanfare and more Fray
 - Run: hold L2 (or click the left stick, or Left Ctrl) to run in every form: Yarn and Wind 1.5 times as fast, Water 1.45. A running jump keeps the speed, the run animation speeds up, and little puffs (or drips, for Water) kick up behind. A tip appears the first time you've been walking a while.
 - Combat: hits chain into a combo counter on the right ("Nice!" at 5, "Super!" at 10, "Stitchtastic!" at 15, "Unravelling!" at 25); every hit that lands pops a word into the air (BOP! THWAP! BONK!, SPLISH! SPLASH! SPLOSH!, PUFF! WHIRL! FWOOSH!); a hit that lands in mid-air bounces Patch back up so he can bop along a row; running into a fight makes the first hit a lunge (further, harder, "DASH!"); and holding Attack then letting go is a charged spin that hits everything round him at full strength.

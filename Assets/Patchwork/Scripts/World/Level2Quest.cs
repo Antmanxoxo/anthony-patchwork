@@ -335,7 +335,7 @@ namespace Patchwork
 
     // Runs the story of the three lenses: who has been met, what's been won, what the
     // watchman and the keepers say about it, and whether the Night Glass can see yet.
-    public partial class Level2Quest : MonoBehaviour
+    public partial class Level2Quest : MonoBehaviour, IQuestGuide
     {
         public static Level2Quest Instance { get; private set; }
         public static void ResetStatics() { Instance = null; }
@@ -425,10 +425,11 @@ namespace Patchwork
         int CrabStage { get { return Seen("crab2") ? 2 : Seen("crab1") ? 1 : 0; } }
         bool CrabBeaten { get { return Seen("crab"); } }
 
-        void Awake() { Instance = this; PatchStrike.Landed += StrikeLanded; }
+        void Awake() { Instance = this; QuestGuide.Current = this; PatchStrike.Landed += StrikeLanded; }
         void OnDestroy()
         {
             if (Instance == this) Instance = null;
+            if (QuestGuide.Current == (IQuestGuide)this) QuestGuide.Current = null;
             PatchStrike.Landed -= StrikeLanded;
             GreyStain.Baseline = 0f;
         }

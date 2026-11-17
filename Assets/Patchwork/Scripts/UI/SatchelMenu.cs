@@ -1,9 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Patchwork
 {
-    // Patch's Satchel - shows the three forms, golden buttons found, and lets you swap hats.
-    // Changing form isn't done here, that's what the Form Wheel is for.
+    // Patch's Satchel - shows the three forms, golden buttons found, and the wardrobe: hats
+    // (found in the world) and colours, fabrics and outfits (bought with points; see Wardrobe).
+    // Up and down picks a row, left and right looks along it (anything he owns goes straight
+    // on), and Confirm buys the one you're looking at. Changing form is the Form Wheel's job.
     public class SatchelMenu
     {
         readonly PatchworkGame game;
@@ -17,12 +19,17 @@ namespace Patchwork
 
         // The hat being looked at (it might still be locked; only unlocked hats get put on).
         int viewHat;
+        // The wardrobe row being looked at (0 hat, 1 colours, 2 fabric, 3 outfit), and what in each.
+        int wardRow;
+        readonly int[] view = new int[3];
+        float buyFlash, failFlash;
 
         public void Open()
         {
             openTime = 0f;
             stickCooldown = 0f;
             viewHat = GameState.HatIndex;
+            for (int c = 0; c < 3; c++) view[c] = Wardrobe.Current(c);
         }
 
         public void Update(float udt)
@@ -37,12 +44,51 @@ namespace Patchwork
                 return;
             }
 
-            int dir = 0;
+            buyFlash = Mathf.MoveTowards(buyFlash, 0f, udt * 2f);
+            failFlash = Mathf.MoveTowards(failFlash, 0f, udt * 3f);
+            int dir = 0, vert = 0;
             if (input.NavLeft.WasPressedThisFrame()) dir = -1;
             if (input.NavRight.WasPressedThisFrame()) dir = 1;
-            float sx = input.Move.ReadValue<Vector2>().x;
-            if (dir == 0 && Mathf.Abs(sx) > 0.6f && stickCooldown <= 0f) dir = sx > 0f ? 1 : -1;
-            if (Mathf.Abs(sx) < 0.3f) stickCooldown = 0f;
+            if (input.NavUp.WasPressedThisFrame()) vert = -1;
+            if (input.NavDown.WasPressedThisFrame()) vert = 1;
+            var stick = input.Move.ReadValue<Vector2>();
+            if (dir == 0 && vert == 0 && stickCooldown <= 0f)
+            {
+                if (Mathf.Abs(stick.x) > 0.6f) dir = stick.x > 0f ? 1 : -1;
+                else if (Mathf.Abs(stick.y) > 0.6f) vert = stick.y > 0f ? -1 : 1;
+            }
+            if (stick.magnitude < 0.3f) stickCooldown = 0f;
+            if (vert != 0)
+            {
+                stickCooldown = 0.25f;
+                wardRow = Mathf.Clamp(wardRow + vert, 0, 3);
+                Sfx.Play(SfxId.MenuMove, 0.4f);
+                return;
+            }
+            if (wardRow > 0)
+            {
+                int cat = wardRow - 1;
+                if (dir != 0)
+                {
+                    stickCooldown = 0.25f;
+                    int n = Wardrobe.Names(cat).Length;
+                    view[cat] = ((view[cat] + dir) % n + n) % n;
+                    Sfx.Play(SfxId.MenuMove, 0.45f);
+                    if (Wardrobe.Has(cat, view[cat])) Put(cat, view[cat]);
+                }
+                if (input.Confirm.WasPressedThisFrame() && !Wardrobe.Has(cat, view[cat]))
+                {
+                    if (Wardrobe.Buy(cat, view[cat]))
+                    {
+                        Put(cat, view[cat]);
+                        buyFlash = 1f;
+                        Sfx.Play(SfxId.PrizeFanfare, 0.5f);
+                        game.ShowToast("Bought: " + Wardrobe.Names(cat)[view[cat]] + "!");
+                    }
+                    else { failFlash = 1f; Sfx.Play(SfxId.TransformFail, 0.4f); }
+                }
+                return;
+            }
 
             if (dir != 0)
             {
@@ -62,6 +108,15 @@ namespace Patchwork
             }
         }
 
+        void Put(int cat, int i)
+        {
+            Wardrobe.Wear(cat, i);
+            game.Player.Visuals.ApplyLook();
+            game.Player.Visuals.PunchScale(new Vector3(1.15f, 0.88f, 1.15f));
+            Sfx.PlayPitched(SfxId.Pop, 0.35f, 1.1f);
+            FxBurst.Spawn(FxBurst.Kind.Sparkle, game.Player.Visuals.HatPosition, Color.Lerp(Wardrobe.Tint, Color.white, 0.4f));
+        }
+
         public void Draw()
         {
             bool kb = game.Input.UsingKeyboard;
@@ -69,7 +124,7 @@ namespace Patchwork
             float W = UIKit.Width, H = UIKit.Height;
             UIKit.Fill(new Rect(0f, 0f, W, H), new Color(0.1f, 0.07f, 0.15f, 0.62f * k));
 
-            float pw = 1040f, ph = 720f;
+            float pw = 1040f, ph = 840f;
             var panel = new Rect((W - pw) * 0.5f, (H - ph) * 0.5f + (1f - k) * 40f, pw, ph);
             UIKit.Panel(panel, new Color(0.99f, 0.95f, 0.88f, 0.97f), UIKit.Thread);
             var ink = UIKit.Ink;
@@ -141,21 +196,50 @@ namespace Patchwork
                 si++;
             }
 
-            var hatBox = new Rect(rx, ry + 280f, 320f, 190f);
-            UIKit.Fill(hatBox, new Color(1f, 1f, 1f, 0.5f), 18f);
-            UIKit.Label(new Rect(rx + 24f, ry + 294f, 280f, 30f), "Cosmetic: Hat", UIKit.Style(22, true, TextAnchor.MiddleLeft, ink));
-            int shown = Mathf.Clamp(viewHat, 0, FormVisuals.HatNames.Length - 1);
-            bool locked = !GameState.IsHatUnlocked(shown);
-            string hatName = FormVisuals.HatNames[shown];
-            UIKit.Label(new Rect(rx + 20f, ry + 336f, 280f, 50f), "<   " + hatName + "   >",
-                UIKit.Style(26, true, TextAnchor.MiddleCenter, locked ? new Color(ink.r, ink.g, ink.b, 0.45f) : ink));
-            UIKit.Label(new Rect(rx + 24f, ry + 386f, 280f, 70f), locked ? "Locked. " + GameState.HatRequirement(shown) : "Hats stay on in every form.",
-                UIKit.Style(locked ? 18 : 20, locked, TextAnchor.UpperCenter, new Color(ink.r, ink.g, ink.b, locked ? 0.85f : 0.7f), true));
+            // The wardrobe: the purse, then a row each for the hat, colours, fabric and outfit.
+            var wb = new Rect(rx, ry + 280f, 320f, 380f);
+            UIKit.Fill(wb, new Color(1f, 1f, 1f, 0.5f), 18f);
+            UIKit.Label(new Rect(rx + 20f, ry + 288f, 280f, 30f), "Wardrobe", UIKit.Style(22, true, TextAnchor.MiddleLeft, ink));
+            var purse = new Rect(rx + 150f, ry + 290f, 156f, 28f);
+            UIKit.Fill(purse, Color.Lerp(new Color(1f, 0.85f, 0.45f), new Color(1f, 0.5f, 0.45f), failFlash), 14f);
+            UIKit.Label(purse, GameState.Purse.ToString("N0") + " pts", UIKit.Style(17, true, TextAnchor.MiddleCenter, new Color(0.4f, 0.25f, 0.08f)));
+            string[] rowNames = { "Hat", "Colours", "Fabric", "Outfit" };
+            string note = null;
+            for (int r = 0; r < 4; r++)
+            {
+                var rr = new Rect(rx + 10f, ry + 326f + r * 62f, 300f, 56f);
+                bool sel = r == wardRow;
+                if (sel) UIKit.Fill(rr, new Color(1f, 0.85f, 0.55f, 0.55f + buyFlash * 0.4f), 14f);
+                UIKit.Label(new Rect(rr.x + 10f, rr.y + 2f, 120f, 22f), rowNames[r], UIKit.Style(15, true, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.6f)));
+                string name;
+                bool locked;
+                if (r == 0)
+                {
+                    int shown = Mathf.Clamp(viewHat, 0, FormVisuals.HatNames.Length - 1);
+                    locked = !GameState.IsHatUnlocked(shown);
+                    name = FormVisuals.HatNames[shown];
+                    if (sel) note = locked ? "Locked. " + GameState.HatRequirement(shown) : "Hats are found out in the world. They stay on in every form.";
+                }
+                else
+                {
+                    int cat = r - 1, i = view[cat];
+                    locked = !Wardrobe.Has(cat, i);
+                    name = Wardrobe.Names(cat)[i];
+                    if (locked) name += "  (" + Wardrobe.Prices(cat)[i].ToString("N0") + ")";
+                    if (sel) note = locked ? (GameState.Purse >= Wardrobe.Prices(cat)[i] ? "Press Confirm to buy it. " : "Not enough points yet. ") + Wardrobe.Describe(cat, i) : Wardrobe.Describe(cat, i);
+                    if (cat == Wardrobe.Colours) UIKit.Circle(new Vector2(rr.xMax - 22f, rr.y + 34f), 22f, Wardrobe.ColourTints[i]);
+                }
+                UIKit.Label(new Rect(rr.x + 8f, rr.y + 22f, 280f, 32f), (sel ? "<  " : "") + name + (sel ? "  >" : ""),
+                    UIKit.Style(19, true, TextAnchor.MiddleLeft, locked ? new Color(ink.r, ink.g, ink.b, 0.5f) : ink));
+            }
+            if (note != null)
+                UIKit.Label(new Rect(panel.x + 50f, panel.yMax - 120f, 940f, 48f), note, UIKit.Style(19, false, TextAnchor.UpperLeft, new Color(ink.r, ink.g, ink.b, 0.8f), true));
 
             // Prompts
             float py = panel.yMax - 66f;
             float px = panel.x + 50f;
-            px += UIKit.PromptLabel(px, py, 40f, PromptAction.Navigate, "Change hat", kb, ink) + 36f;
+            px += UIKit.PromptLabel(px, py, 40f, PromptAction.Navigate, "Choose", kb, ink) + 36f;
+            if (wardRow > 0 && !Wardrobe.Has(wardRow - 1, view[wardRow - 1])) px += UIKit.PromptLabel(px, py, 40f, PromptAction.Confirm, "Buy", kb, ink) + 36f;
             UIKit.PromptLabel(px, py, 40f, PromptAction.Cancel, "Close", kb, ink);
         }
     }

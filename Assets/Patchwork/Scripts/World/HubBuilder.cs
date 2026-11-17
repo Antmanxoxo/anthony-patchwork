@@ -99,7 +99,7 @@ namespace Patchwork
             var idleCam = kit.Root.gameObject.AddComponent<PodIdleCam>();
             idleCam.Exterior = PodIdleCam.BuildExterior(kit);
 
-            kit.AddCheckpoint(info.Spawn, 0f);
+            // (No checkpoint in the Pod: you always start at the spawn here, and the hoop was in the way.)
             kit.AddCameraZone(new Vector3(0f, 6f, 0f), new Vector3(19f, 13f, 19f), -2.4f, 3f);
             kit.Hint(new Vector3(0f, 1.5f, -2f), new Vector3(5f, 4f, 4f), "Your Pod",
                 "Pick up the controller under the window to choose a level. Make the pod yours: {Sticker} sticks stickers on the walls, and the pattern book changes the wallpaper.");

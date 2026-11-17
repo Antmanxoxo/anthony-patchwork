@@ -28,6 +28,13 @@ namespace Patchwork
             public List<string> prizes = new List<string>();         // prize bubbles opened
             public List<string> bestScores = new List<string>();     // "Level1=12345"
             public List<StickerSave> stickers = new List<StickerSave>();
+            // The wardrobe: every point ever scored goes in the purse, and can be spent on looks.
+            public int pointsEarned;
+            public int pointsSpent;
+            public List<string> owned = new List<string>();   // "colour3", "fabric2", "outfit4"
+            public int colour;
+            public int fabric;
+            public int outfit;
         }
 
         // A sticker stuck somewhere in a level.
@@ -82,6 +89,35 @@ namespace Patchwork
             get { return Data.hat; }
             set { if (Data.hat != value) { Data.hat = value; dirty = true; } }
         }
+
+        // ----- The wardrobe (points to spend, and what's been bought) -----
+        public static int Purse { get { return Mathf.Max(0, Data.pointsEarned - Data.pointsSpent); } }
+        public static int PointsEarned { get { return Data.pointsEarned; } }
+
+        public static void EarnPoints(int v)
+        {
+            if (v <= 0) return;
+            Data.pointsEarned += v;
+            dirty = true;
+        }
+
+        public static bool Owns(string item) { return Data.owned.Contains(item); }
+
+        // Pays for something if there's enough in the purse (and saves).
+        public static bool Buy(string item, int price)
+        {
+            if (Owns(item)) return true;
+            if (Purse < price) return false;
+            Data.pointsSpent += price;
+            Data.owned.Add(item);
+            dirty = true;
+            Save();
+            return true;
+        }
+
+        public static int ColourScheme { get { return Data.colour; } set { if (Data.colour != value) { Data.colour = value; dirty = true; } } }
+        public static int Fabric { get { return Data.fabric; } set { if (Data.fabric != value) { Data.fabric = value; dirty = true; } } }
+        public static int Outfit { get { return Data.outfit; } set { if (Data.outfit != value) { Data.outfit = value; dirty = true; } } }
 
         // ----- Collectibles -----
         public static bool IsCollected(string id)

@@ -75,6 +75,7 @@ namespace Patchwork
             lastGain = Time.time;
             int value = baseValue * Multiplier;
             Total += value;
+            GameState.EarnPoints(value);
             Pop = 1f;
             Sfx.PlayPitched(SfxId.ScoreBubble, 0.32f, Steps[(Chain - 1) % Steps.Length]);
             AddPopup(at, "+" + value, Multiplier > 1 ? new Color(1f, 0.82f, 0.3f) : Color.white);
@@ -85,6 +86,7 @@ namespace Patchwork
                 {
                     int bonus = Milestones[i] * 10;
                     Total += bonus;
+                    GameState.EarnPoints(bonus);
                     AddPopup(at + Vector3.up * 0.6f, "CHAIN " + Chain + "  +" + bonus, new Color(1f, 0.55f, 0.75f));
                     Shout(Shouts[i], i < 2 ? new Color(1f, 0.82f, 0.3f) : new Color(1f, 0.55f, 0.8f));
                     Sfx.Play(i < 2 ? SfxId.Complete : SfxId.PrizeFanfare, 0.45f);
@@ -95,6 +97,7 @@ namespace Patchwork
         public void AddBonus(int value, Vector3 at)
         {
             Total += value;
+            GameState.EarnPoints(value);
             Pop = 1f;
             AddPopup(at, "+" + value, new Color(0.65f, 0.95f, 1f));
         }

@@ -301,6 +301,8 @@ namespace Patchwork
 
         Material patchMaterial;
         bool reportedSwap;
+        // The one material the whole model wears (the wardrobe tints it; see Wardrobe).
+        public Material Material { get { return patchMaterial; } }
 
         static Texture2D LoadTexture(string name)
         {

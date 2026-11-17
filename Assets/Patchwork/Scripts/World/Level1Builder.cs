@@ -113,6 +113,7 @@ namespace Patchwork
             var dirGo = new GameObject("Level1Director");
             dirGo.transform.SetParent(kit.Root, false);
             director = dirGo.AddComponent<Level1Director>();
+            dirGo.AddComponent<Level1Guide>().Director = director;   // the next step, the pointer, news and remarks
             director.Ids = HeartstringIds;
 
             Ground(kit);

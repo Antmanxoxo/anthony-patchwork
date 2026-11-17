@@ -146,8 +146,9 @@ namespace Patchwork
                 // The crack opens, and something looks in. The camera goes right up to the lid
                 // for it: the Unpicker lowering himself through the crack, head first, upside
                 // down, all his eyes on the town. Then the Fray comes pouring out past him.
-                float c = t - TCrack;
-                Caption(game, c < 2.2f ? "But then, as things so often do at the worst possible moment, something came unstitched."
+                float cReal = t - TCrack;
+                float c = cReal * CrackAnim / (TSnap - TCrack);
+                Caption(game, cReal < 5.4f ? "But then, as things so often do at the worst possible moment, something came unstitched."
                                        : "Something on the other side of the cloth had been listening. It did not care for the tune.");
                 if (Crack != null)
                 {
@@ -173,7 +174,7 @@ namespace Patchwork
                         Blob.gameObject.SetActive(true);
                         FxBurst.Spawn(FxBurst.Kind.Threads, CrackPos, SnarlKnot.FrayDark);
                     }
-                    float k = Ease((c - 4f) / (TSnap - TCrack - 4f));
+                    float k = Ease((c - 4f) / (CrackAnim - 4f));
                     // A swooping curve down from the lid to over the bandstand.
                     Vector3 mid = new Vector3(14f, 30f, 45f);
                     bp = Vector3.Lerp(Vector3.Lerp(CrackPos + Vector3.back * 2f, mid, k), Vector3.Lerp(mid, above, k), k);
@@ -189,7 +190,7 @@ namespace Patchwork
                 else
                 {
                     // Down at the bandstand, looking up as the Fray comes swooping in.
-                    float k = Ease((c - 4.6f) / (TSnap - TCrack - 4.6f));
+                    float k = Ease((c - 4.6f) / (CrackAnim - 4.6f));
                     game.SetCutsceneCamera(Vector3.Lerp(new Vector3(-3f, 5f, -5f), new Vector3(0f, 6f, -9f), k), Vector3.Lerp(bp + Vector3.up * 2f, bp, k));
                 }
             }
@@ -264,7 +265,7 @@ namespace Patchwork
             else if (t < TCouple)
             {
                 Narrator.Place(null);
-                if (t < TKnot + 2.4f) Caption(game, "Then it tied itself in a smug little knot around the clock tower...");
+                if (t < TKnot + 4.9f) Caption(game, "Then it tied itself in a smug little knot around the clock tower...");
                 else Caption(game, "...and the colour drained out of everything it touched.");
                 Vector3 knotPos = Director.TowerKnot != null ? Director.TowerKnot.position : new Vector3(0f, 19f, 22.1f);
                 float k = Ease(Mathf.Clamp01((t - TKnot) / 2f));
@@ -313,7 +314,11 @@ namespace Patchwork
         }
 
         // When each part of the story starts, in seconds.
-        const float TTown = 5f, TBand = 10.5f, TCrack = 15.5f, TSnap = 22.5f, THill = 25f, TDye = 29.5f, TVane = 33.5f, TKnot = 38.5f, TCouple = 43.5f, TPatch = 47.5f, TEnd = 53f;
+        // (Each part lasts long enough for its line to be written out and then read: about a
+        // second for every 34 letters, plus nearly three to read it.)
+        const float TTown = 6.5f, TBand = 12.5f, TCrack = 18f, TSnap = 29f, THill = 34.5f, TDye = 39.5f, TVane = 45.5f, TKnot = 51.5f, TCouple = 61f, TPatch = 66.2f, TEnd = 73.2f;
+        // The crack scene was made to last seven seconds; it's played out over the longer time.
+        const float CrackAnim = 7f;
 
         // The Fray hanging over the bandstand, twitching.
         void Hover()

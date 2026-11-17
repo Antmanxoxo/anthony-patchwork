@@ -488,7 +488,9 @@ namespace Patchwork
             {
                 // Toybox Town: the town band is the goal.
                 int band = Level1Director.BandCount();
-                var br = new Rect(28f, y, 330f, 112f);
+                var guide1 = QuestGuide.Current;
+                bool showNext = guide1 != null && !GameState.IsLevelComplete(level.Id);
+                var br = new Rect(28f, y, 360f, showNext ? 168f : 112f);
                 UIKit.Panel(br, new Color(1f, 0.95f, 0.88f, 0.95f), new Color(0.75f, 0.32f, 0.36f, 0.9f), 20f);
                 UIKit.Label(new Rect(br.x + 20f, br.y + 8f, 290f, 36f), "Town Band  " + band + " / 3",
                     UIKit.Style(24, true, TextAnchor.MiddleLeft, new Color(0.45f, 0.2f, 0.18f)));
@@ -500,7 +502,10 @@ namespace Patchwork
                     UIKit.Fill(chip, got ? new Color(1f, 0.78f, 0.3f) : new Color(0.62f, 0.6f, 0.66f, 0.55f), 22f);
                     UIKit.Label(chip, names[i], UIKit.Style(19, true, TextAnchor.MiddleCenter, got ? new Color(0.4f, 0.22f, 0.08f) : new Color(1f, 1f, 1f, 0.9f)));
                 }
-                y += 124f;
+                if (showNext)
+                    UIKit.Label(new Rect(br.x + 20f, br.y + 104f, br.width - 36f, 58f), "Next: " + guide1.Objective(),
+                        UIKit.Style(17, true, TextAnchor.UpperLeft, new Color(0.45f, 0.2f, 0.18f, 0.9f), true));
+                y += br.height + 12f;
             }
             // In the Oceanic Museum, keep it simple: the quest card first, the Heartstrings only once
             // you've been told what they're for, and the little counts only with the game paused.
@@ -508,6 +513,9 @@ namespace Patchwork
             bool museum = quest != null && level.Id == Level2Builder.SceneName && !GameState.IsLevelComplete(level.Id);
             bool menu = Game.Mode == UIMode.Paused || Game.Mode == UIMode.Satchel || Game.Mode == UIMode.Complete;
             if (museum) y = DrawNightGlassCard(quest, y, menu);
+            // (Toybox Town's Heartstrings are bonus finds: only with the game paused.)
+            bool toybox = level.Id == Level1Builder.SceneName && QuestGuide.Current != null;
+            if (toybox && !menu) return;
             if (level.HeartstringIds.Count > 0 && (!museum || quest.LiftKnown))
             {
                 // Heartstrings: what opens the way on.
@@ -858,7 +866,7 @@ namespace Patchwork
         void DrawQuestPointer()
         {
             if (Game.Mode != UIMode.Gameplay || Game.CameraRig == null) return;
-            var quest = Level2Quest.Instance;
+            var quest = QuestGuide.Current;
             Vector3 at;
             string label;
             if (quest == null || !quest.ObjectiveTarget(out at, out label)) return;

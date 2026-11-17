@@ -18,6 +18,7 @@ namespace Patchwork
             StrikeFx.ResetStatics();
             PatchStrike.ResetStatics();
             Level2Quest.ResetStatics();
+            QuestGuide.Current = null;
             ExhibitAudit.ResetStatics();
             MuseumPassport.ResetStatics();
             GlobeDetail.ResetStatics();
