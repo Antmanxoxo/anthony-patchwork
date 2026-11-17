@@ -756,6 +756,8 @@ Stuff I need to remember about how Patchwork is put together.
 
 - Fit measuring uses `RestMatrix` (each transform's local TRS up to `root`, with the body root's own scale left out) so a body that is mid-change still measures at full size. The neck is the narrowest slice under the widest slice of the top half. `HeadMask` rasterises the UVs of the Yarn triangles above the neck, and `Wardrobe.SetHeadMask` stops the teal dye there.
 
+- Pod photo tour: `World/PodPhotoTour.cs`, started by `Screenshots/take_pod_tour.txt` (editor only, deleted when done) once the Pod is in Gameplay mode. It writes `Screenshots/PodTour/clipping_report.txt`: renderer boxes past the egg wall (the same `ProfileY`/`ProfileR` as HubBuilder), boxes under the floor, and `Physics.ComputePenetration` between solid colliders, plus every top-level group's centre and size.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

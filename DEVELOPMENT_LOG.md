@@ -1,5 +1,10 @@
 # Development Log
 
+## Pod photo tour
+
+- A photo tour of the Pod and the space round it. Put a file called `take_pod_tour.txt` in the Screenshots folder and load the Pod. The camera takes about 150 pictures: inside from the middle, from the edges, up high, along the floor and side-on to the wall, the desk, window and Button Box, and all round the outside (near, far, above and below). They go into `Screenshots/PodTour`, with `clipping_report.txt` listing anything that pokes through the wall or the floor and any solid things sinking into each other.
+
+
 ## Code clean-up
 
 - Removed code left over from the wardrobe work that nothing uses any more: the old outfit placement (`PatchModel.BodyPose`), an unused hat-height helper, the old framing box for the photo tour, the glitter glow and its sparkle texture (glitter is woven in now), and an unused list of wardrobe category names.
