@@ -275,16 +275,19 @@ namespace Patchwork
                 float deg = i * 137.5f;
                 float y = 9.6f + (i % 5) * 0.7f;
                 Vector3 n = Dir(deg);
-                Vector3 p = n * (RadiusAt(y) - 0.25f) + Vector3.up * y;
+                Vector3 inward = WallInward(deg, y);
+                Vector3 p = n * RadiusAt(y) + Vector3.up * y + inward * 0.06f;
                 var st = kit.Group("CeilingStar", p);
-                st.rotation = Quaternion.LookRotation(-n + Vector3.down * 0.6f, Vector3.up);
+                st.rotation = Quaternion.LookRotation(inward, Vector3.up);
                 float s = 0.25f + (i % 3) * 0.1f;
                 for (int k = 0; k < 2; k++)
                     kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(s, s, 0.02f), starGlow, new Vector3(0f, 0f, k * 45f), st);
             }
-            Vector3 moonAt = Dir(200f) * (RadiusAt(11f) - 0.3f) + Vector3.up * 11f;
+            // (Flat against the sloping roof, so no edge of it pokes through.)
+            Vector3 moonIn = WallInward(200f, 11f);
+            Vector3 moonAt = Dir(200f) * RadiusAt(11f) + Vector3.up * 11f + moonIn * 0.08f;
             var moon = kit.Group("CeilingMoon", moonAt);
-            moon.rotation = Quaternion.LookRotation(-Dir(200f) + Vector3.down * 0.5f, Vector3.up);
+            moon.rotation = Quaternion.LookRotation(moonIn, Vector3.up);
             kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1.2f, 0.02f, 1.2f), PatchworkAssets.Glow(new Color(1f, 0.95f, 0.75f), 0.8f), new Vector3(90f, 0f, 0f), moon);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0.35f, 0.2f, -0.02f), new Vector3(1.05f, 0.025f, 1.05f), PatchworkAssets.Felt(new Color(0.24f, 0.26f, 0.5f)), new Vector3(90f, 0f, 0f), moon);
 
@@ -556,6 +559,46 @@ namespace Patchwork
             return t;
         }
 
+        // Narrows a box to a trapezoid: its bottom edge (local -y) to kBot of its width and its
+        // top edge to kTop.
+        // (alongZ: narrows it front to back instead, its -z end to kBot and +z end to kTop.)
+        static void Taper(Transform t, float kBot, float kTop, bool alongZ = false)
+        {
+            var mf = t.GetComponent<MeshFilter>();
+            if (mf == null || mf.sharedMesh == null) return;
+            var m = Object.Instantiate(mf.sharedMesh);
+            var v = m.vertices;
+            for (int i = 0; i < v.Length; i++) v[i].x *= (alongZ ? v[i].z : v[i].y) > 0f ? kTop : kBot;
+            m.vertices = v;
+            m.RecalculateNormals();
+            m.RecalculateBounds();
+            mf.sharedMesh = m;
+        }
+
+        // How wide one column's slice of a ring is at radius r.
+        static float Chord(float r) { return 2f * r * Mathf.Tan(Mathf.PI / Columns); }
+
+        // A curved run made of one straight piece per column (a desk, a shelf, a trim): the
+        // piece at radius r (its middle) and depth deep (across the ring), cut to a wedge so
+        // the pieces meet edge to edge with no steps or gaps.
+        static void FitToRing(Transform t, float r, float deep)
+        {
+            float inner = Chord(Mathf.Max(0.1f, r - deep * 0.5f)) * 1.01f, outer = Chord(r + deep * 0.5f) * 1.01f;
+            var s = t.localScale;
+            t.localScale = new Vector3(outer, s.y, s.z);
+            Taper(t, inner / outer, 1f, true);
+        }
+
+        // The inward-facing direction of the wall at height y, in the direction deg (for
+        // things hung flat against it).
+        static Vector3 WallInward(float deg, float y)
+        {
+            int k = 0;
+            while (k < ProfileY.Length - 2 && y > ProfileY[k + 1]) k++;
+            float dr = ProfileR[k + 1] - ProfileR[k], dy = ProfileY[k + 1] - ProfileY[k];
+            return -(Dir(deg) * dy - Vector3.up * dr).normalized;
+        }
+
         static float TierLength(int tier)
         {
             float dr = ProfileR[tier + 1] - ProfileR[tier], dy = ProfileY[tier + 1] - ProfileY[tier];
@@ -588,9 +631,15 @@ namespace Patchwork
                 for (int tier = 0; tier < ProfileY.Length - 1; tier++)
                 {
                     if (InDoor(deg, tier)) continue;
-                    float rm = (ProfileR[tier] + ProfileR[tier + 1]) * 0.5f;
-                    var size = new Vector3(rm * 0.235f, TierLength(tier) * 1.03f, thick);
+                    // Each panel is as wide as its slice of the wall at its bottom and at its top
+                    // (measured on the outside face, so the outside has no gaps either). Square
+                    // panels left little dark slits between them up where the roof curves in.
+                    float across = 2f * Mathf.Tan(Mathf.PI / Columns) * 1.03f;
+                    float wBot = (ProfileR[tier] + thick) * across, wTop = (ProfileR[tier + 1] + thick) * across;
+                    float wMax = Mathf.Max(wBot, wTop);
+                    var size = new Vector3(wMax, TierLength(tier) * 1.03f, thick);
                     var t = Panel(kit, deg, tier, thick, 0f, size, wall, true, "PodWall");
+                    Taper(t, wBot / wMax, wTop / wMax);
                     if (InWindow(deg, tier))
                     {
                         // The window: a pane of faintly tinted glass with a few glints on it.
@@ -624,7 +673,7 @@ namespace Patchwork
                 {
                     float sd = Mathf.Abs(Signed(deg));
                     if ((tier == 1 || tier == 2) && sd < 38f) continue;          // not across the window
-                    if (tier <= 1 && Mathf.Abs(Signed(deg - 180f)) < 12f) continue;  // or the doorway
+                    if (tier <= 1 && Mathf.Abs(Signed(deg - 180f)) < 14f) continue;  // or the doorway (it has its own frame)
                     Panel(kit, deg, tier, 0.6f, 0.6f, new Vector3(0.14f, TierLength(tier), 0.6f), rib, false, "Rib");
                 }
             }
@@ -639,7 +688,9 @@ namespace Patchwork
                 float deg = ColumnAngle(i);
                 if (Mathf.Abs(Signed(deg)) < WindowHalfAngle) continue;
                 float r = RadiusAt(9.5f);
-                kit.Deco(PrimitiveType.Cube, Dir(deg) * (r + 0.9f) + Vector3.up * 9.5f, new Vector3(r * 0.25f, 0.12f, 1.4f), cap, new Vector3(0f, deg, 0f)).name = "OuterLedge";
+                var ledge = kit.Deco(PrimitiveType.Cube, Dir(deg) * (r + 0.9f) + Vector3.up * 9.5f, new Vector3(r * 0.25f, 0.12f, 1.4f), cap, new Vector3(0f, deg, 0f));
+                ledge.name = "OuterLedge";
+                FitToRing(ledge, r + 0.9f, 1.4f);
             }
         }
 
@@ -657,9 +708,10 @@ namespace Patchwork
                 // The desk: a deep ledge under the window.
                 var top = kit.Block(d * (rDesk - 0.75f) + Vector3.up * (DeskTop - 0.15f), new Vector3(rDesk * 0.24f, 0.3f, 1.6f), Color.white, "Desk", desk);
                 top.rotation = Quaternion.Euler(0f, deg, 0f);
-                kit.Deco(PrimitiveType.Cube, d * (rDesk - 1.58f) + Vector3.up * (DeskTop - 0.15f), new Vector3(rDesk * 0.24f, 0.36f, 0.08f), trim, new Vector3(0f, deg, 0f));
+                FitToRing(top, rDesk - 0.75f, 1.6f);
+                FitToRing(kit.Deco(PrimitiveType.Cube, d * (rDesk - 1.58f) + Vector3.up * (DeskTop - 0.15f), new Vector3(rDesk * 0.24f, 0.36f, 0.08f), trim, new Vector3(0f, deg, 0f)), rDesk - 1.58f, 0.08f);
                 // Felt piping along the top of the window.
-                kit.Deco(PrimitiveType.Cube, d * (rTop - 0.2f) + Vector3.up * WindowTop, new Vector3(rTop * 0.25f, 0.4f, 0.4f), trim, new Vector3(0f, deg, 0f));
+                FitToRing(kit.Deco(PrimitiveType.Cube, d * (rTop - 0.2f) + Vector3.up * WindowTop, new Vector3(rTop * 0.25f, 0.4f, 0.4f), trim, new Vector3(0f, deg, 0f)), rTop - 0.2f, 0.4f);
             }
             // Desk legs under the front edge.
             var leg = PatchworkAssets.Wood(new Color(0.7f, 0.55f, 0.4f));
@@ -695,6 +747,7 @@ namespace Patchwork
                     float r = RadiusAt(h);
                     var t = kit.Block(Dir(deg) * (r - 0.6f) + Vector3.up * (h - 0.1f), new Vector3(r * 0.24f, 0.2f, 1.25f), Color.white, "Shelf", wood);
                     t.rotation = Quaternion.Euler(0f, deg, 0f);
+                    FitToRing(t, r - 0.6f, 1.25f);
                 }
             }
         }
@@ -830,23 +883,36 @@ namespace Patchwork
             int found = GameState.GoldenButtonCount();
             int needed = Level1Builder.CollectibleIds.Length;
             bool open = found >= needed;
-            const float half = 2.1f, z0 = -14.6f, z1 = -8.6f, h = DoorTop;
+            // The box is a touch narrower than the gap cut in the pod's wall, so the wall never
+            // slices into it, and a cardboard door frame covers where the two meet.
+            const float half = 1.7f, z0 = -14.6f, z1 = -8.6f, h = DoorTop;
             float cz = (z0 + z1) * 0.5f;
+            const float frameFront = -8.35f, frameBack = -9.65f, boxFront = -9.1f;
+            float boxLen = boxFront - z0, boxCz = (z0 + boxFront) * 0.5f;
 
-            kit.Cardboard(new Vector3(-half - 0.2f, h * 0.5f, cz), new Vector3(0.4f, h, z1 - z0), Kraft, "BoxWall");
-            kit.Cardboard(new Vector3(half + 0.2f, h * 0.5f, cz), new Vector3(0.4f, h, z1 - z0), Kraft, "BoxWall");
+            kit.Cardboard(new Vector3(-half - 0.2f, h * 0.5f, boxCz), new Vector3(0.4f, h, -boxLen), Kraft, "BoxWall");
+            kit.Cardboard(new Vector3(half + 0.2f, h * 0.5f, boxCz), new Vector3(0.4f, h, -boxLen), Kraft, "BoxWall");
             kit.Cardboard(new Vector3(0f, h * 0.5f, z0 - 0.2f), new Vector3(half * 2f + 0.8f, h, 0.4f), Kraft, "BoxWall");
-            kit.Cardboard(new Vector3(0f, h + 0.2f, cz - 0.2f), new Vector3(half * 2f + 0.8f, 0.4f, z1 - z0 + 0.4f), KraftLight, "BoxRoof");
+            kit.Cardboard(new Vector3(0f, h + 0.2f, (z0 - 0.4f + boxFront) * 0.5f), new Vector3(half * 2f + 0.8f, 0.4f, boxFront - z0 + 0.4f), KraftLight, "BoxRoof");
+            // Its cardboard bottom, seen from outside underneath (the rug is all that's inside).
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, -0.36f, (z0 - 0.4f + boxFront) * 0.5f), new Vector3(half * 2f + 0.8f, 0.5f, boxFront - z0 + 0.4f), PatchworkAssets.Cardboard(KraftDark));
             var floor = kit.Block(new Vector3(0f, -0.5f, cz), new Vector3(half * 2f, 1f, z1 - z0), Color.white, "BoxFloor");
             floor.GetComponent<Renderer>().enabled = false;
-            kit.Quilt(new Vector3(0f, -0.04f, cz), new Vector3(half * 2f, 0.08f, z1 - z0), new[] { LevelKit.Palette.Butter, LevelKit.Palette.Peach, LevelKit.Palette.Cream }, 2f, "BoxRug");
+            kit.Quilt(new Vector3(0f, -0.04f, (z0 + frameBack) * 0.5f), new Vector3(half * 2f, 0.08f, frameBack - z0), new[] { LevelKit.Palette.Butter, LevelKit.Palette.Peach, LevelKit.Palette.Cream }, 2f, "BoxRug");
 
-            // Three button sockets over the doorway, gold for each one found.
+            // The door frame: two posts and a deep lintel, standing a little proud of the wall.
+            var frame = PatchworkAssets.Cardboard(KraftDark);
+            float fx = half + 0.22f, fDepth = frameFront - frameBack, fz = (frameFront + frameBack) * 0.5f;
+            for (int s = -1; s <= 1; s += 2)
+                kit.Deco(PrimitiveType.Cube, new Vector3(s * fx, h * 0.5f, fz), new Vector3(0.48f, h, fDepth), frame).name = "DoorFrame";
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, h + 0.34f, fz), new Vector3(fx * 2f + 0.48f, 0.72f, fDepth), frame).name = "DoorFrame";
+
+            // Three button sockets on the lintel, gold for each one found.
             var gold = PatchworkAssets.Glow(LevelKit.Palette.Gold, 0.12f);
             var empty = PatchworkAssets.Felt(new Color(0.35f, 0.3f, 0.4f));
             float doorZ = -RadiusAt(0f) + 0.05f;
             for (int i = 0; i < needed; i++)
-                kit.Deco(PrimitiveType.Cylinder, new Vector3(-0.8f + i * 0.8f, h + 0.55f, -RadiusAt(h + 0.5f) + 0.3f), new Vector3(0.55f, 0.08f, 0.55f), i < found ? gold : empty, new Vector3(90f, 0f, 0f));
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(-0.8f + i * 0.8f, h + 0.35f, frameFront + 0.02f), new Vector3(0.5f, 0.04f, 0.5f), i < found ? gold : empty, new Vector3(90f, 0f, 0f));
 
             if (!open)
             {
@@ -1572,11 +1638,12 @@ namespace Patchwork
         {
             const float deg = 140f, y = 2.3f;
             Vector3 d = Dir(deg);
-            var tube = kit.Group("LaunchTube", d * 8.7f + Vector3.up * y);
+            // (Its back end stops inside the wall: it used to poke out through the outside.)
+            var tube = kit.Group("LaunchTube", d * 8.55f + Vector3.up * y);
             tube.rotation = Quaternion.FromToRotation(Vector3.up, -d);
-            kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1.7f, 1.2f, 1.7f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Stripes, new Color(0.9f, 0.3f, 0.35f), new Color(0.99f, 0.95f, 0.88f)), default(Vector3), tube);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.2f, 0f), new Vector3(1.95f, 0.14f, 1.95f), PatchworkAssets.Felt(LevelKit.Palette.Gold), default(Vector3), tube);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.23f, 0f), new Vector3(1.4f, 0.14f, 1.4f), PatchworkAssets.Plain(new Color(0.08f, 0.06f, 0.1f), 0.2f), default(Vector3), tube);
+            kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1.7f, 1.05f, 1.7f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Stripes, new Color(0.9f, 0.3f, 0.35f), new Color(0.99f, 0.95f, 0.88f)), default(Vector3), tube);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.05f, 0f), new Vector3(1.95f, 0.14f, 1.95f), PatchworkAssets.Felt(LevelKit.Palette.Gold), default(Vector3), tube);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.08f, 0f), new Vector3(1.4f, 0.14f, 1.4f), PatchworkAssets.Plain(new Color(0.08f, 0.06f, 0.1f), 0.2f), default(Vector3), tube);
             // A little brace under it.
             kit.Deco(PrimitiveType.Cube, d * 8.2f + Vector3.up * (y * 0.5f - 0.2f), new Vector3(0.3f, y - 0.4f, 0.3f), PatchworkAssets.Cardboard(KraftDark), new Vector3(0f, deg, 0f));
 

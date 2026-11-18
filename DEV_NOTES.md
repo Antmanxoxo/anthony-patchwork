@@ -758,6 +758,8 @@ Stuff I need to remember about how Patchwork is put together.
 
 - Pod photo tour: `World/PodPhotoTour.cs`, started by `Screenshots/take_pod_tour.txt` (editor only, deleted when done) once the Pod is in Gameplay mode. It writes `Screenshots/PodTour/clipping_report.txt`: renderer boxes past the egg wall (the same `ProfileY`/`ProfileR` as HubBuilder), boxes under the floor, and `Physics.ComputePenetration` between solid colliders, plus every top-level group's centre and size.
 
+- Pod construction: `HubBuilder.Taper` turns a cube into a trapezoid (by local y for wall panels, by local z for ring pieces). Wall panels are tapered to the chord at the bottom and top of their tier (outer face). `FitToRing(t, r, depth)` cuts a per-column ring piece (desk, trim, piping, shelves, outer ledge) to a wedge. `WallInward(deg, y)` gives the wall's inward normal for things hung flat on it. The Button Box is 1.7 half-wide inside, with a `DoorFrame` (posts and lintel, z -8.35 to -9.65) covering the join with the pod wall.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

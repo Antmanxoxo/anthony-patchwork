@@ -1,5 +1,14 @@
 # Development Log
 
+## The Pod, tidied from its photo tour
+
+- The wall panels are cut to the shape of the egg (wider at the bottom of each ring than the top), so the little dark slits between panels up where the roof curves in are gone, inside and out.
+- The desk under the window, its zigzag trim, the felt piping over the window, the two curved shelves and the ledge round the outside are each cut into wedges, so their pieces meet edge to edge instead of overlapping in steps.
+- The Button Box doorway has a proper cardboard door frame: two posts and a deep lintel with the three button sockets set in its face (they used to be half hidden behind the box's roof). The box is a little narrower so the pod's wall no longer slices through its sides, its roof no longer sticks out into the room, it has a cardboard bottom (from below you could see straight up into it), and no wall struts run down the doorway.
+- The launch tube's back end stops inside the wall (it poked out through the outside of the pod).
+- The crescent moon and the felt stars on the ceiling lie flat against the sloping roof, so no edge pokes through.
+
+
 ## Pod photo tour
 
 - A photo tour of the Pod and the space round it. Put a file called `take_pod_tour.txt` in the Screenshots folder and load the Pod. The camera takes about 150 pictures: inside from the middle, from the edges, up high, along the floor and side-on to the wall, the desk, window and Button Box, and all round the outside (near, far, above and below). They go into `Screenshots/PodTour`, with `clipping_report.txt` listing anything that pokes through the wall or the floor and any solid things sinking into each other.
