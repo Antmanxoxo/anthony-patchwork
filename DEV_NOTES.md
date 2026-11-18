@@ -760,6 +760,11 @@ Stuff I need to remember about how Patchwork is put together.
 
 - Pod construction: `HubBuilder.Taper` turns a cube into a trapezoid (by local y for wall panels, by local z for ring pieces). Wall panels are tapered to the chord at the bottom and top of their tier (outer face). `FitToRing(t, r, depth)` cuts a per-column ring piece (desk, trim, piping, shelves, outer ledge) to a wedge. `WallInward(deg, y)` gives the wall's inward normal for things hung flat on it. The Button Box is 1.7 half-wide inside, with a `DoorFrame` (posts and lintel, z -8.35 to -9.65) covering the join with the pod wall.
 
+- Pod curtains: `World/PodCurtains.cs`. Thirteen pleats a side, each in two pieces (desk to y 4, y 4 to under the window piping), with a shut and an open pose; they open once `UIMode.LevelSelect` is first seen in the scene. A new scene means shut again.
+- Merit board spans `MeritFrom`..`MeritTo` (104.8° to 136.8°); ribs in tiers 1 and 2 inside that span are skipped. Things hung on the wall use `WallInward` to lie flat.
+- Pod decorations 6 to 11 (`deco_ship`, `deco_jelly`, `deco_ammonite`, `deco_telescope`, `deco_starchart`, `deco_whale`) are placed in Level 2 by `Level2Builder.PodTreasures` (World/Level2PodTreasures.cs), just before `TidyUp`; `PlaceTreasure` raises a bubble until `Physics.CheckSphere` (radius 1.2) is clear.
+- TidyRoom's bump boxes skip any item with a `BouncePad` in it.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

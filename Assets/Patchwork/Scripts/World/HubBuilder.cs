@@ -168,9 +168,16 @@ namespace Patchwork
                 g.rotation = Quaternion.Euler(0f, 90f, 0f);
                 kit.Block(c + Vector3.up * 0.55f, new Vector3(1.2f, 1.1f, 2f), Color.white, "ToyChestSolid").GetComponent<Renderer>().enabled = false;
                 kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.5f, 0f), new Vector3(2f, 1f, 1.2f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Stripes, new Color(0.4f, 0.7f, 1f), new Color(0.99f, 0.96f, 0.9f)), default(Vector3), g);
-                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.08f, -0.25f), new Vector3(2.05f, 0.16f, 1.25f), PatchworkAssets.Felt(new Color(1f, 0.8f, 0.3f)), new Vector3(-25f, 0f, 0f), g);
-                kit.Deco(PrimitiveType.Sphere, new Vector3(0.5f, 1.15f, 0.1f), new Vector3(0.5f, 0.5f, 0.5f), PatchworkAssets.Plain(new Color(1f, 0.4f, 0.5f), 0.7f), default(Vector3), g);
-                kit.Deco(PrimitiveType.Cube, new Vector3(-0.4f, 1.2f, 0.1f), new Vector3(0.45f, 0.45f, 0.45f), PatchworkAssets.Felt(new Color(0.55f, 0.85f, 0.45f)), new Vector3(10f, 30f, 0f), g);
+                // The lid, propped open on its hinge at the back (low enough to stay under the
+                // shelf), and a couple of toys peeking out of the open top.
+                var lid = kit.Group("ChestLid", Vector3.zero);
+                lid.SetParent(g, false);
+                lid.localPosition = new Vector3(0f, 1f, -0.6f);
+                lid.localRotation = Quaternion.Euler(-113f, 0f, 0f);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.08f, 0.62f), new Vector3(2.05f, 0.16f, 1.25f), PatchworkAssets.Felt(new Color(1f, 0.8f, 0.3f)), default(Vector3), lid);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.985f, 0f), new Vector3(1.9f, 0.03f, 1.1f), PatchworkAssets.Felt(new Color(0.3f, 0.45f, 0.7f)), default(Vector3), g);   // the dark inside
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0.5f, 1.08f, 0.15f), new Vector3(0.5f, 0.5f, 0.5f), PatchworkAssets.Plain(new Color(1f, 0.4f, 0.5f), 0.7f), default(Vector3), g);
+                kit.Deco(PrimitiveType.Cube, new Vector3(-0.4f, 1.1f, 0.05f), new Vector3(0.45f, 0.45f, 0.45f), PatchworkAssets.Felt(new Color(0.55f, 0.85f, 0.45f)), new Vector3(8f, 30f, 0f), g);
             });
             // A potted felt plant.
             Collect(kit, "plant", () =>
@@ -291,32 +298,21 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1.2f, 0.02f, 1.2f), PatchworkAssets.Glow(new Color(1f, 0.95f, 0.75f), 0.8f), new Vector3(90f, 0f, 0f), moon);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0.35f, 0.2f, -0.02f), new Vector3(1.05f, 0.025f, 1.05f), PatchworkAssets.Felt(new Color(0.24f, 0.26f, 0.5f)), new Vector3(90f, 0f, 0f), moon);
 
-            // Gingham curtains either side of the window, tied back with ribbon.
-            var curtain = PatchworkAssets.Print(PatchworkAssets.PrintKind.Gingham, new Color(0.99f, 0.96f, 0.9f), new Color(0.9f, 0.4f, 0.5f));
-            for (int s = -1; s <= 1; s += 2)
-            {
-                float deg = s * 43f;
-                Vector3 n = Dir(deg);
-                for (int k = 0; k < 4; k++)
-                {
-                    float y = 7.2f - k * 1.3f;
-                    float pinch = k == 2 ? 0.55f : 1f;
-                    Vector3 p = n * (RadiusAt(y) - 0.5f) + Vector3.up * y;
-                    var c = kit.Deco(PrimitiveType.Capsule, p, new Vector3(1.1f * pinch, 0.85f, 0.35f), curtain);
-                    c.rotation = Quaternion.LookRotation(-n, Vector3.up);
-                }
-                kit.Deco(PrimitiveType.Sphere, n * (RadiusAt(4.6f) - 0.45f) + Vector3.up * 4.6f, new Vector3(0.75f, 0.2f, 0.5f), PatchworkAssets.Felt(new Color(0.9f, 0.3f, 0.35f)));
-                kit.Deco(PrimitiveType.Cylinder, n * (RadiusAt(7.9f) - 0.4f) + Vector3.up * 7.9f, new Vector3(0.1f, 1.4f, 0.1f), PatchworkAssets.Wood(new Color(0.7f, 0.5f, 0.35f)), new Vector3(0f, deg, 90f));
-            }
+            // Fabric curtains across the window: drawn when you arrive, opened when you first
+            // pick up the controller (see PodCurtains).
+            PodCurtains.Build(kit, WindowHalfAngle, DeskTop, WindowTop);
 
             // Framed pictures: snapshots of Patch and his gang at their silliest (see PodPictures).
-            float[] frames = { 58f, 74f, -52f, -62f };
+            // (Each hangs in a gap between the cardboard struts, so no strut runs across it, and
+            // lies flat against the wall where it slopes.)
+            float[] frames = { 59f, 70f, -58f, -70f };
             float[] fy = { 4.4f, 3.4f, 4.25f, 2.85f };
             for (int i = 0; i < frames.Length; i++)
             {
                 Vector3 n = Dir(frames[i]);
-                var fr = kit.Group("PictureFrame", n * (RadiusAt(fy[i]) - 0.15f) + Vector3.up * fy[i]);
-                fr.rotation = Quaternion.LookRotation(-n, Vector3.up) * Quaternion.Euler(0f, 0f, (i % 2 == 0 ? 2f : -3f));
+                Vector3 inw = WallInward(frames[i], fy[i]);
+                var fr = kit.Group("PictureFrame", n * RadiusAt(fy[i]) + Vector3.up * fy[i] + inw * 0.06f);
+                fr.rotation = Quaternion.LookRotation(inw, Vector3.up) * Quaternion.Euler(0f, 0f, (i % 2 == 0 ? 2f : -3f));
                 float w = 1.3f, h = 1f;
                 var wood = PatchworkAssets.Wood(i % 2 == 0 ? new Color(0.85f, 0.65f, 0.35f) : new Color(0.55f, 0.38f, 0.28f));
                 kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(w + 0.2f, h + 0.2f, 0.06f), wood, default(Vector3), fr);
@@ -329,8 +325,8 @@ namespace Patchwork
             {
                 float deg = 66f, y = 2.2f;
                 Vector3 n = Dir(deg);
-                var cb = kit.Group("CorkBoard", n * (RadiusAt(y) - 0.15f) + Vector3.up * y);
-                cb.rotation = Quaternion.LookRotation(-n, Vector3.up);
+                var cb = kit.Group("CorkBoard", n * RadiusAt(y) + Vector3.up * y + WallInward(deg, y) * 0.05f);
+                cb.rotation = Quaternion.LookRotation(WallInward(deg, y), Vector3.up);
                 kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(1.5f, 1f, 0.05f), PatchworkAssets.Felt(new Color(0.78f, 0.6f, 0.42f)), default(Vector3), cb);
                 Color[] notes = { new Color(1f, 0.95f, 0.6f), new Color(0.7f, 0.9f, 1f), new Color(1f, 0.75f, 0.8f), Color.white };
                 for (int k = 0; k < 5; k++)
@@ -430,6 +426,9 @@ namespace Patchwork
                 Bounds b;
                 if (!ItemBounds(it, out b) || b.min.y > 0.6f || b.size.y < 0.4f || b.size.y > 4f) continue;
                 if (it.GetComponentInChildren<Collider>(true) != null) continue;
+                // (Not over the pin-cushion bounce pad: a solid box on it held Patch up off the
+                // cushion, out of reach of the bounce.)
+                if (it.GetComponentInChildren<BouncePad>(true) != null) continue;
                 if (b.size.x > 2.6f || b.size.z > 2.6f)
                 {
                     foreach (Transform part in it) BumpBox(part, true);
@@ -674,6 +673,7 @@ namespace Patchwork
                     float sd = Mathf.Abs(Signed(deg));
                     if ((tier == 1 || tier == 2) && sd < 38f) continue;          // not across the window
                     if (tier <= 1 && Mathf.Abs(Signed(deg - 180f)) < 14f) continue;  // or the doorway (it has its own frame)
+                    if ((tier == 1 || tier == 2) && Signed(deg) > MeritFrom - 2f && Signed(deg) < MeritTo + 2f) continue;   // or behind the Merit board
                     Panel(kit, deg, tier, 0.6f, 0.6f, new Vector3(0.14f, TierLength(tier), 0.6f), rib, false, "Rib");
                 }
             }
@@ -1098,6 +1098,7 @@ namespace Patchwork
                 breathe.Amount = 3f;
                 breathe.Speed = 0.8f;
             });
+            MuseumDecorations(kit);
             // Pinwheels in two flowerpots either side of the Button Box doorway.
             if (Prizes.HasDecoration(3)) Collect(kit, "deco3", () =>
             {
@@ -1123,47 +1124,257 @@ namespace Patchwork
             });
         }
 
-        // The Merit Quilt on the back-right wall: a little quilt with a square for every Merit
-        // Patch. Earned ones are stitched on in colour; the rest are left as empty dashed
-        // rings, so you can see at a glance how many there are still to win.
+        // Six souvenirs from the Oceanic Museum (Level 2).
+        static void MuseumDecorations(LevelKit kit)
+        {
+            var glass = PatchworkAssets.Bubble(new Color(0.8f, 0.95f, 0.9f, 0.3f));
+            var brass = PatchworkAssets.Plain(new Color(0.92f, 0.74f, 0.38f), 0.85f);
+            var wood = PatchworkAssets.Wood(new Color(0.6f, 0.4f, 0.26f));
+
+            // Ship in a Bottle, lying on its stand on the lower shelf.
+            if (Prizes.HasDecoration(6)) Collect(kit, "deco6", () =>
+            {
+                float deg = -115f;
+                var g = kit.Group("ShipInABottle", Dir(deg) * (RadiusAt(2.4f) - 0.65f) + Vector3.up * 2.4f);
+                g.rotation = Quaternion.Euler(0f, deg + 90f, 0f);
+                for (int s = -1; s <= 1; s += 2)
+                    kit.Deco(PrimitiveType.Cube, new Vector3(s * 0.3f, 0.08f, 0f), new Vector3(0.08f, 0.16f, 0.3f), wood, default(Vector3), g);
+                var bottle = kit.Deco(PrimitiveType.Capsule, new Vector3(0f, 0.3f, 0f), new Vector3(0.36f, 0.5f, 0.36f), glass, new Vector3(0f, 0f, 90f), g);
+                bottle.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0.58f, 0.3f, 0f), new Vector3(0.12f, 0.06f, 0.12f), PatchworkAssets.Wood(new Color(0.8f, 0.6f, 0.4f)), new Vector3(0f, 0f, 90f), g);   // the cork
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.22f, 0f), new Vector3(0.42f, 0.06f, 0.12f), wood, default(Vector3), g);                     // the hull
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.33f, 0f), new Vector3(0.015f, 0.11f, 0.015f), wood, default(Vector3), g);              // the mast
+                kit.Deco(PrimitiveType.Cube, new Vector3(0.02f, 0.35f, 0f), new Vector3(0.18f, 0.14f, 0.01f), PatchworkAssets.Felt(new Color(0.98f, 0.95f, 0.88f)), default(Vector3), g);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.2f, 0f), new Vector3(0.5f, 0.03f, 0.2f), PatchworkAssets.Felt(new Color(0.3f, 0.55f, 0.85f)), default(Vector3), g);   // the sea
+            });
+            // Jellyfish Lamp, glowing softly as it hangs from the roof on a thread.
+            if (Prizes.HasDecoration(7)) Collect(kit, "deco7", () =>
+            {
+                Vector3 at = new Vector3(-3.4f, 8.9f, 1.8f);
+                float roof = 12.2f;
+                kit.Rope(at + Vector3.up * 0.5f, new Vector3(at.x, roof, at.z), PatchworkAssets.Yarn(new Color(0.9f, 0.9f, 0.95f)), 0.02f);
+                var j = kit.Group("JellyfishLamp", at);
+                var bell = kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.25f, 0f), new Vector3(0.9f, 0.6f, 0.9f), PatchworkAssets.Glow(new Color(0.95f, 0.6f, 0.95f), 0.9f), default(Vector3), j);
+                bell.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                for (int k = 0; k < 6; k++)
+                {
+                    float a = k * Mathf.PI / 3f;
+                    var arm = kit.Deco(PrimitiveType.Capsule, new Vector3(Mathf.Cos(a) * 0.25f, -0.35f - (k % 2) * 0.12f, Mathf.Sin(a) * 0.25f), new Vector3(0.07f, 0.4f, 0.07f), PatchworkAssets.Glow(new Color(0.7f, 0.85f, 1f), 0.6f), new Vector3(Mathf.Sin(a) * 8f, 0f, -Mathf.Cos(a) * 8f), j);
+                    arm.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
+                var lgo = new GameObject("JellyGlow");
+                lgo.transform.SetParent(j, false);
+                var l = lgo.AddComponent<Light>();
+                l.type = LightType.Point;
+                l.color = new Color(0.95f, 0.65f, 1f);
+                l.range = 5f;
+                l.intensity = 0.8f;
+                l.shadows = LightShadows.None;
+                var bob = j.gameObject.AddComponent<Spinner>();
+                bob.Speed = 6f;
+                bob.BobHeight = 0.12f;
+                bob.BobSpeed = 0.5f;
+            });
+            // Ammonite Fossil, on a little stand on the top shelf.
+            if (Prizes.HasDecoration(8)) Collect(kit, "deco8", () =>
+            {
+                float deg = -82f;
+                var g = kit.Group("AmmoniteFossil", Dir(deg) * (RadiusAt(4.4f) - 0.65f) + Vector3.up * 4.4f);
+                g.rotation = Quaternion.Euler(0f, deg + 180f, 0f);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.05f, 0f), new Vector3(0.6f, 0.1f, 0.4f), wood, default(Vector3), g);
+                var stone = PatchworkAssets.Felt(new Color(0.82f, 0.74f, 0.62f));
+                var ridge = PatchworkAssets.Felt(new Color(0.66f, 0.56f, 0.45f));
+                for (int k = 0; k < 18; k++)
+                {
+                    // A coil, getting smaller towards the middle.
+                    float a = k * 0.62f;
+                    float r = 0.24f * Mathf.Exp(-k * 0.075f);
+                    float size = 0.17f * Mathf.Exp(-k * 0.075f);
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * r, 0.38f + Mathf.Sin(a) * r, 0f), new Vector3(size, size, 0.14f), k % 2 == 0 ? stone : ridge, default(Vector3), g);
+                }
+            });
+            // Brass Telescope on a wooden tripod, pointed at the window.
+            if (Prizes.HasDecoration(9)) Collect(kit, "deco9", () =>
+            {
+                var g = kit.Group("BrassTelescope", new Vector3(-4.3f, 0f, 2.3f));
+                g.rotation = Quaternion.Euler(0f, 25f, 0f);
+                for (int k = 0; k < 3; k++)
+                {
+                    float a = k * 120f;
+                    var leg = kit.Deco(PrimitiveType.Cylinder, Quaternion.Euler(0f, a, 0f) * new Vector3(0f, 0.6f, 0.25f), new Vector3(0.05f, 0.62f, 0.05f), wood, new Vector3(0f, a, 0f) + new Vector3(-22f, 0f, 0f), g);
+                    leg.localRotation = Quaternion.Euler(0f, a, 0f) * Quaternion.Euler(-22f, 0f, 0f);
+                }
+                var tube = kit.Group("Tube", Vector3.zero);
+                tube.SetParent(g, false);
+                tube.localPosition = new Vector3(0f, 1.22f, 0f);
+                tube.localRotation = Quaternion.Euler(-28f, 0f, 0f);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, 0.15f), new Vector3(0.16f, 0.45f, 0.16f), brass, new Vector3(90f, 0f, 0f), tube);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, 0.62f), new Vector3(0.22f, 0.06f, 0.22f), brass, new Vector3(90f, 0f, 0f), tube);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, -0.36f), new Vector3(0.1f, 0.12f, 0.1f), brass, new Vector3(90f, 0f, 0f), tube);
+                kit.Deco(PrimitiveType.Sphere, Vector3.zero, Vector3.one * 0.12f, wood, default(Vector3), tube);
+            });
+            // Star Chart: a framed map of the constellations, hung between two struts above the
+            // shelves.
+            if (Prizes.HasDecoration(10)) Collect(kit, "deco10", () =>
+            {
+                float deg = -90f, y = 6f;
+                Vector3 inw = WallInward(deg, y);
+                var g = kit.Group("StarChart", Dir(deg) * RadiusAt(y) + Vector3.up * y + inw * 0.06f);
+                g.rotation = Quaternion.LookRotation(inw, Vector3.up);
+                kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(1.7f, 1.15f, 0.05f), wood, default(Vector3), g);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0f, 0.03f), new Vector3(1.5f, 0.95f, 0.02f), PatchworkAssets.Felt(new Color(0.12f, 0.14f, 0.32f)), default(Vector3), g);
+                var star = PatchworkAssets.Glow(new Color(1f, 0.92f, 0.65f), 0.9f);
+                var line = PatchworkAssets.Felt(new Color(0.75f, 0.8f, 0.95f));
+                Vector2[] pts = { new Vector2(-0.55f, -0.25f), new Vector2(-0.3f, 0.05f), new Vector2(-0.05f, -0.1f), new Vector2(0.2f, 0.25f), new Vector2(0.5f, 0.1f), new Vector2(0.45f, -0.3f) };
+                for (int k = 0; k < pts.Length; k++)
+                {
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(pts[k].x, pts[k].y, 0.05f), Vector3.one * 0.07f, star, default(Vector3), g);
+                    if (k == 0) continue;
+                    Vector2 a = pts[k - 1], b = pts[k];
+                    float ang = Mathf.Atan2(b.y - a.y, b.x - a.x) * Mathf.Rad2Deg;
+                    kit.Deco(PrimitiveType.Cube, new Vector3((a.x + b.x) * 0.5f, (a.y + b.y) * 0.5f, 0.045f), new Vector3((b - a).magnitude, 0.015f, 0.01f), line, new Vector3(0f, 0f, ang), g);
+                }
+                for (int k = 0; k < 14; k++)
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Sin(k * 2.3f) * 0.68f, Mathf.Cos(k * 1.7f) * 0.4f, 0.045f), Vector3.one * 0.025f, star, default(Vector3), g);
+            });
+            // Whale Plush: a big soft blue whale lounging on the floor by the clock.
+            if (Prizes.HasDecoration(11)) Collect(kit, "deco11", () =>
+            {
+                var g = kit.Group("WhalePlush", new Vector3(6.6f, 0f, -0.9f));
+                g.rotation = Quaternion.Euler(0f, -100f, 0f);
+                var blue = PatchworkAssets.Knit(new Color(0.42f, 0.58f, 0.85f));
+                var belly = PatchworkAssets.Felt(new Color(0.92f, 0.9f, 0.85f));
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.5f, 0f), new Vector3(1.1f, 0.95f, 1.6f), blue, default(Vector3), g);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.3f, 0.15f), new Vector3(0.9f, 0.5f, 1.3f), belly, default(Vector3), g);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.62f, -0.95f), new Vector3(0.45f, 0.4f, 0.6f), blue, new Vector3(-20f, 0f, 0f), g);
+                for (int s = -1; s <= 1; s += 2)
+                {
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.32f, 0.92f, -1.32f), new Vector3(0.5f, 0.1f, 0.3f), blue, new Vector3(0f, s * 25f, s * 15f), g);   // tail flukes
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.56f, 0.32f, 0.3f), new Vector3(0.12f, 0.28f, 0.42f), blue, new Vector3(20f, 0f, s * 30f), g);       // flippers
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.38f, 0.66f, 0.62f), Vector3.one * 0.1f, PatchworkAssets.Plain(UIKit.Ink, 0.7f), default(Vector3), g);
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.44f, 0.5f, 0.55f), new Vector3(0.12f, 0.07f, 0.04f), PatchworkAssets.Felt(new Color(1f, 0.6f, 0.65f)), default(Vector3), g);
+                }
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.05f, 0.25f), new Vector3(0.06f, 0.12f, 0.06f), PatchworkAssets.Felt(new Color(0.75f, 0.9f, 1f)), default(Vector3), g);   // spout
+            });
+        }
+
+        // The Merit Quilt on the back-right wall: a framed quilt with a square for every Merit
+        // Patch, under a felt banner. Earned ones are stitched on in colour; the rest are left
+        // as empty dashed rings, so you can see at a glance how many there are still to win.
+        // It lies flat on the wall (the wall's cardboard struts stop short of it), its squares
+        // following the wall's curve.
+        const float MeritFrom = 104.8f, MeritTo = 136.8f;
         static void MeritWall(LevelKit kit)
         {
             const int cols = 5;
-            const float step = 6.4f, top = 6.3f, rowH = 0.82f;
+            const float step = (MeritTo - MeritFrom) / cols, top = 6.3f, rowH = 0.82f;
             int rows = (Merits.All.Length + cols - 1) / cols;
             Color[] squares = { new Color(0.98f, 0.93f, 0.84f), new Color(0.9f, 0.86f, 0.96f), new Color(0.86f, 0.93f, 0.88f), new Color(1f, 0.88f, 0.86f) };
             var empty = PatchworkAssets.Felt(new Color(0.78f, 0.74f, 0.8f));
+            var wood = PatchworkAssets.Wood(new Color(0.62f, 0.42f, 0.28f));
+            var brass = PatchworkAssets.Plain(new Color(0.95f, 0.78f, 0.4f), 0.85f);
+            float bottom = top - (rows - 1) * rowH;
+            System.Func<float, float, Vector3> On = (deg, y) => Dir(deg) * RadiusAt(y) + Vector3.up * y;
+            System.Func<float, float, Quaternion> Flat = (deg, y) => Quaternion.LookRotation(WallInward(deg, y), Vector3.up);
+
             for (int i = 0; i < cols * rows; i++)
             {
                 int cx = i % cols, cy = i / cols;
-                float deg = 108f + cx * step;
+                float deg = MeritFrom + (cx + 0.5f) * step;
                 float y = top - cy * rowH;
-                Vector3 d = Dir(deg);
-                // The quilt square behind (every slot has one, so it reads as one quilt).
-                var sq = kit.Group("MeritSquare", d * (RadiusAt(y) - 0.14f) + Vector3.up * y);
-                sq.rotation = Quaternion.LookRotation(-d, Vector3.up);
-                kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(0.98f, 0.8f, 0.03f), PatchworkAssets.Felt(squares[(cx + cy) % squares.Length]), default(Vector3), sq);
+                Vector3 inw = WallInward(deg, y);
+                float wide = 2f * RadiusAt(y) * Mathf.Sin(step * 0.5f * Mathf.Deg2Rad);
+                // The quilt square behind (every slot has one, so it reads as one quilt), with a
+                // running stitch round its edge.
+                var sq = kit.Group("MeritSquare", On(deg, y) + inw * 0.05f);
+                sq.rotation = Flat(deg, y);
+                kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(wide * 0.97f, rowH * 0.97f, 0.03f), PatchworkAssets.Felt(squares[(cx + cy) % squares.Length]), default(Vector3), sq);
+                var stitch = PatchworkAssets.Felt(new Color(0.55f, 0.42f, 0.38f));
+                for (int k = 0; k < 4; k++)
+                {
+                    bool across = k < 2;
+                    float off = (k % 2 == 0 ? 1f : -1f) * (across ? rowH * 0.42f : wide * 0.43f);
+                    for (int d = -2; d <= 2; d++)
+                    {
+                        Vector3 at = across ? new Vector3(d * wide * 0.18f, off, 0.02f) : new Vector3(off, d * rowH * 0.16f, 0.02f);
+                        kit.Deco(PrimitiveType.Cube, at, across ? new Vector3(0.1f, 0.015f, 0.01f) : new Vector3(0.015f, 0.08f, 0.01f), stitch, default(Vector3), sq);
+                    }
+                }
                 if (i >= Merits.All.Length) continue;
-                Vector3 p = d * (RadiusAt(y) - 0.22f) + Vector3.up * y;
+                Vector3 p = On(deg, y) + inw * 0.11f;
                 if (!Merits.Has((Merits.Id)i))
                 {
                     // Not earned yet: a ring of dashes where it'll go.
                     var ring = kit.Group("MeritSlot", p);
-                    ring.rotation = Quaternion.LookRotation(-d, Vector3.up);
+                    ring.rotation = Flat(deg, y);
                     for (int k = 0; k < 10; k++)
                     {
                         float a = k * Mathf.PI * 2f / 10f;
-                        kit.Deco(PrimitiveType.Cube, new Vector3(Mathf.Cos(a) * 0.28f, Mathf.Sin(a) * 0.28f, 0f), new Vector3(0.1f, 0.03f, 0.02f), empty, new Vector3(0f, 0f, a * Mathf.Rad2Deg + 90f), ring);
+                        kit.Deco(PrimitiveType.Cube, new Vector3(Mathf.Cos(a) * 0.26f, Mathf.Sin(a) * 0.26f, 0f), new Vector3(0.09f, 0.03f, 0.02f), empty, new Vector3(0f, 0f, a * Mathf.Rad2Deg + 90f), ring);
                     }
                     continue;
                 }
                 var g = kit.Group("MeritPatch", p);
-                g.rotation = Quaternion.LookRotation(-d, Vector3.up);
+                g.rotation = Flat(deg, y);
                 var def = Merits.All[i];
-                kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.62f, 0.03f, 0.62f), PatchworkAssets.Felt(def.Col), new Vector3(90f, 0f, 0f), g);
-                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, -0.02f), new Vector3(0.68f, 0.02f, 0.68f), PatchworkAssets.Felt(Color.white), new Vector3(90f, 0f, 0f), g);
-                var q = kit.Deco(PrimitiveType.Quad, new Vector3(0f, 0f, 0.045f), Vector3.one * 0.42f, PatchworkAssets.Sticker(StickerArt.Get(def.Icon)), new Vector3(0f, 180f, 0f), g);
+                kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.58f, 0.03f, 0.58f), PatchworkAssets.Felt(def.Col), new Vector3(90f, 0f, 0f), g);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0f, -0.02f), new Vector3(0.64f, 0.02f, 0.64f), PatchworkAssets.Felt(Color.white), new Vector3(90f, 0f, 0f), g);
+                var q = kit.Deco(PrimitiveType.Quad, new Vector3(0f, 0f, 0.045f), Vector3.one * 0.4f, PatchworkAssets.Sticker(StickerArt.Get(def.Icon)), new Vector3(0f, 180f, 0f), g);
                 q.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+
+            // The frame: a wooden rail along the top and bottom (one piece per column, so it
+            // follows the curve) and a post down each side, in pieces that follow the slope.
+            for (int cx = 0; cx < cols; cx++)
+            {
+                float deg = MeritFrom + (cx + 0.5f) * step;
+                foreach (float y in new[] { top + rowH * 0.5f + 0.07f, bottom - rowH * 0.5f - 0.07f })
+                {
+                    float wide = 2f * RadiusAt(y) * Mathf.Sin(step * 0.5f * Mathf.Deg2Rad) * 1.04f;
+                    var rail = kit.Group("MeritFrame", On(deg, y) + WallInward(deg, y) * 0.08f);
+                    rail.rotation = Flat(deg, y);
+                    kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(wide, 0.16f, 0.12f), wood, default(Vector3), rail);
+                }
+            }
+            foreach (float deg in new[] { MeritFrom - 0.5f, MeritTo + 0.5f })
+                for (int cy = 0; cy < rows; cy++)
+                {
+                    float y = top - cy * rowH;
+                    var post = kit.Group("MeritFrame", On(deg, y) + WallInward(deg, y) * 0.08f);
+                    post.rotation = Flat(deg, y);
+                    kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(0.16f, rowH + (cy == 0 || cy == rows - 1 ? 0.24f : 0.02f), 0.12f), wood, default(Vector3), post);
+                }
+
+            // A felt banner along the top, a gold star in the middle, and a brass plate below.
+            Color[] flags = { new Color(0.95f, 0.45f, 0.55f), new Color(1f, 0.8f, 0.35f), new Color(0.5f, 0.75f, 0.95f), new Color(0.6f, 0.85f, 0.55f), new Color(0.75f, 0.55f, 0.95f) };
+            float by = top + rowH * 0.5f + 0.42f;
+            for (int cx = 0; cx < cols; cx++)
+            {
+                float deg = MeritFrom + (cx + 0.5f) * step;
+                float wide = 2f * RadiusAt(by) * Mathf.Sin(step * 0.5f * Mathf.Deg2Rad) * 1.02f;
+                var band = kit.Group("MeritBanner", On(deg, by) + WallInward(deg, by) * 0.07f);
+                band.rotation = Flat(deg, by);
+                kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(wide, 0.42f, 0.03f), PatchworkAssets.Felt(new Color(0.85f, 0.3f, 0.38f)), default(Vector3), band);
+                for (int k = -1; k <= 1; k++)
+                {
+                    var flag = kit.Deco(PrimitiveType.Cube, new Vector3(k * wide * 0.3f, -0.3f, 0.01f), new Vector3(0.2f, 0.2f, 0.02f), PatchworkAssets.Felt(flags[(cx * 3 + k + 1) % flags.Length]), new Vector3(0f, 0f, 45f), band);
+                    flag.localScale = new Vector3(0.2f, 0.2f, 0.02f);
+                }
+                if (cx == cols / 2)
+                {
+                    var star = kit.Group("MeritStar", band.position + WallInward(deg, by) * 0.06f);
+                    star.rotation = band.rotation;
+                    for (int k = 0; k < 2; k++)
+                        kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(0.36f, 0.36f, 0.03f), PatchworkAssets.Glow(new Color(1f, 0.82f, 0.3f), 0.5f), new Vector3(0f, 0f, k * 45f), star);
+                }
+            }
+            {
+                float deg = (MeritFrom + MeritTo) * 0.5f, y = bottom - rowH * 0.5f - 0.32f;
+                var plate = kit.Group("MeritPlate", On(deg, y) + WallInward(deg, y) * 0.06f);
+                plate.rotation = Flat(deg, y);
+                kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(1f, 0.22f, 0.03f), brass, default(Vector3), plate);
+                for (int s = -1; s <= 1; s += 2)
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.43f, 0f, 0.02f), Vector3.one * 0.05f, PatchworkAssets.Plain(new Color(0.6f, 0.5f, 0.3f), 0.8f), default(Vector3), plate);
             }
         }
 

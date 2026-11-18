@@ -26,7 +26,8 @@ namespace Patchwork
     // and decorations appear in the Pod.
     public static class Prizes
     {
-        public static readonly string[] DecorationNames = { "Duck Captain", "Paper Lanterns", "Snow Globe", "Pinwheels", "Grumblewool Plush", "Sleepy Owl" };
+        public static readonly string[] DecorationNames = { "Duck Captain", "Paper Lanterns", "Snow Globe", "Pinwheels", "Grumblewool Plush", "Sleepy Owl",
+            "Ship in a Bottle", "Jellyfish Lamp", "Ammonite Fossil", "Brass Telescope", "Star Chart", "Whale Plush" };
 
         public static readonly PrizeDef[] All =
         {
@@ -57,6 +58,13 @@ namespace Patchwork
             new PrizeDef("deco_pinwheels", "Pinwheels", PrizeKind.Decoration, 3),
             new PrizeDef("deco_plush", "Grumblewool Plush", PrizeKind.Decoration, 4),
             new PrizeDef("deco_owl", "Sleepy Owl", PrizeKind.Decoration, 5),
+            // From the Oceanic Museum (Level 2).
+            new PrizeDef("deco_ship", "Ship in a Bottle", PrizeKind.Decoration, 6),
+            new PrizeDef("deco_jelly", "Jellyfish Lamp", PrizeKind.Decoration, 7),
+            new PrizeDef("deco_ammonite", "Ammonite Fossil", PrizeKind.Decoration, 8),
+            new PrizeDef("deco_telescope", "Brass Telescope", PrizeKind.Decoration, 9),
+            new PrizeDef("deco_starchart", "Star Chart", PrizeKind.Decoration, 10),
+            new PrizeDef("deco_whale", "Whale Plush", PrizeKind.Decoration, 11),
         };
 
         // A story sticker, the first time something big happens. Shows what you got.

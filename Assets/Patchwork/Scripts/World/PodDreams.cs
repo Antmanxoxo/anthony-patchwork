@@ -244,20 +244,22 @@ namespace Patchwork
             g.SetParent(bag != null ? bag : kit.Root, false);
             g.localPosition = new Vector3(4.2f, 0f, 5.2f);   // where the bean bag was built
 
-            // The throw: soft knit, draped over the seat and down the front.
-            var knit = PatchworkAssets.Knit(new Color(0.96f, 0.84f, 0.72f));
-            kit.Deco(PrimitiveType.Sphere, new Vector3(0.1f, 0.82f, -0.15f), new Vector3(1.55f, 0.2f, 1.25f), knit, new Vector3(0f, 20f, 0f), g);
-            kit.Deco(PrimitiveType.Sphere, new Vector3(0.05f, 0.52f, -0.82f), new Vector3(1.2f, 0.62f, 0.3f), knit, new Vector3(18f, 20f, 0f), g);
-            var trim = PatchworkAssets.Yarn(new Color(0.9f, 0.5f, 0.5f));
+            // The throw: a soft felt blanket laid on the seat, well inside the bean bag's edge,
+            // with a bobble trim along its front.
+            var throwFelt = PatchworkAssets.Felt(new Color(0.55f, 0.78f, 0.72f));
+            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0.86f, -0.2f), new Vector3(1.15f, 0.08f, 0.95f), throwFelt, default(Vector3), g);
+            var trim = PatchworkAssets.Yarn(new Color(0.99f, 0.95f, 0.86f));
             for (int i = -2; i <= 2; i++)
-                kit.Deco(PrimitiveType.Sphere, new Vector3(0.05f + i * 0.24f, 0.26f, -0.95f - Mathf.Abs(i) * 0.02f), Vector3.one * 0.11f, trim, default(Vector3), g);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(i * 0.2f, 0.84f, -0.66f + Mathf.Abs(i) * 0.04f), Vector3.one * 0.08f, trim, default(Vector3), g);
 
             // The kitten, curled up in a loaf on the throw: head resting on the front of its
             // body, ears up, eyes shut and tail wrapped round its paws. It faces +x before turning.
             var cat = new GameObject("Kitten").transform;
             cat.SetParent(g, false);
-            cat.localPosition = new Vector3(0.05f, 0.93f, -0.2f);
-            cat.localRotation = Quaternion.Euler(0f, -30f, 0f);
+            // (Sitting on top of the throw, clear of the back cushion, facing into the room.)
+            cat.localPosition = new Vector3(0f, 0.9f, -0.28f);
+            cat.localRotation = Quaternion.Euler(0f, 60f, 0f);
+            cat.localScale = Vector3.one * 1.15f;
             var fur = PatchworkAssets.Knit(new Color(0.95f, 0.62f, 0.32f));
             var pale = PatchworkAssets.Felt(new Color(0.99f, 0.94f, 0.86f));
             var ink = PatchworkAssets.Felt(new Color(0.2f, 0.15f, 0.15f));

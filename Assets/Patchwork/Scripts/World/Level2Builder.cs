@@ -161,6 +161,7 @@ namespace Patchwork
             Audit(kit);   // the Curator's Audit: twelve exhibits, five of them fakes
             HandsOn(kit); // five machines you're allowed to touch, and the Museum Passport
             PatchworkTouches(kit);   // mended patches on the walls, bunting across the halls
+            PodTreasures(kit);   // six souvenirs for the Pod, in prize bubbles
             TidyUp(kit);  // last of all: clear any doorway that still has something in it
             if (TouringNow) kit.Root.gameObject.AddComponent<Level2PhotoTour>();
             RmDone();

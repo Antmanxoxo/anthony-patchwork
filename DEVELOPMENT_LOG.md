@@ -1,5 +1,16 @@
 # Development Log
 
+## The Pod: curtains, a new Merit board, tidier corners and six souvenirs from Level 2
+
+- **Curtains.** Pleated fabric drapes hang from a wooden rod across the window. Every time you come into the Pod (starting the game or coming home from a level) they're drawn shut over the glass. The first time you pick up the controller they sweep open, gather at the sides and are tied back with gold felt, and they stay open for the rest of that visit. The old gingham curtain blobs are gone.
+- **Merit board.** The Merit quilt is now a framed board: wooden rails and posts that follow the wall's curve, quilt squares lying flat on the wall with running stitches round each one, a felt banner with little flags and a gold star along the top, and a brass plate underneath. The wall's cardboard struts stop short of it instead of running across it.
+- **Pictures and cork board.** The four framed pictures hang in the gaps between the struts and lie flat on the sloping wall, so no strut cuts across them and no corner pokes into the wall. The cork board lies flat too.
+- **Toy chest.** Its lid is propped open on a hinge at the back (low enough to stay under the shelf), and the toys sit inside, peeking out of the open top, instead of poking through the lid.
+- **The kitten.** It sits on top of a felt throw in the middle of the bean bag, facing the room, instead of sinking into the back cushion and a knit throw that stuck out the side.
+- **Bounce pad.** The pin-cushion bounce pad in the Pod works again: a solid box had been put over it, which held Patch up off the cushion.
+- **Six new Pod decorations from Level 2,** each in a prize bubble in the Oceanic Museum: a Ship in a Bottle (the Keeper's room), a Jellyfish Lamp (the kelp galleries), an Ammonite Fossil (the Deep Time hall), a Brass Telescope (the Star Corridor), a Star Chart (the Hall of Arms) and a Whale Plush (the sunken ruins). Each bubble lifts itself clear of anything solid where it's placed. In the Pod they go on the shelves, hang from the roof, stand by the pattern book, hang on the wall above the shelves and lie on the floor by the clock, and they can be switched on and off in the decorating menu like the others.
+
+
 ## The Pod, tidied from its photo tour
 
 - The wall panels are cut to the shape of the egg (wider at the bottom of each ring than the top), so the little dark slits between panels up where the roof curves in are gone, inside and out.
