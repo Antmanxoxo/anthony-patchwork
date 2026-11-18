@@ -1,5 +1,12 @@
 # Development Log
 
+## Softer curtains, a Merit cabinet, and the toy chest stops flickering
+
+- **Curtains.** Each drape is now one soft cloth that follows the curve of the window, with rounded folds rippling across it and a gold hem, instead of a wall of flat boards with a seam halfway up. A scalloped velvet pelmet with gold trim and pom-poms runs across the top of the window and hides where they hang from. When they open they bunch into deeper folds at the sides, pinched in by a gold rope tie-back with a tassel.
+- **Merit board.** It's now a shallow wooden cabinet standing out from the wall: a deep box along the top carrying the felt banner and star, deep sides, a deep bottom rail with the brass plate, and a backing board behind the quilt. The wall's cardboard struts run on unbroken behind it, instead of stopping short round it.
+- **Toy chest.** The flicker on top of it is gone (a dark panel sat exactly on its lid face and the two fought over which to show).
+
+
 ## The Pod: curtains, a new Merit board, tidier corners and six souvenirs from Level 2
 
 - **Curtains.** Pleated fabric drapes hang from a wooden rod across the window. Every time you come into the Pod (starting the game or coming home from a level) they're drawn shut over the glass. The first time you pick up the controller they sweep open, gather at the sides and are tied back with gold felt, and they stay open for the rest of that visit. The old gingham curtain blobs are gone.

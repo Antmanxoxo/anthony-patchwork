@@ -175,7 +175,6 @@ namespace Patchwork
                 lid.localPosition = new Vector3(0f, 1f, -0.6f);
                 lid.localRotation = Quaternion.Euler(-113f, 0f, 0f);
                 kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.08f, 0.62f), new Vector3(2.05f, 0.16f, 1.25f), PatchworkAssets.Felt(new Color(1f, 0.8f, 0.3f)), default(Vector3), lid);
-                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.985f, 0f), new Vector3(1.9f, 0.03f, 1.1f), PatchworkAssets.Felt(new Color(0.3f, 0.45f, 0.7f)), default(Vector3), g);   // the dark inside
                 kit.Deco(PrimitiveType.Sphere, new Vector3(0.5f, 1.08f, 0.15f), new Vector3(0.5f, 0.5f, 0.5f), PatchworkAssets.Plain(new Color(1f, 0.4f, 0.5f), 0.7f), default(Vector3), g);
                 kit.Deco(PrimitiveType.Cube, new Vector3(-0.4f, 1.1f, 0.05f), new Vector3(0.45f, 0.45f, 0.45f), PatchworkAssets.Felt(new Color(0.55f, 0.85f, 0.45f)), new Vector3(8f, 30f, 0f), g);
             });
@@ -673,7 +672,6 @@ namespace Patchwork
                     float sd = Mathf.Abs(Signed(deg));
                     if ((tier == 1 || tier == 2) && sd < 38f) continue;          // not across the window
                     if (tier <= 1 && Mathf.Abs(Signed(deg - 180f)) < 14f) continue;  // or the doorway (it has its own frame)
-                    if ((tier == 1 || tier == 2) && Signed(deg) > MeritFrom - 2f && Signed(deg) < MeritTo + 2f) continue;   // or behind the Merit board
                     Panel(kit, deg, tier, 0.6f, 0.6f, new Vector3(0.14f, TierLength(tier), 0.6f), rib, false, "Rib");
                 }
             }
@@ -1261,9 +1259,11 @@ namespace Patchwork
         // The Merit Quilt on the back-right wall: a framed quilt with a square for every Merit
         // Patch, under a felt banner. Earned ones are stitched on in colour; the rest are left
         // as empty dashed rings, so you can see at a glance how many there are still to win.
-        // It lies flat on the wall (the wall's cardboard struts stop short of it), its squares
-        // following the wall's curve.
+        // It's built as a shallow wooden cabinet standing out from the wall, deep enough that the
+        // wall's cardboard struts run on unbroken behind it, its squares following the wall's
+        // curve.
         const float MeritFrom = 104.8f, MeritTo = 136.8f;
+        const float MeritOut = 0.68f;   // the board's face, in from the wall (the struts are 0.6 deep)
         static void MeritWall(LevelKit kit)
         {
             const int cols = 5;
@@ -1286,7 +1286,11 @@ namespace Patchwork
                 float wide = 2f * RadiusAt(y) * Mathf.Sin(step * 0.5f * Mathf.Deg2Rad);
                 // The quilt square behind (every slot has one, so it reads as one quilt), with a
                 // running stitch round its edge.
-                var sq = kit.Group("MeritSquare", On(deg, y) + inw * 0.05f);
+                // The backing board behind each square.
+                var back = kit.Group("MeritBacking", On(deg, y) + inw * (MeritOut - 0.03f));
+                back.rotation = Flat(deg, y);
+                kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(wide * 1.02f, rowH * 1.02f, 0.04f), PatchworkAssets.Wood(new Color(0.45f, 0.3f, 0.22f)), default(Vector3), back);
+                var sq = kit.Group("MeritSquare", On(deg, y) + inw * (MeritOut + 0.01f));
                 sq.rotation = Flat(deg, y);
                 kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(wide * 0.97f, rowH * 0.97f, 0.03f), PatchworkAssets.Felt(squares[(cx + cy) % squares.Length]), default(Vector3), sq);
                 var stitch = PatchworkAssets.Felt(new Color(0.55f, 0.42f, 0.38f));
@@ -1301,7 +1305,7 @@ namespace Patchwork
                     }
                 }
                 if (i >= Merits.All.Length) continue;
-                Vector3 p = On(deg, y) + inw * 0.11f;
+                Vector3 p = On(deg, y) + inw * (MeritOut + 0.07f);
                 if (!Merits.Has((Merits.Id)i))
                 {
                     // Not earned yet: a ring of dashes where it'll go.
@@ -1323,36 +1327,43 @@ namespace Patchwork
                 q.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
 
-            // The frame: a wooden rail along the top and bottom (one piece per column, so it
-            // follows the curve) and a post down each side, in pieces that follow the slope.
+            // The cabinet: a deep wooden rail along the bottom (one piece per column, so it
+            // follows the curve), a deep box along the top that carries the banner, and a deep
+            // side down each end, all reaching back to the wall.
+            const float deep = MeritOut + 0.1f;
+            float headerY = top + rowH * 0.5f + 0.32f, headerH = 0.64f;
             for (int cx = 0; cx < cols; cx++)
             {
                 float deg = MeritFrom + (cx + 0.5f) * step;
-                foreach (float y in new[] { top + rowH * 0.5f + 0.07f, bottom - rowH * 0.5f - 0.07f })
-                {
-                    float wide = 2f * RadiusAt(y) * Mathf.Sin(step * 0.5f * Mathf.Deg2Rad) * 1.04f;
-                    var rail = kit.Group("MeritFrame", On(deg, y) + WallInward(deg, y) * 0.08f);
-                    rail.rotation = Flat(deg, y);
-                    kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(wide, 0.16f, 0.12f), wood, default(Vector3), rail);
-                }
+                float y = bottom - rowH * 0.5f - 0.1f;
+                float wide = 2f * RadiusAt(y) * Mathf.Sin(step * 0.5f * Mathf.Deg2Rad) * 1.04f;
+                var rail = kit.Group("MeritFrame", On(deg, y) + WallInward(deg, y) * (deep * 0.5f));
+                rail.rotation = Flat(deg, y);
+                kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(wide, 0.2f, deep), wood, default(Vector3), rail);
+                float hw = 2f * RadiusAt(headerY) * Mathf.Sin(step * 0.5f * Mathf.Deg2Rad) * 1.04f;
+                var head = kit.Group("MeritFrame", On(deg, headerY) + WallInward(deg, headerY) * (deep * 0.5f));
+                head.rotation = Flat(deg, headerY);
+                kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(hw, headerH, deep), wood, default(Vector3), head);
             }
             foreach (float deg in new[] { MeritFrom - 0.5f, MeritTo + 0.5f })
-                for (int cy = 0; cy < rows; cy++)
+                for (int cy = -1; cy <= rows; cy++)
                 {
-                    float y = top - cy * rowH;
-                    var post = kit.Group("MeritFrame", On(deg, y) + WallInward(deg, y) * 0.08f);
+                    // (One piece per row, plus one beside the banner box and one by the rail.)
+                    float y = cy < 0 ? headerY : cy == rows ? bottom - rowH * 0.5f - 0.1f : top - cy * rowH;
+                    float hgt = cy < 0 ? headerH + 0.04f : cy == rows ? 0.24f : rowH + 0.03f;
+                    var post = kit.Group("MeritFrame", On(deg, y) + WallInward(deg, y) * (deep * 0.5f));
                     post.rotation = Flat(deg, y);
-                    kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(0.16f, rowH + (cy == 0 || cy == rows - 1 ? 0.24f : 0.02f), 0.12f), wood, default(Vector3), post);
+                    kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(0.18f, hgt, deep + 0.02f), wood, default(Vector3), post);
                 }
 
             // A felt banner along the top, a gold star in the middle, and a brass plate below.
             Color[] flags = { new Color(0.95f, 0.45f, 0.55f), new Color(1f, 0.8f, 0.35f), new Color(0.5f, 0.75f, 0.95f), new Color(0.6f, 0.85f, 0.55f), new Color(0.75f, 0.55f, 0.95f) };
-            float by = top + rowH * 0.5f + 0.42f;
+            float by = headerY;
             for (int cx = 0; cx < cols; cx++)
             {
                 float deg = MeritFrom + (cx + 0.5f) * step;
                 float wide = 2f * RadiusAt(by) * Mathf.Sin(step * 0.5f * Mathf.Deg2Rad) * 1.02f;
-                var band = kit.Group("MeritBanner", On(deg, by) + WallInward(deg, by) * 0.07f);
+                var band = kit.Group("MeritBanner", On(deg, by) + WallInward(deg, by) * (deep + 0.02f));
                 band.rotation = Flat(deg, by);
                 kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(wide, 0.42f, 0.03f), PatchworkAssets.Felt(new Color(0.85f, 0.3f, 0.38f)), default(Vector3), band);
                 for (int k = -1; k <= 1; k++)
@@ -1369,10 +1380,10 @@ namespace Patchwork
                 }
             }
             {
-                float deg = (MeritFrom + MeritTo) * 0.5f, y = bottom - rowH * 0.5f - 0.32f;
-                var plate = kit.Group("MeritPlate", On(deg, y) + WallInward(deg, y) * 0.06f);
+                float deg = (MeritFrom + MeritTo) * 0.5f, y = bottom - rowH * 0.5f - 0.1f;
+                var plate = kit.Group("MeritPlate", On(deg, y) + WallInward(deg, y) * (deep + 0.02f));
                 plate.rotation = Flat(deg, y);
-                kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(1f, 0.22f, 0.03f), brass, default(Vector3), plate);
+                kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(1f, 0.15f, 0.03f), brass, default(Vector3), plate);
                 for (int s = -1; s <= 1; s += 2)
                     kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.43f, 0f, 0.02f), Vector3.one * 0.05f, PatchworkAssets.Plain(new Color(0.6f, 0.5f, 0.3f), 0.8f), default(Vector3), plate);
             }

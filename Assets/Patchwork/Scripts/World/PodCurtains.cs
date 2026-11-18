@@ -3,111 +3,225 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    // The Pod's curtains: two pleated fabric drapes hanging from a wooden rod across the top of
-    // the window. Every time you come into the Pod (starting the game, or coming home from a
-    // level) they're drawn shut over the glass. The first time you pick up the controller to
-    // choose a level they sweep open, gather at the sides of the window and are tied back, and
-    // they stay open for the rest of your visit.
+    // The Pod's curtains: two soft velvet drapes under a scalloped pelmet across the top of the
+    // window. Every time you come into the Pod (starting the game, or coming home from a level)
+    // they're drawn shut over the glass. The first time you pick up the controller to choose a
+    // level they sweep open, bunching into deep folds at the sides of the window, and are tied
+    // back with gold rope; they stay open for the rest of your visit.
+    //
+    // Each drape is one cloth mesh following the curve of the window, with rounded folds rippling
+    // across it (deeper and closer together as it gathers), a gold hem along the bottom, and a
+    // back face so it shows from outside too.
     public class PodCurtains : MonoBehaviour
     {
-        struct Pose { public Vector3 Pos; public Quaternion Rot; public Vector3 Scale; }
+        class Drape
+        {
+            public int Side;
+            public Mesh Cloth, Hem;
+        }
 
-        readonly List<Transform> pleats = new List<Transform>();
-        readonly List<Pose> shut = new List<Pose>(), open = new List<Pose>();
+        readonly List<Drape> drapes = new List<Drape>();
         readonly List<GameObject> ties = new List<GameObject>();
         float t;            // 0 shut, 1 open
         bool opening;
+        float edge, bottom, top;
 
-        const int PerSide = 13;
+        const int Across = 72, Down = 16, Folds = 11;
+
         // How far in from the glass they hang: close at the bottom (behind the things on the
         // desk) and further in at the top (in front of the felt piping over the window).
         static float Off(float y) { return Mathf.Lerp(0.2f, 0.52f, Mathf.InverseLerp(1.3f, 6.8f, y)); }
-
         static Vector3 Dir(float deg) { float a = deg * Mathf.Deg2Rad; return new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a)); }
-        static Vector3 On(float deg, float y) { return Dir(deg) * (HubBuilder.RadiusAt(y) - Off(y)) + Vector3.up * y; }
+        static Vector3 On(float deg, float y, float inward) { return Dir(deg) * (HubBuilder.RadiusAt(y) - Off(y) - inward) + Vector3.up * y; }
 
         public static void Build(LevelKit kit, float halfAngle, float deskTop, float windowTop)
         {
             var root = kit.Group("Curtains", Vector3.zero);
             var c = root.gameObject.AddComponent<PodCurtains>();
-            float bottom = deskTop + 0.08f, mid = 4f, top = windowTop - 0.38f;
-            Color[] cloth = { new Color(0.8f, 0.32f, 0.42f), new Color(0.68f, 0.25f, 0.35f) };
-            var mats = new[] { PatchworkAssets.Fabric(cloth[0]), PatchworkAssets.Fabric(cloth[1]) };
-            float edge = halfAngle + 1f;
+            c.edge = halfAngle + 1.5f;
+            c.bottom = deskTop + 0.1f;
+            c.top = windowTop - 0.3f;
+            var velvet = PatchworkAssets.Felt(new Color(0.72f, 0.24f, 0.36f));
+            var gold = PatchworkAssets.Felt(new Color(1f, 0.8f, 0.36f));
             for (int s = -1; s <= 1; s += 2)
             {
-                for (int i = 0; i < PerSide; i++)
-                {
-                    // Shut: the pleats spread from the middle of the window out to its edge.
-                    float aShut = s * ((i + 0.5f) / PerSide * edge);
-                    // Open: bunched up at the window's edge, each fold close behind the last.
-                    float aOpen = s * (edge - 3.2f + (i + 0.5f) / PerSide * 3.4f);
-                    float slice = edge / PerSide;
-                    bool fold = i % 2 == 1;
-                    foreach (var seg in new[] { new Vector2(bottom, mid), new Vector2(mid, top) })
-                    {
-                        var piece = kit.Deco(PrimitiveType.Cube, Vector3.zero, Vector3.one, mats[fold ? 1 : 0], default(Vector3), root);
-                        piece.name = "CurtainPleat";
-                        piece.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                        c.pleats.Add(piece);
-                        c.shut.Add(PoseFor(aShut, seg.x, seg.y, slice, fold, 1f, s));
-                        c.open.Add(PoseFor(aOpen, seg.x, seg.y, slice, fold, 0.26f, s));
-                    }
-                }
-                // The tie-back, round the gathered curtain (shown once it's open).
-                float aTie = s * (edge - 1.5f);
-                float yTie = 3.7f;
-                var tie = kit.Group("CurtainTie", On(aTie, yTie) + Vector3.zero);
+                var d = new Drape { Side = s, Cloth = new Mesh { name = "Curtain" }, Hem = new Mesh { name = "CurtainHem" } };
+                d.Cloth.MarkDynamic();
+                d.Hem.MarkDynamic();
+                Show(root, "Curtain", d.Cloth, velvet);
+                Show(root, "CurtainHem", d.Hem, gold);
+                c.drapes.Add(d);
+
+                // The tie-back: a twist of gold rope round the gathered drape, with a tassel.
+                float aTie = s * (c.edge - 2.6f);
+                const float yTie = 3.6f;
+                var tie = kit.Group("CurtainTie", On(aTie, yTie, 0.2f));
                 tie.rotation = Quaternion.LookRotation(-Dir(aTie), Vector3.up);
-                kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.95f, 0.06f, 0.42f), PatchworkAssets.Felt(new Color(1f, 0.82f, 0.35f)), default(Vector3), tie);
-                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 0f, 0.2f), new Vector3(0.22f, 0.22f, 0.12f), PatchworkAssets.Felt(new Color(0.98f, 0.7f, 0.3f)), default(Vector3), tie);
+                kit.Deco(PrimitiveType.Cylinder, Vector3.zero, new Vector3(1.05f, 0.05f, 0.62f), gold, default(Vector3), tie);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(-s * 0.45f, 0f, 0.28f), Vector3.one * 0.14f, gold, default(Vector3), tie);
+                kit.Deco(PrimitiveType.Capsule, new Vector3(-s * 0.45f, -0.25f, 0.3f), new Vector3(0.12f, 0.18f, 0.12f), gold, default(Vector3), tie);
                 tie.gameObject.SetActive(false);
                 c.ties.Add(tie.gameObject);
             }
-            // The rod across the top, in short straight lengths round the curve, with a
-            // wooden knob at each end.
-            var wood = PatchworkAssets.Wood(new Color(0.62f, 0.42f, 0.28f));
-            float rodY = top + 0.06f;
-            const int rodBits = 16;
-            for (int k = 0; k < rodBits; k++)
-            {
-                float a0 = Mathf.Lerp(-edge - 2f, edge + 2f, k / (float)rodBits), a1 = Mathf.Lerp(-edge - 2f, edge + 2f, (k + 1) / (float)rodBits);
-                Vector3 p0 = On(a0, rodY), p1 = On(a1, rodY);
-                var rod = kit.Deco(PrimitiveType.Cylinder, (p0 + p1) * 0.5f, new Vector3(0.09f, (p1 - p0).magnitude * 0.52f, 0.09f), wood, default(Vector3), root);
-                rod.rotation = Quaternion.FromToRotation(Vector3.up, (p1 - p0).normalized);
-            }
-            for (int s = -1; s <= 1; s += 2)
-                kit.Deco(PrimitiveType.Sphere, On(s * (edge + 2.2f), rodY), Vector3.one * 0.2f, wood, default(Vector3), root);
+            c.Pelmet(kit, root);
             c.Apply();
         }
 
-        // One fold of curtain from height y0 to y1 at angle deg, hanging just in from the glass.
-        static Pose PoseFor(float deg, float y0, float y1, float slice, bool fold, float bunch, int side)
+        static void Show(Transform root, string name, Mesh mesh, Material mat)
         {
-            float inset = fold ? 0.07f : 0f;
-            Vector3 a = On(deg, y0), b = On(deg, y1);
-            Vector3 n = -Dir(deg);
-            a += n * inset; b += n * inset;
-            Vector3 up = (b - a).normalized;
-            // Each fold is turned a little, alternately, so the drape ripples.
-            Quaternion rot = Quaternion.LookRotation(n, up) * Quaternion.Euler(0f, (fold ? 18f : -18f) * side * (bunch < 1f ? 2.2f : 1f), 0f);
-            float r = HubBuilder.RadiusAt((y0 + y1) * 0.5f) - Off((y0 + y1) * 0.5f);
-            float wide = 2f * r * Mathf.Tan(slice * 0.5f * Mathf.Deg2Rad) * 1.18f;
-            return new Pose { Pos = (a + b) * 0.5f, Rot = rot, Scale = new Vector3(wide * bunch, (b - a).magnitude + 0.03f, 0.05f) };
+            var go = new GameObject(name);
+            go.transform.SetParent(root, false);
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var r = go.AddComponent<MeshRenderer>();
+            r.sharedMaterial = mat;
         }
 
+        // The pelmet: a stiff padded band across the top of the window, its bottom edge cut in
+        // scallops with a pom-pom at the bottom of each, hiding where the drapes hang from.
+        void Pelmet(LevelKit kit, Transform root)
+        {
+            var mat = PatchworkAssets.Felt(new Color(0.6f, 0.2f, 0.32f));
+            var trim = PatchworkAssets.Felt(new Color(1f, 0.8f, 0.36f));
+            const int n = 96, scallops = 14;
+            float from = -edge - 2.5f, to = edge + 2.5f;
+            float y1 = top + 0.18f, depth = 0.62f;
+            var verts = new List<Vector3>();
+            var uvs = new List<Vector2>();
+            var tris = new List<int>();
+            var trimVerts = new List<Vector3>();
+            var trimTris = new List<int>();
+            for (int i = 0; i <= n; i++)
+            {
+                float u = i / (float)n;
+                float deg = Mathf.Lerp(from, to, u);
+                float scallop = Mathf.Abs(Mathf.Sin(u * scallops * Mathf.PI));
+                float y0 = top - 0.32f - scallop * 0.22f;
+                verts.Add(On(deg, y1, depth));
+                verts.Add(On(deg, y0, depth));
+                uvs.Add(new Vector2(u * 12f, 1f));
+                uvs.Add(new Vector2(u * 12f, 0f));
+                trimVerts.Add(On(deg, y0 + 0.07f, depth + 0.012f));
+                trimVerts.Add(On(deg, y0 - 0.01f, depth + 0.012f));
+                if (i == n) continue;
+                int k = i * 2;
+                tris.AddRange(new[] { k, k + 2, k + 1, k + 1, k + 2, k + 3 });
+                trimTris.AddRange(new[] { k, k + 2, k + 1, k + 1, k + 2, k + 3 });
+            }
+            // The pelmet's top: a shelf back to the wall, so it reads as a solid box.
+            int topStart = verts.Count;
+            for (int i = 0; i <= n; i++)
+            {
+                float deg = Mathf.Lerp(from, to, i / (float)n);
+                verts.Add(On(deg, y1, depth));
+                verts.Add(On(deg, y1, -0.15f));
+                uvs.Add(new Vector2(i / (float)n * 12f, 0f));
+                uvs.Add(new Vector2(i / (float)n * 12f, 1f));
+                if (i == n) continue;
+                int k = topStart + i * 2;
+                tris.AddRange(new[] { k, k + 1, k + 2, k + 2, k + 1, k + 3 });
+            }
+            var mesh = new Mesh { name = "Pelmet" };
+            mesh.SetVertices(verts);
+            mesh.SetUVs(0, uvs);
+            mesh.SetTriangles(DoubleSided(tris, verts, mesh), 0);
+            Finish(mesh);
+            Show(root, "Pelmet", mesh, mat);
+            var tm = new Mesh { name = "PelmetTrim" };
+            tm.SetVertices(trimVerts);
+            tm.SetTriangles(DoubleSided(trimTris, trimVerts, tm), 0);
+            Finish(tm);
+            Show(root, "PelmetTrim", tm, trim);
+            for (int k = 0; k < scallops; k++)
+            {
+                float deg = Mathf.Lerp(from, to, (k + 0.5f) / scallops);
+                kit.Deco(PrimitiveType.Sphere, On(deg, top - 0.6f, depth + 0.04f), Vector3.one * 0.13f, trim, default(Vector3), root);
+            }
+        }
+
+        // Adds the same triangles the other way round (with their own copies of the points), so
+        // a sheet shows from both sides with its light right on each.
+        static List<int> DoubleSided(List<int> tris, List<Vector3> verts, Mesh mesh)
+        {
+            int n = verts.Count;
+            var uv = new List<Vector2>();
+            mesh.GetUVs(0, uv);
+            for (int i = 0; i < n; i++) { verts.Add(verts[i]); if (uv.Count > i) uv.Add(uv[i]); }
+            var all = new List<int>(tris);
+            for (int i = 0; i < tris.Count; i += 3) all.AddRange(new[] { tris[i] + n, tris[i + 2] + n, tris[i + 1] + n });
+            mesh.SetVertices(verts);
+            if (uv.Count == verts.Count) mesh.SetUVs(0, uv);
+            return all;
+        }
+
+        static void Finish(Mesh m)
+        {
+            m.RecalculateNormals();
+            m.RecalculateBounds();
+        }
+
+        // Rebuilds both drapes for how far open they are.
         void Apply()
         {
             float k = t * t * (3f - 2f * t);
-            for (int i = 0; i < pleats.Count; i++)
+            foreach (var d in drapes) Shape(d, k);
+        }
+
+        void Shape(Drape d, float k)
+        {
+            var verts = new List<Vector3>();
+            var uvs = new List<Vector2>();
+            var tris = new List<int>();
+            var hem = new List<Vector3>();
+            var hemTris = new List<int>();
+            float gathered = 5.5f;   // how wide (in degrees) each drape is once bunched up
+            for (int j = 0; j <= Down; j++)
             {
-                var p = pleats[i];
-                if (p == null) continue;
-                var a = shut[i]; var b = open[i];
-                p.position = Vector3.Lerp(a.Pos, b.Pos, k);
-                p.rotation = Quaternion.Slerp(a.Rot, b.Rot, k);
-                p.localScale = Vector3.Lerp(a.Scale, b.Scale, k);
+                float v = j / (float)Down;
+                float y = Mathf.Lerp(bottom, top, v);
+                for (int i = 0; i <= Across; i++)
+                {
+                    float u = i / (float)Across;   // 0 at the middle of the window, 1 at its edge
+                    float shutA = -0.8f + u * (edge + 0.8f);
+                    // Gathered: squeezed towards the edge, a little looser at the bottom (where
+                    // the tie-back lets it flare) and pinched in at the tie.
+                    float pinch = 1f - 0.45f * Mathf.Exp(-Mathf.Pow((y - 3.6f) / 0.9f, 2f));
+                    float openA = edge - gathered * pinch * (1f - u) - 0.4f;
+                    float a = d.Side * Mathf.Lerp(shutA, openA, k);
+                    float folds = Folds * (1f + u * 0.15f);
+                    float amp = Mathf.Lerp(0.07f, 0.2f, k) * Mathf.Lerp(0.8f, 1.15f, 1f - v);
+                    float ripple = amp * (0.5f + 0.5f * Mathf.Sin(u * folds * Mathf.PI * 2f + v * 0.6f));
+                    verts.Add(On(a, y, ripple));
+                    uvs.Add(new Vector2(u * 9f, v * 4f));
+                    if (j == 0)
+                    {
+                        hem.Add(On(a, y + 0.16f, ripple + 0.012f));
+                        hem.Add(On(a, y - 0.01f, ripple + 0.012f));
+                    }
+                }
             }
+            int row = Across + 1;
+            for (int j = 0; j < Down; j++)
+                for (int i = 0; i < Across; i++)
+                {
+                    int a0 = j * row + i, a1 = a0 + 1, b0 = a0 + row, b1 = b0 + 1;
+                    if (d.Side > 0) tris.AddRange(new[] { a0, b0, a1, a1, b0, b1 });
+                    else tris.AddRange(new[] { a0, a1, b0, a1, b1, b0 });
+                }
+            for (int i = 0; i < Across; i++)
+            {
+                int h = i * 2;
+                if (d.Side > 0) hemTris.AddRange(new[] { h + 1, h, h + 3, h + 3, h, h + 2 });
+                else hemTris.AddRange(new[] { h + 1, h + 3, h, h + 3, h + 2, h });
+            }
+            d.Cloth.Clear();
+            d.Cloth.SetVertices(verts);
+            d.Cloth.SetUVs(0, uvs);
+            d.Cloth.SetTriangles(DoubleSided(tris, verts, d.Cloth), 0);
+            Finish(d.Cloth);
+            d.Hem.Clear();
+            d.Hem.SetVertices(hem);
+            d.Hem.SetTriangles(DoubleSided(hemTris, hem, d.Hem), 0);
+            Finish(d.Hem);
         }
 
         void Update()
@@ -119,7 +233,7 @@ namespace Patchwork
                 Sfx.Play(SfxId.Whoosh, 0.35f);
             }
             if (!opening || t >= 1f) return;
-            t = Mathf.MoveTowards(t, 1f, Time.unscaledDeltaTime / 1.3f);
+            t = Mathf.MoveTowards(t, 1f, Time.unscaledDeltaTime / 1.4f);
             Apply();
             if (t >= 1f) foreach (var g in ties) if (g != null) g.SetActive(true);
         }
