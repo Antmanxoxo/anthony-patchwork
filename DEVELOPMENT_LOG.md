@@ -1,5 +1,16 @@
 # Development Log
 
+## The Trophy Room, and curtains in front of the struts
+
+- **The Button Box is now the Trophy Room.** It's always open: a short passage through the doorway (with TROPHIES in gold letters on the lintel) opens into a wider, taller cardboard room behind.
+  - **Back wall:** the Merit quilt, flat and centred, in a wooden frame under a felt banner reading MERIT PATCHES, with little flags. It's moved off the Pod's curved wall, so nothing clips it and there's no gap in the struts.
+  - **Left wall:** a two-tier trophy shelf. There are trophies for the Toybox Town wedding, the Big Top's Ringmaster, the golden buttons (in a little glass case, one slot per button found), mending the Night Glass, the Great Whale and the Button Moon's secret. Each is gold once won and grey with a strand of cobweb until then, and each has a brass plate.
+  - **Right wall:** the Hall of Fame, a gold-framed felt portrait of Patch with rosettes either side and a velvet rope on brass posts.
+  - **In the middle, under its own spotlight:** a grand fluted plinth on a velvet cushion, and on it a tiny Participation Trophy, "FOR TURNING UP". Walk up to it for the ceremony.
+  - **The Golden Crown** no longer sits on a pedestal: finding all the golden buttons now puts it straight into the Satchel (with a message the next time you're in the Pod). Captain Yarny's lines say so, and point to the Trophy Room for the Merit quilt.
+- **Curtains.** They now hang in front of the wall's cardboard struts instead of behind them, with deeper, rounder folds. Anything on the desk that would have been behind them is slid forward along the desk.
+
+
 ## Softer curtains, a Merit cabinet, and the toy chest stops flickering
 
 - **Curtains.** Each drape is now one soft cloth that follows the curve of the window, with rounded folds rippling across it and a gold hem, instead of a wall of flat boards with a seam halfway up. A scalloped velvet pelmet with gold trim and pom-poms runs across the top of the window and hides where they hang from. When they open they bunch into deeper folds at the sides, pinched in by a gold rope tie-back with a tassel.

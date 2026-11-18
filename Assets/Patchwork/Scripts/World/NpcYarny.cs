@@ -261,13 +261,13 @@ namespace Patchwork
                 lines.Add(new[] { "Word on the wind is there be " + (needed - found) + " golden button" + (needed - found == 1 ? "" : "s") + " still hidin' in Toybox Town.",
                                   "One of 'em hums a little tune, they say. Keep yer ears open, matey." });
             else
-                lines.Add(new[] { "Ye found every golden button! The Button Box door's come unstitched.", "Go on in, through the back. There be somethin' shiny in there for a captain-in-trainin'." });
+                lines.Add(new[] { "Ye found every golden button! That Golden Crown's yers now. Check yer Satchel.", "And the buttons themselves are in a case in the Trophy Room, through the back. Proper treasure!" });
             lines.Add(new[] { "Lost me eye to a runaway sewin' needle, I did.", "Watch yer step 'round the pins, deckhand." });
             lines.Add(new[] { "Water slips through drains, Wind rides the breeze...", "...and Yarn? Yarn swings from the rigging, like any proper pirate! Arr!" });
             lines.Add(new[] { "Me old Skiff's held together with tape and stubbornness.", "And a wee bit o' glue. Don't tell the parrot." });
             lines.Add(new[] { "Fine pod ye've got here. Quiet, mind. A sailor likes a bit o' music.", "Pick up that controller and ye'll hear it start up, sure as the tide." });
             lines.Add(new[] { "There's a circus in Toybox Town now, they say. A Big Top right by the square!", "Some great grumpy beast in the ring. Mind its charge, and aim for its head." });
-            lines.Add(new[] { "Every clever trick ye pull earns a Merit Patch. Check the pause menu.", "Earn 'em and they get stitched right there on that wall. Proper sailor's badges!" });
+            lines.Add(new[] { "Every clever trick ye pull earns a Merit Patch. Check the pause menu.", "Earn 'em and they get stitched on the quilt in the Trophy Room, through the back. Proper sailor's badges!" });
             lines.Add(new[] { "Ye can make this place yer own, ye know.", "Flip that pattern book by the window for new wallpaper, and slap yer stickers wherever ye like." });
             lines.Add(new[] { "Tap them face buttons fast enough and ye might break into a jig.", "Not that I'd know anythin' about that. Ahem." });
             lines.Add(new[] { "Every hat ye find stays on through every form.", "A pirate's hat is his pride! Mine's older than the ship." });

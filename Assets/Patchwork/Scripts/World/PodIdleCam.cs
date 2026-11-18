@@ -60,14 +60,14 @@ namespace Patchwork
             Vector3 from = game.CameraRig.transform.position - Centre;
             angle = Mathf.Atan2(from.x, from.z) * Mathf.Rad2Deg;
             if (Exterior != null) Exterior.SetActive(true);
-            // The Button Box room sticks out of the back of the Pod: hide it while we're outside.
+            // The Trophy Room sticks out of the back of the Pod: hide it while we're outside.
             backRoom.Clear();
             var root = game.LevelRoot != null ? game.LevelRoot : transform;
             foreach (var r in root.GetComponentsInChildren<Renderer>())
             {
                 if (!r.enabled || (Exterior != null && r.transform.IsChildOf(Exterior.transform))) continue;
                 Vector3 c = r.bounds.center;
-                if (c.z < -HubBuilder.RadiusAt(Mathf.Clamp(c.y, 0f, 13.4f)) + 0.1f && Mathf.Abs(c.x) < 3.6f && c.y < 7f && c.z > -16f)
+                if (c.z < -HubBuilder.RadiusAt(Mathf.Clamp(c.y, 0f, 13.4f)) + 0.1f && Mathf.Abs(c.x) < 4.2f && c.y < 7f && c.z > -17.6f)
                 {
                     r.enabled = false;
                     backRoom.Add(r);

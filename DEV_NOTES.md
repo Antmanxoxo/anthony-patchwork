@@ -765,6 +765,9 @@ Stuff I need to remember about how Patchwork is put together.
 - Pod decorations 6 to 11 (`deco_ship`, `deco_jelly`, `deco_ammonite`, `deco_telescope`, `deco_starchart`, `deco_whale`) are placed in Level 2 by `Level2Builder.PodTreasures` (World/Level2PodTreasures.cs), just before `TidyUp`; `PlaceTreasure` raises a bubble until `Physics.CheckSphere` (radius 1.2) is clear.
 - TidyRoom's bump boxes skip any item with a `BouncePad` in it.
 
+- Trophy Room (`HubBuilder.ButtonBox`, plus `World/TrophyRoom.cs` for `ParticipationTrophy` and `DelayedToast`): passage x ±1.7 from z -9.1 to -10.6, room x ±3.4 from z -10.6 to -16.6, 4.4 high. It uses `Level2Builder.Letters` for its lettering. `PodIdleCam` hides renderers there (|x| < 4.2, z > -17.6). The Golden Crown (hat 4) is unlocked on Pod load once every golden button is found.
+- Curtains hang `PodCurtains.Off(y)` in from the glass (0.72 to 0.95, in front of the 0.6-deep struts); `HubBuilder.ClearForCurtains` slides desk items in front of that line.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

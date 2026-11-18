@@ -26,11 +26,12 @@ namespace Patchwork
         bool opening;
         float edge, bottom, top;
 
-        const int Across = 72, Down = 16, Folds = 11;
+        const int Across = 84, Down = 18, Folds = 9;
 
-        // How far in from the glass they hang: close at the bottom (behind the things on the
-        // desk) and further in at the top (in front of the felt piping over the window).
-        static float Off(float y) { return Mathf.Lerp(0.2f, 0.52f, Mathf.InverseLerp(1.3f, 6.8f, y)); }
+        // How far in from the glass they hang: in front of the wall's cardboard struts (which
+        // stand 0.6 out from it) all the way down, and further in at the top (in front of the
+        // felt piping over the window). The things on the desk are kept in front of them.
+        internal static float Off(float y) { return Mathf.Lerp(0.72f, 0.95f, Mathf.InverseLerp(1.3f, 6.8f, y)); }
         static Vector3 Dir(float deg) { float a = deg * Mathf.Deg2Rad; return new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a)); }
         static Vector3 On(float deg, float y, float inward) { return Dir(deg) * (HubBuilder.RadiusAt(y) - Off(y) - inward) + Vector3.up * y; }
 
@@ -188,7 +189,7 @@ namespace Patchwork
                     float openA = edge - gathered * pinch * (1f - u) - 0.4f;
                     float a = d.Side * Mathf.Lerp(shutA, openA, k);
                     float folds = Folds * (1f + u * 0.15f);
-                    float amp = Mathf.Lerp(0.07f, 0.2f, k) * Mathf.Lerp(0.8f, 1.15f, 1f - v);
+                    float amp = Mathf.Lerp(0.13f, 0.28f, k) * Mathf.Lerp(0.85f, 1.15f, 1f - v);
                     float ripple = amp * (0.5f + 0.5f * Mathf.Sin(u * folds * Mathf.PI * 2f + v * 0.6f));
                     verts.Add(On(a, y, ripple));
                     uvs.Add(new Vector2(u * 9f, v * 4f));

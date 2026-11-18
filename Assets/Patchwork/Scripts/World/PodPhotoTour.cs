@@ -8,7 +8,7 @@ namespace Patchwork
     // A photo tour of the Pod and the space round it, for checking that everything sits neatly
     // and nothing pokes through anything else. Asked for by a file called take_pod_tour.txt in
     // the project's Screenshots folder: the next time the Pod is loaded, the camera goes all
-    // round the inside (from the middle, from the edges, low down and up high, the Button Box)
+    // round the inside (from the middle, from the edges, low down and up high, the Trophy Room)
     // and all round the outside, and saves the pictures into Screenshots/PodTour. It also writes
     // clipping_report.txt there: anything that pokes through the pod's wall or under its floor,
     // and solid things that sink into each other. Then it gives the camera back.
@@ -86,16 +86,18 @@ namespace Patchwork
             // Up at the roof, and down from it.
             s.Add(new Shot("In_roof", new Vector3(0f, 1.5f, 0.5f), new Vector3(0f, 13f, 0f)));
             s.Add(new Shot("In_topdown", new Vector3(0f, 11.5f, -0.5f), new Vector3(0f, 0f, 0f)));
-            // The desk and window, the Button Box.
+            // The desk and window, the Trophy Room.
             s.Add(new Shot("Desk", new Vector3(0f, 2.6f, 2f), new Vector3(0f, 1.3f, 7.5f)));
             s.Add(new Shot("Desk_left", new Vector3(-4f, 2.2f, 3.5f), new Vector3(1f, 1.3f, 7.5f)));
             s.Add(new Shot("Desk_right", new Vector3(4f, 2.2f, 3.5f), new Vector3(-1f, 1.3f, 7.5f)));
             s.Add(new Shot("Window_up", new Vector3(0f, 1.6f, 3f), new Vector3(0f, 6f, 9f)));
-            s.Add(new Shot("ButtonBox_door", new Vector3(0f, 2f, -4f), new Vector3(0f, 1.6f, -14f)));
-            s.Add(new Shot("ButtonBox_in", new Vector3(0f, 2.6f, -9.2f), new Vector3(0f, 0.8f, -14.4f)));
-            s.Add(new Shot("ButtonBox_left", new Vector3(1.6f, 2.4f, -9.4f), new Vector3(-2f, 1f, -13f)));
-            s.Add(new Shot("ButtonBox_right", new Vector3(-1.6f, 2.4f, -9.4f), new Vector3(2f, 1f, -13f)));
-            s.Add(new Shot("ButtonBox_back", new Vector3(0f, 2.4f, -14f), new Vector3(0f, 1.2f, -6f)));
+            s.Add(new Shot("Trophy_door", new Vector3(0f, 2f, -4f), new Vector3(0f, 1.6f, -14f)));
+            s.Add(new Shot("Trophy_in", new Vector3(0f, 2.4f, -10.2f), new Vector3(0f, 1.6f, -16.6f)));
+            s.Add(new Shot("Trophy_quilt", new Vector3(0f, 2.2f, -12.4f), new Vector3(0f, 2.2f, -16.6f)));
+            s.Add(new Shot("Trophy_shelf", new Vector3(1.8f, 2.2f, -13.6f), new Vector3(-3.4f, 1.8f, -13.6f)));
+            s.Add(new Shot("Trophy_fame", new Vector3(-1.8f, 2.2f, -13.6f), new Vector3(3.4f, 2f, -13.6f)));
+            s.Add(new Shot("Trophy_plinth", new Vector3(1.2f, 2f, -11.4f), new Vector3(0f, 1.4f, -13.2f)));
+            s.Add(new Shot("Trophy_back", new Vector3(0f, 2.4f, -16f), new Vector3(0f, 1.4f, -8f)));
             // Outside: all round, close and far, from below, level and above.
             Vector3 c = new Vector3(0f, 6f, 0f);
             for (int i = 0; i < 12; i++)
@@ -114,7 +116,7 @@ namespace Patchwork
             s.Add(new Shot("Out_globe", new Vector3(6f, 6f, 24f), new Vector3(0f, 4.4f, 16.5f)));
             s.Add(new Shot("Out_window", new Vector3(0f, 5f, 26f), new Vector3(0f, 4f, 7f)));
             s.Add(new Shot("Out_windowside", new Vector3(12f, 4f, 16f), new Vector3(0f, 4f, 8f)));
-            s.Add(new Shot("Out_buttonbox", new Vector3(5f, 4f, -22f), new Vector3(0f, 2f, -11f)));
+            s.Add(new Shot("Out_trophyroom", new Vector3(7f, 5f, -24f), new Vector3(0f, 2f, -13f)));
             return s;
         }
 
@@ -212,7 +214,7 @@ namespace Patchwork
                 if (n.Contains("PodWall") || n.Contains("Window") || n.Contains("Shell") || n.Contains("Rib") || n.Contains("Roof")) continue;
                 var b = r.bounds;
                 Vector3 cen = b.center;
-                if (cen.y < 0f || cen.y > 13.4f || cen.z < -8.4f) continue;   // (outside, or in the Button Box)
+                if (cen.y < 0f || cen.y > 13.4f || cen.z < -8.4f) continue;   // (outside, or in the Trophy Room)
                 float cr = new Vector2(cen.x, cen.z).magnitude;
                 if (cr > WallR(cen.y) - 0.3f) continue;                        // (part of the wall, or outside)
                 float worst = 0f;
