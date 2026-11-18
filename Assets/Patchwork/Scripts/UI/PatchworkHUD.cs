@@ -285,6 +285,11 @@ namespace Patchwork
                 Game.Photo.Draw(kb);
                 return;
             }
+            if (Game.Mode == UIMode.Store)
+            {
+                Game.Store.Draw();
+                return;
+            }
             if (Game.Mode == UIMode.PodEdit)
             {
                 Game.PodEdit.Draw(kb);
@@ -489,7 +494,7 @@ namespace Patchwork
                 // Toybox Town: the town band is the goal.
                 int band = Level1Director.BandCount();
                 var guide1 = QuestGuide.Current;
-                bool showNext = guide1 != null && !GameState.IsLevelComplete(level.Id);
+                bool showNext = guide1 != null && !GameState.IsLevelComplete(level.Id) && GameSettings.QuestObjective;
                 var br = new Rect(28f, y, 360f, showNext ? 168f : 112f);
                 UIKit.Panel(br, new Color(1f, 0.95f, 0.88f, 0.95f), new Color(0.75f, 0.32f, 0.36f, 0.9f), 20f);
                 UIKit.Label(new Rect(br.x + 20f, br.y + 8f, 290f, 36f), "Town Band  " + band + " / 3",
@@ -565,7 +570,7 @@ namespace Patchwork
         float DrawNightGlassCard(Level2Quest quest, float y, bool full)
         {
             var ink = new Color(0.15f, 0.25f, 0.5f);
-            if (!quest.Met && quest.LensCount == 0)
+            if (!quest.Met && quest.LensCount == 0 && GameSettings.QuestObjective)
             {
                 var sr = new Rect(28f, y, 380f, 88f);
                 UIKit.Panel(sr, new Color(0.93f, 0.97f, 1f, 0.95f), new Color(0.3f, 0.55f, 0.85f, 0.9f), 20f);
@@ -573,7 +578,8 @@ namespace Patchwork
                 UIKit.Label(new Rect(sr.x + 20f, sr.y + 36f, 344f, 48f), quest.Objective(), UIKit.Style(17, true, TextAnchor.UpperLeft, new Color(ink.r, ink.g, ink.b, 0.9f), true));
                 return y + 100f;
             }
-            float h = full ? 250f : 118f;
+            bool next = GameSettings.QuestObjective;
+            float h = full ? (next ? 250f : 192f) : (next ? 118f : 52f);
             var qr = new Rect(28f, y, 400f, h);
             UIKit.Panel(qr, new Color(0.93f, 0.97f, 1f, 0.95f), new Color(0.3f, 0.55f, 0.85f, 0.9f), 20f);
             UIKit.Label(new Rect(qr.x + 20f, qr.y + 6f, 200f, 34f), "The Night Glass", UIKit.Style(22, true, TextAnchor.MiddleLeft, ink));
@@ -606,7 +612,7 @@ namespace Patchwork
                 UIKit.Label(new Rect(qr.x + 20f, qr.y + 158f, 370f, 22f), "Fakes " + (ExhibitAudit.Instance != null ? ExhibitAudit.Instance.Found : 0) + "/" + ExhibitAudit.Fakes + "   Facts " + quest.PlaquesRead + "/" + quest.PlaquesTotal + "   Secrets " + quest.SecretsFound + "/" + Level2Quest.Secrets, tally);
                 ny = qr.y + 186f;
             }
-            UIKit.Label(new Rect(qr.x + 20f, ny, 364f, 60f), "Next: " + quest.Objective(), UIKit.Style(17, true, TextAnchor.UpperLeft, new Color(ink.r, ink.g, ink.b, 0.9f), true));
+            if (next) UIKit.Label(new Rect(qr.x + 20f, ny, 364f, 60f), "Next: " + quest.Objective(), UIKit.Style(17, true, TextAnchor.UpperLeft, new Color(ink.r, ink.g, ink.b, 0.9f), true));
             return y + h + 12f;
         }
 
@@ -866,10 +872,9 @@ namespace Patchwork
         void DrawQuestPointer()
         {
             if (Game.Mode != UIMode.Gameplay || Game.CameraRig == null) return;
-            var quest = QuestGuide.Current;
             Vector3 at;
             string label;
-            if (quest == null || !quest.ObjectiveTarget(out at, out label)) return;
+            if (!QuestGuide.Target(out at, out label)) return;
             var cam = Game.CameraRig.Cam;
             if (cam == null) return;
             Vector3 world = at + Vector3.up * 1.8f;

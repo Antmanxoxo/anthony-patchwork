@@ -10,7 +10,7 @@ namespace Patchwork
     {
         enum Item { Resume, Restart, ReturnToHub, Settings, Quit,
                     Music, Sounds, Rumble, CameraSpeed, InvertY, InvertX, SwingMode, Prompts, WheelButton, VSync, Back,
-                    Look, Photo, Merits, Graphics, DevMode }
+                    Look, Photo, Merits, Graphics, DevMode, Quests, Store }
 
         readonly PatchworkGame game;
         readonly List<Item> items = new List<Item>();
@@ -32,9 +32,12 @@ namespace Patchwork
         bool confirmYes;
         float confirmTime;
 
+        readonly QuestMenu quests;
+
         public PauseMenu(PatchworkGame game)
         {
             this.game = game;
+            quests = new QuestMenu(game);
         }
 
         public void Open()
@@ -55,6 +58,8 @@ namespace Patchwork
             settingsPage = false;
             items.Clear();
             items.Add(Item.Resume);
+            items.Add(Item.Quests);
+            items.Add(Item.Store);
             items.Add(Item.Photo);
             items.Add(Item.Merits);
             items.Add(Item.Restart);
@@ -107,6 +112,8 @@ namespace Patchwork
                 case Item.Look: return "Look:  " + GameSettings.LookNames[GameSettings.Look];
                 case Item.Graphics: return "Graphics:  " + GameSettings.GraphicsNames[GameSettings.Graphics];
                 case Item.Photo: return "Photo Mode";
+                case Item.Quests: return "Quests";
+                case Item.Store: return "Store:  " + GameState.Purse.ToString("N0") + " pts";
                 case Item.Merits: return "Merit Patches:  " + Patchwork.Merits.Count() + " / " + Patchwork.Merits.All.Length;
                 case Item.CameraSpeed: return "Camera Speed";
                 case Item.InvertY: return "Invert Camera Up/Down:  " + OnOff(GameSettings.InvertY);
@@ -142,6 +149,8 @@ namespace Patchwork
                 case Item.Look: return UIArt.IconNeedle;
                 case Item.Photo: return UIArt.IconPlay;
                 case Item.Merits: return StickerArt.Get(StickerId.Star);
+                case Item.Quests: return UIArt.IconNeedle;
+                case Item.Store: return PatchworkAssets.IconButton;
                 case Item.CameraSpeed:
                 case Item.InvertY:
                 case Item.InvertX:
@@ -175,6 +184,8 @@ namespace Patchwork
                 case Item.Look: return new Color(0.85f, 0.5f, 0.65f);
                 case Item.Photo: return new Color(0.3f, 0.6f, 0.85f);
                 case Item.Merits: return new Color(0.95f, 0.65f, 0.25f);
+                case Item.Quests: return new Color(0.93f, 0.55f, 0.3f);
+                case Item.Store: return new Color(0.85f, 0.4f, 0.6f);
                 case Item.CameraSpeed: return new Color(0.35f, 0.6f, 0.85f);
                 case Item.InvertY:
                 case Item.InvertX: return new Color(0.4f, 0.5f, 0.8f);
@@ -266,6 +277,12 @@ namespace Patchwork
                 UpdateConfirm(udt);
                 return;
             }
+            if (quests.IsOpen)
+            {
+                quests.Update(udt);
+                if (!quests.IsOpen) selectTime = 0f;
+                return;
+            }
             if (meritsOpen)
             {
                 meritTime += udt;
@@ -345,6 +362,12 @@ namespace Patchwork
                         break;
                     case Item.Photo:
                         game.OpenPhotoMode();
+                        break;
+                    case Item.Quests:
+                        quests.Open();
+                        break;
+                    case Item.Store:
+                        game.OpenStore();
                         break;
                     case Item.Merits:
                         meritsOpen = true;
@@ -603,6 +626,7 @@ namespace Patchwork
 
             if (confirming) DrawConfirm(kb, ink);
             if (meritsOpen) Patchwork.Merits.DrawBoard(meritSel, meritTime);
+            quests.Draw();
         }
 
         // Ten little stitched pills, filled up to the current value.

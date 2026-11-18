@@ -57,7 +57,7 @@ namespace Patchwork
                 if (runTipTimer > 4f)
                 {
                     GameState.SetHintSeen("pw_run_tip");
-                    Game.ShowToast(Game.Input.UsingKeyboard ? "Hold Left Ctrl to run!" : "Hold L2 to run!");
+                    Game.ShowToast(Game.Input.UsingKeyboard ? "Hold Left Ctrl to run! Keep holding to break into a sprint." : "Hold L2 to run! Keep holding to break into a sprint.");
                 }
             }
             if (!Motor.Running || !Motor.Grounded) return;
@@ -69,6 +69,30 @@ namespace Patchwork
             dustTimer = 0.2f;
             var col = Forms.Current == FormType.Water ? new Color(0.75f, 0.9f, 1f) : Forms.Current == FormType.Wind ? Color.white : new Color(0.92f, 0.86f, 0.8f);
             FxBurst.Spawn(Forms.Current == FormType.Water ? FxBurst.Kind.Drips : FxBurst.Kind.Puff, transform.position + Vector3.up * 0.15f - v.normalized * 0.4f, col, -v.normalized);
+        }
+
+        // The moment he breaks into a full sprint: a little burst and a sound of his own.
+        void SprintKick()
+        {
+            Vector3 back = -transform.forward;
+            Vector3 at = transform.position + Vector3.up * 0.3f + back * 0.4f;
+            var def = FormLibrary.Get(Forms.Current);
+            switch (Forms.Current)
+            {
+                case FormType.Water:
+                    Sfx.PlayPitched(SfxId.Splash, 0.3f, 1.3f);
+                    FxBurst.Spawn(FxBurst.Kind.Drips, at, new Color(0.75f, 0.9f, 1f), back);
+                    break;
+                case FormType.Wind:
+                    Sfx.PlayPitched(SfxId.Gust, 0.3f, 1.25f);
+                    FxBurst.Spawn(FxBurst.Kind.Puff, at, Color.white, back);
+                    break;
+                default:
+                    Sfx.PlayPitched(SfxId.Thread, 0.3f, 1.2f);
+                    FxBurst.Spawn(FxBurst.Kind.Puff, at, Color.Lerp(def.PrimaryColor, Color.white, 0.5f), back);
+                    break;
+            }
+            Visuals.PunchScale(new Vector3(0.92f, 1.08f, 1.1f));
         }
 
         public void Tick(PlayerInputFrame input, float dt)
@@ -85,6 +109,7 @@ namespace Patchwork
             RunDust(dt);
             Motor.Step(input.MoveWorld, input.JumpPressed, input.JumpHeld, dt);
             Forms.Ability.PostMove(dt);
+            if (Motor.JustSprinted) SprintKick();
 
             if (Motor.JustJumped)
             {

@@ -49,6 +49,10 @@ namespace Patchwork
         Transform cloud;
         readonly Transform[] wisps = new Transform[3];
 
+        // Full sprint (see PlayerMotor.Sprint): each form's own pose and trail.
+        SprintTrail yarnTrail, waterTrail, windTrail;
+        float sprintW, waterSlide;
+
         FormType form;
         Vector3 punch = Vector3.one;
         float time;
@@ -83,6 +87,10 @@ namespace Patchwork
             // The hat is placed after the final pose each frame, so it never trails behind his head.
             if (patchModel != null) patchModel.PoseApplied += PlaceHatOnHead;
             ShowFace(PatchModel.CurrentFace);
+
+            yarnTrail = new SprintTrail(root, SprintTrail.Style.Strand, PatchworkAssets.Yarn(new Color(0.95f, 0.55f, 0.66f)), null, 0.055f);
+            waterTrail = new SprintTrail(root, SprintTrail.Style.Slick, PatchworkAssets.Bubble(new Color(0.62f, 0.86f, 1f, 0.6f)), null, 0.34f);
+            windTrail = new SprintTrail(root, SprintTrail.Style.Ribbons, PatchworkAssets.Glow(new Color(0.96f, 0.99f, 1f), 0.5f), PatchworkAssets.Glow(FormLibrary.Get(FormType.Wind).SecondaryColor, 0.5f), 0.07f);
         }
 
         // ------------------------------------------------------------------ API
@@ -100,6 +108,9 @@ namespace Patchwork
         {
             if (patchModel != null) patchModel.PoseApplied += callback;
         }
+
+        // For the Store's models: animate while the game is paused.
+        public void UseUnscaledTime() { if (patchModel != null) patchModel.UseUnscaledTime(); }
 
         // Instantly show a form (used at spawn).
         public void SetForm(FormType newForm, bool punchIt)
@@ -552,7 +563,9 @@ namespace Patchwork
 
         // Which pixels of his texture are on his head (above the neck), so the dye can leave his
         // button eyes alone.
-        bool[] headMaskCache;
+        // Shared by every Patch (the player and the Store's models): it's the same model, so the
+        // same mask, and the dye cache would be cleared each time a different one was handed over.
+        static bool[] headMaskCache;
         bool[] HeadMask(int size)
         {
             if (size <= 0 || patchModel == null) return null;
@@ -892,9 +905,11 @@ namespace Patchwork
             rideY = Mathf.MoveTowards(rideY, RideHeight, dt * 5f);
             if (rideY > 0f) root.localPosition += Vector3.up * rideY;
 
+            sprintW = transitioning || danceWeight > 0.01f ? 0f : motor.Sprint;
             AnimateYarn(motor, speed, localVel, dt);
             AnimateWater(motor, dv, dt);
             AnimateWind(motor, dt);
+            TickSprintTrails(motor, dt);
             if (strikeMove >= 0 && !transitioning) ApplyStrike();
             if (transitioning) TickTransition(dt);
 
@@ -910,6 +925,19 @@ namespace Patchwork
             accessoryRoot.localPosition = new Vector3(0f, hatY, 0f);
             accessoryRoot.localRotation = hatTilt;
             accessoryRoot.localScale = Vector3.one * HatPopScale;
+        }
+
+        // The streak behind each form's sprint, from its own spot: Yarn's loose end from the
+        // small of his back, Water's wet streak along the floor, Wind's ribbons from the twister.
+        void TickSprintTrails(PlayerMotor motor, float dt)
+        {
+            Transform p = motor.transform;
+            Vector3 back = -p.forward, right = p.right;
+            float on = hidden ? 0f : sprintW;
+            Vector3 yarnAt = patchModel != null && patchModel.SpineBone != null ? patchModel.SpineBone.position + back * 0.22f : p.position + Vector3.up * 0.7f + back * 0.25f;
+            yarnTrail.Tick(yarnAt, right, form == FormType.Yarn ? on : 0f, dt);
+            waterTrail.Tick(p.position + Vector3.up * 0.04f + back * 0.3f, right, form == FormType.Water ? on * waterSlide : 0f, dt);
+            windTrail.Tick(p.position + Vector3.up * 0.55f + back * 0.2f, right, form == FormType.Wind ? on : 0f, dt);
         }
 
         void PlaceHatOnHead()
@@ -1051,6 +1079,24 @@ namespace Patchwork
             // The head lolls a touch behind the body, like a full water balloon.
             wHead.localRotation = Quaternion.Euler(-stride * 5f + Mathf.Sin(time * 1.7f) * 2.5f + w * 30f, Mathf.Sin(time * 0.6f) * 6f * (1f - stride), -Mathf.Sin(waterPhase) * 5f * stride + w2 * 30f);
 
+            // Full sprint: a belly slide. He throws himself forward flat onto the slick he makes,
+            // arms out in front like a superhero, feet kicking behind, face up to see where he's
+            // going. (Only on the ground; a jump puts him the right way up again.)
+            waterSlide = Mathf.MoveTowards(waterSlide, motor.Grounded ? sprintW : 0f, dt * (motor.Grounded ? 4f : 7f));
+            float sl = Mathf.SmoothStep(0f, 1f, waterSlide);
+            bubble.localRotation = Quaternion.Euler(72f * sl, 0f, Mathf.Sin(time * 9f) * 4f * sl);
+            bubble.localPosition = new Vector3(0f, (0.12f + Mathf.Abs(Mathf.Sin(time * 10f)) * 0.015f) * sl, -0.28f * sl);
+            if (sl > 0.001f)
+            {
+                float kick = Mathf.Sin(time * 16f) * 22f;
+                wHipL.localRotation = Quaternion.Slerp(wHipL.localRotation, Quaternion.Euler(kick, 0f, 0f), sl);
+                wHipR.localRotation = Quaternion.Slerp(wHipR.localRotation, Quaternion.Euler(-kick, 0f, 0f), sl);
+                wArmL.localRotation = Quaternion.Slerp(wArmL.localRotation, Quaternion.Euler(0f, 10f, -165f), sl);
+                wArmR.localRotation = Quaternion.Slerp(wArmR.localRotation, Quaternion.Euler(0f, -10f, 165f), sl);
+                wHead.localRotation = Quaternion.Slerp(wHead.localRotation, Quaternion.Euler(-58f, 0f, 0f), sl);
+                wBody.localRotation = Quaternion.Slerp(wBody.localRotation, Quaternion.identity, sl);
+            }
+
             // The goldfish does laps of the tummy, faster when Patch is on the move, flicking its tail.
             fishAngle += dt * (1.3f + stride * 2.2f);
             wFish.localPosition = new Vector3(Mathf.Cos(fishAngle) * 0.085f, Mathf.Sin(fishAngle * 0.6f) * 0.035f, Mathf.Sin(fishAngle) * 0.07f);
@@ -1082,12 +1128,15 @@ namespace Patchwork
             float floatY = 0.28f + Mathf.Sin(time * 2.2f) * 0.07f;
             cloud.localPosition = new Vector3(0f, floatY, 0f);
             cloud.localScale = Vector3.Lerp(cloud.localScale, Vector3.one, 1f - Mathf.Exp(-8f * dt));
-            cloud.localRotation = Quaternion.identity;
+            // Full sprint: it spins up into a proper little tornado and tips forward into it, arms
+            // swept back, the tail stretched out behind and the wisps whipping round close in.
+            float ws = sprintW;
+            cloud.localRotation = Quaternion.Euler(36f * ws, 0f, Mathf.Sin(time * 7f) * 5f * ws);
 
             // The twister: every ring turns (faster the harder it blows, each the opposite way
             // to its neighbour), sways in a little circle a beat behind the ring above it, and
             // gets left behind when it's moving, so the tip trails.
-            windSpin += dt * (140f + windStream * 520f);
+            windSpin += dt * (140f + windStream * 520f + ws * 900f);
             int top = windRing.Length - 1;
             for (int i = 0; i <= top; i++)
             {
@@ -1095,7 +1144,7 @@ namespace Patchwork
                 float sway = time * 3.4f - below * 2.6f;
                 float reach = 0.035f + below * 0.07f;
                 float spread = gliding ? 1f + (1f - below) * 0.35f : 1f;
-                windRing[i].localPosition = new Vector3(Mathf.Cos(sway) * reach, RingY(i) * (gliding ? 0.86f : 1f), Mathf.Sin(sway) * reach - below * below * windStream * 0.34f);
+                windRing[i].localPosition = new Vector3(Mathf.Cos(sway) * reach, RingY(i) * (gliding ? 0.86f : 1f), Mathf.Sin(sway) * reach - below * below * (windStream * 0.34f + ws * 0.3f));
                 windRing[i].localRotation = Quaternion.Euler(Mathf.Sin(sway) * 7f, windSpin * (i % 2 == 0 ? 1f : -0.7f), Mathf.Cos(sway) * 7f);
                 windRing[i].localScale = new Vector3(spread, 1f, spread);
             }
@@ -1103,7 +1152,7 @@ namespace Patchwork
             // The head rides on top, looking about when idle and tipping forward into the wind.
             float headY = RingY(top) * (gliding ? 0.86f : 1f) + 0.06f;
             windHead.localPosition = new Vector3(Mathf.Cos(time * 3.4f) * 0.02f, headY + Mathf.Sin(time * 2.2f + 0.8f) * 0.012f, Mathf.Sin(time * 3.4f) * 0.02f);
-            windHead.localRotation = Quaternion.Euler(windStream * (gliding ? 16f : 8f) + Mathf.Sin(time * 1.9f) * 3f, Mathf.Sin(time * 0.55f) * 10f * (1f - windStream), Mathf.Sin(time * 1.4f) * 5f);
+            windHead.localRotation = Quaternion.Euler(windStream * (gliding ? 16f : 8f) - ws * 28f + Mathf.Sin(time * 1.9f) * 3f, Mathf.Sin(time * 0.55f) * 10f * (1f - windStream), Mathf.Sin(time * 1.4f) * 5f);
             float blink = Mathf.Repeat(time + 1.3f, 4.1f) < 0.12f ? 0.15f : 1f;
             windEyes.localScale = new Vector3(1f, blink, 1f);
 
@@ -1115,14 +1164,16 @@ namespace Patchwork
                 float sx = side == 0 ? -1f : 1f;
                 float swing = Mathf.Sin(windPhase + side * Mathf.PI) * 40f * Mathf.Clamp01(speed / 3f);
                 float outward = gliding ? 96f : !motor.Grounded && motor.Velocity.y > 1f ? 150f : 22f + Mathf.Sin(time * 2.4f + side * 1.7f) * 6f;
+                if (!gliding) { swing = Mathf.Lerp(swing, 78f + Mathf.Sin(time * 22f + side) * 6f, ws); outward = Mathf.Lerp(outward, 34f, ws); }
                 windArm[side].localPosition = new Vector3(sx * 0.26f, headY - 0.03f, 0f);
                 windArm[side].localRotation = Quaternion.Slerp(windArm[side].localRotation, Quaternion.Euler(swing, 0f, sx * outward), ease);
             }
 
             for (int i = 0; i < wisps.Length; i++)
             {
-                float a = time * (gliding ? 5f : 2.2f) + i * Mathf.PI * 2f / 3f;
-                wisps[i].localPosition = new Vector3(Mathf.Cos(a) * 0.7f, 0.35f + i * 0.28f + Mathf.Sin(time * 2f + i) * 0.06f, Mathf.Sin(a) * 0.7f);
+                float a = time * (gliding ? 5f : 2.2f + ws * 7f) + i * Mathf.PI * 2f / 3f;
+                float wr = Mathf.Lerp(0.7f, 0.45f, ws);
+                wisps[i].localPosition = new Vector3(Mathf.Cos(a) * wr, 0.35f + i * 0.28f + Mathf.Sin(time * 2f + i) * 0.06f, Mathf.Sin(a) * wr);
             }
         }
 

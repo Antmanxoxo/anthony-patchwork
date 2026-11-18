@@ -166,6 +166,11 @@ namespace Patchwork
             BigTop(kit);
             Creatures(kit);
             AmbientFluff.Create(kit.Root, 45, -6f);
+            // Last of all, as in the museum: settle any surfaces that sit exactly on top of each
+            // other, so nothing flickers.
+            int settled = ZFightFix.Run(kit.Root);
+            ZFightFix.OrderSeeThrough(kit.Root);
+            if (settled > 0) Debug.Log("[Level1] Settled " + settled + " flickering surfaces.");
             return info;
         }
 

@@ -21,7 +21,8 @@ namespace Patchwork
         Map,         // the pull-up map
         Sticker,     // aiming and placing stickers
         Photo,       // Photo Mode: time stopped, free camera
-        PodEdit      // the Pod's decorating menu
+        PodEdit,     // the Pod's decorating menu
+        Store        // the Store (from the pause menu): points buy looks, modelled on a little stage
     }
 
     // Main game object, one per scene. Builds the level, camera, light and player,
@@ -44,6 +45,7 @@ namespace Patchwork
         public ScoreKeeper Score { get; private set; }
         public StickerSystem Stickers { get; private set; }
         public PhotoMode Photo { get; private set; }
+        public StoreMenu Store { get; private set; }
         public PodEditor PodEdit { get; private set; }
 
         // ---- Hearts: three hits from the Fray's creatures and Patch unravels (back to the checkpoint).
@@ -206,6 +208,7 @@ namespace Patchwork
             Stickers = new StickerSystem(this);
             Stickers.LoadLevel(Level.Id);
             Photo = new PhotoMode(this);
+            Store = new StoreMenu(this);
             PodEdit = new PodEditor(this);
             GameSettings.ApplyLook();
 
@@ -351,6 +354,10 @@ namespace Patchwork
                 case UIMode.Photo:
                     if (!Photo.Update(udt)) ClosePhotoMode();
                     break;
+                case UIMode.Store:
+                    // Closing it goes back to the pause menu it was opened from.
+                    if (!Store.Update(udt)) SetMode(UIMode.Paused, 0f);
+                    break;
                 case UIMode.PodEdit:
                     if (!PodEdit.Update(udt)) ClosePodEditor();
                     break;
@@ -466,7 +473,7 @@ namespace Patchwork
                 stick = Input.LookStick.ReadValue<Vector2>();
                 if (Cursor.lockState == CursorLockMode.Locked) mouse = Input.LookMouse.ReadValue<Vector2>();
             }
-            if (Mode != UIMode.Paused && Mode != UIMode.Satchel)
+            if (Mode != UIMode.Paused && Mode != UIMode.Satchel && Mode != UIMode.Store)
             {
                 // Lower the camera focus for small forms so it fits through tunnels.
                 float wantHeight = Player.Forms.Definition.HeadHeight * 0.75f + 0.2f;
@@ -534,6 +541,7 @@ namespace Patchwork
                 case UIMode.Paused:
                 case UIMode.Satchel:
                 case UIMode.Map:
+                case UIMode.Store:
                     MusicPlayer.SetMuffle(900f, Level != null && Level.QuietMusic ? 0f : 0.5f);
                     Sfx.SetLoopCutoff(900f);
                     Haptics.SetSilenced(true);
@@ -1040,6 +1048,13 @@ namespace Patchwork
             PodEdit.Close();
             SetMode(UIMode.Gameplay, 1f);
             Sfx.Play(SfxId.MenuCancel, 0.4f);
+        }
+
+        // From the pause menu: the Store, with time still stopped.
+        public void OpenStore()
+        {
+            Store.Open();
+            SetMode(UIMode.Store, 0f);
         }
 
         // From the pause menu: freeze time and let the camera roam.

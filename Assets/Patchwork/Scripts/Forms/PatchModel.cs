@@ -62,6 +62,9 @@ namespace Patchwork
         float idleTime;
         bool tethered;
         Vector3 tetherTarget;
+        // Full sprint (PlayerMotor.Sprint), and whether he's on the ground for it.
+        float sprint;
+        bool sprintGrounded;
 
         public static PatchModel Create(Transform parent)
         {
@@ -292,6 +295,12 @@ namespace Patchwork
             graph.Play();
         }
 
+        // The Store's models keep moving while the game is paused.
+        public void UseUnscaledTime()
+        {
+            if (graph.IsValid()) graph.SetTimeUpdateMode(DirectorUpdateMode.UnscaledGameTime);
+        }
+
         Material patchMaterial;
         bool reportedSwap;
         // The one material the whole model wears (the wardrobe tints it; see Wardrobe).
@@ -320,6 +329,8 @@ namespace Patchwork
             bool levelDone = PatchworkGame.Instance != null && PatchworkGame.Instance.Mode == UIMode.Complete;
 
             if (oneShotLeft > 0f) oneShotLeft -= dt;
+            sprint = Riding || Dancing || levelDone ? 0f : motor.Sprint;
+            sprintGrounded = grounded;
 
             Anim want;
             if (levelDone || Dancing) want = Anim.Celebrate;
@@ -356,7 +367,7 @@ namespace Patchwork
 
             // Step lengths match his speed so his feet don't slide.
             if (hasClip[(int)Anim.Walk]) clips[(int)Anim.Walk].SetSpeed(Mathf.Clamp(speed / (maxSpeed * 0.42f), 0.6f, 1.5f));
-            if (hasClip[(int)Anim.Run]) clips[(int)Anim.Run].SetSpeed(Mathf.Clamp(speed / (maxSpeed * 0.85f), 0.8f, 1.9f));   // (up to a proper sprint when holding Run)
+            if (hasClip[(int)Anim.Run]) clips[(int)Anim.Run].SetSpeed(Mathf.Clamp(speed / (maxSpeed * 0.85f), 0.8f, 2.3f));   // (up to a proper sprint when holding Run)
 
             // What each clip should be weighted towards this frame.
             for (int i = 0; i < targets.Length; i++) targets[i] = 0f;
@@ -483,9 +494,22 @@ namespace Patchwork
             }
 
             if (strikeMove >= 0 && !tethered) StrikePose();
+            else if (sprint > 0.01f && !tethered && !gripping) SprintPose();
 
             // The hand is in its final spot now, so anything attached to it (the rope) can follow.
             if (PoseApplied != null) PoseApplied();
+        }
+
+        // His full sprint: chest pushed forward and both arms flung straight out behind him,
+        // fluttering, like he's being pulled along by his nose. (The yarn strand trailing from
+        // his back is FormVisuals' SprintTrail.)
+        void SprintPose()
+        {
+            float s = Mathf.SmoothStep(0f, 1f, sprint);
+            if (modelRoot != null) modelRoot.localRotation = Quaternion.Euler((sprintGrounded ? 15f : 7f) * s, 0f, 0f) * modelRoot.localRotation;
+            float flutter = Mathf.Sin(Time.time * 24f) * 7f;
+            SwingArm(armR, HandR, Out(152f + flutter, -38f), s * 0.9f);
+            SwingArm(armLeft, handLeft, Out(-152f - flutter, -38f), s * 0.9f);
         }
 
         static void AimArm(Transform arm, Transform hand, Vector3 target)

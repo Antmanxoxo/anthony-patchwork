@@ -778,6 +778,36 @@ Stuff I need to remember about how Patchwork is put together.
 - After Stella's riddle, the pointer goes to the nearest unread clue plaque (`StarDials.Instance.NearestClue`), using the lift door on the other floor if needed (`LiftDoor` below, `LiftTopDoor` (48, 14, -38) above).
 - Clues read are saved as `L2_q_clue0-2`.
 
+- Sprint: `PlayerMotor.Sprinting` / `Sprint` (eased 0..1) / `JustSprinted`.
+  - It starts after Run has been held for 0.45 s on the ground at over 90% of walking speed.
+  - `SprintBoost` (1.2) applies on the ground only.
+  - `HoldForDisplay()` is for the Store's models.
+- Sprint looks (visual only):
+  - Yarn: `PatchModel.SprintPose` in LateUpdate.
+  - Water: the belly slide in `AnimateWater` (`waterSlide`, which rotates `bubble`).
+  - Wind: in `AnimateWind` (`ws`).
+  - Trails are `Forms/SprintTrail.cs` (LineRenderers), ticked from `FormVisuals.TickSprintTrails`.
+  - The burst when a sprint starts is `PatchworkPlayer.SprintKick`.
+- Quests: `IQuestGuide.BuildLog(List<QuestEntry>)` (Level1Guide; Level2Quest in `Level2QuestLog.cs`).
+  - Each `QuestEntry` has an Id, a Kind (Main/Side/Collection), Title, Giver, Summary, Steps and Done.
+  - It can also have `Target` (a `Func<Vector3?>`) for tracking. The story's own entry has Id "main".
+- `QuestGuide.Target()` is what the HUD pointer uses:
+  - the tracked quest (PlayerPrefs `pw_track_<level>`) if it has a target and isn't done;
+  - otherwise `ObjectiveTarget`;
+  - nothing if `GameSettings.QuestMarker` is off.
+- The other quest options:
+  - `GameSettings.QuestObjective` hides the "Next:" lines on the HUD cards.
+  - `QuestPopups` gates `QuestGuide.NextToast`.
+- The quest menu is `UI/QuestMenu.cs`, opened from PauseMenu (`Item.Quests`). It draws over the pause menu.
+- Store: `UIMode.Store`, `PatchworkGame.OpenStore()`. Closing it goes back to `UIMode.Paused`.
+- `UI/StoreMenu.cs` is the screen. `UI/StoreStage.cs` is the theatre:
+  - It's built at y -600 on layer 29, with its own cameras rendering to RenderTextures.
+  - Every other camera has layer 29 removed from its culling mask.
+- The stage has three display models plus one thumbnail model, each a `FormVisuals` on a dummy `PlayerMotor` (with its CharacterController disabled).
+- Looks are previewed by setting `GameState` colour/fabric/outfit for a moment, calling `ApplyLook`, and setting them straight back (`StoreStage.Dress`).
+- `Wardrobe.DyedAlbedo` now keeps the last 4 dyed textures (it used to keep 1). `FormVisuals.headMaskCache` is static, so every Patch shares it.
+- Level 1 photo tour: `World/Level1PhotoTour.cs` hooks itself on scene load. It's triggered by Screenshots/take_tour1.txt and saves to Screenshots/Level1Tour. `ZFightFix.Run` now runs at the end of `Level1Builder.Build`.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

@@ -1,5 +1,31 @@
 # Development Log
 
+## Sprinting, a quest menu, the Store, and Toybox Town's photo tour
+
+- **Sprinting.** Hold Run (L2, or Left Ctrl) for about half a second and Patch breaks into a full sprint, a fifth faster than his run. The extra speed is only on the ground, so running-jump distances stay the same. Each form sprints its own way:
+  - **Yarn:** chest pushed forward, both arms flung straight out behind him and fluttering, with a loose strand of his own yarn unspooling and wiggling behind him.
+  - **Water:** a belly slide. He flops forward onto his tummy with his arms out in front like a superhero, his feet kicking behind and his face tipped up to see where he's going, leaving a shiny wet streak along the ground.
+  - **Wind:** spins up into a proper little tornado, tips forward into it with its arms swept back, the wisps whipping round close in and two ribbons of breeze corkscrewing behind.
+  - Breaking into a sprint gives a little burst and a sound of its own (a thread zip, a splash, a gust). The run tip now mentions it too.
+- **Quest menu** (Pause > Quests). Flick between its tabs with L1 / R1:
+  - **Quests:** the story, each of its big jobs (the band pieces; the three lenses), the side quests people have given you, and the things to collect. Each one has who gave it, what it's about, and every step, ticked off as you go.
+  - **Tracking:** press X on a quest to track it, and the gold pointer follows that quest instead of the story until it's done. The tracked one has a gold pin on it.
+  - **Finished:** everything you've completed.
+  - **Options:** turn off the quest marker, the "Next:" line on the quest card, and the "Next:" pop-ups.
+  - In the Pod, it lists each place on the globe and how you got on there.
+  - Toybox Town's quests are the Wedding Band, the lute string (the pirate and his treasure), valve dew (the three dye taps), Wisp, and Lady Lacewing's lost presents (with her hint for each). The museum's include the Curator's Audit, the Dust Sheet Five, A Jar of Red, the Museum Passport (a step per stamp), June's Torch, A Very Small King, the Five Seams and the night-book. Keeper June and Button now have a gold "!" until you've talked to them.
+- **The Store** (Pause > Store), laid out like a game shop:
+  - It fills the screen, with tabs along the top (Colours, Fabrics, Outfits, Hats) and your points in the corner.
+  - On the left is a grid of cards: colour swatches, fabric samples (glitter twinkles), and photos of Patch wearing each outfit and hat, taken as the tab opens.
+  - On the right is a little theatre with a red curtain, bunting and footlights. Water, Yarn and Wind all stand on the stage wearing whatever card you're on, and each does a hop and a twirl when you move to a new one. The right stick spins them round.
+  - **Buying:** X on something new asks "Buy it?", and if you do, all three dance. X on something you own puts it on, and X again takes an outfit or hat off.
+  - Hats aren't for sale. Locked ones show as a shadow with a question mark, so you can see what you're hunting for.
+- **Toybox Town photo tour:** put a file called take_tour1.txt in the Screenshots folder, and the next time Level 1 loads the camera tours the whole map. That's aerial views, every landmark, the hidden rooms, and a 30-metre grid walk looking two ways at each spot. The pictures go into Screenshots/Level1Tour, with clipping_report.txt listing:
+  - small things floating off the ground;
+  - things buried in it;
+  - solid things sunk into each other.
+- **Toybox Town tidy:** the museum's flicker fix now runs on Toybox Town too. Anything with a face sitting exactly on another (rugs, trim, slabs) is nudged a couple of centimetres apart.
+
 ## Yarn Patch's clothes, a cosier Trophy Room, and clearer directions in the museum
 
 - **Yarn Patch's outfits fit properly now.**

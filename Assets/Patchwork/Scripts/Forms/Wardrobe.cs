@@ -21,7 +21,7 @@ namespace Patchwork
         public static readonly int[] ColourPrices = { 0, 1500, 1500, 2000, 2000, 2500, 2500, 3500, 3500, 5000 };
         // For the Yarn form's own colours: the gold of his knit becomes the first colour, and
         // the teal of his patches the second. (Red stitches, cream and the dark bits stay.)
-        static readonly Color[] SecondTints =
+        public static readonly Color[] SecondTints =
         {
             Color.white, new Color(1f, 0.85f, 0.4f), new Color(0.95f, 0.55f, 0.65f), new Color(0.45f, 0.35f, 0.8f), new Color(0.55f, 0.85f, 0.75f),
             new Color(0.35f, 0.65f, 0.85f), new Color(0.92f, 0.82f, 0.65f), new Color(0.95f, 0.8f, 0.35f), new Color(1f, 0.6f, 0.45f), new Color(0.95f, 0.85f, 0.7f)
@@ -71,8 +71,11 @@ namespace Patchwork
         // Patch's own texture, re-dyed for the colour scheme and woven in the fabric: the gold
         // knit takes the first colour and the teal patches the second (their light and shade
         // kept), and the fabric's weave is worked into it. Only the latest one is kept.
-        static Texture2D dyed;
-        static int dyedKey = -1;
+        // A few are kept (the Store shows other colours while Patch keeps his own); the one used
+        // longest ago goes first.
+        static readonly System.Collections.Generic.List<int> dyedKeys = new System.Collections.Generic.List<int>();
+        static readonly System.Collections.Generic.List<Texture2D> dyedTex = new System.Collections.Generic.List<Texture2D>();
+        const int DyedKept = 4;
 
         // The size the dye works at, for a texture.
         public static int DyeSize(Texture source) { return source == null ? 0 : Mathf.Min(Mathf.Max(source.width, source.height), 1024); }
@@ -80,7 +83,14 @@ namespace Patchwork
         // keepHead: one per pixel at DyeSize; true for the bits of his head, where only the gold
         // knit takes the dye (his button eyes stay their own colours).
         static bool[] headMask;
-        public static void SetHeadMask(bool[] mask) { if (headMask != mask) { headMask = mask; dyedKey = -1; } }
+        public static void SetHeadMask(bool[] mask)
+        {
+            if (headMask == mask) return;
+            headMask = mask;
+            foreach (var t in dyedTex) if (t != null) Object.Destroy(t);
+            dyedKeys.Clear();
+            dyedTex.Clear();
+        }
 
         public static Texture2D DyedAlbedo(Texture source)
         {
@@ -88,7 +98,16 @@ namespace Patchwork
             int f = Mathf.Clamp(GameState.Fabric, 0, FabricNames.Length - 1);
             if (source == null || c == 0 && Weave(f) == 0) return null;
             int key = c * 100 + f;
-            if (dyed != null && dyedKey == key) return dyed;
+            int at = dyedKeys.IndexOf(key);
+            if (at >= 0 && dyedTex[at] != null)
+            {
+                // Most recently used goes to the end.
+                var hit = dyedTex[at];
+                dyedKeys.RemoveAt(at); dyedTex.RemoveAt(at);
+                dyedKeys.Add(key); dyedTex.Add(hit);
+                return hit;
+            }
+            if (at >= 0) { dyedKeys.RemoveAt(at); dyedTex.RemoveAt(at); }
             // (Worked at up to 1024 across, so choosing in the wardrobe stays quick.)
             int w = DyeSize(source), h = w;
             var rt = RenderTexture.GetTemporary(w, h, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
@@ -121,9 +140,13 @@ namespace Patchwork
             tex.SetPixels32(px);
             tex.Apply(true);
             tex.name = "PatchDyed";
-            if (dyed != null) Object.Destroy(dyed);
-            dyed = tex;
-            dyedKey = key;
+            while (dyedTex.Count >= DyedKept)
+            {
+                if (dyedTex[0] != null) Object.Destroy(dyedTex[0]);
+                dyedKeys.RemoveAt(0); dyedTex.RemoveAt(0);
+            }
+            dyedKeys.Add(key);
+            dyedTex.Add(tex);
             return tex;
         }
 

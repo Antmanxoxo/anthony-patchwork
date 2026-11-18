@@ -186,7 +186,7 @@ namespace Patchwork
             CheckLift(game);
             string obj = Objective();
             if (lastObjective != null && obj != lastObjective && game.Mode == UIMode.Gameplay)
-                game.ShowToast("Next: " + obj);
+                QuestGuide.NextToast(game, obj);
             lastObjective = obj;
         }
 
@@ -205,6 +205,8 @@ namespace Patchwork
             News("Old Barnacle", () => !HasSecret("jar") && !Seen("talk_barnacle"), () => Mark("talk_barnacle"));
             News("Professor Hoot", () => !HasSecret("hall") && !Seen("talk_hoot"), () => Mark("talk_hoot"));
             News("Ticket-master Tock", () => !Seen("talk_tock"), () => Mark("talk_tock"));
+            News("Keeper June", () => !HasSecret("torch") && !Seen("talk_june"), () => Mark("talk_june"));
+            News("Button", () => !HasSecret("king") && !Seen("talk_button"), () => Mark("talk_button"));
 
             // What people say as Patch goes by.
             Barks("Wick", () => !Met ? "Halt! ...Oh, you're not grey. Come here, come here!"

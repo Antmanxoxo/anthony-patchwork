@@ -39,6 +39,16 @@ namespace Patchwork
         // Holding Run (set each frame by the player). Keeps going through a jump, so a running
         // jump goes further.
         [System.NonSerialized] public bool Running;
+        // Full sprint: after holding Run on the ground for a moment he kicks up into a faster,
+        // showier sprint (each form has its own). Sprint eases 0..1 for the animation;
+        // Sprinting is the on/off. The extra speed is only on the ground, so jump distances
+        // (tuned to running jumps) stay the same.
+        public bool Sprinting { get; private set; }
+        public float Sprint { get; private set; }
+        public bool JustSprinted { get; private set; }
+        public const float SprintBoost = 1.2f;
+        const float SprintDelay = 0.45f;
+        float sprintHold;
 
         // Wearing the God Mode Halo (the testing hat): over three times the speed, much higher
         // jumps, jump again in mid-air as often as you like, hold Jump to fly upward, a
@@ -145,6 +155,8 @@ namespace Patchwork
             FallSpeedCap = -1f;
             HasLift = false;
             jumpBufferTimer = 0f;
+            sprintHold = 0f;
+            Sprinting = false;
         }
 
         // Marks the current upward motion as a launch (tether/gust) so releasing Jump won't cut it short.
@@ -190,6 +202,7 @@ namespace Patchwork
             {
                 bool godSpeed = GodMode;
                 float run = Running && !Swimming ? Params.RunMultiplier : 1f;
+                if (Sprinting && Grounded) run *= SprintBoost;
                 Vector3 target = moveWorld * Params.MoveSpeed * run * (1f + SpeedBoost) * (godSpeed ? GodSpeed : 1f) + (Grounded ? Vector3.zero : AirCarry);
                 float accel = Grounded || Swimming || godSpeed ? Params.GroundAcceleration * (1f + SpeedBoost) * (godSpeed ? 3f : 1f) * (run > 1f ? 1.15f : 1f) : Params.AirAcceleration * (run > 1f ? 1.3f : 1f);
                 horizontal = Vector3.MoveTowards(horizontal, target, accel * dt);
@@ -279,6 +292,17 @@ namespace Patchwork
                 airTime += dt;
             }
 
+            // ---------------- Sprint ----------------
+            JustSprinted = false;
+            float flatSpeed = new Vector2(Velocity.x, Velocity.z).magnitude;
+            bool canSprint = Running && !Swimming && !dashing && moveWorld.sqrMagnitude > 0.5f && flatSpeed > Params.MoveSpeed * 0.9f;
+            if (canSprint && Grounded) sprintHold += dt;
+            else if (!canSprint) sprintHold = 0f;
+            bool was = Sprinting;
+            Sprinting = canSprint && sprintHold >= SprintDelay;
+            if (Sprinting && !was) JustSprinted = true;
+            Sprint = Mathf.MoveTowards(Sprint, Sprinting ? 1f : 0f, dt * (Sprinting ? 3.5f : 5f));
+
             // ---------------- Facing ----------------
             Vector3 face = new Vector3(Velocity.x, 0f, Velocity.z);
             if (moveWorld.sqrMagnitude > 0.01f) face = moveWorld;
@@ -290,6 +314,15 @@ namespace Patchwork
             }
 
             ClearFrameModifiers();
+        }
+
+        // For the models in the Store: standing still on the ground (nothing moves them).
+        public void HoldForDisplay()
+        {
+            Grounded = true;
+            Velocity = Vector3.zero;
+            Sprinting = false;
+            Sprint = 0f;
         }
 
         // Called by the tether while it owns movement, to keep grounded/air state truthful.

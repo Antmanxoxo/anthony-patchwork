@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Patchwork
 {
@@ -102,6 +103,116 @@ namespace Patchwork
             return true;
         }
 
+        // ------------------------------------------------------------------ The quest menu
+
+        public void BuildLog(List<QuestEntry> log)
+        {
+            var game = PatchworkGame.Instance;
+            var level = game != null ? game.Level : null;
+            bool lute = Level1Director.Has(Level1Director.LuteId), trumpet = Level1Director.Has(Level1Director.TrumpetId), piper = Level1Director.Has(Level1Director.PiperId);
+            int band = Level1Director.BandCount();
+
+            log.Add(new QuestEntry
+            {
+                Id = "main", Type = QuestEntry.Kind.Main, Title = "The Wedding Band", Giver = "Mayor Bramblebutton", Done = Done,
+                Summary = "Today Mayor Bramblebutton marries Lady Lacewing, but the Fray have scattered the town band, and he can't be married without music. Bring all three players back.",
+            }.Step("Find the lute's lost string", lute)
+             .Step("Fetch valve dew for the trumpet", trumpet)
+             .Step("Bring Wisp the piper home", piper)
+             .Step("Tell the Mayor the band is back", Done));
+
+            var dye = FindAnyObjectByType<DyeWorksQuest>();
+            int taps = dye != null ? dye.Count : 0;
+            log.Add(new QuestEntry
+            {
+                Id = "lute", Type = QuestEntry.Kind.Main, Title = "The Lute's String", Giver = "The lute player", Done = lute,
+                Summary = "A pirate up on Spindle Hill is sitting on the lute's only string. He thinks a lute is \"loot\", and wants his own treasure back first.",
+                Target = () => lute ? (Vector3?)null : PieceAt(BandPiece.Part.Lute), TargetLabel = "The lute string",
+            }.Step("Talk to the pirate on Spindle Hill", PirateQuest.Met || lute)
+             .Step("Dig up his treasure in the sandpit, by his wrecked boat", PirateQuest.HasTreasure || lute)
+             .Step("Give it back, and take the string", lute));
+            log.Add(new QuestEntry
+            {
+                Id = "trumpet", Type = QuestEntry.Kind.Main, Title = "Valve Dew", Giver = "The trumpeter", Done = trumpet,
+                Summary = "The trumpet's gummed up solid. Only valve dew from the Dye Works will shift it, and the dew only gathers while all three dye taps run.",
+                Target = () => trumpet ? (Vector3?)null : PieceAt(BandPiece.Part.Trumpet), TargetLabel = "The Dye Works",
+            }.Step("Open the three dye taps  (" + taps + "/3: two in the Dye Works, one at the canal's waterline)", taps >= 3 || trumpet)
+             .Step("Collect the valve dew", trumpet));
+            log.Add(new QuestEntry
+            {
+                Id = "piper", Type = QuestEntry.Kind.Main, Title = "Wisp the Piper", Giver = "The drummer", Done = piper,
+                Summary = "Wisp is so jumpy he bolts for the next cloud up whenever anyone comes near. Chase him up the clouds until he runs out of sky.",
+                Target = () => piper ? (Vector3?)null : PieceAt(BandPiece.Part.Piper), TargetLabel = "Wisp",
+            }.Step("Chase Wisp up the clouds and bring him home", piper));
+
+            if (Seen("talk_bride") || Level1Director.GiftCount() > 0)
+            {
+                var e = new QuestEntry
+                {
+                    Id = "gifts", Type = QuestEntry.Kind.Side, Title = "Lost Wedding Presents", Giver = "Lady Lacewing",
+                    Done = Level1Director.GiftCount() >= Level1Director.GiftIds.Length,
+                    Summary = "Five wedding presents were sent this morning, and not one has arrived. Every one found makes the day a little grander.",
+                    Target = NearestGift, TargetLabel = "A wedding present",
+                };
+                for (int i = 0; i < Level1Director.GiftIds.Length; i++)
+                {
+                    bool got = GameState.IsCollected(Level1Director.GiftIds[i]);
+                    string name = Level1Director.GiftNames[i];
+                    e.Step(char.ToUpper(name[0]) + name.Substring(1) + (got ? "" : "   " + Level1Director.GiftHints[i]), got);
+                }
+                log.Add(e);
+            }
+
+            if (level != null)
+            {
+                int buttons = level.CollectedCount(), allButtons = level.CollectibleIds.Count;
+                if (allButtons > 0)
+                    log.Add(new QuestEntry
+                    {
+                        Id = "buttons", Type = QuestEntry.Kind.Collection, Title = "Golden Buttons", Giver = "All over Toybox Town",
+                        Summary = "Shiny golden buttons hidden round the toybox. Find them all for the Golden Crown.",
+                        Done = buttons >= allButtons,
+                    }.Step(buttons + " of " + allButtons + " found", buttons >= allButtons));
+                if (level.HeartstringIds.Count > 0)
+                    log.Add(new QuestEntry
+                    {
+                        Id = "hearts", Type = QuestEntry.Kind.Collection, Title = "Heartstrings", Giver = "Toybox Town",
+                        Summary = "Golden threads that hold the town together. Bonus finds here.",
+                        Done = level.HeartstringCount() >= level.HeartstringIds.Count,
+                    }.Step(level.HeartstringCount() + " of " + level.HeartstringIds.Count + " found", level.HeartstringCount() >= level.HeartstringIds.Count));
+                if (level.SecretIds.Count > 0)
+                    log.Add(new QuestEntry
+                    {
+                        Id = "marbles", Type = QuestEntry.Kind.Collection, Title = "Secret Marbles", Giver = "Tucked away",
+                        Summary = "Glass marbles hidden in the places people don't usually look.",
+                        Done = level.SecretCount() >= level.SecretIds.Count,
+                    }.Step(level.SecretCount() + " of " + level.SecretIds.Count + " found", level.SecretCount() >= level.SecretIds.Count));
+            }
+        }
+
+        Vector3? PieceAt(BandPiece.Part kind)
+        {
+            if (pieces == null) return null;
+            foreach (var p in pieces) if (p != null && p.Kind == kind && !Level1Director.Has(p.Id)) return p.transform.position;
+            return null;
+        }
+
+        static Vector3? NearestGift()
+        {
+            var game = PatchworkGame.Instance;
+            if (game == null || game.Player == null) return null;
+            Vector3 from = game.Player.transform.position;
+            Vector3? best = null;
+            float bestD = float.MaxValue;
+            foreach (var g in FindObjectsByType<WeddingPresent>(FindObjectsInactive.Exclude))
+            {
+                if (g == null || GameState.IsCollected(Level1Director.GiftIds[g.Index])) continue;
+                float d = (g.transform.position - from).sqrMagnitude;
+                if (d < bestD) { bestD = d; best = g.transform.position; }
+            }
+            return best;
+        }
+
         void Update()
         {
             tick -= Time.deltaTime;
@@ -110,7 +221,7 @@ namespace Patchwork
             var game = PatchworkGame.Instance;
             if (game == null || game.Player == null) return;
             string obj = Objective();
-            if (lastObjective != null && obj != lastObjective && game.Mode == UIMode.Gameplay) game.ShowToast("Next: " + obj);
+            if (lastObjective != null && obj != lastObjective && game.Mode == UIMode.Gameplay) QuestGuide.NextToast(game, obj);
             lastObjective = obj;
         }
     }

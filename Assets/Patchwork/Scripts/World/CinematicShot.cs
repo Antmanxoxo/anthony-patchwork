@@ -66,13 +66,13 @@ namespace Patchwork
         void Play(PatchworkGame game)
         {
             // Something else took the camera away (a menu, the level ending): just stop.
-            if (game.Mode != UIMode.Cutscene && game.Mode != UIMode.Paused)
+            if (game.Mode != UIMode.Cutscene && game.Mode != UIMode.Paused && game.Mode != UIMode.Store)
             {
                 playing = false;
                 current = null;
                 return;
             }
-            if (game.Mode == UIMode.Paused) return;
+            if (game.Mode == UIMode.Paused || game.Mode == UIMode.Store) return;
             t += Time.deltaTime;
             float k = Mathf.Clamp01(t / Duration);
             float e = k * k * (3f - 2f * k);

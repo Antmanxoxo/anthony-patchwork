@@ -17,6 +17,26 @@ namespace Patchwork
 
         public static readonly string[] LookNames = { "Plain", "Storybook", "Stitched" };
 
+        // The quest menu's options: the gold pointer on screen, the "Next:" line on the quest
+        // card, and the "Next:" pop-up when the step changes. All on to start with.
+        public static bool QuestMarker
+        {
+            get { return PlayerPrefs.GetInt("pw_quest_marker", 1) == 1; }
+            set { PlayerPrefs.SetInt("pw_quest_marker", value ? 1 : 0); }
+        }
+
+        public static bool QuestObjective
+        {
+            get { return PlayerPrefs.GetInt("pw_quest_objective", 1) == 1; }
+            set { PlayerPrefs.SetInt("pw_quest_objective", value ? 1 : 0); }
+        }
+
+        public static bool QuestPopups
+        {
+            get { return PlayerPrefs.GetInt("pw_quest_popups", 1) == 1; }
+            set { PlayerPrefs.SetInt("pw_quest_popups", value ? 1 : 0); }
+        }
+
         // The screen look: 0 plain, 1 Storybook (soft ink outlines), 2 Stitched (dashed seams).
         public static int Look
         {
