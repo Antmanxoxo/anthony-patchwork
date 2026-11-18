@@ -941,6 +941,7 @@ namespace Patchwork
             TrophyQuilt(kit, roomBack, W, H);
             TrophyShelf(kit, -W, roomFront, roomBack, found, needed);
             HallOfFame(kit, W, roomCz);
+            TrophyRoomDetails(kit, W, H, roomFront, roomBack);
             ParticipationTrophy.Build(kit, new Vector3(0f, 0f, roomCz + 0.4f), H);
             kit.Lamp(new Vector3(0f, H - 0.9f, roomFront - 0.9f), H);
         }
@@ -1074,6 +1075,101 @@ namespace Patchwork
                 // Not won yet: a little cobweb of thread on it.
                 if (!cups[i].Won)
                     kit.Deco(PrimitiveType.Cube, new Vector3(0.12f, 0.55f, 0f), new Vector3(0.22f, 0.006f, 0.006f), PatchworkAssets.Yarn(new Color(0.9f, 0.9f, 0.92f)), new Vector3(0f, 0f, 35f), g);
+            }
+        }
+
+        // The finishing touches: green felt panelling below a wooden dado rail with candy-striped
+        // wallpaper above, skirting boards, bunting across the ceiling, a brass wall light in
+        // each front corner, a guest book on a lectern by the way in, and a tin of trophy polish
+        // and a duster left by the shelf (someone keeps them shiny).
+        static void TrophyRoomDetails(LevelKit kit, float W, float H, float front, float back)
+        {
+            var wood = PatchworkAssets.Wood(new Color(0.55f, 0.36f, 0.24f));
+            var panel = PatchworkAssets.Felt(new Color(0.24f, 0.42f, 0.36f));
+            Color[] stripes = { new Color(0.98f, 0.93f, 0.85f), new Color(0.93f, 0.78f, 0.78f) };
+            const float dado = 1.0f, off = 0.015f;
+            float len = front - back, cz = (front + back) * 0.5f;
+            // The side walls.
+            for (int s = -1; s <= 1; s += 2)
+            {
+                float x = s * (W - off);
+                kit.Deco(PrimitiveType.Cube, new Vector3(x, dado * 0.5f, cz), new Vector3(0.02f, dado, len), panel);
+                kit.Deco(PrimitiveType.Cube, new Vector3(s * (W - 0.05f), dado, cz), new Vector3(0.1f, 0.1f, len), wood);
+                kit.Deco(PrimitiveType.Cube, new Vector3(s * (W - 0.04f), 0.09f, cz), new Vector3(0.08f, 0.18f, len), wood);
+                int n = Mathf.RoundToInt(len / 0.5f);
+                for (int k = 0; k < n; k++)
+                    kit.Deco(PrimitiveType.Cube, new Vector3(x, (dado + H) * 0.5f, back + (k + 0.5f) * len / n), new Vector3(0.02f, H - dado, len / n), PatchworkAssets.Felt(stripes[k % 2]));
+            }
+            // The back wall (behind the Merit quilt) and the front wall either side of the way in.
+            {
+                float z = back + off;
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, dado * 0.5f, z), new Vector3(W * 2f, dado, 0.02f), panel);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, dado, back + 0.05f), new Vector3(W * 2f, 0.1f, 0.1f), wood);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.09f, back + 0.04f), new Vector3(W * 2f, 0.18f, 0.08f), wood);
+                int n = Mathf.RoundToInt(W * 2f / 0.5f);
+                for (int k = 0; k < n; k++)
+                    kit.Deco(PrimitiveType.Cube, new Vector3(-W + (k + 0.5f) * W * 2f / n, (dado + H) * 0.5f, z), new Vector3(W * 2f / n, H - dado, 0.02f), PatchworkAssets.Felt(stripes[k % 2]));
+            }
+            for (int s = -1; s <= 1; s += 2)
+            {
+                float x0 = 1.7f, x1 = W, cx = s * (x0 + x1) * 0.5f, wdt = x1 - x0;
+                kit.Deco(PrimitiveType.Cube, new Vector3(cx, dado * 0.5f, front - off), new Vector3(wdt, dado, 0.02f), panel);
+                kit.Deco(PrimitiveType.Cube, new Vector3(cx, dado, front - 0.05f), new Vector3(wdt, 0.1f, 0.1f), wood);
+                kit.Deco(PrimitiveType.Cube, new Vector3(cx, 0.09f, front - 0.04f), new Vector3(wdt, 0.18f, 0.08f), wood);
+                kit.Deco(PrimitiveType.Cube, new Vector3(cx, (dado + H) * 0.5f, front - off), new Vector3(wdt, H - dado, 0.02f), PatchworkAssets.Felt(stripes[0]));
+            }
+
+            // Bunting: two strings of felt flags across the ceiling.
+            Color[] flags = { new Color(0.95f, 0.45f, 0.55f), new Color(1f, 0.8f, 0.35f), new Color(0.5f, 0.75f, 0.95f), new Color(0.6f, 0.85f, 0.55f) };
+            foreach (float z in new[] { front - 1.6f, back + 2.2f })
+            {
+                Vector3 a = new Vector3(-W + 0.05f, H - 0.25f, z), b = new Vector3(W - 0.05f, H - 0.25f, z);
+                const int segs = 12;
+                for (int k = 0; k < segs; k++)
+                {
+                    float t0 = k / (float)segs, t1 = (k + 1) / (float)segs;
+                    Vector3 p0 = Vector3.Lerp(a, b, t0) + Vector3.down * Mathf.Sin(t0 * Mathf.PI) * 0.45f;
+                    Vector3 p1 = Vector3.Lerp(a, b, t1) + Vector3.down * Mathf.Sin(t1 * Mathf.PI) * 0.45f;
+                    kit.Rope(p0, p1, PatchworkAssets.Yarn(new Color(0.95f, 0.92f, 0.85f)), 0.015f);
+                    Vector3 mid = (p0 + p1) * 0.5f;
+                    kit.Deco(PrimitiveType.Cube, mid + Vector3.down * 0.15f, new Vector3(0.22f, 0.22f, 0.015f), PatchworkAssets.Felt(flags[k % flags.Length]), new Vector3(0f, 0f, 45f));
+                }
+            }
+
+            // A brass wall light in each front corner.
+            var brass = PatchworkAssets.Plain(new Color(0.95f, 0.78f, 0.4f), 0.85f);
+            for (int s = -1; s <= 1; s += 2)
+            {
+                Vector3 at = new Vector3(s * (W - 0.18f), 2.9f, front - 0.35f);
+                kit.Deco(PrimitiveType.Cube, at + new Vector3(s * 0.12f, -0.1f, 0f), new Vector3(0.04f, 0.3f, 0.12f), brass);
+                kit.Deco(PrimitiveType.Cylinder, at + new Vector3(s * 0.05f, -0.1f, 0f), new Vector3(0.05f, 0.08f, 0.05f), brass, new Vector3(0f, 0f, 90f));
+                kit.Deco(PrimitiveType.Sphere, at + new Vector3(0f, 0.05f, 0f), new Vector3(0.26f, 0.22f, 0.26f), PatchworkAssets.Glow(new Color(1f, 0.85f, 0.55f), 1.6f));
+                kit.Deco(PrimitiveType.Cylinder, at + new Vector3(0f, 0.2f, 0f), new Vector3(0.3f, 0.08f, 0.3f), PatchworkAssets.Felt(new Color(0.85f, 0.3f, 0.38f)));
+            }
+
+            // The guest book, open on a little lectern by the way in, with a feather quill.
+            {
+                var lec = kit.Group("GuestBook", new Vector3(W - 0.75f, 0f, front - 0.75f));
+                lec.rotation = Quaternion.Euler(0f, 110f, 0f);   // its sloped top faces the way in
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.04f, 0f), new Vector3(0.5f, 0.08f, 0.4f), wood, default(Vector3), lec);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.55f, 0f), new Vector3(0.12f, 1f, 0.12f), wood, default(Vector3), lec);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 1.08f, 0f), new Vector3(0.6f, 0.05f, 0.45f), wood, new Vector3(-20f, 0f, 0f), lec);
+                kit.Deco(PrimitiveType.Cube, new Vector3(-0.13f, 1.13f, 0.01f), new Vector3(0.25f, 0.02f, 0.34f), PatchworkAssets.Felt(new Color(0.98f, 0.95f, 0.88f)), new Vector3(-20f, 0f, 3f), lec);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0.13f, 1.13f, 0.01f), new Vector3(0.25f, 0.02f, 0.34f), PatchworkAssets.Felt(new Color(0.98f, 0.95f, 0.88f)), new Vector3(-20f, 0f, -3f), lec);
+                for (int k = 0; k < 4; k++)
+                    kit.Deco(PrimitiveType.Cube, new Vector3(-0.13f, 1.145f + 0f, 0.1f - k * 0.06f), new Vector3(0.16f, 0.004f, 0.012f), PatchworkAssets.Felt(UIKit.Ink), new Vector3(-20f, 0f, 3f), lec);
+                kit.Deco(PrimitiveType.Capsule, new Vector3(0.2f, 1.22f, 0.05f), new Vector3(0.05f, 0.2f, 0.02f), PatchworkAssets.Felt(new Color(0.55f, 0.75f, 0.95f)), new Vector3(-20f, 0f, -55f), lec);
+            }
+
+            // Trophy polish and a duster, left on the floor by the shelf.
+            {
+                Vector3 at = new Vector3(-W + 1.0f, 0f, back + 0.7f);
+                kit.Deco(PrimitiveType.Cylinder, at + new Vector3(0f, 0.09f, 0f), new Vector3(0.24f, 0.09f, 0.24f), PatchworkAssets.Plain(new Color(0.85f, 0.25f, 0.25f), 0.6f));
+                kit.Deco(PrimitiveType.Cylinder, at + new Vector3(0f, 0.185f, 0f), new Vector3(0.25f, 0.01f, 0.25f), brass);
+                kit.Deco(PrimitiveType.Cube, at + new Vector3(0.35f, 0.02f, 0.1f), new Vector3(0.3f, 0.03f, 0.26f), PatchworkAssets.Felt(new Color(1f, 0.9f, 0.4f)), new Vector3(0f, 25f, 4f));
+                kit.Deco(PrimitiveType.Cylinder, at + new Vector3(-0.35f, 0.3f, 0.05f), new Vector3(0.04f, 0.3f, 0.04f), wood, new Vector3(0f, 0f, 12f));
+                for (int k = 0; k < 6; k++)
+                    kit.Deco(PrimitiveType.Sphere, at + new Vector3(-0.42f + Mathf.Cos(k) * 0.07f, 0.66f + Mathf.Sin(k * 2.1f) * 0.04f, 0.05f + Mathf.Sin(k) * 0.07f), Vector3.one * 0.12f, PatchworkAssets.Felt(flags[k % flags.Length]));
             }
         }
 

@@ -768,6 +768,16 @@ Stuff I need to remember about how Patchwork is put together.
 - Trophy Room (`HubBuilder.ButtonBox`, plus `World/TrophyRoom.cs` for `ParticipationTrophy` and `DelayedToast`): passage x ±1.7 from z -9.1 to -10.6, room x ±3.4 from z -10.6 to -16.6, 4.4 high. It uses `Level2Builder.Letters` for its lettering. `PodIdleCam` hides renderers there (|x| < 4.2, z > -17.6). The Golden Crown (hat 4) is unlocked on Pod load once every golden button is found.
 - Curtains hang `PodCurtains.Off(y)` in from the glass (0.72 to 0.95, in front of the 0.6-deep struts); `HubBuilder.ClearForCurtains` slides desk items in front of that line.
 
+- Outfits (FormVisuals): the cape, sash and ring are made by `Sheet(name, nu, nv, f)`, a double-sided grid mesh from a function of (u, v). Its helpers are `CapeMesh(hem)`, `SashMesh` / `SashCentre(t)` and `RingMesh(half)`, and each piece is placed with `ClothPart`. `PlaceOutfit` rotates outfits by the body bone's rotation times `OutfitFit.Turn`, which is the inverse of that bone's rest rotation and is worked out once.
+- Trophy Room finishing (`HubBuilder.TrophyRoomDetails`):
+  - Panelling, the dado rail at y 1 and the skirting sit flat on the inner wall faces (x ±3.4, z -10.6 and z -16.6).
+  - Bunting hangs at z -12.2 and z -14.4.
+  - The sconces are at z -10.95, in front of the shelf's end at z -11.2.
+  - The guest book is at (2.65, -11.35), turned 110° so it faces the way in.
+- Level 2 pointer: once the lenses are all found, if the lift is short of Heartstrings, the pointer goes to the nearest uncollected ground-floor Heartstring (`NearestHeartstring`; the Orrery's, at y 16, is skipped).
+- After Stella's riddle, the pointer goes to the nearest unread clue plaque (`StarDials.Instance.NearestClue`), using the lift door on the other floor if needed (`LiftDoor` below, `LiftTopDoor` (48, 14, -38) above).
+- Clues read are saved as `L2_q_clue0-2`.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

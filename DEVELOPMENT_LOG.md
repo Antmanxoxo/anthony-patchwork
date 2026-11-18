@@ -1,5 +1,22 @@
 # Development Log
 
+## Yarn Patch's clothes, a cosier Trophy Room, and clearer directions in the museum
+
+- **Yarn Patch's outfits fit properly now.**
+  - The **cape** is one smooth piece of cloth: it hangs from the shoulders, flares out and falls in soft folds, with a gold felt hem. It no longer looks like a flat board sticking out at the sides.
+  - The **sash** is a smooth band that runs from one shoulder down across the body to the opposite hip, with a gold star on it. The blocky pieces sticking out at the hips are gone.
+  - The **lifebuoy** is a proper round ring, in red and white quarters, sitting snugly round his middle.
+  - All of them now lean and turn with his body, instead of staying upright while he leans.
+- **The Trophy Room got its finishing touches:**
+  - green felt panelling below a wooden dado rail, with candy-striped wallpaper above and skirting boards along the bottom;
+  - two strings of felt bunting across the ceiling;
+  - a brass wall light in each front corner;
+  - a guest book, open on a little lectern by the way in, with a feather quill;
+  - a tin of trophy polish and a feather duster on the floor by the shelf.
+- **Level 2 direction fixes:**
+  - **Heartstrings:** with all three lenses found but too few Heartstrings, the pointer used to lead you to the lift, which was still shut. Now it leads you to the nearest Heartstring on the ground floor, and the objective says how many more the lift needs.
+  - **Stella's riddle:** after she gives the rhyme, the pointer now leads to each gold-star plaque you haven't read yet (by way of the lift if needed), and only then to the dials. The game also remembers which ones you've read, so reloading doesn't send you round them again.
+
 ## The Trophy Room, and curtains in front of the struts
 
 - **The Button Box is now the Trophy Room.** It's always open: a short passage through the doorway (with TROPHIES in gold letters on the lintel) opens into a wider, taller cardboard room behind.

@@ -978,7 +978,9 @@ namespace Patchwork
             if (LensCount >= 3)
             {
                 bool lift = game != null && game.Level != null && game.Level.HeartstringCount() >= game.Level.HeartstringsNeeded;
-                return lift ? "Take the lenses up to Stella in the Observatory." : "Take the lenses to Stella. (The lift still needs Heartstrings.)";
+                if (lift) return "Take the lenses up to Stella in the Observatory.";
+                int more = game != null && game.Level != null ? game.Level.HeartstringsNeeded - game.Level.HeartstringCount() : 3;
+                return "The lift needs " + more + " more Heartstring" + (more == 1 ? "" : "s") + " before it will take the lenses up to Stella. (Follow the pointer.)";
             }
             if (!Met && LensCount == 0) return "Find Wick, the night watchman, in the Atrium.";
             if (Fight != null && Fight.Busy) return "Beat the Hollow Guard!  (Wave " + Fight.WaveNumber + " of 3)";

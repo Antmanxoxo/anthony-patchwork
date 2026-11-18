@@ -11,6 +11,8 @@ namespace Patchwork
         readonly Vector3?[] lensDropped = new Vector3?[3];
         static readonly string[] LensHomes = { "the Hall of Arms", "the keepers' tanks", "the Helmet Crab" };
         static readonly Vector3 HallDoor = new Vector3(80f, 0f, 1f), KeepersRoom = new Vector3(-60f, 0f, 86f), LiftDoor = new Vector3(48f, 0f, 10f);
+        // The top car's doors, at the end of the Star Corridor (see Level2Lift.LiftUpper).
+        static readonly Vector3 LiftTopDoor = new Vector3(48f, 14f, -38f);
         string lastObjective;
         ToyNpc wickNpc, stellaNpc;
 
@@ -79,6 +81,15 @@ namespace Patchwork
             bool upstairs = game.Player.transform.position.y > 10f;
             if (Defended || Fitted)
             {
+                // Stella's answers (after her rhyme): the nearest gold-star plaque not read yet,
+                // by way of the lift if it's on the other floor.
+                Vector3 clue;
+                if (Defended && RiddleGiven && !DialsSet && StarDials.Instance != null && StarDials.Instance.NearestClue(game.Player.transform.position, out clue))
+                {
+                    if (clue.y > 10f == upstairs) { at = clue; label = "A gold-star plaque"; }
+                    else { at = upstairs ? LiftTopDoor : LiftDoor; label = "The lift"; }
+                    return true;
+                }
                 if (!upstairs) { at = LiftDoor; label = "The lift"; return true; }
                 if (Defended && !DialsSet && !RiddleGiven)
                 {
@@ -94,6 +105,9 @@ namespace Patchwork
             }
             if (LensCount >= 3)
             {
+                // The lift won't go without its Heartstrings: point at the nearest one still on
+                // this floor until it will.
+                if (!upstairs && !LiftOpen(game) && NearestHeartstring(game.Player.transform.position, out at)) { label = "A Heartstring"; return true; }
                 if (!upstairs) { at = LiftDoor; label = "The lift"; return true; }
                 if (stellaNpc == null) stellaNpc = FindNpc("Stella");
                 at = stellaNpc != null ? stellaNpc.transform.position : ObservatoryCentre;
@@ -112,6 +126,28 @@ namespace Patchwork
             at = LensGoal(next);
             label = lensDropped[next].HasValue ? LensNames[next] : next == 0 ? "Hall of Arms" : next == 1 ? (ClotsCleared >= 4 ? "Keepers' tanks" : TankNameFor(at)) : "Helmet Crab";
             return true;
+        }
+
+        static bool LiftOpen(PatchworkGame game)
+        {
+            return game.Level != null && game.Level.HeartstringCount() >= game.Level.HeartstringsNeeded;
+        }
+
+        // The nearest Heartstring still to find on the ground floor (the one by the Orrery is up
+        // past the lift, so it can't help wake it).
+        static bool NearestHeartstring(Vector3 from, out Vector3 at)
+        {
+            at = Vector3.zero;
+            float best = float.MaxValue;
+            foreach (var h in FindObjectsByType<Heartstring>(FindObjectsInactive.Exclude))
+            {
+                if (h == null || GameState.IsCollected(h.Id)) continue;
+                Vector3 p = h.transform.position;
+                if (p.y > 10f) continue;
+                float d = (p - from).sqrMagnitude;
+                if (d < best) { best = d; at = p; }
+            }
+            return best < float.MaxValue;
         }
 
         string TankNameFor(Vector3 at)

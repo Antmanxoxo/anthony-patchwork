@@ -423,6 +423,8 @@ namespace Patchwork
             public Vector3 NeckAt, BodyAt;        // in the bones' own spaces
             public Vector3 NeckSize, BodySize;    // half-widths across, up, and front to back (in root units)
             public float Height;
+            public bool HasTurn;
+            public Quaternion Turn;               // undoes the body bone's own resting turn
         }
         readonly Dictionary<FormType, OutfitFit> fits = new Dictionary<FormType, OutfitFit>();
 
@@ -625,12 +627,135 @@ namespace Patchwork
             if (neckRoot == null || GameState.Outfit <= 0) return;
             var fit = FitFor(form);
             if (fit == null) return;
-            var rot = root.rotation;
+            // (Turned with his body as it leans and twists, not just with the way he faces.)
+            if (!fit.HasTurn)
+            {
+                fit.Turn = Quaternion.Inverse(RestMatrix(fit.BodyBone, BodyFor(form).Root).rotation);
+                fit.HasTurn = true;
+            }
+            var rot = fit.BodyBone == root ? root.rotation : fit.BodyBone.rotation * fit.Turn;
             neckRoot.SetPositionAndRotation(fit.NeckBone.TransformPoint(fit.NeckAt), rot);
             Vector3 grow = BodyFor(form).Root.localScale;   // (small while he's changing form)
             neckRoot.localScale = Vector3.Scale(fit.NeckSize, grow);
             torsoRoot.SetPositionAndRotation(fit.BodyBone.TransformPoint(fit.BodyAt), rot);
             torsoRoot.localScale = Vector3.Scale(fit.BodySize, grow);
+        }
+
+        // ---- Smooth cloth for the outfits, built in the body's unit space (1 = his half-width).
+
+        static void ClothPart(Transform parent, Mesh mesh, Material mat)
+        {
+            var go = new GameObject(mesh.name);
+            go.transform.SetParent(parent, false);
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            go.AddComponent<MeshRenderer>().sharedMaterial = mat;
+        }
+
+        // A grid of points (u across, v down) made into a sheet that shows from both sides.
+        static Mesh Sheet(string name, int nu, int nv, System.Func<float, float, Vector3> at)
+        {
+            var v = new List<Vector3>();
+            var uv = new List<Vector2>();
+            for (int j = 0; j <= nv; j++)
+                for (int i = 0; i <= nu; i++)
+                {
+                    float uu = i / (float)nu, vv = j / (float)nv;
+                    v.Add(at(uu, vv));
+                    uv.Add(new Vector2(uu * 3f, vv * 3f));
+                }
+            int row = nu + 1, n = v.Count;
+            var tris = new List<int>();
+            for (int j = 0; j < nv; j++)
+                for (int i = 0; i < nu; i++)
+                {
+                    int a = j * row + i, b = a + 1, c = a + row, d = c + 1;
+                    tris.AddRange(new[] { a, c, b, b, c, d });
+                }
+            // The other side, with its own copy of the points so each side lights right.
+            for (int i = 0; i < n; i++) { v.Add(v[i]); uv.Add(uv[i]); }
+            int m = tris.Count;
+            for (int i = 0; i < m; i += 3) tris.AddRange(new[] { tris[i] + n, tris[i + 2] + n, tris[i + 1] + n });
+            var mesh = new Mesh { name = name };
+            mesh.SetVertices(v);
+            mesh.SetUVs(0, uv);
+            mesh.SetTriangles(tris, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
+        }
+
+        // The cape: from the shoulders (narrow, close round his back) down to about his knees
+        // (wider, standing off a little), in soft folds. hem: just the gold edge along the bottom.
+        static Mesh CapeMesh(bool hem)
+        {
+            return Sheet(hem ? "CapeHem" : "Cape", 40, hem ? 1 : 14, (u, v) =>
+            {
+                float vv = hem ? Mathf.Lerp(0.94f, 1.0f, v) : v * 0.95f;
+                float spread = Mathf.Lerp(78f, 108f, vv) * Mathf.Deg2Rad;
+                float phi = Mathf.Lerp(-spread, spread, u);
+                float r = Mathf.Lerp(1.08f, 1.38f, vv) + 0.07f * vv * Mathf.Sin(u * Mathf.PI * 9f) + (hem ? 0.01f : 0f);
+                float y = Mathf.Lerp(1.05f, -1.7f, vv);
+                return new Vector3(Mathf.Sin(phi) * r, y, -Mathf.Cos(phi) * r);
+            });
+        }
+
+        // The middle line of the sash at angle t round him: a tilted ring, high on his left
+        // shoulder and low on his right hip.
+        static Vector3 SashCentre(float t)
+        {
+            float c = Mathf.Cos(t), s = Mathf.Sin(t);
+            float y = 0.22f - 0.82f * c;
+            float r = 1.07f + 0.04f * Mathf.Clamp01(y - 0.6f);
+            return new Vector3(c * r, y, s * r);
+        }
+
+        static Mesh SashMesh()
+        {
+            return Sheet("Sash", 72, 1, (u, v) =>
+            {
+                float t = u * Mathf.PI * 2f;
+                Vector3 p = SashCentre(t);
+                Vector3 tangent = (SashCentre(t + 0.01f) - SashCentre(t - 0.01f)).normalized;
+                Vector3 outward = new Vector3(Mathf.Cos(t), 0f, Mathf.Sin(t));
+                Vector3 across = Vector3.Cross(outward, tangent).normalized;
+                return p + across * Mathf.Lerp(-0.17f, 0.17f, v) + outward * 0.02f;
+            });
+        }
+
+        // The lifebuoy: a ring round his middle (part 0 the red quarters, part 1 the white).
+        static Mesh RingMesh(int part)
+        {
+            const float R = 1.22f, r = 0.3f, y0 = -0.15f;
+            const int quarters = 8, seg = 10, round = 14;
+            var v = new List<Vector3>();
+            var tris = new List<int>();
+            for (int q = part; q < quarters; q += 2)
+            {
+                int start = v.Count;
+                for (int i = 0; i <= seg; i++)
+                {
+                    float a = (q + i / (float)seg) / quarters * Mathf.PI * 2f;
+                    Vector3 dir = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
+                    for (int k = 0; k <= round; k++)
+                    {
+                        float b = k / (float)round * Mathf.PI * 2f;
+                        v.Add(dir * (R + Mathf.Cos(b) * r) + Vector3.up * (y0 + Mathf.Sin(b) * r));
+                    }
+                }
+                int row = round + 1;
+                for (int i = 0; i < seg; i++)
+                    for (int k = 0; k < round; k++)
+                    {
+                        int a0 = start + i * row + k, a1 = a0 + 1, b0 = a0 + row, b1 = b0 + 1;
+                        tris.AddRange(new[] { a0, a1, b0, a1, b1, b0 });
+                    }
+            }
+            var mesh = new Mesh { name = part == 0 ? "LifebuoyRed" : "LifebuoyWhite" };
+            mesh.SetVertices(v);
+            mesh.SetTriangles(tris, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
         }
 
         GameObject OutfitPart(int outfit, Transform space, string name)
@@ -703,11 +828,11 @@ namespace Patchwork
                 Prim(PrimitiveType.Cube, collar, new Vector3(Mathf.Sin(a) * 1.1f, -0.2f, Mathf.Cos(a) * 1.1f), new Vector3(0.42f, 0.28f, 0.16f), capeRed, new Vector3(-20f, a * Mathf.Rad2Deg, 0f));
             }
             Prim(PrimitiveType.Sphere, collar, new Vector3(0f, -0.3f, 1.1f), Vector3.one * 0.3f, PatchworkAssets.Plain(new Color(1f, 0.82f, 0.35f), 0.85f));
+            // The cape itself: one piece of cloth hanging from his shoulders, curving round his
+            // back and flaring out a little towards the hem, with soft folds and a gold edge.
             var cape = OutfitPart(4, torsoRoot, "Cape").transform;
-            float[] capeY = { 0.85f, 0.15f, -0.55f };
-            for (int i = 0; i < capeY.Length; i++)
-                Prim(PrimitiveType.Cube, cape, new Vector3(0f, capeY[i], -1.12f - i * 0.12f), new Vector3(1.35f + i * 0.15f, 0.82f, 0.08f), capeRed, new Vector3(6f + i * 4f, 0f, 0f));
-            Prim(PrimitiveType.Cube, cape, new Vector3(0f, -0.97f, -1.5f), new Vector3(1.66f, 0.06f, 0.1f), PatchworkAssets.Plain(new Color(1f, 0.82f, 0.35f), 0.6f), new Vector3(14f, 0f, 0f));
+            ClothPart(cape, CapeMesh(false), capeRed);
+            ClothPart(cape, CapeMesh(true), PatchworkAssets.Felt(new Color(1f, 0.8f, 0.36f)));
 
             // 5. A garland of felt flowers round the neck.
             var garland = OutfitPart(5, neckRoot, "Garland").transform;
@@ -720,40 +845,26 @@ namespace Patchwork
                 Prim(PrimitiveType.Sphere, garland, p * 1.08f, Vector3.one * 0.16f, PatchworkAssets.Felt(new Color(1f, 0.95f, 0.6f)));
             }
 
-            // 6. A sash over one shoulder and down to the other hip, front and back, with a
-            // gold star on the front.
+            // 6. A sash: one smooth band right round him, from one shoulder down to the other
+            // hip, with a gold star pinned on the front.
             var sash = OutfitPart(6, torsoRoot, "Sash").transform;
-            var blue = PatchworkAssets.Fabric(new Color(0.25f, 0.4f, 0.8f));
-            Vector2 from = new Vector2(-0.5f, 1.05f), to = new Vector2(0.56f, -0.5f);
-            Vector2 along2 = (to - from).normalized;
-            for (int side = -1; side <= 1; side += 2)
-                for (int i = 0; i < 13; i++)
-                {
-                    Vector2 q = Vector2.Lerp(from, to, i / 12f);
-                    float z = Mathf.Sqrt(Mathf.Max(0.3f, 1.2f - q.x * q.x)) * side;
-                    var p = new Vector3(q.x, q.y, z);
-                    // (Only half turned to follow his curve: the body space is stretched more one
-                    // way than another, which twists pieces turned too far.)
-                    var normal = new Vector3(q.x * 0.5f, 0f, z).normalized;
-                    var along = Vector3.ProjectOnPlane(new Vector3(along2.x, along2.y, 0f), normal).normalized;
-                    Prim(PrimitiveType.Cube, sash, p, new Vector3(0.28f, 0.3f, 0.07f), blue, Quaternion.LookRotation(normal, along).eulerAngles);
-                }
-            Prim(PrimitiveType.Cube, sash, new Vector3(from.x, from.y + 0.08f, 0f), new Vector3(0.3f, 0.08f, 1.9f), blue);
-            var mid = Vector2.Lerp(from, to, 0.45f);
-            var starAt = new Vector3(mid.x, mid.y, Mathf.Sqrt(Mathf.Max(0.3f, 1.2f - mid.x * mid.x)) + 0.06f);
-            for (int arm = 0; arm < 5; arm++)
+            ClothPart(sash, SashMesh(), PatchworkAssets.Fabric(new Color(0.25f, 0.4f, 0.8f)));
             {
-                var r = Quaternion.Euler(0f, 0f, arm * 72f);
-                Prim(PrimitiveType.Cube, sash, starAt + r * new Vector3(0f, 0.1f, 0f), new Vector3(0.1f, 0.22f, 0.05f), PatchworkAssets.Glow(new Color(1f, 0.85f, 0.35f), 1.2f), r.eulerAngles);
+                float st = Mathf.PI * 0.5f - 0.35f;
+                Vector3 starAt = SashCentre(st) * 1.04f;
+                var star = Pivot("SashStar", sash, starAt);
+                star.localRotation = Quaternion.LookRotation(new Vector3(Mathf.Cos(st), 0f, Mathf.Sin(st)), Vector3.up);
+                for (int arm = 0; arm < 5; arm++)
+                {
+                    var r = Quaternion.Euler(0f, 0f, arm * 72f);
+                    Prim(PrimitiveType.Cube, star, r * new Vector3(0f, 0.1f, 0f), new Vector3(0.1f, 0.22f, 0.05f), PatchworkAssets.Glow(new Color(1f, 0.85f, 0.35f), 1.2f), r.eulerAngles);
+                }
             }
 
-            // 7. A lifebuoy round his middle.
+            // 7. A lifebuoy round his middle: a smooth ring in red and white quarters.
             var buoy = OutfitPart(7, torsoRoot, "Lifebuoy").transform;
-            for (int i = 0; i < 18; i++)
-            {
-                float a = i / 18f * Mathf.PI * 2f;
-                Prim(PrimitiveType.Sphere, buoy, new Vector3(Mathf.Sin(a) * 1.25f, -0.1f, Mathf.Cos(a) * 1.25f), new Vector3(0.55f, 0.5f, 0.55f), PatchworkAssets.Felt((i / 3) % 2 == 0 ? new Color(0.95f, 0.3f, 0.3f) : new Color(0.98f, 0.96f, 0.9f)));
-            }
+            ClothPart(buoy, RingMesh(0), PatchworkAssets.Felt(new Color(0.95f, 0.3f, 0.3f)));
+            ClothPart(buoy, RingMesh(1), PatchworkAssets.Felt(new Color(0.98f, 0.96f, 0.9f)));
             foreach (var list in outfitParts)
                 if (list != null) foreach (var g in list) foreach (var col in g.GetComponentsInChildren<Collider>()) Object.Destroy(col);
         }

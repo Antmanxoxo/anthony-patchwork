@@ -33,13 +33,36 @@ namespace Patchwork
             "That's one of Stella's answers: the comet came back, right on time, in 1758. (The Comet dial.)",
             "That's one of Stella's answers: about eight hundred and fifty stars, so 8 hundreds. (The Stars dial.)",
         };
+        public static StarDials Instance { get; private set; }
         readonly int[] at = new int[3];
         readonly bool[] clued = new bool[3];
         Transform[] stars;
 
+        void Awake() { Instance = this; }
+        void OnDestroy() { if (Instance == this) Instance = null; }
+
+        // Remembered, so a reload doesn't send you back round the plaques you've read.
+        static string ClueKey(int i) { return "L2_q_clue" + i; }
+
+        // The nearest of Stella's answer plaques not read yet (for the pointer on screen).
+        public bool NearestClue(Vector3 from, out Vector3 where)
+        {
+            where = Vector3.zero;
+            float best = float.MaxValue;
+            for (int i = 0; i < 3; i++)
+            {
+                if (clued[i] || Plaques == null || i >= Plaques.Length || Plaques[i] == null) continue;
+                Vector3 p = Plaques[i].transform.position;
+                float d = (p - from).sqrMagnitude;
+                if (d < best) { best = d; where = p; }
+            }
+            return best < float.MaxValue;
+        }
+
         void Start()
         {
             stars = new Transform[3];
+            for (int i = 0; i < 3; i++) clued[i] = GameState.IsHintSeen(ClueKey(i));
             for (int i = 0; i < 3; i++)
             {
                 int which = i;
@@ -99,6 +122,7 @@ namespace Patchwork
         {
             if (!Ready || Quest == null || !Quest.RiddleGiven || clued[i]) return;
             clued[i] = true;
+            GameState.SetHintSeen(ClueKey(i));
             var game = PatchworkGame.Instance;
             if (game != null) game.ShowToast(ClueLine[i]);
             Sfx.PlayPitched(SfxId.Twinkle, 0.4f, 1.1f);
