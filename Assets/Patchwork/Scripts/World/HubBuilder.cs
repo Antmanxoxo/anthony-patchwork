@@ -756,23 +756,85 @@ namespace Patchwork
         {
             Vector3 at = new Vector3(0f, DeskTop + 0.18f, 8.25f);
             var pad = kit.Group("Controller", at);
-            var body = PatchworkAssets.Plain(new Color(0.16f, 0.15f, 0.19f), 0.55f);
-            kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(1.3f, 0.3f, 0.6f), body, default(Vector3), pad);
+            // The Patchwork Pad: an original toy controller, stitched like everything else in the
+            // Pod. A plum felt body with rounded front and back edges, coral knitted grips, cream
+            // button wells, candy dome buttons, cushioned thumbsticks, a glowing heart in the
+            // middle, a light strip along the front, shoulder buttons and triggers, brass screws
+            // and a stitched seam all round.
+            var plum = PatchworkAssets.Felt(new Color(0.34f, 0.25f, 0.5f));
+            var plumDark = PatchworkAssets.Felt(new Color(0.22f, 0.16f, 0.33f));
+            var grip = PatchworkAssets.Knit(new Color(0.96f, 0.55f, 0.45f));
+            var cream = PatchworkAssets.Felt(new Color(0.98f, 0.93f, 0.82f));
+            var brass = PatchworkAssets.Plain(new Color(0.95f, 0.76f, 0.38f), 0.85f);
+            var stickMat = PatchworkAssets.Plain(new Color(0.2f, 0.18f, 0.26f), 0.4f);
+            var stickCap = PatchworkAssets.Knit(new Color(0.3f, 0.27f, 0.38f));
+            System.Func<PrimitiveType, Vector3, Vector3, Material, Vector3, Transform> part = (type, p, sc, m, e) => kit.Deco(type, p, sc, m, e, pad);
+
+            // Body: a slab with rounded front and back edges, and round shoulder lobes.
+            part(PrimitiveType.Cube, new Vector3(0f, 0.02f, 0f), new Vector3(1.0f, 0.24f, 0.62f), plum, Vector3.zero);
+            for (int s = -1; s <= 1; s += 2)
+                part(PrimitiveType.Cylinder, new Vector3(0f, 0.02f, s * 0.31f), new Vector3(0.24f, 0.5f, 0.24f), plum, new Vector3(0f, 0f, 90f));
             for (int s = -1; s <= 1; s += 2)
             {
-                kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.62f, 0f, 0.02f), new Vector3(0.62f, 0.36f, 0.62f), body, default(Vector3), pad);
-                kit.Deco(PrimitiveType.Sphere, new Vector3(s * 0.74f, -0.03f, -0.3f), new Vector3(0.4f, 0.32f, 0.72f), body, new Vector3(0f, s * -18f, 0f), pad);
-                // Thumbsticks.
-                kit.Deco(PrimitiveType.Cylinder, new Vector3(s * 0.24f, 0.18f, -0.14f), new Vector3(0.22f, 0.06f, 0.22f), PatchworkAssets.Felt(new Color(0.3f, 0.3f, 0.34f)), default(Vector3), pad);
+                part(PrimitiveType.Sphere, new Vector3(s * 0.56f, 0.02f, 0.04f), new Vector3(0.62f, 0.34f, 0.66f), plum, Vector3.zero);
+                // Grips, sloping down towards whoever holds it, with a cream cuff where they join.
+                part(PrimitiveType.Capsule, new Vector3(s * 0.66f, 0.03f, -0.38f), new Vector3(0.34f, 0.34f, 0.34f), grip, new Vector3(78f, s * 14f, 0f));
+                part(PrimitiveType.Cylinder, new Vector3(s * 0.65f, 0.065f, -0.23f), new Vector3(0.36f, 0.025f, 0.36f), cream, new Vector3(78f, s * 14f, 0f));
+                // Shoulder buttons and triggers on the far edge.
+                part(PrimitiveType.Capsule, new Vector3(s * 0.5f, 0.13f, 0.33f), new Vector3(0.12f, 0.2f, 0.12f), cream, new Vector3(0f, 0f, 90f));
+                part(PrimitiveType.Cube, new Vector3(s * 0.5f, -0.02f, 0.38f), new Vector3(0.28f, 0.1f, 0.12f), plumDark, new Vector3(-25f, 0f, 0f));
+                // Brass screws at the corners of the top.
+                part(PrimitiveType.Sphere, new Vector3(s * 0.36f, 0.145f, 0.24f), Vector3.one * 0.035f, brass, Vector3.zero);
+                part(PrimitiveType.Sphere, new Vector3(s * 0.36f, 0.145f, -0.24f), Vector3.one * 0.035f, brass, Vector3.zero);
+                // A cream button well in each lobe.
+                part(PrimitiveType.Cylinder, new Vector3(s * 0.56f, 0.183f, 0.06f), new Vector3(0.42f, 0.012f, 0.42f), cream, Vector3.zero);
+                part(PrimitiveType.Cylinder, new Vector3(s * 0.56f, 0.181f, 0.06f), new Vector3(0.45f, 0.01f, 0.45f), plumDark, Vector3.zero);
+                // Thumbsticks: a dark ring, a stem, a cushioned cap with a rim and a dimple.
+                Vector3 st = new Vector3(s * 0.24f, 0.147f, -0.15f);
+                part(PrimitiveType.Cylinder, st, new Vector3(0.24f, 0.012f, 0.24f), plumDark, Vector3.zero);
+                part(PrimitiveType.Cylinder, st + new Vector3(0f, 0.04f, 0f), new Vector3(0.07f, 0.04f, 0.07f), stickMat, Vector3.zero);
+                part(PrimitiveType.Cylinder, st + new Vector3(0f, 0.085f, 0f), new Vector3(0.2f, 0.022f, 0.2f), stickCap, Vector3.zero);
+                part(PrimitiveType.Cylinder, st + new Vector3(0f, 0.085f, 0f), new Vector3(0.215f, 0.012f, 0.215f), stickMat, Vector3.zero);
+                part(PrimitiveType.Sphere, st + new Vector3(0f, 0.105f, 0f), new Vector3(0.09f, 0.02f, 0.09f), stickMat, Vector3.zero);
             }
-            // D-pad (a felt cross) and four coloured buttons.
-            var grey = PatchworkAssets.Felt(new Color(0.55f, 0.55f, 0.6f));
-            kit.Deco(PrimitiveType.Cube, new Vector3(-0.62f, 0.17f, 0.06f), new Vector3(0.3f, 0.04f, 0.09f), grey, default(Vector3), pad);
-            kit.Deco(PrimitiveType.Cube, new Vector3(-0.62f, 0.17f, 0.06f), new Vector3(0.09f, 0.04f, 0.3f), grey, default(Vector3), pad);
-            Color[] cols = { new Color(0.4f, 0.85f, 0.65f), new Color(1f, 0.45f, 0.45f), new Color(0.45f, 0.65f, 1f), new Color(0.95f, 0.6f, 0.9f) };
+            // The stitched seam along the front and back edges.
+            for (int s = -1; s <= 1; s += 2)
+                for (int k = 0; k < 12; k++)
+                    part(PrimitiveType.Cube, new Vector3(-0.44f + k * 0.08f, 0.095f, s * 0.4f), new Vector3(0.045f, 0.012f, 0.014f), cream, new Vector3(s * 35f, 0f, 0f));
+
+            // D-pad on the left: a cream cross with a little arrow dot on each arm.
+            Vector3 dp = new Vector3(-0.56f, 0.2f, 0.06f);
+            part(PrimitiveType.Cube, dp, new Vector3(0.3f, 0.045f, 0.1f), cream, Vector3.zero);
+            part(PrimitiveType.Cube, dp, new Vector3(0.1f, 0.045f, 0.3f), cream, Vector3.zero);
+            part(PrimitiveType.Sphere, dp + new Vector3(0f, 0.022f, 0f), new Vector3(0.06f, 0.02f, 0.06f), plumDark, Vector3.zero);
+            for (int k = 0; k < 4; k++)
+            {
+                float ang = k * Mathf.PI * 0.5f;
+                part(PrimitiveType.Sphere, dp + new Vector3(Mathf.Cos(ang) * 0.1f, 0.025f, Mathf.Sin(ang) * 0.1f), Vector3.one * 0.028f, plum, Vector3.zero);
+            }
+            // Four candy dome buttons on the right, each with a paler dot.
+            Color[] cols = { new Color(0.45f, 0.88f, 0.7f), new Color(1f, 0.5f, 0.5f), new Color(0.5f, 0.7f, 1f), new Color(0.95f, 0.65f, 0.95f) };
             Vector3[] offs = { new Vector3(0f, 0f, 0.11f), new Vector3(0.11f, 0f, 0f), new Vector3(0f, 0f, -0.11f), new Vector3(-0.11f, 0f, 0f) };
             for (int k = 0; k < 4; k++)
-                kit.Deco(PrimitiveType.Cylinder, new Vector3(0.62f, 0.17f, 0.06f) + offs[k], new Vector3(0.09f, 0.03f, 0.09f), PatchworkAssets.Glow(cols[k], 0.35f), default(Vector3), pad);
+            {
+                Vector3 bp = new Vector3(0.56f, 0.19f, 0.06f) + offs[k];
+                part(PrimitiveType.Sphere, bp, new Vector3(0.1f, 0.06f, 0.1f), PatchworkAssets.Glow(cols[k], 0.4f), Vector3.zero);
+                part(PrimitiveType.Sphere, bp + new Vector3(-0.012f, 0.024f, 0.012f), new Vector3(0.035f, 0.015f, 0.035f), PatchworkAssets.Glow(Color.Lerp(cols[k], Color.white, 0.6f), 0.8f), Vector3.zero);
+            }
+            // The middle: a glowing heart, two little pill buttons, and a speaker grille.
+            var heart = PatchworkAssets.Glow(new Color(1f, 0.45f, 0.6f), 1.2f);
+            Vector3 hc = new Vector3(0f, 0.15f, 0.06f);
+            part(PrimitiveType.Sphere, hc + new Vector3(-0.035f, 0f, 0.025f), new Vector3(0.08f, 0.04f, 0.08f), heart, Vector3.zero);
+            part(PrimitiveType.Sphere, hc + new Vector3(0.035f, 0f, 0.025f), new Vector3(0.08f, 0.04f, 0.08f), heart, Vector3.zero);
+            part(PrimitiveType.Cube, hc + new Vector3(0f, 0f, -0.012f), new Vector3(0.075f, 0.035f, 0.075f), heart, new Vector3(0f, 45f, 0f));
+            for (int s = -1; s <= 1; s += 2)
+                part(PrimitiveType.Capsule, new Vector3(s * 0.13f, 0.145f, 0.17f), new Vector3(0.035f, 0.045f, 0.035f), cream, new Vector3(0f, 0f, 90f));
+            for (int gx = -2; gx <= 2; gx++)
+                for (int gz = 0; gz < 2; gz++)
+                    part(PrimitiveType.Sphere, new Vector3(gx * 0.035f, 0.143f, -0.2f - gz * 0.035f), Vector3.one * 0.016f, plumDark, Vector3.zero);
+            // A light strip along the front edge, and a brass name plate under it.
+            part(PrimitiveType.Cube, new Vector3(0f, 0.08f, 0.425f), new Vector3(0.62f, 0.035f, 0.03f), PatchworkAssets.Glow(new Color(0.5f, 0.95f, 0.9f), 1.5f), Vector3.zero);
+            part(PrimitiveType.Cube, new Vector3(0f, 0.02f, 0.434f), new Vector3(0.26f, 0.05f, 0.012f), brass, Vector3.zero);
             // A curly cable trailing off the desk.
             var cable = PatchworkAssets.Yarn(new Color(0.2f, 0.2f, 0.24f));
             Vector3 prev = at + new Vector3(0f, -0.05f, 0.35f);

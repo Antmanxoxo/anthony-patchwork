@@ -817,6 +817,14 @@ Stuff I need to remember about how Patchwork is put together.
 - `RenderOptimizer.WorldTiling` is now on for Level 1 as well as Level 2.
 - `Level1Builder.Gem(kit, foot, radius, tall, tip, mat, turn)` makes a flat-shaded six-sided crystal (a flat top when tip is 0). It's used for the Drain Grotto crystals; the pillars' own blocks stay as invisible colliders.
 
+- The controller menu is in `LevelSelectMenu`: the `choosing` stage, with `UpdateChoice` and `DrawChoice`.
+  - Choice 0 runs `Globe.Focus` and goes to the globe card. Choice 1 calls `game.OpenStore()`.
+  - Cancel on the globe returns to the choice. Closing the Store sets `UIMode.LevelSelect` and calls `LevelSelect.BackFromStore()`.
+  - `Item.Store` has been removed from the pause menu's list.
+- The controller model is `HubBuilder.Controller`. It's built from primitives on the `pad` group via a local `part(...)` helper, with the top of the slab at y 0.14 and the far edge at +z.
+- `RenderOptimizer.Prepare` builds the sphere and capsule sets for the current `GameSettings.Graphics` (4 sizes: < 0.45, < 1.3, < 2.6 and bigger). They're rebuilt when the setting changes, and apply from the next level load.
+- `GameSettings.ApplyGraphics` sets `QualitySettings.anisotropicFiltering`.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

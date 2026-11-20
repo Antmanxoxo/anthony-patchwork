@@ -4,8 +4,8 @@ using UnityEngine;
 namespace Patchwork
 {
     // Makes a built level cheaper to draw without losing anything you can actually see:
-    //  - Small round things (Unity's spheres and capsules are 768 and 832 triangles each, even for
-    //    a pea-sized eye) get a lighter mesh sized to how big they are. Big ones keep full detail.
+    //  - Round things get a mesh as smooth as their size needs (and the Graphics setting allows):
+    //    lighter than Unity's for little ones on "Fast", much smoother than Unity's on "Best".
     //  - Tiny things (under half a metre) stop casting shadows; their shadows were a few pixels.
     //  - Small and medium decorations are only drawn out to a sensible distance (well past where
     //    the haze softens them), so the camera isn't drawing thousands of far-off pebbles.
@@ -14,7 +14,8 @@ namespace Patchwork
     {
         public const int SmallLayer = 8, MediumLayer = 9, GrassLayer = 10;
         static Mesh hiSphere, hiCapsule, hiCube, hiCylinder, cube, cylinder;
-        static Mesh[] spheres, capsules;   // low, medium, high
+        static Mesh[] spheres, capsules;   // small, medium, large, huge
+        static int preparedDetail = -1;
 
         // Scales how far small and medium decorations are drawn (set by the Graphics setting).
         public static float CullScale = 1f;
@@ -87,8 +88,11 @@ namespace Patchwork
                         tiled++;
                     }
                 }
-                if (mesh == hiSphere && size < 2.6f) { mf.sharedMesh = spheres[size < 0.45f ? 0 : size < 1.3f ? 1 : 2]; swapped++; }
-                else if (mesh == hiCapsule && size < 3.2f) { mf.sharedMesh = capsules[size < 0.6f ? 0 : size < 1.6f ? 1 : 2]; swapped++; }
+                // (Every round thing gets a mesh smooth enough for its size: on "Best" even a
+                // pea-sized eye is properly round, and the big tree tops and balloons have
+                // three times the detail of Unity's own sphere.)
+                if (mesh == hiSphere) { mf.sharedMesh = spheres[size < 0.45f ? 0 : size < 1.3f ? 1 : size < 2.6f ? 2 : 3]; swapped++; }
+                else if (mesh == hiCapsule) { mf.sharedMesh = capsules[size < 0.6f ? 0 : size < 1.6f ? 1 : size < 3.2f ? 2 : 3]; swapped++; }
 
                 if (size < 0.5f && r.shadowCastingMode == UnityEngine.Rendering.ShadowCastingMode.On)
                 {
@@ -119,9 +123,11 @@ namespace Patchwork
             // Play press with the shapes themselves already thrown away by Unity. Anything given
             // a thrown-away shape draws nothing at all (that's how the whole Pod once vanished),
             // so check the shapes are really still there, not just that we made them once.
-            if (spheres != null && capsules != null && cube != null && cylinder != null && hiCube != null
-                && spheres[0] != null && spheres[1] != null && spheres[2] != null
-                && capsules[0] != null && capsules[1] != null && capsules[2] != null) return;
+            int detail = GameSettings.Graphics;
+            if (preparedDetail == detail && spheres != null && capsules != null && cube != null && cylinder != null && hiCube != null
+                && spheres[0] != null && spheres[1] != null && spheres[2] != null && spheres[3] != null
+                && capsules[0] != null && capsules[1] != null && capsules[2] != null && capsules[3] != null) return;
+            preparedDetail = detail;
             var a = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             var b = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             var cu = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -135,9 +141,22 @@ namespace Patchwork
             Object.Destroy(cu);
             Object.Destroy(cy);
             cube = MakeCube();
-            cylinder = MakeCylinder(20);
-            spheres = new[] { Round("LowSphere", 10, 7, 0f), Round("MidSphere", 16, 10, 0f), Round("HighSphere", 20, 14, 0f) };
-            capsules = new[] { Round("LowCapsule", 10, 8, 0.5f), Round("MidCapsule", 16, 10, 0.5f), Round("HighCapsule", 20, 14, 0.5f) };
+            // How smooth round things are, by the Graphics setting (segments round, rings up):
+            //   Fast      10x8, 16x10, 20x14, and Unity's own (24x16) for big ones
+            //   Balanced  14x10, 22x14, 30x20, 40x26
+            //   Best      18x12, 28x18, 40x26, 56x36
+            int[][] seg = detail >= 2 ? new[] { new[] { 18, 12 }, new[] { 28, 18 }, new[] { 40, 26 }, new[] { 56, 36 } }
+                        : detail == 1 ? new[] { new[] { 14, 10 }, new[] { 22, 14 }, new[] { 30, 20 }, new[] { 40, 26 } }
+                        : new[] { new[] { 10, 8 }, new[] { 16, 10 }, new[] { 20, 14 }, new[] { 24, 16 } };
+            cylinder = MakeCylinder(detail >= 2 ? 40 : detail == 1 ? 28 : 20);
+            string[] size = { "Small", "Mid", "Large", "Huge" };
+            spheres = new Mesh[4];
+            capsules = new Mesh[4];
+            for (int i = 0; i < 4; i++)
+            {
+                spheres[i] = Round(size[i] + "Sphere", seg[i][0], seg[i][1], 0f);
+                capsules[i] = Round(size[i] + "Capsule", seg[i][0], seg[i][1], 0.5f);
+            }
         }
 
         // How big one repeat of a material's texture is in the world (0 = leave it alone).

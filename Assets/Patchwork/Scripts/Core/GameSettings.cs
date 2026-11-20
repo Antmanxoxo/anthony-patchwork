@@ -123,6 +123,9 @@ namespace Patchwork
         {
             int g = Graphics;
             RenderOptimizer.CullScale = g == 0 ? 0.6f : g == 1 ? 0.8f : 1f;
+            // Textures stay sharp on the ground and walls seen at a slant (the grass, the cobbles,
+            // the long brick walls), instead of going blurry a few metres away.
+            QualitySettings.anisotropicFiltering = g == 0 ? AnisotropicFiltering.Enable : AnisotropicFiltering.ForceEnable;
             RenderOptimizer.ApplyCullDistances();
 #if !UNITY_EDITOR
             if (runtimePipeline == null)

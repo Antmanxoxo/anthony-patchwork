@@ -59,7 +59,6 @@ namespace Patchwork
             items.Clear();
             items.Add(Item.Resume);
             items.Add(Item.Quests);
-            items.Add(Item.Store);
             items.Add(Item.Photo);
             items.Add(Item.Merits);
             items.Add(Item.Restart);

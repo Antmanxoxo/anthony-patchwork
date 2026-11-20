@@ -358,8 +358,12 @@ namespace Patchwork
                     if (!Photo.Update(udt)) ClosePhotoMode();
                     break;
                 case UIMode.Store:
-                    // Closing it goes back to the pause menu it was opened from.
-                    if (!Store.Update(udt)) SetMode(UIMode.Paused, 0f);
+                    // Closing it goes back to the controller it was opened from.
+                    if (!Store.Update(udt))
+                    {
+                        SetMode(UIMode.LevelSelect, 1f);
+                        LevelSelect.BackFromStore();
+                    }
                     break;
                 case UIMode.PodEdit:
                     if (!PodEdit.Update(udt)) ClosePodEditor();
@@ -1053,7 +1057,7 @@ namespace Patchwork
             Sfx.Play(SfxId.MenuCancel, 0.4f);
         }
 
-        // From the pause menu: the Store, with time still stopped.
+        // From the controller in the Pod: the Store, with time stopped.
         public void OpenStore()
         {
             Store.Open();

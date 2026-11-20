@@ -1,5 +1,22 @@
 # Development Log
 
+## The controller's own menu (with the Store), a new controller, and smoother round things everywhere
+
+- **The Store moved to the controller.** Picking up the controller in the Pod now opens its own menu: **Set Sail** (the globe, as before) or **The Store**, with your points shown underneath. Backing out of the globe or the Store brings you back to that menu, and backing out of the menu puts the controller down. The Store is no longer in the pause menu.
+- **A new controller: the Patchwork Pad.** It's an original design, built to match the rest of the Pod:
+  - a plum felt body with rounded edges and coral knitted grips;
+  - cream button wells, a cream cross-shaped D-pad and four candy dome buttons;
+  - cushioned thumbsticks with rims and dimples;
+  - a glowing heart button in the middle, two little pill buttons and a speaker grille;
+  - shoulder buttons and triggers, a glowing light strip and a brass name plate along the far edge;
+  - brass screws and a stitched seam all round.
+- **Smoother meshes everywhere.** Every ball, capsule and cylinder in every level now gets a mesh as smooth as its size needs, set by the Graphics setting:
+  - **Best:** even tiny eyes and buttons are properly round, and big things like tree tops and balloons have about three times the detail of before.
+  - **Balanced:** a step down from Best.
+  - **Fast:** stays as it was, for slower computers.
+  - Cylinders go from 20 sides to 28 (Balanced) or 40 (Best).
+- **Sharper textures at a slant.** The ground, cobbles and long walls stay sharp at a distance instead of going blurry (anisotropic filtering, forced on for Balanced and Best).
+
 ## Yarn Patch's clothes fitted to his real shape, the Store's stage reframed, and Toybox Town tidied from its photo tour
 
 - **Yarn Patch's clothes, properly this time.** The clothes used to measure his body from his shape. They couldn't tell his arms (and the rope in his hand) from his body, so they thought he was about twice as wide as he is. That's why:

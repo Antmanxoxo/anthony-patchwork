@@ -16,6 +16,12 @@ namespace Patchwork
         bool sailing;
         float sailTime;
         static int lastIndex;
+        // Picking up the controller first offers a choice: set sail (the globe), or the Store.
+        bool choosing;
+        int choice;
+        float choiceTime;
+        static readonly string[] Choices = { "Set Sail", "The Store" };
+        static readonly string[] ChoiceInfo = { "Turn the globe and pick where to go next.", "Spend your points on colours, fabrics and outfits, modelled by the cast." };
 
         public LevelSelectMenu(PatchworkGame game)
         {
@@ -43,6 +49,9 @@ namespace Patchwork
             stickCooldown = 0.2f;
             changeTime = 0f;
             sailing = false;
+            choosing = true;
+            choice = 0;
+            choiceTime = 0f;
             var cam = game.CameraRig;
             Vector3 c = Globe != null ? Globe.transform.position : Vector3.zero;
             cam.ShowcasePosition = ViewPoint;
@@ -50,7 +59,15 @@ namespace Patchwork
             cam.ShowcaseLookAt = c + new Vector3(2.3f, 0.1f, 0f);
             cam.ShowcaseBlendSpeed = 1.4f;
             cam.Showcase = true;
-            if (Globe != null) Globe.Focus(index, ViewPoint);
+        }
+
+        // Back from the Store: the choice again, on the Store.
+        public void BackFromStore()
+        {
+            choosing = true;
+            choice = 1;
+            choiceTime = 0.3f;
+            openTime = 0.2f;
         }
 
         public void Close()
@@ -78,9 +95,15 @@ namespace Patchwork
             }
             if (openTime < 0.15f) return;
 
+            if (choosing) { UpdateChoice(udt); return; }
+
             if (input.Cancel.WasPressedThisFrame())
             {
-                game.CloseLevelSelect();
+                // Back to the controller's choice.
+                choosing = true;
+                choiceTime = 0f;
+                if (Globe != null) Globe.Focus(-1, Vector3.zero);
+                Sfx.Play(SfxId.MenuCancel, 0.4f);
                 return;
             }
 
@@ -126,8 +149,96 @@ namespace Patchwork
             }
         }
 
+        void UpdateChoice(float udt)
+        {
+            choiceTime += udt;
+            var input = game.Input;
+            if (input.Cancel.WasPressedThisFrame())
+            {
+                game.CloseLevelSelect();
+                return;
+            }
+            stickCooldown -= udt;
+            int dir = 0;
+            if (input.NavUp.WasPressedThisFrame() || input.NavLeft.WasPressedThisFrame()) dir = -1;
+            else if (input.NavDown.WasPressedThisFrame() || input.NavRight.WasPressedThisFrame()) dir = 1;
+            else
+            {
+                Vector2 stick = input.Move.ReadValue<Vector2>();
+                float m = Mathf.Abs(stick.y) > Mathf.Abs(stick.x) ? -stick.y : stick.x;
+                if (Mathf.Abs(m) > 0.6f && stickCooldown <= 0f) dir = m > 0f ? 1 : -1;
+                if (stick.magnitude < 0.3f) stickCooldown = 0f;
+            }
+            if (dir != 0 && choice != Mathf.Clamp(choice + dir, 0, Choices.Length - 1))
+            {
+                stickCooldown = 0.3f;
+                choice = Mathf.Clamp(choice + dir, 0, Choices.Length - 1);
+                choiceTime = 0f;
+                Sfx.Play(SfxId.MenuMove, 0.5f);
+            }
+            if (!input.Confirm.WasPressedThisFrame()) return;
+            Sfx.Play(SfxId.MenuConfirm, 0.55f);
+            if (choice == 0)
+            {
+                choosing = false;
+                changeTime = 0f;
+                if (Globe != null) Globe.Focus(index, ViewPoint);
+            }
+            else game.OpenStore();
+        }
+
+        // The controller's own menu: two big felt buttons on a card, the purse underneath.
+        void DrawChoice(bool kb)
+        {
+            float W = UIKit.Width, H = UIKit.Height, time = Time.unscaledTime;
+            float a = Mathf.Clamp01(openTime / 0.4f);
+            var ink = UIKit.Ink;
+            float cw = 640f, ch = 640f;
+            var card = new Rect(W - cw - 110f + (1f - a) * 200f, (H - ch) * 0.5f - 10f, cw, ch);
+            UIKit.Panel(card, new Color(0.99f, 0.96f, 0.9f, 0.96f * a), new Color(0.45f, 0.35f, 0.6f, 0.9f * a));
+            UIKit.Label(new Rect(card.x + 40f, card.y + 30f, card.width - 80f, 64f), "Patch's Controller", UIKit.Style(44, true, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, a)));
+            Color[] tints = { new Color(0.45f, 0.65f, 0.95f), new Color(0.9f, 0.45f, 0.62f) };
+            for (int i = 0; i < Choices.Length; i++)
+            {
+                bool on = i == choice;
+                float pop = on ? UIKit.EaseOutBack(Mathf.Clamp01(choiceTime / 0.3f)) : 0f;
+                float grow = on ? 8f * pop + Mathf.Sin(time * 4f) * 2f : 0f;
+                var r = new Rect(card.x + 40f - grow, card.y + 120f + i * 200f - grow, card.width - 80f + grow * 2f, 176f + grow * 2f);
+                var c = tints[i];
+                UIKit.Fill(new Rect(r.x + 4f, r.y + 8f, r.width, r.height), new Color(0.3f, 0.2f, 0.25f, 0.15f * a), 26f);
+                UIKit.Fill(r, on ? new Color(c.r, c.g, c.b, a) : new Color(1f, 0.99f, 0.97f, a), 26f);
+                if (on) PauseMenu.MarchingStitches(new Rect(r.x + 8f, r.y + 8f, r.width - 16f, r.height - 16f), new Color(1f, 1f, 1f, 0.85f * a), time * 40f);
+                else UIKit.Outline(r, new Color(ink.r, ink.g, ink.b, 0.25f * a), 2f, 26f);
+                // The picture: a little globe, or a golden button.
+                var icon = new Vector2(r.x + 88f, r.center.y);
+                if (i == 0)
+                {
+                    UIKit.Circle(icon, 104f, new Color(0.35f, 0.6f, 0.9f, a));
+                    UIKit.Circle(icon + new Vector2(-14f, -10f), 46f, new Color(0.45f, 0.8f, 0.45f, a));
+                    UIKit.Circle(icon + new Vector2(22f, 18f), 30f, new Color(0.45f, 0.8f, 0.45f, a));
+                    UIKit.CircleOutline(icon, 104f, new Color(1f, 1f, 1f, 0.8f * a), 4f);
+                }
+                else
+                {
+                    UIKit.IconTransformed(new Rect(icon.x - 50f, icon.y - 50f, 100f, 100f), PatchworkAssets.IconButton, new Color(1f, 1f, 1f, a), on ? Mathf.Sin(time * 3f) * 10f : 0f, 1f);
+                }
+                Color tc = on ? new Color(1f, 1f, 1f, a) : new Color(ink.r, ink.g, ink.b, a);
+                UIKit.Label(new Rect(r.x + 160f, r.y + 26f, r.width - 190f, 56f), Choices[i], UIKit.Style(38, true, TextAnchor.MiddleLeft, tc));
+                UIKit.Label(new Rect(r.x + 160f, r.y + 84f, r.width - 190f, 80f), ChoiceInfo[i], UIKit.Style(20, false, TextAnchor.UpperLeft, new Color(tc.r, tc.g, tc.b, 0.85f * a), true));
+            }
+            // The purse.
+            string purse = GameState.Purse.ToString("N0") + " points to spend";
+            UIKit.Icon(new Rect(card.x + 40f, card.yMax - 132f, 40f, 40f), PatchworkAssets.IconButton, new Color(1f, 1f, 1f, a));
+            UIKit.Label(new Rect(card.x + 92f, card.yMax - 132f, card.width - 130f, 40f), purse, UIKit.Style(22, true, TextAnchor.MiddleLeft, new Color(0.5f, 0.32f, 0.08f, a)));
+            float px = card.x + 40f, py = card.yMax - 76f;
+            px += UIKit.PromptLabel(px, py, 44f, PromptAction.Confirm, "Choose", kb, ink, a) + 36f;
+            UIKit.PromptLabel(px, py, 44f, PromptAction.Cancel, "Put it down", kb, ink, a);
+            UIKit.Label(new Rect(0f, 40f, W, 60f), "What shall we do?", UIKit.Style(44, true, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, a)), true);
+        }
+
         public void Draw(bool kb)
         {
+            if (choosing) { DrawChoice(kb); return; }
             float W = UIKit.Width, H = UIKit.Height;
             float a = Mathf.Clamp01(openTime / 0.4f);
             var e = LevelCatalog.Levels[index];
