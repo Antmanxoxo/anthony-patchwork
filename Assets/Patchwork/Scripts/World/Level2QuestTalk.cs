@@ -263,7 +263,7 @@ namespace Patchwork
                 {
                     "My night book! Every page! I thought the draught had them for good.",
                     "Read me the last one. ...A thimble for a hat. Yes. I remember now. I'd made myself forget.",
-                    "The toys down in Toybox Town have a name for him. The Unpicker. The Fray goes where he points, and the colour it takes ends up in his jars.",
+                    "The toys down in Toybox Town have a name for him. The Unravelled King. The Fray goes where he points, and the colour it takes ends up in his jars.",
                     "He bowed to me. Forty years a watchman and the thief bowed to me. You get those lenses back, and you look through that glass, and you let him watch you do it."
                 };
             }

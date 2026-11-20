@@ -13,13 +13,13 @@ namespace Patchwork
     // coloured thing on them (it's colour they've licked off the world). They eat colour.
     // Where they walk they leave grey behind, and the air round them goes dull.
     //
-    // Behind them is the Unpicker: tall as a house, thin as a needle, a thimble for a hat, a
+    // Behind them is the Unravelled King: tall as a house, thin as a needle, a thimble for a hat, a
     // seam ripper for a walking stick and a stitched-shut mouth. He never comes close. He
     // stands a long way off and watches, and the stolen colours hang from his coat in little
     // glowing jars. (His world has none; he's collecting ours.)
     //
-    // This file has what the creatures and the Unpicker look like (FrayBodies), the grey they
-    // leave behind (GreyStain), and the Unpicker's watching (UnpickerWatch).
+    // This file has what the creatures and the Unravelled King look like (FrayBodies), the grey they
+    // leave behind (GreyStain), and the Unravelled King's watching (KingWatch).
     public static class FrayBodies
     {
         static Material fur, furDark, scale, eyeBlack, pupil, tongue, tooth, mouthDark, wing, steel;
@@ -221,10 +221,10 @@ namespace Patchwork
             }
         }
 
-        // ------------------------------------------------------------------ The Unpicker
+        // ------------------------------------------------------------------ The Unravelled King
 
         // Built standing at root, facing +z, about five and a half metres tall.
-        public static void Unpicker(Transform root)
+        public static void UnravelledKing(Transform root)
         {
             Ensure();
             // Legs like a wading bird's.
@@ -438,13 +438,13 @@ namespace Patchwork
         float drainTarget;
     }
 
-    // ------------------------------------------------------------------ The Unpicker, watching
+    // ------------------------------------------------------------------ The Unravelled King, watching
     //
     // He's never anywhere Patch can reach. He stands on a rooftop or a hilltop a long way off,
     // all his eyes on Patch, perfectly still. Get close, or look away for long enough, and he
     // folds up like an umbrella and is gone, to turn up somewhere else a while later. Once the
     // town is mended he doesn't come back. (He will, somewhere else.)
-    public class UnpickerWatch : MonoBehaviour
+    public class KingWatch : MonoBehaviour
     {
         public const string SeenKey = "L1_unpicker_seen", NamedKey = "L1_unpicker_named";
         public Vector2[] Spots;          // places he might stand (x, z): he stands on whatever is highest there
@@ -456,9 +456,9 @@ namespace Patchwork
 
         void Start()
         {
-            figure = new GameObject("TheUnpicker").transform;
+            figure = new GameObject("TheUnravelledKing").transform;
             figure.SetParent(transform, false);
-            FrayBodies.Unpicker(figure);
+            FrayBodies.UnravelledKing(figure);
             figure.gameObject.SetActive(false);
         }
 
@@ -531,7 +531,7 @@ namespace Patchwork
             else if (!GameState.IsHintSeen(NamedKey))
             {
                 GameState.SetHintSeen(NamedKey);
-                Narrator.Say("There he is again. The toys call him the Unpicker. The Fray follows where he points, and the colours it takes end up in his jars.");
+                Narrator.Say("There he is again. The toys call him the Unravelled King. The Fray follows where he points, and the colours it takes end up in his jars.");
             }
         }
     }

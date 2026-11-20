@@ -1978,7 +1978,7 @@ namespace Patchwork
             }
             else if (kind == Kind.Larder)
             {
-                // The Unpicker's larder: a little rack of jars, a different stolen colour in each.
+                // The Unravelled King's larder: a little rack of jars, a different stolen colour in each.
                 Color[] stolen = { new Color(1f, 0.5f, 0.6f), new Color(1f, 0.8f, 0.3f), new Color(0.4f, 0.85f, 0.9f), new Color(0.45f, 0.8f, 0.45f) };
                 Monsters.Part(PrimitiveType.Cube, k.thing, new Vector3(0f, -0.16f, 0f), new Vector3(0.9f, 0.04f, 0.26f), PatchworkAssets.Wood(new Color(0.3f, 0.2f, 0.14f)));
                 for (int i = 0; i < 4; i++)
@@ -2018,9 +2018,9 @@ namespace Patchwork
         }
     }
 
-    // The Unpicker, come to see how his work's getting on. He stands somewhere and watches
+    // The Unravelled King, come to see how his work's getting on. He stands somewhere and watches
     // with all his eyes; come close, or wait long enough, and he folds up thin and is gone.
-    public class UnpickerVisit : MonoBehaviour
+    public class KingVisit : MonoBehaviour
     {
         // Somebody actually hit him (nobody's meant to be able to). His thimble comes off.
         public System.Action Knocked;
@@ -2028,15 +2028,15 @@ namespace Patchwork
         bool hit;
 
         // Stands him on whatever is under "from" (within "drop" of it). Null if there's nothing.
-        public static UnpickerVisit Show(Transform parent, Vector3 from, float drop, float seconds, float fleeDistance)
+        public static KingVisit Show(Transform parent, Vector3 from, float drop, float seconds, float fleeDistance)
         {
             RaycastHit hit;
             if (!Physics.Raycast(from, Vector3.down, out hit, drop, ~(1 << 2), QueryTriggerInteraction.Ignore)) return null;
-            var go = new GameObject("TheUnpicker_Visit");
+            var go = new GameObject("TheUnravelledKing_Visit");
             go.transform.SetParent(parent, false);
             go.transform.position = hit.point;
-            FrayBodies.Unpicker(go.transform);
-            var v = go.AddComponent<UnpickerVisit>();
+            FrayBodies.UnravelledKing(go.transform);
+            var v = go.AddComponent<KingVisit>();
             v.left = seconds;
             v.flee = fleeDistance;
             var fc = go.AddComponent<FrayCreature>();

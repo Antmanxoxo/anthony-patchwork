@@ -407,12 +407,12 @@ Stuff I need to remember about how Patchwork is put together.
 
 ## The Fray (FrayKin.cs)
 - `FrayBodies` builds every creature's look (`Walker`, `Hopper`, `Flit`, `Gawp`), knot eyes and
-  the Unpicker. The behaviour scripts (Snarling.cs, Monsters.cs) only move the parts they're
+  the Unravelled King. The behaviour scripts (Snarling.cs, Monsters.cs) only move the parts they're
   handed back (legs, eyes, mouth, wings). Shared pieces: `EyeStalk`, `Leg`, `Fuzz`.
 - `GreyStain` (one per level, added in `Level1Builder.Creatures`) leaves grey blots under
   everything in `FrayCreature.All`, and calls `LevelLook.SetDrain(amount, flash)` from how
   near the nearest creature or knot is. `Monsters.Popped` calls `GreyStain.Restore`.
-- `UnpickerWatch` shows the Unpicker on top of whatever is highest at one of its `Spots`
+- `KingWatch` shows the Unravelled King on top of whatever is highest at one of its `Spots`
   (x, z), 42 to 100 m from Patch; he folds away if Patch comes within 26 m. Hint-seen keys
   `L1_unpicker_seen` / `L1_unpicker_named` are the Storyteller's two remarks.
 - The creature designs are original. The museum pieces were inspiration for the feel only:
@@ -637,7 +637,7 @@ Stuff I need to remember about how Patchwork is put together.
 
 - **Quest extras** (all in `Level2Quest.cs` / `MuseumFray.cs`): night-book pages
   (`L2_q_page0-5`, `L2_q_pages_told`), `Clock()`, the lens lamps (`LampGlows`), `GreyAnchor`
-  (three per clot; `GreyClot.AnchorsLeft` blocks hits), `HelmetCrab.Guarded`, `UnpickerVisit`.
+  (three per clot; `GreyClot.AnchorsLeft` blocks hits), `HelmetCrab.Guarded`, `KingVisit`.
   Anchors aren't saved: an unbroken clot gets all three back when the level reloads.
 
 - **Seams** are `FraySeam` (MuseumFray.cs), made at runtime in `Level2Quest.Start` from
@@ -837,6 +837,9 @@ Stuff I need to remember about how Patchwork is put together.
 - `FormVisuals.outfitShown` is set in `ApplyLook`, and `PlaceOutfit` uses it instead of `GameState.Outfit`.
 - `StoreMenu.FitLabel` draws one line of bold text, shrinking it to fit. Card picture size is `min(width - 24, height - 80)`.
 - The Chimney Lane end house is now at x 25.5 with width 10.5 (it was at 28 with width 12, and went past `CanalWest`).
+
+- The villain is the Unravelled King. In code: `FrayBodies.UnravelledKing`, `KingWatch` (Level 1), `KingVisit` and `Level2Quest.KingKnocked` (Level 2), and the objects `TheUnravelledKing*`. The save keys `L1_unpicker_seen`/`L1_unpicker_named` were deliberately left as they were.
+- Narrator voice lines: the script is kept outside the project (a Sheet with columns ID, Level, When it plays, Line, How to say it). IDs are `L1_###`/`L2_###`, in order of source file and line. The voice is Julian (ElevenLabs, model eleven_v4).
 
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);

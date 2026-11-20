@@ -4,7 +4,7 @@ namespace Patchwork
 {
     // The Fray's creatures roaming Toybox Town (away from the square where you start), and felt
     // hearts to patch Patch up. Three nips and Patch unravels back to the last checkpoint.
-    // (What they look like, the grey they leave and the Unpicker who sends them: FrayKin.cs.)
+    // (What they look like, the grey they leave and the Unravelled King who sends them: FrayKin.cs.)
     //   Snarlings      - stride back and forth, chase you when you're close
     //   Tangle Hoppers - one-legged things that bounce after you
     //   Static Moths   - flutter overhead and swoop down at you
@@ -20,7 +20,7 @@ namespace Patchwork
             // The grey they leave behind them, and the one who sent them, watching from a
             // long way off (rooftops, hilltops, the tops of towers: wherever is highest there).
             root.gameObject.AddComponent<GreyStain>();
-            var watch = root.gameObject.AddComponent<UnpickerWatch>();
+            var watch = root.gameObject.AddComponent<KingWatch>();
             watch.DoneScene = SceneName;
             watch.Spots = new[]
             {

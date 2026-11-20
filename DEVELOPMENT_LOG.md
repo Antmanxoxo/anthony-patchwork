@@ -1,5 +1,11 @@
 # Development Log
 
+## The Fray's mastermind is the Unravelled King
+
+- **New name.** The tall, needle-thin figure with a thimble for a hat, who sends the Fray and keeps the stolen colours in jars, is now called **the Unravelled King**. He used to be "the Unpicker".
+  - It's changed everywhere he's named: the narrator's lines in Toybox Town and the museum, the line in Wick's chat, and the secret in his larder, which is now "The Unravelled King's Larder".
+  - Saved games carry on as before. The saved flags for having seen him and heard his name keep their old names, so nobody has to see him "for the first time" again.
+
 ## Patch's arms really are out of his tummy now
 
 - **Fixed: Patch's arms sank into his body, standing still and running.** The last fix (keeping his arms out from his sides) had his left and right swapped. The model's "right arm" ends up on his left once it's turned to face forward, so it pushed both hands *into* his tummy instead of away from it. It now works out which way is "out" from where his two shoulders actually are, so it can't mix them up. Standing still, his arms hang where they always did. When he runs, his hands pass outside his body.

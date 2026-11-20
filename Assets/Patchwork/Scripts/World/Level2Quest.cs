@@ -34,7 +34,7 @@ namespace Patchwork
     //   - Three lamps by Wick's post light one by one as the lenses come home.
     //   - Each clot in the tanks is held by three anchor knots that have to go first.
     //   - The Helmet Crab sits tight in the Kelp Galleries until its chessmen are dealt with.
-    //   - The Unpicker himself turns up, twice, to see how it's going.
+    //   - The Unravelled King himself turns up, twice, to see how it's going.
     //   - Five seams (rips in the floor where the Fray comes up) keep letting things out until
     //     they're stitched shut with three hits: chessmen from most, ammonite rollers from the
     //     ones in Deep Time and the Sunken Ruins. Shutting all five slows the last one down.
@@ -46,7 +46,7 @@ namespace Patchwork
     // (keys "L2_q_s_..."; the same key with "_told" once they've said it):
     //   flawless - win the Hall of Arms without losing a heart      (the Castellan, Wick)
     //   crab     - land the third hit on the Helmet Crab before it bolts, and finish it there (Wick, Dr. Trowel)
-    //   thimble  - actually hit the Unpicker on one of his visits   (Wick, Stella, the Storyteller)
+    //   thimble  - actually hit the Unravelled King on one of his visits   (Wick, Stella, the Storyteller)
     //   nomoth   - shut the Great Seam before a single moth climbs out (Stella)
     //   tidy     - stitch all five seams before winning any lens     (Wick, Professor Hoot)
     //   stranger - win a lens without ever having spoken to Wick     (Wick)
@@ -363,7 +363,7 @@ namespace Patchwork
 
         readonly List<StaticMoth> moths = new List<StaticMoth>();
         readonly List<Chessling> escorts = new List<Chessling>();
-        UnpickerVisit visitor;
+        KingVisit visitor;
         FraySeam[] seams;
         // Patches of grey creep, and what each lot belongs to.
         readonly List<FrayCreep> armsCreep = new List<FrayCreep>(), crabCreep = new List<FrayCreep>(), domeCreep = new List<FrayCreep>();
@@ -606,10 +606,10 @@ namespace Patchwork
             // The first lens Patch wins, somebody notices.
             if (n == 1 && which == 0 && visitor == null)
             {
-                visitor = UnpickerVisit.Show(FoeRoot, new Vector3(80f, 18.5f, -44f), 19f, 20f, 5.5f);
+                visitor = KingVisit.Show(FoeRoot, new Vector3(80f, 18.5f, -44f), 19f, 20f, 5.5f);
                 if (visitor != null)
                 {
-                    visitor.Knocked = UnpickerKnocked;
+                    visitor.Knocked = KingKnocked;
                     Narrator.Say("The Object Glass, still warm from the Captain's chest. And at the far end of the hall, up on the toy castle, something very tall unfolded itself, looked at Patch with all its eyes, and folded away again.");
                     return;
                 }
@@ -660,7 +660,7 @@ namespace Patchwork
         // ------------------------------------------------------------------ Secrets
 
         static readonly string[] SecretKeys = { "flawless", "crab", "thimble", "nomoth", "tidy", "stranger", "whistle", "king", "jar", "torch", "larder", "rounds", "skittles", "hall", "dusties", "audit", "connoisseur", "passport", "moon" };
-        static readonly string[] SecretNames = { "Not a Scratch", "Caught Napping", "Hats Off", "Not One Moth", "A Stitch in Time", "No Introductions", "Marlow's Whistle", "The King in the Biscuits", "A Jar of Red", "June's Torch", "The Unpicker's Larder", "Wick's Round", "Three at a Blow", "The Long Gallery", "The Dust Sheet Five", "The Curator's Audit", "A Perfect Eye", "The Museum Passport", "Three Stitches Remain" };
+        static readonly string[] SecretNames = { "Not a Scratch", "Caught Napping", "Hats Off", "Not One Moth", "A Stitch in Time", "No Introductions", "Marlow's Whistle", "The King in the Biscuits", "A Jar of Red", "June's Torch", "The Unravelled King's Larder", "Wick's Round", "Three at a Blow", "The Long Gallery", "The Dust Sheet Five", "The Curator's Audit", "A Perfect Eye", "The Museum Passport", "Three Stitches Remain" };
         public const int Secrets = 19;
         public int SecretsFound { get { int n = 0; foreach (var k in SecretKeys) if (Seen("s_" + k)) n++; return n; } }
         public bool HasSecret(string key) { return Seen("s_" + key); }
@@ -707,10 +707,10 @@ namespace Patchwork
             };
         }
 
-        void UnpickerKnocked()
+        void KingKnocked()
         {
             Secret("thimble");
-            Narrator.Say("Nobody had ever hit the Unpicker before. You could tell, because he didn't know what to do about it. His thimble rang on the floor like a dropped bell, and he was gone before it stopped.");
+            Narrator.Say("Nobody had ever hit the Unravelled King before. You could tell, because he didn't know what to do about it. His thimble rang on the floor like a dropped bell, and he was gone before it stopped.");
         }
 
         // ------------------------------------------------------------------ The seams
@@ -831,8 +831,8 @@ namespace Patchwork
             Sfx.Play(SfxId.Lever, 0.5f);
             if (visitor == null)
             {
-                visitor = UnpickerVisit.Show(FoeRoot, ObservatoryCentre + new Vector3(-11f, 7f, -11f), 12f, 600f, 5.5f);
-                if (visitor != null) visitor.Knocked = UnpickerKnocked;
+                visitor = KingVisit.Show(FoeRoot, ObservatoryCentre + new Vector3(-11f, 7f, -11f), 12f, 600f, 5.5f);
+                if (visitor != null) visitor.Knocked = KingKnocked;
             }
             Narrator.Say(visitor != null
                 ? "Click, click, click: three lenses home. And on the far side of the dome a tall shape with a thimble for a hat lifted one long arm, and pointed. Out of the dark came the moths."
@@ -851,7 +851,7 @@ namespace Patchwork
                 p.y = Monsters.Ground(p + Vector3.up * 2f);
                 moths.Add(StaticMoth.Create(FoeRoot, p));
             }
-            // The Great Seam: the one the Unpicker came through himself. Moths keep coming
+            // The Great Seam: the one the Unravelled King came through himself. Moths keep coming
             // out of it until it's shut. (Slower, if the five below are already stitched.)
             Vector3 gs = ObservatoryCentre + new Vector3(-9f, 0f, 7f);
             gs.y = Monsters.Ground(gs + Vector3.up * 2f);

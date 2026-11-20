@@ -98,10 +98,10 @@ namespace Patchwork
             blob.gameObject.SetActive(false);
             intro.Blob = blob;
 
-            // The Unpicker, who lets himself down head-first through the crack to have a look.
-            var master = kit.Group("TheUnpicker_Intro", new Vector3(3f, 40.8f, Half - 1.2f));
+            // The Unravelled King, who lets himself down head-first through the crack to have a look.
+            var master = kit.Group("TheUnravelledKing_Intro", new Vector3(3f, 40.8f, Half - 1.2f));
             master.rotation = Quaternion.Euler(0f, 180f, 180f);   // hanging upside down, facing the town
-            FrayBodies.Unpicker(master);
+            FrayBodies.UnravelledKing(master);
             AddGlow(master, SnarlKnot.FrayGlow, 26f, 2.5f);   // a sickly violet light, so he can be seen against the lid
             master.Find("Glow").localPosition = new Vector3(0f, 3.4f, 1.2f);   // (down by his coat, in front of him)
             master.gameObject.SetActive(false);

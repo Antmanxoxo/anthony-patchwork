@@ -144,7 +144,7 @@ namespace Patchwork
             else if (t < TSnap)
             {
                 // The crack opens, and something looks in. The camera goes right up to the lid
-                // for it: the Unpicker lowering himself through the crack, head first, upside
+                // for it: the Unravelled King lowering himself through the crack, head first, upside
                 // down, all his eyes on the town. Then the Fray comes pouring out past him.
                 float cReal = t - TCrack;
                 float c = cReal * CrackAnim / (TSnap - TCrack);
