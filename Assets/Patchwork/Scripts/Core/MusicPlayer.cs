@@ -62,7 +62,7 @@ namespace Patchwork
         // Riding the museum's cardboard lift: the lift's own music takes over, so the rest
         // drops right back.
         public static bool LiftHush;
-        float liftHush;
+        float liftHush, voiceDuck = 1f;
 
         // Something wants no music at all for a while (the gallery that never ends): it fades
         // right out, not just down.
@@ -217,6 +217,9 @@ namespace Patchwork
             master *= spookyDuck;
             liftHush = Mathf.MoveTowards(liftHush, LiftHush ? 1f : 0f, udt * 1.2f);
             master *= 1f - 0.9f * liftHush;
+            // ...and dips a little while the Storyteller is reading a line out.
+            voiceDuck = Mathf.MoveTowards(voiceDuck, NarratorVoice.MusicDuck, udt * 1.5f);
+            master *= voiceDuck;
             silence = Mathf.MoveTowards(silence, Silence ? 1f : 0f, udt * 0.8f);
             master *= 1f - silence;
             dread = Mathf.MoveTowards(dread, Mathf.Clamp01(FrayDread), udt * 0.8f);

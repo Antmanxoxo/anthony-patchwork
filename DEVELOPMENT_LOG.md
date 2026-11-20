@@ -1,5 +1,18 @@
 # Development Log
 
+## The Storyteller speaks (Level 1)
+
+- **The narrator now has a real voice in Toybox Town.** Every narrator line in Level 1 (44 of them) is read aloud by the Storyteller, in a warm, deep, slightly gravelly British voice:
+  - the whole opening story;
+  - the remarks as you walk into each part of town ("Spindle Hill. The wind up here has opinions...");
+  - the quest hints;
+  - the wedding, including the right ending for however many presents you found.
+
+  The words still write themselves out on the paper strip as before. When a line has a recording, the old murmur stays quiet and the voice reads it instead. The strip stays up until he's finished, and the music dips a little under him.
+- **The opening story waits for him.** If he's still reading when the story reaches the next picture, the camera holds at the end of that shot until he finishes, so no line gets cut off. Skipping the story stops him straight away.
+- **A new setting: Storyteller Voice.** It's in Settings, under Sound Volume, and sets how loud he is (0 turns him off).
+- The toys and other characters keep their own little noises. Only the Storyteller speaks.
+
 ## The Fray's mastermind is the Unravelled King
 
 - **New name.** The tall, needle-thin figure with a thimble for a hat, who sends the Fray and keeps the stolen colours in jars, is now called **the Unravelled King**. He used to be "the Unpicker".

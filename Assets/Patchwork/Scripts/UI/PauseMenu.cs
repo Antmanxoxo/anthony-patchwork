@@ -9,7 +9,7 @@ namespace Patchwork
     public class PauseMenu
     {
         enum Item { Resume, Restart, ReturnToHub, Settings, Quit,
-                    Music, Sounds, Rumble, CameraSpeed, InvertY, InvertX, SwingMode, Prompts, WheelButton, VSync, Back,
+                    Music, Sounds, Voice, Rumble, CameraSpeed, InvertY, InvertX, SwingMode, Prompts, WheelButton, VSync, Back,
                     Look, Photo, Merits, Graphics, DevMode, Quests, Store }
 
         readonly PatchworkGame game;
@@ -77,6 +77,7 @@ namespace Patchwork
             items.Add(Item.Graphics);
             items.Add(Item.Music);
             items.Add(Item.Sounds);
+            items.Add(Item.Voice);
             items.Add(Item.Rumble);
             items.Add(Item.CameraSpeed);
             items.Add(Item.InvertY);
@@ -133,6 +134,7 @@ namespace Patchwork
                 case Item.WheelButton: return "Form Wheel Button:  " + (game.Input.FormWheelOnR1 ? "R1" : "L1");
                 case Item.Music: return "Music Volume";
                 case Item.Sounds: return "Sound Volume";
+                case Item.Voice: return "Storyteller Voice";
                 case Item.Rumble: return "Rumble";
                 default: return "Quit";
             }
@@ -162,6 +164,7 @@ namespace Patchwork
                 case Item.WheelButton: return UIArt.IconPad;
                 case Item.Music:
                 case Item.Sounds: return UIArt.IconNote;
+                case Item.Voice: return UIArt.IconNote;
                 case Item.Rumble: return UIArt.IconPad;
                 default: return UIArt.IconDoor;
             }
@@ -178,6 +181,7 @@ namespace Patchwork
                 case Item.WheelButton: return new Color(0.3f, 0.65f, 0.75f);
                 case Item.Music: return new Color(0.65f, 0.45f, 0.85f);
                 case Item.Sounds: return new Color(0.85f, 0.45f, 0.65f);
+                case Item.Voice: return new Color(0.55f, 0.5f, 0.85f);
                 case Item.Rumble: return new Color(0.45f, 0.6f, 0.4f);
                 case Item.Settings: return new Color(0.55f, 0.5f, 0.8f);
                 case Item.Look: return new Color(0.85f, 0.5f, 0.65f);
@@ -198,7 +202,7 @@ namespace Patchwork
 
         static bool IsSlider(Item item)
         {
-            return item == Item.Music || item == Item.Sounds || item == Item.Rumble || item == Item.CameraSpeed;
+            return item == Item.Music || item == Item.Sounds || item == Item.Voice || item == Item.Rumble || item == Item.CameraSpeed;
         }
 
         // On/off and multiple-choice settings: X or left/right flips them.
@@ -238,6 +242,7 @@ namespace Patchwork
             {
                 case Item.Music: return MusicPlayer.Volume;
                 case Item.Sounds: return Sfx.Volume;
+                case Item.Voice: return NarratorVoice.Volume;
                 case Item.CameraSpeed: return GameSettings.CameraSpeed;
                 default: return Haptics.Strength;
             }
@@ -252,6 +257,7 @@ namespace Patchwork
             {
                 case Item.Music: MusicPlayer.Volume = value; break;
                 case Item.Sounds: Sfx.Volume = value; break;
+                case Item.Voice: NarratorVoice.Volume = value; break;
                 case Item.CameraSpeed: GameSettings.CameraSpeed = value; break;
                 default: Haptics.Strength = value; Haptics.Preview(); break;
             }
@@ -386,6 +392,7 @@ namespace Patchwork
                         break;
                     case Item.Music:
                     case Item.Sounds:
+                    case Item.Voice:
                     case Item.Rumble:
                     case Item.CameraSpeed:
                         // Pressing X steps up and wraps back round to the bottom.
@@ -680,6 +687,7 @@ namespace Patchwork
                     break;
                 case Item.Music:        // dance
                 case Item.Sounds:
+                case Item.Voice:
                     angle = Mathf.Sin(s * 5f) * 15f;
                     shift = new Vector2(0f, Mathf.Sin(s * 10f) * 4f);
                     break;

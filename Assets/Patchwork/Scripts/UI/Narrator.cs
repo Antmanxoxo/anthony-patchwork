@@ -14,6 +14,7 @@ namespace Patchwork
         static string line, lastShown;
         static float written, lineTimer, lineAlpha;
         static int lastLetter;
+        static bool voiced;   // the line on the strip has a recording, being read out
         // Chapter card and place tag (set by whoever's telling the story; fade themselves out).
         static string cardKicker, cardTitle, place, lastPlace;
         static float cardAlpha, cardWant, placePop, placeAlpha;
@@ -21,6 +22,8 @@ namespace Patchwork
         public static void ResetStatics()
         {
             line = lastShown = cardKicker = cardTitle = place = lastPlace = null;
+            voiced = false;
+            NarratorVoice.ResetStatics();
             written = lineTimer = lineAlpha = cardAlpha = cardWant = placePop = placeAlpha = 0f;
         }
 
@@ -30,6 +33,9 @@ namespace Patchwork
             if (string.IsNullOrEmpty(text)) return;
             line = text;
             lineTimer = 2.6f + text.Length * 0.062f;
+            // A recorded line stays up until it's been read out.
+            var clip = NarratorVoice.ClipFor(text);
+            if (clip != null) lineTimer = Mathf.Max(lineTimer, clip.length + 1.2f);
         }
 
         public static bool Speaking { get { return lineTimer > 0f; } }
@@ -58,14 +64,14 @@ namespace Patchwork
             if (text != lastShown)
             {
                 // A new line: start writing from the top (after the last one has faded a little).
-                if (text != null) { lastShown = text; written = 0f; lastLetter = 0; }
+                if (text != null) { lastShown = text; written = 0f; lastLetter = 0; voiced = NarratorVoice.Speak(text); }
                 else if (lineAlpha <= 0.01f) lastShown = null;
             }
             lineAlpha = Mathf.MoveTowards(lineAlpha, text != null ? 1f : 0f, udt * (text != null ? 5f : 2.2f));
             if (lastShown != null && lineAlpha > 0.01f)
             {
                 written = Mathf.Min(lastShown.Length, written + udt * LettersPerSecond);
-                Murmur();
+                if (!voiced) Murmur();
                 DrawStrip(lastShown.Substring(0, Mathf.FloorToInt(written)), lastShown, lineAlpha * (cutscene ? k : 1f), cutscene);
             }
 

@@ -841,6 +841,16 @@ Stuff I need to remember about how Patchwork is put together.
 - The villain is the Unravelled King. In code: `FrayBodies.UnravelledKing`, `KingWatch` (Level 1), `KingVisit` and `Level2Quest.KingKnocked` (Level 2), and the objects `TheUnravelledKing*`. The save keys `L1_unpicker_seen`/`L1_unpicker_named` were deliberately left as they were.
 - Narrator voice lines: the script is kept outside the project (a Sheet with columns ID, Level, When it plays, Line, How to say it). IDs are `L1_###`/`L2_###`, in order of source file and line. The voice is Julian (ElevenLabs, model eleven_v4).
 
+- Narrator voice: `NarratorVoice` (UI/NarratorVoice.cs).
+  - `Resources/Voice/NarratorLines.txt` maps `ID|text`. Matching is on trimmed text with collapsed whitespace and straight quotes.
+  - Clips live in `Resources/Voice/Level1|Level2/<ID>.mp3`.
+  - `Narrator.Draw` calls `NarratorVoice.Speak` when a new line appears, and skips `Murmur()` if it's voiced. `Narrator.Say` keeps the line up for the clip's length + 1.2 s.
+  - The music ducks via `NarratorVoice.MusicDuck` (`voiceDuck` in MusicPlayer). The volume is `pw_voice_volume`, set by the new `PauseMenu.Item.Voice`.
+  - The source ignores listener pause.
+- `ToyboxIntro` holds `t` just before the next caption beat (the `Beats` list) while the voice is still speaking, and `Finish` stops the voice.
+- To add more lines: put the clips in `Resources/Voice/LevelN`, named by their ID from the script. Any line whose text matches gets the voice; lines with no clip keep the murmur.
+- Level 1 lines were made with ElevenLabs, voice "Julian - Deep, Rich and Mature", model eleven_v4, one take each, with audio tags like [dryly] or [quietly] in the prompt. The digits in the "with N of its five" lines were written as words for the recording.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

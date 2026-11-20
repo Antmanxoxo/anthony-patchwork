@@ -1,0 +1,170 @@
+# The narrator's recorded lines: ID|the exact text the game shows. A clip named after the ID,
+# in Resources/Voice/Level1 or Level2, plays when that text comes up on the narrator strip.
+L1_001|Did you see that? Up there. Tall fellow, thimble for a hat. No? ...I'm sure it was nothing.
+L1_002|There he is again. The toys call him the Unravelled King. The Fray follows where he points, and the colours it takes end up in his jars.
+L1_003|The town square. On an ordinary day there would be dancing. Today there is mostly worrying.
+L1_004|And there it sits: the Fray, knotted round the clock like a sulking scarf.
+L1_005|Spindle Hill. The wind up here has opinions, and shares them freely.
+L1_006|The Dye Works, where every colour in town is brewed. Do mind the vats. Purple never quite washes out.
+L1_007|Chimney Lane. If you listen closely, you can hear a very small piper being very brave indeed.
+L1_008|Toadstool Dell. Everything here is either bouncy or asleep, and occasionally both.
+L1_009|The Whispering Wood. It is not whispering about you. Probably.
+L1_010|Buttons, on a thread, over a ravine. What could possibly go wrong?
+L1_011|A tape-measure bridge. Exactly as long as it needs to be, for exactly as long as it feels like.
+L1_012|The Inkwell Canal. The ducks consider it theirs, and nobody has dared to argue.
+L1_013|Patchwork Farm, where the sheep are wool all the way through.
+L1_014|The band is whole again. Though if one fancied a grander wedding, there are lost presents about. Lady Lacewing keeps count.
+L1_015|That's all five presents. Nobody could say the Bramblebuttons were short-changed now.
+L1_016|A wedding present, a long way from the wedding. I dare say there are more of those about.
+L1_017|The Toybox Wedding
+L1_019|The music is unravelling the Fray!
+L1_020|Toybox Town is mended!
+L1_021|And with every present found, it was the grandest wedding the toybox had ever seen.
+L1_022|A fine wedding, with 1 of its five lost presents. One wonders what the others would have added.
+L1_023|A fine wedding, with 2 of its five lost presents. One wonders what the others would have added.
+L1_024|A fine wedding, with 3 of its five lost presents. One wonders what the others would have added.
+L1_025|A fine wedding, with 4 of its five lost presents. One wonders what the others would have added.
+L1_026|A fine wedding, if a simple one. Five presents went missing on the way, you see.
+L1_027|Loot. Lute. One can see how it happened. A shipwreck in a sea of sand, he said. Now where would a toy keep one of those?
+L1_028|Buried treasure, and nobody to claim it. One hears there's a pirate moping on top of Spindle Hill.
+L1_029|Ah. Wisp, it seems, is afraid of heights, of the Fray, and at present of you. After him. Gently.
+L1_030|One tap running. The works gives a hopeful sort of gurgle. Two more, and there'll be dew.
+L1_031|Rose, butter and sky, all running at once. And up in the reservoir, drop by drop: valve dew.
+L1_032|Once upon a bedtime, at the foot of a perfectly ordinary bed, there sat a most extraordinary toybox.
+L1_033|Inside it lay Toybox Town, which was having the finest morning of its life. The Mayor was getting married.
+L1_034|The town band had been practising for weeks. They had very nearly learned the tune.
+L1_035|But then, as things so often do at the worst possible moment, something came unstitched.
+L1_036|Something on the other side of the cloth had been listening. It did not care for the tune.
+L1_037|So it sent the Fray: the grey things that eat colour. They have never cared for music either.
+L1_038|It flung the lute's only string clean across town to the top of Spindle Hill...
+L1_039|...gummed up the trumpet so thoroughly that only valve dew from the Dye Works will ever cure it...
+L1_040|...and blew poor Wisp the piper up onto the weathervane, where he is being very brave about it.
+L1_041|Then it tied itself in a smug little knot around the clock tower...
+L1_042|...and the colour drained out of everything it touched.
+L1_043|No band, no music. No music, no wedding. It was all a dreadful pickle.
+L1_044|Fortunately, somebody small and woolly had just dropped in. Go and talk to the toys, Patch. They'll know what the band needs.
+L1_045|Three things lost, in three corners of town. I do hope you brought sensible shoes.
+L2_003|And at the very top, or the very bottom, depending how you look at it: the Observatory.
+L2_004|The Star Corridor. The long way round, and the best one.
+L2_005|The Orrery Bridge. Mind the gap between the planets.
+L2_006|The Grand Atrium. Nobody about but the whale.
+L2_007|The Hall of Deep Time, where everything is older than it looks, and it looks very old.
+L2_008|The Kelp Galleries. A forest that grows up out of the dark, and never once sees the sky.
+L2_009|The Hall of Arms. Everybody in here is standing very still, and you can't help feeling they've only just stopped moving.
+L2_010|The Sunken Ruins. Somebody built all this to last for ever. The sea had other ideas.
+L2_011|The Deepsea Tunnel. Down here the only light is the light things make for themselves.
+L2_012|The Star Corridor.
+L2_013|The long way round to the Observatory...
+L2_014|...through every sky there's ever been.
+L2_015|Behind the Glass.
+L2_016|Every aquarium has a back door...
+L2_017|...and four little seas behind it.
+L2_018|The Undercroft. A corridor with a sea on either side of it.
+L2_019|The Coral Nursery. The keepers grow new reefs in here, one little piece at a time.
+L2_020|The Lantern Deep. No sun has ever come down here. Everything that shines, shines all by itself.
+L2_021|The Frozen Sea. The coldest water in the museum, and the warmest-hearted penguins.
+L2_022|The Mangrove. Half forest, half sea, and a nursery for nearly everybody.
+L2_023|The Keepers' Room. Somebody's left the kettle on.
+L2_024|Behind the Glass. Every aquarium has a back door, and this is the museum's.
+L2_025|The Oceanic Museum.
+L2_026|Long past closing time...
+L2_027|...but somebody has left the doors open.
+L2_028|The Grand Atrium.
+L2_029|A reef behind one sheet of glass...
+L2_030|...the bones of the largest animal that ever lived...
+L2_031|...and a sky full of stars, indoors.
+L2_032|The Hall of Deep Time.
+L2_033|Everything in here is older than everyone you've ever met.
+L2_034|Put together.
+L2_035|The Kelp Galleries.
+L2_036|Water Form could swim all day in here.
+L2_037|Some say there are things at the bottom of the pool.
+L2_038|The Great Deep.
+L2_039|Mind your head. Something enormous lives up there.
+L2_040|The Sunken Ruins.
+L2_041|A city that slipped under the sea...
+L2_042|...and in the corner, a very large cardboard box.
+L2_043|The Hall of Arms.
+L2_044|Knights and samurai, standing guard after hours.
+L2_045|The Orrery Bridge.
+L2_046|Going up! Well, it was going up. Now it's here.
+L2_047|Meanwhile, in the corner of the Sunken Ruins...
+L2_048|...something stirs.
+L2_050|"Four o'clock. Lit the lamps. Counted the exhibits: all present. Whale due at midnight, same as every night. Stella says the dome wants oiling."
+L2_051|"Five. A loose thread on the floor of Deep Time. Grey, a yard long, and cold. Put it in my pocket to throw away. It is not in my pocket now."
+L2_052|"Half past five. The paint on the old ship has gone pale down one side, as if something had licked it. Barnacle says he heard scissors."
+L2_053|"Six. Chess case in the Kelp Galleries standing open. Counted the chessmen: seven short. Something in the corner went tick, tick, tick, like claws on tile."
+L2_054|"Seven. Marlow sent for me. Water in the Coral Nursery gone cloudy. Told him it was the filters. I did not think it was the filters."
+L2_055|"Dusk. A tall fellow on the Observatory stair, a thimble for a hat, a lens under each arm and one in his teeth. He bowed to me. Then the lamps went out."
+L2_056|Four moons, the comet's year, and the stars in hundreds. The great telescope turned on its brass, slow as a sunflower, and stopped exactly where the rhyme said she'd be.
+L2_057|Patch turned the little brass wheel, and the lamp remembered what it was for. The grey drew back to the edge of the light and waited there, like a cat that has been told no.
+L2_058|A brass whistle on a blue cord, at the back of a cave in the coral. It had M. scratched on it, and it had been there some time.
+L2_059|In among the biscuits sat a very small ivory king with his sword across his knees and his eyes shut tight. He was not possessed by anything except good sense.
+L2_060|A jam jar, lid screwed down, with something red going round and round inside it like a goldfish. Somebody tall had put it down here and forgotten it. The label said ENSIGN.
+L2_061|A keeper's torch, still switched on, shining at nothing. JUNE was painted on it in red, in the careful letters of somebody who has lost a torch before.
+L2_062|Tucked in the hollow, out of the current: a rack of jam jars, each with a colour in it, each with a label. CORAL. LANTERN. ICE. MANGROVE. He had been taking the tanks home a jar at a time.
+L2_063|The Object Glass, still warm from the Captain's chest. And at the far end of the hall, up on the toy castle, something very tall unfolded itself, looked at Patch with all its eyes, and folded away again.
+L2_064|Three lenses, safe in Patch's satchel, clinking. Now for the top of the house, and Stella, and the time: which was getting on.
+L2_065|The Object Glass: the big one, the one that gathers the light. It was still warm from the Captain's chest.
+L2_066|The Field Lens, washed clean. All down the hall the tanks were turning blue again, one after another, like lamps being lit.
+L2_067|The Eye Lens: the little one you put your eye to. The helmet lay on its side, quite empty, and only a helmet.
+L2_068|The knot came apart all at once, and the colour came back into the water the way a blush comes into a face.
+L2_069|Nobody had ever hit the Unravelled King before. You could tell, because he didn't know what to do about it. His thimble rang on the floor like a dropped bell, and he was gone before it stopped.
+L2_070|Five rips, five rows of stitches, and not one of them straight. The museum floor had never looked so well mended, or so pleased with itself.
+L2_071|Patch pulled the last stitch tight and the rip was only a scar. Whatever was on the other side of it knocked twice, politely, and went away.
+L2_072|A diving helmet, on legs, with something bright in its claw. It looked at Patch, and Patch looked at it, and then there was only a loose thread where it had been.
+L2_073|Gone again. But it was running out of museum.
+L2_074|Click, click, click: three lenses home. And on the far side of the dome a tall shape with a thimble for a hat lifted one long arm, and pointed. Out of the dark came the moths.
+L2_075|Click, click, click: three lenses home. And the moment the Night Glass could see again, everything grey in the museum knew it, and came.
+L2_076|And that was the last of them. Nobody bowed this time. Somewhere below, a clock began to strike, and on the Observatory floor a thimble the size of a bucket lay on its side, still rocking. Midnight.
+L2_077|The last moth went out like a candle. The tall shape took off its thimble, which may have been a bow, and stepped backward into a seam. Somewhere below, a clock began to strike. Midnight.
+L2_078|The last moth went out like a candle. Somewhere below, a clock began to strike. Midnight; and the telescope was pointing the right way.
+L2_079|A rip in the floor, as long as a sofa, with fingers of grey thread feeling about its edges. That was how they had come in: up from the Underside, the back of everything, where the knots are.
+L2_080|The water in the tank had gone the colour of dishwater, and in the middle of it hung a knot of grey thread as big as a barrel, with one eye, which opened.
+L2_081|The Captain lifted his sword, and the strings above him twitched; and two suits that had been quite finished with all this stepped down a second time.
+L2_082|The portcullis came down behind Patch like a full stop. And down the hall, one after another, the helmets turned.
+L2_083|Last of all the Knight stepped down: the Hollow Captain, with a round blue glass shining on his chest where a heart would go.
+L2_084|Then it was quiet. Eight suits of armour stood on eight plinths, looking as if they had never moved, and would thank you not to mention it.
+L2_085|A Heartstring: one of the golden threads the museum keeps in its big halls. The old lift up to the Observatory won't move without three of them. Hoo. Worth remembering.
+L2_086|About that lift: it's the only way up to the Observatory, and it's old and particular. It won't move an inch without three Heartstrings, the golden threads hidden in the museum's big halls.
+L2_087|A guardian of moonlight!
+L2_088|The card was a lie. A compass needle points to the Earth's magnetic north, whatever the weather. It has never kept anyone clear of an iceberg.
+L2_089|The card was a lie. Winter comes from the tilt of the Earth, not from the Moon, and moonlight has no chill in it at all.
+L2_090|The card was a lie. A shark grows new teeth all its life, row behind row, and may get through thousands of them.
+L2_091|The card was a lie. A starfish has no brain at all: only a ring of nerves round its mouth, with a branch running down each arm.
+L2_092|The card was a lie. It is the father seahorse who carries the eggs in his pouch, and he who gives birth to the young.
+L2_093|It had gone crooked again the moment Patch's back was turned. Pictures do that. Don't they?
+L2_094|The lamps went out, all but three. The music stopped as if somebody had put a hand over it. And the gallery was a good deal longer than it had been.
+L2_095|It was a coat stand. It had been a coat stand the whole time. Somebody had put a dust sheet over it, and a party hat on top, and in its one wooden hand it was holding a cake. The ducks, it turned out, had come for the cake.
+L2_096|Professor Hoot was not at his perch. Nobody was anywhere. Only the Founder, in his frame, and he seemed to be looking.
+L2_097|Every picture in the gallery was the same picture now. And every one of them was the wrong way up.
+L2_098|There had not been ducks before. Patch was almost sure there had not been ducks.
+L2_099|The ducks were all facing the same way now. It was the way Patch was.
+L2_100|And at the end of the hall, where the end of the hall ought to have been, somebody very tall stood waiting.
+L2_101|Five dust bunnies, in one satchel, all blowing raspberries at once. It sounded like a very small motorcycle.
+L2_102|Out from under the sheet shot something round and grey and fluffy, blowing a raspberry. A dust bunny: the museum sort, which grow rather large. Only a good draught would catch it.
+L2_103|Male humpback whales sing songs that can last for half an hour, and they sing them over and over, sometimes all day. Every male in the same stretch of ocean sings the same song, and the song slowly changes as the season goes on: they all change it together.
+L2_104|Wind a spiral round a pole, tilt it with its foot in the water, and turn it: the water climbs the spiral, a scoop at a time, all the way to the top. It is named after Archimedes, who lived in Syracuse over two thousand years ago. Screws just like it still pump water today.
+L2_105|In 1822 a French engineer, Augustin Fresnel, built a lens out of rings of glass prisms instead of one great lump of glass. It was far thinner and lighter, and it gathered the lamp's light into a beam that could be seen for over twenty miles out at sea.
+L2_106|On a sailing ship the bell was struck every half hour, one more stroke each time, to keep count of the watch. A watch lasted four hours. Eight bells meant it was over, and time for the next lot of sailors to go on deck.
+L2_107|In 1853 a pneumatic tube was laid under the streets of London: a pipe that blew small cases of messages along it with air. Soon cities all over the world had them. A letter could cross Paris in less than an hour without ever seeing daylight.
+L2_108|Out past the end of the pier, where the sea comes right up to the steps, stands the Oceanic Museum.
+L2_109|At the very top of it is the Observatory, and in the Observatory is the Night Glass: the great telescope.
+L2_110|Every night at midnight the keepers point it up through the dome, and find the Great Whale as she goes over.
+L2_111|She sings when somebody sees her. And her song is what keeps the colour in this place: in every tank, every tapestry, every painted fish.
+L2_112|But tonight, just after dusk, a seam split open in the floor of the Grand Atrium...
+L2_113|...and up through it came the Fray: grey, tangled, hungry things that unpick the colour out of whatever they touch.
+L2_114|It went straight to the top of the house, and wrapped itself round the Night Glass...
+L2_115|...and unscrewed all three of its lenses, neat as you like. Then it split itself in three, to carry them off.
+L2_116|One took its lens into the Hall of Arms, and climbed inside the oldest suit of armour there. The armour woke up.
+L2_117|One dived into the keepers' tanks, and wound itself into a grey knot as big as a barrel, with the lens inside.
+L2_118|And the last one hid inside a brass diving helmet, which promptly grew legs and scuttled off with it.
+L2_119|And all over the museum, the colour began to drain away.
+L2_120|It was eleven o'clock. If midnight came and nobody was looking, the whale would go over unsung, and by morning the museum would be grey for good.
+L2_121|Fortunately, somebody small and woolly had just come up the steps from the sea. Go and find Wick, the night watchman, Patch. He'll be just inside the doors.
+L2_122|Three lenses, three corners of the museum, and one hour to midnight. Hoo. Wick will know where to start.
+L2_123|Patch put his eye to the Night Glass, and turned the little brass wheel, and the sky came close.
+L2_124|And there, far above the glass, went the oldest thing in the whole museum. She saw that she was seen, and she sang.
+L2_125|Her song came down through the dome and into every tank and tapestry, and all the colour that had been going out of the place came back to it.
+L2_126|Patch wound the little clock tower backwards, and the whole night went back with it, three stitches' worth. The moon went home looking, if anything, rather put out.
+L2_127|And then the moon, which had come all that way, only blinked, and yawned enormously, and said it had just wanted a closer look at the whale. Then it went home, rather sheepishly.

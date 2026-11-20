@@ -103,6 +103,9 @@ namespace Patchwork
             }
 
             float dt = Time.deltaTime;
+            // The Storyteller reads each caption out: if he's still reading when the story
+            // reaches the next caption, the story waits for him at the end of the shot.
+            if (NarratorVoice.Speaking && NextBeat(t) - t < 0.15f) dt = 0f;
             t += dt;
             // Hold Confirm (or Pause) to skip, so a stray jump press can't skip it by accident.
             bool held = t > 0.6f && (game.Input.Confirm.IsPressed() || game.Input.Pause.IsPressed());
@@ -364,6 +367,7 @@ namespace Patchwork
 
         void Finish(PatchworkGame game)
         {
+            NarratorVoice.Stop();   // (skipped part-way through a line)
             finished = true;
             active = false;
             if (Master != null) Master.gameObject.SetActive(false);
@@ -390,6 +394,14 @@ namespace Patchwork
             game.CutsceneSkipFill = 0f;
             game.EndCutscene();
             Narrator.Say("Three things lost, in three corners of town. I do hope you brought sensible shoes.");
+        }
+
+        // When the caption changes next (after t).
+        static readonly float[] Beats = { TTown, TBand, TCrack, TCrack + 5.4f, TSnap, THill, TDye, TVane, TKnot, TKnot + 4.9f, TCouple, TPatch, TEnd };
+        static float NextBeat(float at)
+        {
+            foreach (float b in Beats) if (b > at) return b;
+            return float.MaxValue;
         }
 
         static void Caption(PatchworkGame game, string text)
