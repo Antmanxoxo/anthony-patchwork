@@ -1,5 +1,24 @@
 # Development Log
 
+## Sounds that fit where you are, quieter hoppers, and Store fixes
+
+- **Every part of Toybox Town has its own background sound now.** As you walk from one area to the next, the sounds fade into each other over a couple of seconds:
+  - **The streets:** a light breeze between the houses, pigeons cooing on the gutters, wind chimes on a porch, a bicycle bell, and a toy horse clip-clopping past.
+  - **Inkwell Canal:** slow water lapping against the stone walls, with little plips where it slaps the side. You hear it from the street beside it too, just softer. The duck pond in Picnic Park laps quietly as well.
+  - **Thread Ravine:** a babbling brook running over stones, fainter from up on the edge.
+  - **The Whispering Wood and the Deep Wood:** the wood's own wind, creaking branches and owls (as before, but now it covers the whole wood evenly).
+  - **Patchwork Farm:** hens clucking about the yard, a sheep calling from the pen, a cow far off, and birds.
+  - **The Drain Grotto:** a hollow hum and water dripping into pools, each drip with a little echo.
+  - **Everywhere else outdoors:** a soft breeze through the grass, all sorts of birds (not the same one over and over), and now and then a bee going past.
+
+  The old canal and ravine sound (a short bubbling loop that sounded like a pan boiling) and the patchy breeze spots are gone. The clock, the mill's creak and the weathervane's flag still come from where they are.
+- **No more hopping sounds from nowhere.** The Tangle Hoppers' boing could be heard from 16 metres away, through walls and from the street above, every time one hopped about at home. Now you only hear one when it's close by and you can actually see it, and the ones just pottering about are quieter than the ones coming after you.
+- **Patch's arms stay out of his body when he runs.** His shoulders sit inside the width of his round tummy, so swinging his arms forward and back took his hands through it. Now, after every pose, each arm is kept tilted out from his side by at least a little, so his hands always pass outside him. His sprint arms stream out to the sides as well as back.
+- **The house by the canal no longer hangs over the edge.** The end house on Chimney Lane stuck out past the canal wall. It's a little narrower now and moved in off the edge (the score bubbles over the roofs moved with it).
+- **Store fixes:**
+  - **The clothes sit properly on the models.** The Store's models were only dressed properly if Patch himself was wearing an outfit, so otherwise the clothes floated off at the wrong size. Each model now keeps track of what it's been dressed in.
+  - **The tags no longer cover the names.** On each card the picture is a little smaller, the name sits on its own line under it (and gets smaller if it's long), and the "Owned"/"Wearing" tag sits underneath. The big name under the stage keeps clear of its tag too.
+
 ## The Store gets a shopfront and its own song
 
 - **The Store looks like a little shop now.**

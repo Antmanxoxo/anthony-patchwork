@@ -403,6 +403,7 @@ namespace Patchwork
             }
             if (neckRoot == null) BuildOutfits();
             int pick = Mathf.Clamp(GameState.Outfit, 0, outfitParts.Length - 1);
+            outfitShown = pick;
             for (int i = 0; i < outfitParts.Length; i++)
                 if (outfitParts[i] != null) foreach (var g in outfitParts[i]) if (g != null) g.SetActive(i == pick);
         }
@@ -675,9 +676,13 @@ namespace Patchwork
         // Each frame: the outfit to the neck and body of whichever form he's in. The neck
         // pieces are built round a neck one unit across, the body pieces round a body one unit
         // across, and each is stretched to fit the form.
+        // (The outfit this one was dressed in by ApplyLook. Not GameState.Outfit: the Store's
+        // models are dressed in things you haven't got on, and that's only set while they dress.)
+        int outfitShown;
+
         void PlaceOutfit()
         {
-            if (neckRoot == null || GameState.Outfit <= 0) return;
+            if (neckRoot == null || outfitShown <= 0) return;
             var fit = FitFor(form);
             if (fit == null) return;
             // (Turned with his body as it leans and twists, not just with the way he faces.)

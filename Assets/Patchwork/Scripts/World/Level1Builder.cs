@@ -136,14 +136,7 @@ namespace Patchwork
             Secrets(kit);
 
             var sounds = kit.Group("LevelSounds", Vector3.zero);
-            for (float z = -60f; z <= 60f; z += 30f)
-                AmbientEmitter.Create(sounds, new Vector3(36f, -1.2f, z), Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.15f, 2f, 11f);
-            AmbientEmitter.Create(sounds, new Vector3(-44f, -4.5f, 0f), Sfx.Ambient(Sfx.AmbientClip.Fountain), 0.15f, 2f, 11f);
-            // A soft breeze and birdsong out in the open country (not in town or the wood).
-            Vector3[] fields = { new Vector3(75f, 1f, -100f), new Vector3(100f, 1f, 30f), new Vector3(100f, 1f, 95f), new Vector3(-62f, 1f, 102f),
-                                 new Vector3(-6f, 1f, -101f), new Vector3(-90f, 4f, 20f), new Vector3(94f, 1f, 69f), new Vector3(20f, 1f, 100f) };
-            foreach (var f in fields)
-                AmbientEmitter.Create(sounds, f, Sfx.Ambient(Sfx.AmbientClip.Meadow), 0.3f, 8f, 30f);
+            AreaSounds(sounds);
             AmbientEmitter.Create(sounds, Mill + new Vector3(-8.5f, 4f, 0f), Sfx.Ambient(Sfx.AmbientClip.Creak), 0.5f, 3f, 18f);
             AmbientEmitter.Create(sounds, new Vector3(0f, 26f, 27f), Sfx.Ambient(Sfx.AmbientClip.Clock), 0.4f, 4f, 30f);
             AmbientEmitter.Create(sounds, new Vector3(0f, 21f, -72f), Sfx.Ambient(Sfx.AmbientClip.Flag), 0.35f, 2f, 14f);
@@ -837,6 +830,35 @@ namespace Patchwork
             Snarling.Create(kit.Root, L(-6f, 0f, -11f), L(6f, 0f, -11f));
         }
 
+        // ================================================================ Area sounds
+
+        // What each part of the map sounds like (AmbientZones crossfades as you go): the town's
+        // streets, the canal lapping, the brook down in the ravine, the farmyard, the wood, a
+        // drip-drip in the Drain Grotto, and the breeze and birds everywhere else outdoors.
+        static void AreaSounds(Transform parent)
+        {
+            Vector3 grotto = new Vector3(250f, 0f, -262f);
+            AmbientZones.Create(parent)
+                // The streets of Toybox Town, from the ravine's edge to the canal.
+                .Add(Sfx.Ambient(Sfx.AmbientClip.Town), 0.4f, p => AmbientZones.Box(p, RavineEast + 2f, CanalWest - 3f, -80f, 66f, 9f))
+                // The canal: loudest down by the water, still there from the street beside it.
+                .Add(Sfx.Ambient(Sfx.AmbientClip.Lapping), 0.5f, p => AmbientZones.Box(p, CanalWest, CanalEast, -Half, Half, 7f) * (p.y < 1.5f ? 1f : 0.7f))
+                // The duck pond in Picnic Park laps a little too.
+                .Add(Sfx.Ambient(Sfx.AmbientClip.Lapping), 0.25f, p => AmbientZones.Round(p, new Vector3(14f, 0f, 74f), 6f, 6f))
+                // The brook at the bottom of Thread Ravine (fainter from up on the edge).
+                .Add(Sfx.Ambient(Sfx.AmbientClip.Stream), 0.45f, p => AmbientZones.Box(p, RavineWest, RavineEast, -Half, Half, 6f) * Mathf.Lerp(1f, 0.55f, Mathf.InverseLerp(-2f, 1f, p.y)))
+                // The Whispering Wood and the Deep Wood.
+                .Add(Sfx.Ambient(Sfx.AmbientClip.Woods), 0.45f, p => AmbientZones.Box(p, -Half - 10f, RavineWest - 2f, -Half - 10f, -24f, 8f))
+                // Patchwork Farm.
+                .Add(Sfx.Ambient(Sfx.AmbientClip.Farm), 0.4f, p => AmbientZones.Box(p, 80f, Half + 10f, 78f, Half + 10f, 10f))
+                // The secret rooms off the map: the Drain Grotto drips; the others are quiet
+                // (they have sounds of their own).
+                .Add(Sfx.Ambient(Sfx.AmbientClip.Drips), 0.45f, p => AmbientZones.Box(p, grotto.x - 11f, grotto.x + 11f, grotto.z - 11f, grotto.z + 11f, 2f))
+                .Add(null, 0f, p => p.x > 180f ? 1f - AmbientZones.Box(p, grotto.x - 11f, grotto.x + 11f, grotto.z - 11f, grotto.z + 11f, 2f) : 0f)
+                // Everywhere else: the open country.
+                .Otherwise(Sfx.Ambient(Sfx.AmbientClip.Fields), 0.35f);
+        }
+
         // ================================================================ South: the rooftops (Wind)
 
         static void Rooftops(LevelKit kit)
@@ -849,7 +871,7 @@ namespace Patchwork
             TownKit.MakeHouse(kit, new Vector3(-14f, 0f, -46f), new Vector3(12f, 8f, 8f), 0f, Walls[2], Roofs[3], 33, 1, -2f);
             TownKit.MakeHouse(kit, new Vector3(-14f, 0f, -58f), new Vector3(12f, 7f, 8f), 0f, Walls[0], Roofs[2], 34, -1, 3f, TownKit.Sign.None, false);
             TownKit.MakeHouse(kit, new Vector3(-28f, 0f, -46f), new Vector3(12f, 6f, 8f), 0f, Walls[4], Roofs[4], 35, 1, 0f);
-            TownKit.MakeHouse(kit, new Vector3(28f, 0f, -46f), new Vector3(12f, 7f, 8f), 0f, Walls[0], Roofs[3], 36, 1, 2f);
+            TownKit.MakeHouse(kit, new Vector3(25.5f, 0f, -46f), new Vector3(10.5f, 7f, 8f), 0f, Walls[0], Roofs[3], 36, 1, 2f);
             TownKit.MakeHouse(kit, new Vector3(16f, 0f, -60f), new Vector3(10f, 6f, 8f), 0f, Walls[2], Roofs[1], 37, 0, 0f, TownKit.Sign.None, false);
             // Laundry strung across the back alley.
             TownKit.Clothesline(kit, new Vector3(-20f, 0f, -52f), new Vector3(-8f, 0f, -52f), 5.5f, 0.8f, new float[0]);

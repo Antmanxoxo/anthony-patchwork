@@ -325,6 +325,33 @@ namespace Patchwork
             return h;
         }
 
+        // The little boing as it lands: only when Patch is close by and can actually see it
+        // (not through a wall or from the street above), and quieter still if it's only
+        // pottering about at home rather than coming after him.
+        void LandSound(PatchworkPlayer player)
+        {
+            if (player == null) return;
+            Vector3 ear = player.Motor.Center;
+            Vector3 from = pos + Vector3.up * 0.9f;
+            float dist = Vector3.Distance(ear, from);
+            float range = chasing ? 10f : 6f;
+            if (dist > range) return;
+            if (Mathf.Abs(ear.y - from.y) > 4f) return;
+            Vector3 dir = ear - from;
+            int hits = Physics.RaycastNonAlloc(from, dir / dist, sight, dist, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < hits; i++)
+            {
+                var tr = sight[i].transform;
+                if (tr == null || tr.IsChildOf(transform) || tr.IsChildOf(player.transform)) continue;
+                if (sight[i].distance < dist - 0.6f) return;   // something solid in the way
+            }
+            float k = 1f - dist / range;
+            Sfx.PlayPitched(SfxId.Boing, (chasing ? 0.12f : 0.07f) * k * k, Random.Range(0.95f, 1.1f));
+        }
+
+        static readonly RaycastHit[] sight = new RaycastHit[8];
+        bool chasing;
+
         void Update()
         {
             if (popped) return;
@@ -340,7 +367,7 @@ namespace Patchwork
                 hop += dt / 0.6f;
                 float k = Mathf.Clamp01(hop);
                 pos = Vector3.Lerp(hopFrom, hopTo, k) + Vector3.up * Mathf.Sin(k * Mathf.PI) * 1.6f;
-                if (k >= 1f) { hop = -1f; rest = 0.55f; squash = 1f; Sfx.PlayNear(SfxId.Boing, pos, 0.12f, 16f); }
+                if (k >= 1f) { hop = -1f; rest = 0.55f; squash = 1f; LandSound(player); }
             }
             else
             {
@@ -348,11 +375,15 @@ namespace Patchwork
                 if (rest <= 0f)
                 {
                     Vector3 target = home + new Vector3(Random.Range(-2f, 2f), 0f, Random.Range(-2f, 2f));
+                    chasing = false;
                     if (player != null)
                     {
                         Vector3 pp = player.transform.position;
                         if ((pp - pos).sqrMagnitude < 81f && (pp - home).sqrMagnitude < 196f && Mathf.Abs(pp.y - pos.y) < 2.5f)
+                        {
                             target = pos + Vector3.ClampMagnitude(new Vector3(pp.x - pos.x, 0f, pp.z - pos.z), 2.8f);
+                            chasing = true;
+                        }
                     }
                     if ((target - home).sqrMagnitude > 196f) target = home;
                     target.y = Monsters.Ground(target);

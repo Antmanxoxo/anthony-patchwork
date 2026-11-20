@@ -828,6 +828,15 @@ Stuff I need to remember about how Patchwork is put together.
 - Store visuals (`StoreMenu`): `DrawShopBack`, `DrawAwning`, `Diamond` (a rotated square drawn with GUI.matrix), `DrawProscenium` (drawn over the stage view), and the pegboard and shelves in `DrawGrid`.
 - Store music: `MusicPlayer.StoreMusic()` (Core/MusicStore.cs, 118 bpm, 16 bars) is generated during the Pod build. `StoreMusicPlayer.Play()`/`Stop()` handle the fading and set `MusicPlayer.LiftHush` to duck the level music.
 
+- Area sounds: `AmbientZones` (World/AmbientZones.cs) holds 2D looping beds, each with a `Weigh(Vector3)` function (`Box`, `Round` helpers, feathered edges). Weights over 1 in total are scaled down, and the `Otherwise` bed gets what's left. Levels move at 0.45 a second. A null clip means a quiet area. It follows `Sfx.Volume`, `Sfx.LoopCutoff`, and fades out while loading.
+- Level 1's areas are set up in `Level1Builder.AreaSounds`. The Woods emitters in Level1Forest/Level1Outskirts were removed in favour of the Woods bed.
+- New `Sfx.AmbientClip`s: Fields, Town, Lapping, Stream, Farm, Drips. They use the helpers `Mix` (writes with a wrapped index so loops are seamless), `Breeze`, `Bird` and `Ting`.
+- `TangleHopper.LandSound`: within 10 m when chasing or 6 m when idle, within 4 m in height, and only if a ray from the hopper to Patch hits nothing else first (it ignores the hopper's and the player's own colliders).
+- `PatchModel.KeepArmsClear` runs after every pose except strikes, tether, grip, dancing and riding. It re-aims each arm so the shoulder-to-hand direction is at least 0.33 (about 19 degrees) along the outward side axis.
+- `FormVisuals.outfitShown` is set in `ApplyLook`, and `PlaceOutfit` uses it instead of `GameState.Outfit`.
+- `StoreMenu.FitLabel` draws one line of bold text, shrinking it to fit. Card picture size is `min(width - 24, height - 80)`.
+- The Chimney Lane end house is now at x 25.5 with width 10.5 (it was at 28 with width 12, and went past `CanalWest`).
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

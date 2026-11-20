@@ -48,7 +48,7 @@ namespace Patchwork
             // Along the top of Spindle Hill.
             Trail(kit, new Vector3(-67f, 5.2f, 8f), new Vector3(-67f, 5.2f, 30f), 6);
             // Over the rooftops of Chimney Lane (they follow the roofs up and down).
-            Trail(kit, new Vector3(-28f, 0f, -46f), new Vector3(28f, 0f, -46f), 15, 1.2f);
+            Trail(kit, new Vector3(-28f, 0f, -46f), new Vector3(25.5f, 0f, -46f), 15, 1.2f);
             Trail(kit, new Vector3(-14f, 0f, -58f), new Vector3(16f, 0f, -60f), 9, 1.2f);
             // Round the top of the spire and inside the belfry (big ones up there).
             Ring(kit, new Vector3(0f, 16f, -72f), 2.1f, 6, 0.8f, 50);

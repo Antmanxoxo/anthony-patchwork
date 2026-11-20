@@ -495,6 +495,7 @@ namespace Patchwork
 
             if (strikeMove >= 0 && !tethered) StrikePose();
             else if (sprint > 0.01f && !tethered && !gripping) SprintPose();
+            if (strikeMove < 0 && !tethered && !gripping && !Dancing && !Riding) KeepArmsClear();
 
             // The hand is in its final spot now, so anything attached to it (the rope) can follow.
             if (PoseApplied != null) PoseApplied();
@@ -508,8 +509,36 @@ namespace Patchwork
             float s = Mathf.SmoothStep(0f, 1f, sprint);
             if (modelRoot != null) modelRoot.localRotation = Quaternion.Euler((sprintGrounded ? 15f : 7f) * s, 0f, 0f) * modelRoot.localRotation;
             float flutter = Mathf.Sin(Time.time * 24f) * 7f;
-            SwingArm(armR, HandR, Out(152f + flutter, -38f), s * 0.9f);
-            SwingArm(armLeft, handLeft, Out(-152f - flutter, -38f), s * 0.9f);
+            // (Out to the sides as well as back, so they stream past his body, not through it.)
+            SwingArm(armR, HandR, Out(126f + flutter, -40f), s * 0.9f);
+            SwingArm(armLeft, handLeft, Out(-126f - flutter, -40f), s * 0.9f);
+        }
+
+        // His arms come from his shoulders, which are inside the width of his round body, so a
+        // swing straight forward and back (the run, most of all, sped up) takes his hands
+        // through his tummy. After every pose, each arm is kept tilted out from his side by
+        // at least a little (about 19 degrees), so his hands always pass outside him. The
+        // swing forward and back is left as it is.
+        void KeepArmsClear()
+        {
+            Vector3 side = modelRoot != null ? modelRoot.right : transform.right;
+            ClearArm(armR, HandR, side);
+            ClearArm(armLeft, handLeft, -side);
+        }
+
+        static void ClearArm(Transform arm, Transform hand, Vector3 outward)
+        {
+            if (arm == null || hand == null) return;
+            Vector3 dir = hand.position - arm.position;
+            float len = dir.magnitude;
+            if (len < 1e-4f) return;
+            const float minOut = 0.33f;   // sin of about 19 degrees
+            float lateral = Vector3.Dot(dir, outward);
+            if (lateral >= minOut * len) return;
+            Vector3 along = dir - outward * lateral;
+            float alongLen = along.magnitude;
+            Vector3 fixedDir = alongLen > 1e-4f ? along / alongLen * (len * Mathf.Sqrt(1f - minOut * minOut)) + outward * (minOut * len) : outward * len;
+            AimArm(arm, hand, arm.position + fixedDir);
         }
 
         static void AimArm(Transform arm, Transform hand, Vector3 target)

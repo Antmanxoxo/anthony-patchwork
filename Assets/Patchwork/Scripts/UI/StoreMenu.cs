@@ -483,8 +483,10 @@ namespace Patchwork
                 if (on) PauseMenu.MarchingStitches(new Rect(cr.x + 6f, cr.y + 6f, cr.width - 12f, cr.height - 12f), new Color(1f, 1f, 1f, 0.85f * a), time * 40f);
                 else UIKit.Outline(cr, new Color(ink.r, ink.g, ink.b, 0.2f * a), 2f, 18f);
 
-                // The picture.
-                var pic = new Rect(cr.x + 12f, cr.y + 12f, cr.width - 24f, cr.width - 24f);
+                // The picture (leaving room under it for the name, then the tag, so they never
+                // sit on top of each other).
+                float ps = Mathf.Min(cr.width - 24f, cr.height - 80f);
+                var pic = new Rect(cr.center.x - ps * 0.5f, cr.y + 12f, ps, ps);
                 UIKit.Fill(pic, new Color(1f, 0.97f, 0.92f, a), 14f);
                 DrawPicture(tab, i, pic, a, time);
                 // Things you can afford and haven't got yet get a little "New!" ribbon.
@@ -496,17 +498,29 @@ namespace Patchwork
                     UIKit.Label(rib, "New!", UIKit.Style(14, true, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, a)));
                 }
 
-                // Name, and price or status.
-                var ns = UIKit.Style(16, true, TextAnchor.UpperCenter, on ? new Color(1f, 1f, 1f, a) : new Color(ink.r, ink.g, ink.b, a), true);
-                UIKit.Label(new Rect(cr.x + 8f, pic.yMax + 6f, cr.width - 16f, 40f), Name(tab, i), ns);
+                // Name (one line, made smaller if it's long), and under it the price or status.
                 string tag = wearing ? "Wearing" : owned ? "Owned" : tab == Hats ? "Hidden" : Price(tab, i).ToString("N0");
                 Color tagCol = wearing ? new Color(0.45f, 0.75f, 0.5f) : owned ? new Color(0.55f, 0.6f, 0.75f) : tab == Hats ? new Color(0.55f, 0.5f, 0.6f) : GameState.Purse >= Price(tab, i) ? new Color(0.95f, 0.7f, 0.25f) : new Color(0.85f, 0.45f, 0.45f);
                 var tagStyle = UIKit.Style(15, true, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, a));
                 float tw = UIKit.TextWidth(tag, tagStyle) + 26f;
-                var tr = new Rect(cr.center.x - tw * 0.5f, cr.yMax - 36f, tw, 26f);
+                var tr = new Rect(cr.center.x - tw * 0.5f, cr.yMax - 34f, tw, 25f);
+                var nr = new Rect(cr.x + 8f, pic.yMax + 3f, cr.width - 16f, tr.y - 3f - (pic.yMax + 3f));
+                FitLabel(nr, Name(tab, i), 17, 11, TextAnchor.MiddleCenter, on ? new Color(1f, 1f, 1f, a) : new Color(ink.r, ink.g, ink.b, a));
                 UIKit.Fill(tr, new Color(tagCol.r, tagCol.g, tagCol.b, a), 13f);
                 UIKit.Label(tr, tag, tagStyle);
             }
+        }
+
+        // One line of bold text, made smaller until it fits the width (down to `smallest`).
+        static void FitLabel(Rect r, string text, int size, int smallest, TextAnchor anchor, Color col)
+        {
+            var st = UIKit.Style(size, true, anchor, col);
+            while (size > smallest && UIKit.TextWidth(text, st) > r.width)
+            {
+                size--;
+                st = UIKit.Style(size, true, anchor, col);
+            }
+            UIKit.Label(r, text, st);
         }
 
         // The little picture on a card: colour swatches, fabric samples, or a photo of Patch.
@@ -586,16 +600,17 @@ namespace Patchwork
             PauseMenu.MarchingStitches(new Rect(view.x - 2f, view.y - 2f, view.width + 4f, view.height + 4f), new Color(1f, 0.85f, 0.5f, 0.8f * k), time * 25f);
             if (buyFlash > 0f) UIKit.Fill(view, new Color(1f, 0.95f, 0.7f, buyFlash * 0.35f * k));
 
-            // The card: name, what it is, and the price tag.
+            // The card: name, what it is, and the price tag (the name keeps clear of the tag).
             float y = view.yMax + 22f;
-            UIKit.Label(new Rect(r.x + 32f, y, r.width - 300f, 50f), Name(tab, i), UIKit.Style(36, true, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, k)));
-            UIKit.Label(new Rect(r.x + 34f, y + 50f, r.width - 320f, 60f), Describe(tab, i), UIKit.Style(20, false, TextAnchor.UpperLeft, new Color(ink.r, ink.g, ink.b, 0.8f * k), true));
             bool owned = Owned(tab, i), wearing = Wearing(tab, i);
             string tag = wearing ? "Wearing" : owned ? "Owned" : tab == Hats ? "Hidden" : Price(tab, i).ToString("N0") + " pts";
             var tagStyle = UIKit.Style(28, true, TextAnchor.MiddleCenter, Color.white);
             float tw = UIKit.TextWidth(tag, tagStyle) + 50f;
             float shake = Mathf.Sin(time * 50f) * 8f * tagShake;
             var tr = new Rect(r.xMax - tw - 30f + shake, y + 6f, tw, 56f);
+            float nameRight = r.xMax - tw - 30f - 20f;
+            FitLabel(new Rect(r.x + 32f, y, nameRight - (r.x + 32f), 50f), Name(tab, i), 36, 22, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, k));
+            UIKit.Label(new Rect(r.x + 34f, y + 50f, nameRight - (r.x + 34f), 60f), Describe(tab, i), UIKit.Style(20, false, TextAnchor.UpperLeft, new Color(ink.r, ink.g, ink.b, 0.8f * k), true));
             Color tagCol = wearing ? new Color(0.45f, 0.75f, 0.5f) : owned ? new Color(0.55f, 0.6f, 0.75f) : tab == Hats ? new Color(0.55f, 0.5f, 0.6f) : GameState.Purse >= Price(tab, i) ? new Color(0.95f, 0.65f, 0.2f) : new Color(0.85f, 0.4f, 0.4f);
             UIKit.Fill(new Rect(tr.x + 3f, tr.y + 5f, tr.width, tr.height), new Color(0f, 0f, 0f, 0.15f * k), 28f);
             UIKit.Fill(tr, new Color(tagCol.r, tagCol.g, tagCol.b, k), 28f);

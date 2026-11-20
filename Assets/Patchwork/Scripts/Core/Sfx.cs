@@ -256,7 +256,7 @@ namespace Patchwork
         public static float LoopCutoff { get { return loopCutoff; } }
 
         // Clips for sounds that play from a spot in the world (AmbientEmitter, NPC voices).
-        public enum AmbientClip { Propeller, Flag, Creak, Balloon, Clock, Fountain, Vent, Space, Woods, Meadow, Deep, Hall }
+        public enum AmbientClip { Propeller, Flag, Creak, Balloon, Clock, Fountain, Vent, Space, Woods, Meadow, Deep, Hall, Fields, Town, Lapping, Stream, Farm, Drips }
         static readonly Dictionary<AmbientClip, AudioClip> ambient = new Dictionary<AmbientClip, AudioClip>();
 
         public static AudioClip Ambient(AmbientClip which)
@@ -275,6 +275,12 @@ namespace Patchwork
                 case AmbientClip.Woods: c = WoodsLoop(); break;
                 case AmbientClip.Deep: c = DeepLoop(); break;
                 case AmbientClip.Hall: c = HallLoop(); break;
+                case AmbientClip.Fields: c = FieldsLoop(); break;
+                case AmbientClip.Town: c = TownLoop(); break;
+                case AmbientClip.Lapping: c = LappingLoop(); break;
+                case AmbientClip.Stream: c = StreamLoop(); break;
+                case AmbientClip.Farm: c = FarmLoop(); break;
+                case AmbientClip.Drips: c = DripsLoop(); break;
                 case AmbientClip.Fountain: c = bubbleClip != null ? bubbleClip : (bubbleClip = BubbleLoop()); break;
                 default: c = airClip != null ? airClip : (airClip = AirLoop()); break;
             }
@@ -1306,6 +1312,394 @@ namespace Patchwork
                 data[j] = Mathf.Lerp(data[n - fade + j], data[j], k);
             }
             return ToClip("woods", data);
+        }
+
+        // ------------------------------------------------------------------ Area beds
+        // Background beds for different parts of a level (AmbientZones crossfades between them
+        // as you walk about). Each one loops without a seam: everything is written into the
+        // buffer with the index wrapped round, and the slow swells divide the loop exactly.
+
+        static void Mix(float[] d, int i, float v)
+        {
+            int n = d.Length;
+            i %= n; if (i < 0) i += n;
+            d[i] += v;
+        }
+
+        // A soft breeze: two-pole low-passed noise with the rumble taken out, swelling and
+        // easing a whole number of times per loop.
+        static void Breeze(float[] d, int seed, float cutoff, float level, int swells)
+        {
+            int n = d.Length;
+            var rng = new System.Random(seed);
+            float a = Alpha(cutoff), hpA = Alpha(140f);
+            float y = 0f, y2 = 0f, hp = 0f;
+            // Run round twice so the filters have settled by the time we write the loop.
+            for (int pass = 0; pass < 2; pass++)
+                for (int i = 0; i < n; i++)
+                {
+                    y += a * ((float)(rng.NextDouble() * 2.0 - 1.0) - y);
+                    y2 += a * (y - y2);
+                    hp += hpA * (y2 - hp);
+                    if (pass == 0) continue;
+                    float k = i / (float)n;
+                    float swell = 0.7f + 0.3f * Mathf.Sin(2f * Mathf.PI * k * swells) * Mathf.Sin(2f * Mathf.PI * k * (swells + 1) + 1.1f);
+                    d[i] += (y2 - hp) * level * swell;
+                }
+        }
+
+        // One bird, somewhere off: a few quick chirps, a two-note whistle, or a little trill.
+        static void Bird(float[] d, float at, System.Random r, float vol)
+        {
+            int kind = r.Next(3);
+            int s0 = Mathf.RoundToInt(at * Rate);
+            if (kind == 0)
+            {
+                int chirps = 3 + r.Next(4);
+                float f0 = 2600f + (float)r.NextDouble() * 1200f;
+                for (int c = 0; c < chirps; c++)
+                {
+                    int st = s0 + Mathf.RoundToInt(c * 0.1f * Rate), m = Mathf.RoundToInt(0.06f * Rate);
+                    float ph = 0f;
+                    for (int j = 0; j < m; j++)
+                    {
+                        float k = j / (float)m;
+                        ph += 2f * Mathf.PI * f0 * (1f + 0.3f * k) * (1f + c * 0.02f) / Rate;
+                        Mix(d, st + j, Mathf.Sin(ph) * Mathf.Sin(Mathf.PI * k) * vol);
+                    }
+                }
+            }
+            else if (kind == 1)
+            {
+                float hi = 3000f + (float)r.NextDouble() * 600f, lo = hi * 0.8f;
+                for (int c = 0; c < 2; c++)
+                {
+                    int st = s0 + Mathf.RoundToInt(c * 0.3f * Rate), m = Mathf.RoundToInt(0.24f * Rate);
+                    float ph = 0f;
+                    for (int j = 0; j < m; j++)
+                    {
+                        float k = j / (float)m;
+                        float f = (c == 0 ? hi : lo) * (1f + 0.02f * Mathf.Sin(k * 40f));
+                        ph += 2f * Mathf.PI * f / Rate;
+                        Mix(d, st + j, Mathf.Sin(ph) * Mathf.Sin(Mathf.PI * k) * vol * 0.8f);
+                    }
+                }
+            }
+            else
+            {
+                float f0 = 3400f + (float)r.NextDouble() * 900f;
+                int notes = 8 + r.Next(6);
+                for (int c = 0; c < notes; c++)
+                {
+                    int st = s0 + Mathf.RoundToInt(c * 0.045f * Rate), m = Mathf.RoundToInt(0.035f * Rate);
+                    float ph = 0f;
+                    float fall = 1f - c * 0.012f;
+                    for (int j = 0; j < m; j++)
+                    {
+                        float k = j / (float)m;
+                        ph += 2f * Mathf.PI * f0 * fall * (1.1f - 0.2f * k) / Rate;
+                        Mix(d, st + j, Mathf.Sin(ph) * Mathf.Sin(Mathf.PI * k) * vol * 0.6f);
+                    }
+                }
+            }
+        }
+
+        // A little bell-like ting (wind chimes, a bike bell, a drip in a cave).
+        static void Ting(float[] d, float at, float f, float decay, float vol)
+        {
+            int st = Mathf.RoundToInt(at * Rate), m = Mathf.RoundToInt(Mathf.Min(4f, 5f / decay) * Rate);
+            for (int j = 0; j < m; j++)
+            {
+                float t = j / (float)Rate;
+                float env = Mathf.Min(1f, t * 400f) * Mathf.Exp(-t * decay);
+                float v = Mathf.Sin(2f * Mathf.PI * f * t) + 0.4f * Mathf.Sin(2f * Mathf.PI * f * 2.76f * t) * Mathf.Exp(-t * decay * 2f);
+                Mix(d, st + j, v * env * vol);
+            }
+        }
+
+        // The open country: a gentle breeze through the grass, birds here and there (all sorts,
+        // not the same one over and over), and now and then a bee drifting past.
+        static AudioClip FieldsLoop()
+        {
+            const float duration = 20f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var d = new float[n];
+            Breeze(d, 41, 650f, 0.9f, 2);
+            var r = new System.Random(43);
+            for (float at = 0.4f; at < duration; at += 1.1f + (float)r.NextDouble() * 2.4f)
+                Bird(d, at, r, 0.018f + (float)r.NextDouble() * 0.02f);
+            // A bee: a soft buzz that comes and goes.
+            foreach (float at in new[] { 5f, 14.5f })
+            {
+                int st = Mathf.RoundToInt(at * Rate), m = Mathf.RoundToInt(2.6f * Rate);
+                float ph = 0f;
+                for (int j = 0; j < m; j++)
+                {
+                    float k = j / (float)m;
+                    ph += 2f * Mathf.PI * (210f + 18f * Mathf.Sin(k * 23f)) / Rate;
+                    float saw = Mathf.Repeat(ph / (2f * Mathf.PI), 1f) * 2f - 1f;
+                    Mix(d, st + j, saw * Mathf.Pow(Mathf.Sin(Mathf.PI * k), 2f) * 0.012f);
+                }
+            }
+            LowPass(d, 5000f);
+            return ToClip("fields", d);
+        }
+
+        // Toybox Town's streets: a lighter breeze between the houses, pigeons cooing on the
+        // gutters, wind chimes on a porch, a bicycle bell, and a toy horse clip-clopping past.
+        static AudioClip TownLoop()
+        {
+            const float duration = 18f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var d = new float[n];
+            Breeze(d, 51, 500f, 0.55f, 3);
+            var r = new System.Random(53);
+            // Pigeons: "croo-oo", throaty and low.
+            foreach (float at in new[] { 1.2f, 6.8f, 7.9f, 13.1f })
+            {
+                int st = Mathf.RoundToInt(at * Rate), m = Mathf.RoundToInt(0.75f * Rate);
+                float ph = 0f;
+                for (int j = 0; j < m; j++)
+                {
+                    float k = j / (float)m;
+                    float f = k < 0.35f ? Mathf.Lerp(340f, 300f, k / 0.35f) : Mathf.Lerp(310f, 270f, (k - 0.35f) / 0.65f);
+                    ph += 2f * Mathf.PI * f / Rate;
+                    float env = k < 0.35f ? Mathf.Sin(Mathf.PI * k / 0.35f) : 0.8f * Mathf.Sin(Mathf.PI * (k - 0.35f) / 0.65f);
+                    float throat = 0.65f + 0.35f * Mathf.Sin(2f * Mathf.PI * 28f * j / Rate);
+                    Mix(d, st + j, (Mathf.Sin(ph) + 0.3f * Mathf.Sin(2f * ph)) * env * throat * 0.03f);
+                }
+            }
+            // Wind chimes: a little run of notes when the breeze catches them.
+            float[] scale = { 1568f, 1760f, 2093f, 2349f, 2637f, 3136f };
+            foreach (float at in new[] { 3.4f, 11.6f })
+            {
+                float tt = at;
+                int count = 4 + r.Next(3);
+                for (int c = 0; c < count; c++)
+                {
+                    Ting(d, tt, scale[r.Next(scale.Length)], 1.6f, 0.012f);
+                    tt += 0.12f + (float)r.NextDouble() * 0.3f;
+                }
+            }
+            // A bicycle bell, two rings.
+            Ting(d, 9.3f, 2350f, 3f, 0.016f);
+            Ting(d, 9.48f, 2350f, 3f, 0.016f);
+            // A toy horse clip-clopping by (getting nearer, then going).
+            for (int c = 0; c < 14; c++)
+            {
+                float at = 14.6f + c * 0.26f + (c % 2) * 0.05f;
+                float near = Mathf.Sin(Mathf.PI * (c + 0.5f) / 14f);
+                int st = Mathf.RoundToInt(at * Rate), m = Mathf.RoundToInt(0.06f * Rate);
+                float pitch = c % 2 == 0 ? 1f : 0.82f;
+                for (int j = 0; j < m; j++)
+                {
+                    float t = j / (float)Rate;
+                    float v = Mathf.Sin(2f * Mathf.PI * 820f * pitch * t) * Mathf.Exp(-t * 85f) + 0.5f * Mathf.Sin(2f * Mathf.PI * 1450f * pitch * t) * Mathf.Exp(-t * 130f);
+                    Mix(d, st + j, v * near * 0.035f);
+                }
+            }
+            // And a bird or two on the rooftops.
+            for (float at = 2.2f; at < duration; at += 4f + (float)r.NextDouble() * 3f)
+                Bird(d, at, r, 0.012f);
+            LowPass(d, 5000f);
+            return ToClip("town", d);
+        }
+
+        // The canal: slow water lapping against the stone sides, little plips and clucks where
+        // it slaps the wall, and a low, quiet slosh underneath.
+        static AudioClip LappingLoop()
+        {
+            const float duration = 12f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var d = new float[n];
+            var rng = new System.Random(61);
+            // The laps: low-passed noise that swells and falls back, about every two seconds.
+            float[] laps = { 0f, 1.9f, 3.6f, 5.8f, 7.5f, 9.6f, 11.1f };
+            float y = 0f, y2 = 0f, lowY = 0f;
+            float a = Alpha(520f), aLow = Alpha(160f);
+            var body = new float[n];
+            for (int pass = 0; pass < 2; pass++)
+                for (int i = 0; i < n; i++)
+                {
+                    float w = (float)(rng.NextDouble() * 2.0 - 1.0);
+                    y += a * (w - y); y2 += a * (y - y2);
+                    lowY += aLow * (w - lowY);
+                    if (pass == 1) body[i] = y2;
+                    if (pass == 1) d[i] += lowY * 0.5f;
+                }
+            for (int l = 0; l < laps.Length; l++)
+            {
+                float len = 1.3f + (float)rng.NextDouble() * 0.6f;
+                int st = Mathf.RoundToInt(laps[l] * Rate), m = Mathf.RoundToInt(len * Rate);
+                for (int j = 0; j < m; j++)
+                {
+                    float k = j / (float)m;
+                    // Comes in slowly, slaps, and drains away.
+                    float env = k < 0.55f ? Mathf.Pow(k / 0.55f, 2f) : Mathf.Pow(1f - (k - 0.55f) / 0.45f, 1.5f);
+                    int idx = ((st + j) % n + n) % n;
+                    d[idx] += body[idx] * env * 1.7f;
+                }
+                // The slap against the wall: a few small plips.
+                int plips = 2 + rng.Next(3);
+                for (int p = 0; p < plips; p++)
+                {
+                    float at = laps[l] + len * (0.5f + (float)rng.NextDouble() * 0.3f);
+                    float f0 = 700f + (float)rng.NextDouble() * 700f;
+                    int ps = Mathf.RoundToInt(at * Rate), pm = Mathf.RoundToInt(0.05f * Rate);
+                    float ph = 0f;
+                    for (int j = 0; j < pm; j++)
+                    {
+                        float k = j / (float)pm;
+                        ph += 2f * Mathf.PI * f0 * (1f + 0.9f * k) / Rate;
+                        Mix(d, ps + j, Mathf.Sin(ph) * Mathf.Min(1f, k * 30f) * Mathf.Pow(1f - k, 2f) * 0.05f);
+                    }
+                }
+            }
+            LowPass(d, 3500f);
+            return ToClip("lapping", d);
+        }
+
+        // The stream at the bottom of the ravine: a busy, babbling brook running over stones,
+        // lots of little burbles on top of a steady rush.
+        static AudioClip StreamLoop()
+        {
+            const float duration = 8f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var d = new float[n];
+            var rng = new System.Random(71);
+            // The rush: band-limited noise, wobbling a little.
+            float y = 0f, y2 = 0f, hp = 0f;
+            float a = Alpha(1800f), hpA = Alpha(250f);
+            for (int pass = 0; pass < 2; pass++)
+                for (int i = 0; i < n; i++)
+                {
+                    y += a * ((float)(rng.NextDouble() * 2.0 - 1.0) - y);
+                    y2 += a * (y - y2);
+                    hp += hpA * (y2 - hp);
+                    if (pass == 0) continue;
+                    float k = i / (float)n;
+                    float wob = 0.75f + 0.15f * Mathf.Sin(2f * Mathf.PI * k * 5f) + 0.1f * Mathf.Sin(2f * Mathf.PI * k * 13f + 2f);
+                    d[i] += (y2 - hp) * 0.55f * wob;
+                }
+            // The babble: lots of small rising bubbles, in little clusters.
+            for (int b = 0; b < 170; b++)
+            {
+                float at = (float)rng.NextDouble() * duration;
+                float f0 = 380f + (float)rng.NextDouble() * 900f;
+                float len = 0.025f + (float)rng.NextDouble() * 0.05f;
+                float vol = 0.02f + (float)rng.NextDouble() * 0.035f;
+                int st = Mathf.RoundToInt(at * Rate), m = Mathf.RoundToInt(len * Rate);
+                float ph = 0f;
+                for (int j = 0; j < m; j++)
+                {
+                    float k = j / (float)m;
+                    ph += 2f * Mathf.PI * f0 * (1f + 1.2f * k) / Rate;
+                    Mix(d, st + j, Mathf.Sin(ph) * Mathf.Min(1f, k * 20f) * (1f - k) * (1f - k) * vol);
+                }
+            }
+            LowPass(d, 4500f);
+            return ToClip("stream", d);
+        }
+
+        // Patchwork Farm: the country breeze, hens clucking about the yard, a sheep calling
+        // from the pen, and a cow lowing a long way off.
+        static AudioClip FarmLoop()
+        {
+            const float duration = 20f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var d = new float[n];
+            Breeze(d, 81, 600f, 0.7f, 2);
+            var r = new System.Random(83);
+            // Hens: runs of soft "buk-buk-buk" and now and then a longer "ba-gawk".
+            foreach (float at in new[] { 0.8f, 4.1f, 7.6f, 11.2f, 15.3f, 18.1f })
+            {
+                int clucks = 3 + r.Next(4);
+                float t0 = at;
+                float hen = 0.9f + (float)r.NextDouble() * 0.25f;
+                for (int c = 0; c < clucks; c++)
+                {
+                    bool longOne = c == clucks - 1 && r.Next(2) == 0;
+                    float len = longOne ? 0.32f : 0.07f;
+                    int st = Mathf.RoundToInt(t0 * Rate), m = Mathf.RoundToInt(len * Rate);
+                    float ph = 0f;
+                    for (int j = 0; j < m; j++)
+                    {
+                        float k = j / (float)m;
+                        float f = longOne ? Mathf.Lerp(620f, 880f, Mathf.Sin(Mathf.PI * k * 0.8f)) : Mathf.Lerp(720f, 520f, k);
+                        ph += 2f * Mathf.PI * f * hen / Rate;
+                        float v = Mathf.Sin(ph) + 0.6f * Mathf.Sin(2f * ph) + 0.3f * Mathf.Sin(3f * ph) + Noise(j / (float)Rate + at) * 0.25f;
+                        Mix(d, st + j, v * Mathf.Sin(Mathf.PI * k) * 0.022f);
+                    }
+                    t0 += len + 0.09f + (float)r.NextDouble() * 0.12f;
+                }
+            }
+            // A sheep: "baa-aa", wavering.
+            foreach (float at in new[] { 5.6f, 16.4f })
+            {
+                int st = Mathf.RoundToInt(at * Rate), m = Mathf.RoundToInt(0.9f * Rate);
+                float ph = 0f;
+                for (int j = 0; j < m; j++)
+                {
+                    float t = j / (float)Rate, k = j / (float)m;
+                    float f0 = 250f * (1f + 0.05f * Mathf.Sin(2f * Mathf.PI * 7f * t)) * Mathf.Lerp(1.05f, 0.95f, k);
+                    ph += 2f * Mathf.PI * f0 / Rate;
+                    float sum = 0f;
+                    for (int h = 1; h <= 9; h++)
+                    {
+                        float fh = f0 * h;
+                        float w = Mathf.Exp(-Mathf.Pow((fh - 760f) / 180f, 2f)) + 0.6f * Mathf.Exp(-Mathf.Pow((fh - 1300f) / 260f, 2f)) + 0.12f / h;
+                        sum += Mathf.Sin(h * ph) * w;
+                    }
+                    float env = Mathf.Min(1f, k * 12f) * Mathf.Pow(1f - k, 0.8f);
+                    Mix(d, st + j, sum * env * 0.02f);
+                }
+            }
+            // A cow, far off: a long low "mooo".
+            {
+                int st = Mathf.RoundToInt(10.2f * Rate), m = Mathf.RoundToInt(1.6f * Rate);
+                float ph = 0f;
+                for (int j = 0; j < m; j++)
+                {
+                    float k = j / (float)m;
+                    float f0 = Mathf.Lerp(150f, 125f, k) * (1f + 0.2f * Mathf.Sin(Mathf.PI * Mathf.Min(1f, k * 3f)));
+                    ph += 2f * Mathf.PI * f0 / Rate;
+                    float v = Mathf.Sin(ph) + 0.5f * Mathf.Sin(2f * ph) + 0.25f * Mathf.Sin(3f * ph);
+                    Mix(d, st + j, v * Mathf.Sin(Mathf.PI * k) * 0.022f);
+                }
+            }
+            for (float at = 2.5f; at < duration; at += 3f + (float)r.NextDouble() * 3f)
+                Bird(d, at, r, 0.014f);
+            LowPass(d, 4500f);
+            return ToClip("farm", d);
+        }
+
+        // A cave: a hollow low hum, and water dripping into pools, each drip with a little echo.
+        static AudioClip DripsLoop()
+        {
+            const float duration = 12f;
+            int n = Mathf.CeilToInt(duration * Rate);
+            var d = new float[n];
+            Breeze(d, 91, 320f, 1.3f, 1);
+            var r = new System.Random(93);
+            for (float at = 0.3f; at < duration; at += 0.6f + (float)r.NextDouble() * 1.4f)
+            {
+                float f0 = 1100f + (float)r.NextDouble() * 1300f;
+                float vol = 0.03f + (float)r.NextDouble() * 0.03f;
+                for (int echo = 0; echo < 3; echo++)
+                {
+                    int st = Mathf.RoundToInt((at + echo * 0.21f) * Rate), m = Mathf.RoundToInt(0.12f * Rate);
+                    float g = vol * Mathf.Pow(0.35f, echo);
+                    float ph = 0f;
+                    for (int j = 0; j < m; j++)
+                    {
+                        float t = j / (float)Rate;
+                        ph += 2f * Mathf.PI * f0 * (1f + 0.6f * Mathf.Exp(-t * 60f)) / Rate;
+                        Mix(d, st + j, Mathf.Sin(ph) * Mathf.Min(1f, t * 2000f) * Mathf.Exp(-t * 38f) * g);
+                    }
+                }
+            }
+            LowPass(d, 4000f);
+            return ToClip("drips", d);
         }
 
         // A short two-note "tweedle" chirp.

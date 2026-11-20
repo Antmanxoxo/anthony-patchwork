@@ -200,9 +200,7 @@ namespace Patchwork
             // Music and look for the whole wood (but not the sunny Birch Edge's northern rim).
             MusicPlayer.SetSpookyArea(SceneName, ForestArea);
             SpookyLook.Create(kit.Root);
-            var sounds = kit.Group("ForestSounds", Vector3.zero);
-            AmbientEmitter.Create(sounds, new Vector3(-84f, 2f, -52f), Sfx.Ambient(Sfx.AmbientClip.Woods), 0.5f, 10f, 30f);
-            AmbientEmitter.Create(sounds, new Vector3(-90f, 2f, -28f), Sfx.Ambient(Sfx.AmbientClip.Woods), 0.35f, 8f, 26f);
+            // (The wood's own wind and owls are one of the level's area sounds: see AreaSounds.)
         }
 
         // A white felt birch with black stitch marks, thin branches and pale, light leaves.

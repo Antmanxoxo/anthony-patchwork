@@ -234,9 +234,7 @@ namespace Patchwork
                 f.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
 
-            // Sounds, music and the darker look.
-            var sounds = kit.Group("WoodSounds", Vector3.zero);
-            AmbientEmitter.Create(sounds, new Vector3(-93f, 2f, -93f), Sfx.Ambient(Sfx.AmbientClip.Woods), 0.6f, 10f, 34f);
+            // (Its sounds come from the level's area sounds: see AreaSounds.)
         }
 
         static void Gate(LevelKit kit, Vector3 at, float yaw)
