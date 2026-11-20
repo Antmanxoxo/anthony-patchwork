@@ -1,5 +1,20 @@
 # Development Log
 
+## The Store gets a shopfront and its own song
+
+- **The Store looks like a little shop now.**
+  - **Behind everything:** candy-striped wallpaper in the colour of the tab you're on, a panelled dado with a wooden rail, a strip of floorboards, a warm glow from above, and dust motes drifting up through the light.
+  - **Across the top:** a striped awning with a scalloped edge, a gold trim and a shadow underneath, with a string of felt bunting swinging under it.
+  - **The sign:** "The Patchwork Store" hangs from the awning on two strings with brass rings, swaying very slightly.
+  - **The cards** stand on wooden shelves on a pegboard set into the wall. Anything you can afford and don't own yet has a little "New!" ribbon.
+  - **The stage picture** is framed like a theatre: a scalloped pelmet with gold bobbles, red drapes gathered at each side with gold tie-backs, and footlights glowing along the bottom.
+- **The Store's song.** It's a cousin of the lift music, with the same easy bossa nova feel but a bit brighter and bouncier for shopping:
+  - a marimba tune doubled by a toy piano, with soft electric piano and a plucked guitar on the off-beats;
+  - a walking bass, a shaker, rim clicks, and a glockenspiel sparkle every two bars;
+  - a "ding-ding" like a shop bell at the end of each eight bars.
+
+  It's sixteen bars that loop without a seam. It fades in when you open the Store, the Pod's music drops back while it plays (as in the lift), and it fades away when you leave. It's an original tune.
+
 ## The controller's own menu (with the Store), a new controller, and smoother round things everywhere
 
 - **The Store moved to the controller.** Picking up the controller in the Pod now opens its own menu: **Set Sail** (the globe, as before) or **The Store**, with your points shown underneath. Backing out of the globe or the Store brings you back to that menu, and backing out of the menu puts the controller down. The Store is no longer in the pause menu.

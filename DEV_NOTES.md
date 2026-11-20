@@ -825,6 +825,9 @@ Stuff I need to remember about how Patchwork is put together.
 - `RenderOptimizer.Prepare` builds the sphere and capsule sets for the current `GameSettings.Graphics` (4 sizes: < 0.45, < 1.3, < 2.6 and bigger). They're rebuilt when the setting changes, and apply from the next level load.
 - `GameSettings.ApplyGraphics` sets `QualitySettings.anisotropicFiltering`.
 
+- Store visuals (`StoreMenu`): `DrawShopBack`, `DrawAwning`, `Diamond` (a rotated square drawn with GUI.matrix), `DrawProscenium` (drawn over the stage view), and the pegboard and shelves in `DrawGrid`.
+- Store music: `MusicPlayer.StoreMusic()` (Core/MusicStore.cs, 118 bpm, 16 bars) is generated during the Pod build. `StoreMusicPlayer.Play()`/`Stop()` handle the fading and set `MusicPlayer.LiftHush` to duck the level music.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

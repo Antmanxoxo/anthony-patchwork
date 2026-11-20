@@ -41,11 +41,13 @@ namespace Patchwork
             message = null;
             ShowSelected();
             Sfx.Play(SfxId.MenuOpen, 0.5f);
+            StoreMusicPlayer.Play();
         }
 
         public void Close()
         {
             if (stage != null) { stage.Destroy(); stage = null; }
+            StoreMusicPlayer.Stop();
             // Put Patch himself back in what he's actually wearing.
             if (game.Player != null)
             {
@@ -251,13 +253,21 @@ namespace Patchwork
             var ink = UIKit.Ink;
             var tc = TabColors[tab];
 
-            // The shop: a full screen of felt in the tab's colour, with polka dots drifting by.
-            UIKit.Fill(new Rect(0f, 0f, W, H), new Color(0.98f, 0.93f, 0.86f, k));
-            UIKit.PatternFill(new Rect(0f, 0f, W, H), UIArt.PatternDots, new Color(tc.r, tc.g, tc.b, 0.16f * k), 64f, new Vector2(time * 0.03f, time * 0.01f));
+            // The shop, back to front: striped wallpaper and a panelled dado, the floor, dust
+            // motes in the light, then the awning over the top with its bunting.
+            DrawShopBack(W, H, k, tc, time);
+            DrawAwning(W, k, tc, time);
             float drop = UIKit.EaseOutBack(openTime / 0.45f);
 
-            // Header: the name over the door, and the purse.
-            var header = new Rect(40f, 24f + (1f - drop) * -120f, W - 80f, 100f);
+            // Header: a felt sign hanging from the awning on two strings, with the purse.
+            var header = new Rect(70f, 96f + (1f - drop) * -160f + Mathf.Sin(time * 1.3f) * 2f, W - 140f, 96f);
+            for (int s = 0; s < 2; s++)
+            {
+                float sx = s == 0 ? header.x + 60f : header.xMax - 60f;
+                UIKit.Fill(new Rect(sx - 1.5f, 64f, 3f, header.y - 64f + 8f), new Color(0.55f, 0.4f, 0.3f, 0.9f * k));
+                UIKit.Circle(new Vector2(sx, header.y + 8f), 14f, new Color(0.95f, 0.76f, 0.38f, k));
+            }
+            UIKit.Fill(new Rect(header.x + 6f, header.y + 12f, header.width, header.height), new Color(0.25f, 0.15f, 0.15f, 0.22f * k), 26f);
             UIKit.Panel(header, new Color(1f, 0.99f, 0.96f, 0.97f * k), new Color(tc.r, tc.g, tc.b, 0.9f * k), 26f);
             UIKit.Label(new Rect(header.x + 36f, header.y + 6f, 600f, 64f), "The Patchwork Store", UIKit.Style(44, true, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, k)));
             UIKit.Label(new Rect(header.x + 38f, header.y + 62f, 700f, 30f), "Everything modelled by the cast. Points from every level end up here.", UIKit.Style(18, false, TextAnchor.MiddleLeft, new Color(ink.r, ink.g, ink.b, 0.7f * k)));
@@ -287,7 +297,7 @@ namespace Patchwork
                 tx += w + 12f;
             }
 
-            float top = ty + 76f, bottom = H - 90f;
+            float top = ty + 72f, bottom = H - 90f;
             var grid = new Rect(40f, top, Mathf.Min(820f, W * 0.46f), bottom - top);
             var show = new Rect(grid.xMax + 30f, top, W - grid.xMax - 70f, bottom - top);
             DrawGrid(grid, k, ink, time);
@@ -306,6 +316,126 @@ namespace Patchwork
             if (confirming) DrawConfirm(k, ink, kb);
         }
 
+        // ---- The shop around it all.
+
+        static readonly Color[] Bunting = { new Color(0.95f, 0.45f, 0.55f), new Color(1f, 0.8f, 0.35f), new Color(0.5f, 0.75f, 0.95f), new Color(0.6f, 0.85f, 0.55f), new Color(0.8f, 0.6f, 0.95f) };
+
+        // Candy-striped wallpaper in the tab's colour, a panelled dado with a wooden rail, a
+        // floorboard strip, a soft glow from above, and dust motes drifting up through it.
+        void DrawShopBack(float W, float H, float k, Color tc, float time)
+        {
+            UIKit.Fill(new Rect(0f, 0f, W, H), new Color(0.98f, 0.93f, 0.86f, k));
+            Color stripe = Color.Lerp(new Color(0.98f, 0.93f, 0.86f), tc, 0.22f);
+            for (float x = -20f; x < W; x += 90f)
+                UIKit.Fill(new Rect(x, 0f, 45f, H), new Color(stripe.r, stripe.g, stripe.b, k));
+            UIKit.PatternFill(new Rect(0f, 0f, W, H), UIArt.PatternDots, new Color(tc.r * 0.8f, tc.g * 0.8f, tc.b * 0.8f, 0.07f * k), 64f, new Vector2(time * 0.02f, 0f));
+            // The dado: darker panels under a rail, and the floor below.
+            float dado = H - 200f;
+            UIKit.Fill(new Rect(0f, dado, W, H - dado), new Color(tc.r * 0.55f, tc.g * 0.5f, tc.b * 0.55f, k));
+            for (float x = 30f; x < W; x += 220f)
+            {
+                UIKit.Fill(new Rect(x, dado + 30f, 180f, 120f), new Color(0f, 0f, 0f, 0.08f * k), 12f);
+                UIKit.Outline(new Rect(x, dado + 30f, 180f, 120f), new Color(1f, 1f, 1f, 0.12f * k), 2f, 12f);
+            }
+            UIKit.Fill(new Rect(0f, dado - 10f, W, 18f), new Color(0.6f, 0.4f, 0.26f, k));
+            UIKit.Fill(new Rect(0f, dado - 10f, W, 5f), new Color(0.78f, 0.58f, 0.4f, k));
+            UIKit.Fill(new Rect(0f, dado + 8f, W, 6f), new Color(0f, 0f, 0f, 0.15f * k));
+            UIKit.Fill(new Rect(0f, H - 40f, W, 40f), new Color(0.55f, 0.37f, 0.25f, k));
+            for (float x = 0f; x < W; x += 160f) UIKit.Fill(new Rect(x, H - 40f, 2f, 40f), new Color(0f, 0f, 0f, 0.15f * k));
+            // A warm pool of light from the awning, fading down the wall.
+            for (int i = 0; i < 6; i++)
+                UIKit.Fill(new Rect(0f, 60f + i * 40f, W, 40f), new Color(1f, 0.95f, 0.8f, (0.1f - i * 0.016f) * k));
+            // Dust motes, drifting up and twinkling.
+            for (int i = 0; i < 26; i++)
+            {
+                float sx = Mathf.Repeat(i * 173.3f + Mathf.Sin(time * 0.3f + i) * 30f, W);
+                float sy = H - Mathf.Repeat(time * (12f + (i % 5) * 5f) + i * 97f, H + 40f);
+                float tw = 0.5f + 0.5f * Mathf.Sin(time * 2.3f + i * 1.7f);
+                UIKit.Circle(new Vector2(sx, sy), 4f + (i % 3) * 2f, new Color(1f, 0.97f, 0.85f, 0.35f * tw * k));
+            }
+        }
+
+        // The striped awning over the shopfront: a scalloped edge with a gold trim and a shadow
+        // under it, and a string of felt bunting swinging gently underneath.
+        void DrawAwning(float W, float k, Color tc, float time)
+        {
+            const float band = 62f, stripeW = 80f;
+            Color a = Color.Lerp(tc, new Color(0.9f, 0.3f, 0.35f), 0.4f), b = new Color(0.99f, 0.96f, 0.9f);
+            UIKit.Fill(new Rect(0f, band, W, 26f), new Color(0.2f, 0.1f, 0.1f, 0.16f * k));   // its shadow
+            for (int i = 0; i * stripeW < W + stripeW; i++)
+            {
+                Color c = i % 2 == 0 ? a : b;
+                float x = i * stripeW;
+                UIKit.Fill(new Rect(x, 0f, stripeW, band), new Color(c.r, c.g, c.b, k));
+                UIKit.Circle(new Vector2(x + stripeW * 0.5f, band), stripeW, new Color(c.r, c.g, c.b, k));
+                // A fold of shade down one side of each stripe.
+                UIKit.Fill(new Rect(x + stripeW - 10f, 0f, 10f, band), new Color(0f, 0f, 0f, 0.06f * k));
+            }
+            UIKit.Fill(new Rect(0f, 0f, W, 8f), new Color(0.95f, 0.76f, 0.38f, k));
+            UIKit.Fill(new Rect(0f, 8f, W, 4f), new Color(0f, 0f, 0f, 0.12f * k));
+            // Bunting on a sagging string just below.
+            int flags = Mathf.CeilToInt(W / 70f);
+            for (int i = 0; i < flags; i++)
+            {
+                float x = i * 70f + 35f, u = x / W;
+                float y = band + 44f + Mathf.Sin(u * Mathf.PI * 3f) * 10f;
+                float swing = Mathf.Sin(time * 1.6f + i * 0.7f) * 6f;
+                UIKit.Fill(new Rect(x - 36f, y - 1f, 72f, 2f), new Color(0.5f, 0.4f, 0.35f, 0.7f * k));
+                var c = Bunting[i % Bunting.Length];
+                Diamond(new Vector2(x, y + 14f), 30f, swing, new Color(c.r, c.g, c.b, k));
+            }
+        }
+
+        // A square turned on its corner (a bunting flag, or a sparkle), tilted a little.
+        static void Diamond(Vector2 c, float size, float tilt, Color col)
+        {
+            var saved = GUI.matrix;
+            var pivot = new Vector3(c.x, c.y - size * 0.5f, 0f);
+            GUI.matrix = saved * Matrix4x4.TRS(pivot, Quaternion.Euler(0f, 0f, tilt), Vector3.one) * Matrix4x4.Translate(-pivot)
+                       * Matrix4x4.TRS(new Vector3(c.x, c.y, 0f), Quaternion.Euler(0f, 0f, 45f), Vector3.one) * Matrix4x4.Translate(new Vector3(-c.x, -c.y, 0f));
+            float h = size * 0.5f;
+            UIKit.Fill(new Rect(c.x - h, c.y - h, size, size), col, 3f);
+            GUI.matrix = saved;
+        }
+
+        // The stage's proscenium: a scalloped pelmet across the top, red drapes gathered at each
+        // side with gold tie-backs, and a row of footlights along the bottom.
+        void DrawProscenium(Rect view, float k, float time)
+        {
+            Color red = new Color(0.72f, 0.16f, 0.26f), dark = new Color(0.55f, 0.1f, 0.2f), gold = new Color(1f, 0.8f, 0.4f);
+            float dw = view.width * 0.075f;
+            for (int s = 0; s < 2; s++)
+            {
+                float x0 = s == 0 ? view.x : view.xMax - dw;
+                for (int f = 0; f < 4; f++)
+                {
+                    float fw = dw / 4f;
+                    // Drapes narrow towards the tie-back two thirds of the way down.
+                    var c = f % 2 == 0 ? red : dark;
+                    UIKit.Fill(new Rect(x0 + f * fw, view.y, fw + 1f, view.height * 0.66f), new Color(c.r, c.g, c.b, k));
+                    float fx = s == 0 ? x0 + f * fw * 0.5f : x0 + dw * 0.5f + f * fw * 0.5f;
+                    UIKit.Fill(new Rect(fx, view.y + view.height * 0.66f, fw * 0.5f + 1f, view.height * 0.34f), new Color(c.r, c.g, c.b, k));
+                }
+                Vector2 tie = new Vector2(s == 0 ? x0 + dw * 0.55f : x0 + dw * 0.45f, view.y + view.height * 0.66f);
+                UIKit.Fill(new Rect(tie.x - dw * 0.5f, tie.y - 5f, dw, 10f), new Color(gold.r, gold.g, gold.b, k), 5f);
+                UIKit.Circle(tie, 18f, new Color(gold.r, gold.g, gold.b, k));
+            }
+            // The pelmet.
+            UIKit.Fill(new Rect(view.x, view.y, view.width, 26f), new Color(dark.r, dark.g, dark.b, k));
+            for (float x = view.x + 20f; x < view.xMax; x += 40f)
+                UIKit.Circle(new Vector2(x, view.y + 26f), 40f, new Color(dark.r, dark.g, dark.b, k));
+            UIKit.Fill(new Rect(view.x, view.y + 4f, view.width, 4f), new Color(gold.r, gold.g, gold.b, k));
+            for (float x = view.x + 20f; x < view.xMax; x += 40f)
+                UIKit.Circle(new Vector2(x, view.y + 44f), 9f, new Color(gold.r, gold.g, gold.b, k));
+            // Footlights.
+            for (float x = view.x + dw + 30f; x < view.xMax - dw - 20f; x += 70f)
+            {
+                float glow = 0.75f + 0.25f * Mathf.Sin(time * 3f + x * 0.05f);
+                UIKit.Circle(new Vector2(x, view.yMax - 6f), 38f, new Color(1f, 0.9f, 0.6f, 0.18f * glow * k));
+                UIKit.Circle(new Vector2(x, view.yMax - 6f), 14f, new Color(1f, 0.95f, 0.75f, 0.9f * k));
+            }
+        }
+
         void DrawGrid(Rect area, float k, Color ink, float time)
         {
             int n = Count(tab);
@@ -317,6 +447,23 @@ namespace Patchwork
             float want = Mathf.Clamp(selRow * (ch + gap) - area.height * 0.35f, 0f, Mathf.Max(0f, full - area.height));
             scroll = Mathf.Lerp(scroll, want, 1f - Mathf.Exp(-12f * Time.unscaledDeltaTime));
             var tc = TabColors[tab];
+
+            // A pegboard behind the cards, set into the wall (with a shadow along its top edge),
+            // and a wooden shelf under every row for the cards to stand on.
+            var board = new Rect(area.x - 18f, area.y - 18f, area.width + 36f, area.height + 30f);
+            UIKit.Fill(new Rect(board.x + 6f, board.y + 10f, board.width, board.height), new Color(0.2f, 0.12f, 0.1f, 0.2f * k), 22f);
+            UIKit.Fill(board, new Color(0.86f, 0.72f, 0.55f, k), 22f);
+            UIKit.PatternFill(new Rect(board.x + 10f, board.y + 10f, board.width - 20f, board.height - 20f), UIArt.PatternDots, new Color(0.45f, 0.3f, 0.2f, 0.35f * k), 30f, Vector2.zero);
+            UIKit.Fill(new Rect(board.x + 10f, board.y + 6f, board.width - 20f, 10f), new Color(0f, 0f, 0f, 0.1f * k), 5f);
+            UIKit.Outline(board, new Color(0.55f, 0.38f, 0.25f, k), 4f, 22f);
+            for (int row = 0; row < rows; row++)
+            {
+                float sy = area.y + row * (ch + gap) - scroll + ch + 2f;
+                if (sy < area.y || sy > area.yMax + 6f) continue;
+                UIKit.Fill(new Rect(area.x - 8f, sy + 6f, area.width + 16f, 10f), new Color(0f, 0f, 0f, 0.15f * k), 4f);
+                UIKit.Fill(new Rect(area.x - 8f, sy, area.width + 16f, 10f), new Color(0.62f, 0.42f, 0.27f, k), 4f);
+                UIKit.Fill(new Rect(area.x - 8f, sy, area.width + 16f, 3f), new Color(0.8f, 0.6f, 0.42f, k), 2f);
+            }
 
             for (int i = 0; i < n; i++)
             {
@@ -340,6 +487,14 @@ namespace Patchwork
                 var pic = new Rect(cr.x + 12f, cr.y + 12f, cr.width - 24f, cr.width - 24f);
                 UIKit.Fill(pic, new Color(1f, 0.97f, 0.92f, a), 14f);
                 DrawPicture(tab, i, pic, a, time);
+                // Things you can afford and haven't got yet get a little "New!" ribbon.
+                if (!owned && tab != Hats && GameState.Purse >= Price(tab, i))
+                {
+                    var rib = new Rect(cr.xMax - 62f, cr.y - 8f, 64f, 26f);
+                    UIKit.Fill(new Rect(rib.x + 2f, rib.y + 4f, rib.width, rib.height), new Color(0f, 0f, 0f, 0.15f * a), 8f);
+                    UIKit.Fill(rib, new Color(1f, 0.5f, 0.55f, a), 8f);
+                    UIKit.Label(rib, "New!", UIKit.Style(14, true, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, a)));
+                }
 
                 // Name, and price or status.
                 var ns = UIKit.Style(16, true, TextAnchor.UpperCenter, on ? new Color(1f, 1f, 1f, a) : new Color(ink.r, ink.g, ink.b, a), true);
@@ -427,6 +582,7 @@ namespace Patchwork
                 GUI.DrawTexture(view, stage.View, ScaleMode.StretchToFill);
                 GUI.color = Color.white;
             }
+            DrawProscenium(view, k, time);
             PauseMenu.MarchingStitches(new Rect(view.x - 2f, view.y - 2f, view.width + 4f, view.height + 4f), new Color(1f, 0.85f, 0.5f, 0.8f * k), time * 25f);
             if (buyFlash > 0f) UIKit.Fill(view, new Color(1f, 0.95f, 0.7f, buyFlash * 0.35f * k));
 

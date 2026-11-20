@@ -854,6 +854,7 @@ namespace Patchwork
             station.PromptPoint = at + new Vector3(0f, 1f, 0f);
             station.Label = "Pick up the controller";
             controllerStation = station;
+            MusicPlayer.StoreMusic();   // (made now, while the Pod loads, so the Store opens without a hitch)
         }
 
         static HelmStation controllerStation;
