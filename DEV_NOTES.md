@@ -858,6 +858,9 @@ Stuff I need to remember about how Patchwork is put together.
 
 - Area-sound beds: avoid short pitched knocks or rising blips in any bed (they read as hopping creatures). The town bed has no clip-clop, and the canal's slaps are low-passed noise bursts.
 
+- `MuseumIntro.StoryPace()` works the same way as Level 1's, with the shots taken from `starts[]` and `total`. `Finish` stops the voice.
+- Level 2 voice so far: L2_003 to L2_011, L2_019 and L2_108 to L2_121 (ElevenLabs flow qYgQRUhLxwiIQfsjHvod).
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

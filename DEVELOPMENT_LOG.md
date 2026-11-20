@@ -1,5 +1,11 @@
 # Development Log
 
+## The Storyteller starts on the museum (Level 2)
+
+- **Level 2's opening story is fully voiced.** All 14 lines, from "Out past the end of the pier..." to "Go and find Wick", are read in the same Storyteller voice as Level 1. Like Level 1's opening, each shot runs at his pace and never cuts away mid-sentence, and skipping stops him.
+- **The museum's room names are voiced:** the Observatory, the Star Corridor, the Orrery Bridge, the Grand Atrium, the Hall of Deep Time, the Kelp Galleries, the Hall of Arms, the Sunken Ruins, the Deepsea Tunnel and the Coral Nursery.
+- The rest of Level 2's lines still show as text with the soft murmur until they're recorded (they need more voice credits).
+
 ## No more phantom hopping
 
 - **Fixed: a hopping sound all over town.** It wasn't the Tangle Hoppers this time. It came from two of the new background sounds:

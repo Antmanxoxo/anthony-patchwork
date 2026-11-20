@@ -160,7 +160,8 @@ namespace Patchwork
                 return;
             }
 
-            t += Time.deltaTime;
+            // Each shot runs at the pace of the Storyteller's reading (as in Level 1's opening).
+            t += Time.deltaTime * StoryPace();
             bool held = t > 0.6f && (game.Input.Confirm.IsPressed() || game.Input.Pause.IsPressed());
             skipHold = held ? skipHold + Time.unscaledDeltaTime : Mathf.Max(0f, skipHold - Time.unscaledDeltaTime * 2f);
             game.CutsceneSkipFill = skipHold / 0.9f;
@@ -393,8 +394,29 @@ namespace Patchwork
             }
         }
 
+        int paceShot = -1;
+        bool paceSet;
+        float pace = 1f;
+
+        float StoryPace()
+        {
+            int shot = 0;
+            for (int i = 1; i < starts.Length; i++) if (t >= starts[i]) shot = i;
+            float next = shot + 1 < starts.Length ? starts[shot + 1] : total;
+            if (shot != paceShot) { paceShot = shot; paceSet = false; pace = 1f; }
+            float left = next - t;
+            if (!paceSet && NarratorVoice.Speaking)
+            {
+                pace = Mathf.Clamp(left / (NarratorVoice.Remaining + 0.6f), 0.4f, 1f);
+                paceSet = true;
+            }
+            if (NarratorVoice.Speaking && left < 0.1f) return 0f;
+            return pace;
+        }
+
         void Finish(PatchworkGame game)
         {
+            NarratorVoice.Stop();
             finished = true;
             active = false;
             if (lenses != null) foreach (var l in lenses) if (l != null) Destroy(l.gameObject);
