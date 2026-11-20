@@ -1,5 +1,11 @@
 # Development Log
 
+## No more phantom hopping
+
+- **Fixed: a hopping sound all over town.** It wasn't the Tangle Hoppers this time. It came from two of the new background sounds:
+  - The town's sound had a toy horse clip-clopping past, and its little knocks sounded just like something bouncing nearby. It's gone.
+  - The canal's water made small rising "plip" sounds where it slapped the wall, which sounded like hops too, and you hear the canal from the street. They're now soft splashes.
+
 ## You can be hurt again, quieter Fray music, and the story reads like a film
 
 - **Fixed: Patch couldn't be hurt while running.** Running into a Fray creature used to count as charging it, and his normal run is faster than the speed that counted, so holding Run made him impossible to hurt. Now only landing on one, a dash, or swinging in on the rope pops it. Running into one hurts.

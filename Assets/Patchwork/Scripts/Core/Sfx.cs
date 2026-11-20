@@ -1446,7 +1446,8 @@ namespace Patchwork
         }
 
         // Toybox Town's streets: a lighter breeze between the houses, pigeons cooing on the
-        // gutters, wind chimes on a porch, a bicycle bell, and a toy horse clip-clopping past.
+        // gutters, wind chimes on a porch and a bicycle bell. (No clip-clop: knocks like that
+        // read as something hopping about nearby.)
         static AudioClip TownLoop()
         {
             const float duration = 18f;
@@ -1484,20 +1485,6 @@ namespace Patchwork
             // A bicycle bell, two rings.
             Ting(d, 9.3f, 2350f, 3f, 0.016f);
             Ting(d, 9.48f, 2350f, 3f, 0.016f);
-            // A toy horse clip-clopping by (getting nearer, then going).
-            for (int c = 0; c < 14; c++)
-            {
-                float at = 14.6f + c * 0.26f + (c % 2) * 0.05f;
-                float near = Mathf.Sin(Mathf.PI * (c + 0.5f) / 14f);
-                int st = Mathf.RoundToInt(at * Rate), m = Mathf.RoundToInt(0.06f * Rate);
-                float pitch = c % 2 == 0 ? 1f : 0.82f;
-                for (int j = 0; j < m; j++)
-                {
-                    float t = j / (float)Rate;
-                    float v = Mathf.Sin(2f * Mathf.PI * 820f * pitch * t) * Mathf.Exp(-t * 85f) + 0.5f * Mathf.Sin(2f * Mathf.PI * 1450f * pitch * t) * Mathf.Exp(-t * 130f);
-                    Mix(d, st + j, v * near * 0.035f);
-                }
-            }
             // And a bird or two on the rooftops.
             for (float at = 2.2f; at < duration; at += 4f + (float)r.NextDouble() * 3f)
                 Bird(d, at, r, 0.012f);
@@ -1539,19 +1526,17 @@ namespace Patchwork
                     int idx = ((st + j) % n + n) % n;
                     d[idx] += body[idx] * env * 1.7f;
                 }
-                // The slap against the wall: a few small plips.
-                int plips = 2 + rng.Next(3);
-                for (int p = 0; p < plips; p++)
+                // The slap against the wall: a soft splash of noise (not a tone: little rising
+                // "plips" sounded like something hopping about).
                 {
-                    float at = laps[l] + len * (0.5f + (float)rng.NextDouble() * 0.3f);
-                    float f0 = 700f + (float)rng.NextDouble() * 700f;
-                    int ps = Mathf.RoundToInt(at * Rate), pm = Mathf.RoundToInt(0.05f * Rate);
-                    float ph = 0f;
+                    float at = laps[l] + len * (0.5f + (float)rng.NextDouble() * 0.2f);
+                    int ps = Mathf.RoundToInt(at * Rate), pm = Mathf.RoundToInt(0.18f * Rate);
+                    float sy = 0f, sa = Alpha(1800f);
                     for (int j = 0; j < pm; j++)
                     {
                         float k = j / (float)pm;
-                        ph += 2f * Mathf.PI * f0 * (1f + 0.9f * k) / Rate;
-                        Mix(d, ps + j, Mathf.Sin(ph) * Mathf.Min(1f, k * 30f) * Mathf.Pow(1f - k, 2f) * 0.05f);
+                        sy += sa * ((float)(rng.NextDouble() * 2.0 - 1.0) - sy);
+                        Mix(d, ps + j, sy * Mathf.Min(1f, k * 12f) * Mathf.Pow(1f - k, 2f) * 0.35f);
                     }
                 }
             }

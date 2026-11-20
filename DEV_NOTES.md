@@ -856,6 +856,8 @@ Stuff I need to remember about how Patchwork is put together.
 - `Narrator`: a voiced line is drawn whole (no typewriter).
 - `ToyboxIntro.StoryPace()`: as soon as a shot's voice starts, its pace is set to (time left in the shot) / (voice left + 0.6), clamped to 0.4..1, and `dt` is scaled by it. It holds at 0.1 s before a beat if he's still speaking.
 
+- Area-sound beds: avoid short pitched knocks or rising blips in any bed (they read as hopping creatures). The town bed has no clip-clop, and the canal's slaps are low-passed noise bursts.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark
