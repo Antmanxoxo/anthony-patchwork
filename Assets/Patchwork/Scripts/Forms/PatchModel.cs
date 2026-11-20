@@ -509,21 +509,37 @@ namespace Patchwork
             float s = Mathf.SmoothStep(0f, 1f, sprint);
             if (modelRoot != null) modelRoot.localRotation = Quaternion.Euler((sprintGrounded ? 15f : 7f) * s, 0f, 0f) * modelRoot.localRotation;
             float flutter = Mathf.Sin(Time.time * 24f) * 7f;
-            // (Out to the sides as well as back, so they stream past his body, not through it.)
-            SwingArm(armR, HandR, Out(126f + flutter, -40f), s * 0.9f);
-            SwingArm(armLeft, handLeft, Out(-126f - flutter, -40f), s * 0.9f);
+            // (Out to the sides as well as back, each arm on its own side, so they stream past
+            // his body, not through it.)
+            float rs = RightArmSide();
+            SwingArm(armR, HandR, Out(rs * (126f + flutter), -40f), s * 0.9f);
+            SwingArm(armLeft, handLeft, Out(-rs * (126f + flutter), -40f), s * 0.9f);
         }
 
-        // His arms come from his shoulders, which are inside the width of his round body, so a
+        // Which way (+1 his right, -1 his left) the "arm.R" bone is. Importing the model
+        // mirrors it, so it isn't necessarily on his right: this goes by where it really is.
+        float RightArmSide()
+        {
+            if (armR == null || armLeft == null) return 1f;
+            return Vector3.Dot(armR.position - armLeft.position, transform.right) >= 0f ? 1f : -1f;
+        }
+
+        // His arms come from his shoulders, which are only just outside his round body, so a
         // swing straight forward and back (the run, most of all, sped up) takes his hands
         // through his tummy. After every pose, each arm is kept tilted out from his side by
-        // at least a little (about 19 degrees), so his hands always pass outside him. The
-        // swing forward and back is left as it is.
+        // at least a little (about 24 degrees; standing still they hang out at about 34), so
+        // his hands always pass outside him. "Out" is worked out from where his two shoulders
+        // actually are, so it can't get his left and right mixed up.
         void KeepArmsClear()
         {
-            Vector3 side = modelRoot != null ? modelRoot.right : transform.right;
-            ClearArm(armR, HandR, side);
-            ClearArm(armLeft, handLeft, -side);
+            if (armR == null || armLeft == null) return;
+            Vector3 across = armR.position - armLeft.position;
+            Vector3 up = modelRoot != null ? modelRoot.up : transform.up;
+            across -= up * Vector3.Dot(across, up);
+            if (across.sqrMagnitude < 1e-8f) return;
+            across.Normalize();
+            ClearArm(armR, HandR, across);
+            ClearArm(armLeft, handLeft, -across);
         }
 
         static void ClearArm(Transform arm, Transform hand, Vector3 outward)
@@ -532,7 +548,7 @@ namespace Patchwork
             Vector3 dir = hand.position - arm.position;
             float len = dir.magnitude;
             if (len < 1e-4f) return;
-            const float minOut = 0.33f;   // sin of about 19 degrees
+            const float minOut = 0.4f;   // sin of about 24 degrees
             float lateral = Vector3.Dot(dir, outward);
             if (lateral >= minOut * len) return;
             Vector3 along = dir - outward * lateral;

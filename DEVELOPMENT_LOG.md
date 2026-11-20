@@ -1,5 +1,10 @@
 # Development Log
 
+## Patch's arms really are out of his tummy now
+
+- **Fixed: Patch's arms sank into his body, standing still and running.** The last fix (keeping his arms out from his sides) had his left and right swapped. The model's "right arm" ends up on his left once it's turned to face forward, so it pushed both hands *into* his tummy instead of away from it. It now works out which way is "out" from where his two shoulders actually are, so it can't mix them up. Standing still, his arms hang where they always did. When he runs, his hands pass outside his body.
+- **The sprint arms go back on the right sides too.** They had the same mix-up, which is why they crossed behind him and through his body when he sprinted.
+
 ## Sounds that fit where you are, quieter hoppers, and Store fixes
 
 - **Every part of Toybox Town has its own background sound now.** As you walk from one area to the next, the sounds fade into each other over a couple of seconds:
