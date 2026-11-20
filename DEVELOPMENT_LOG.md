@@ -7,7 +7,7 @@
 - **The story feels more like a film:**
   - **Spoken lines show whole, like subtitles,** instead of typing out letter by letter ahead of his voice.
   - **Each shot of the opening runs at his pace.** A shot whose line is longer than the shot now plays a little slower all the way through, so the camera never stops dead waiting for him. It still never cuts away mid-sentence.
-- **No more whispering.** The lines about the Unravelled King and the Fray are being re-recorded in his normal storytelling voice. Two are done; until the rest are, those few lines still whisper.
+- **No more whispering.** The lines about the Unravelled King and the Fray have been re-recorded in his normal storytelling voice (all six of them), so nothing in Level 1 whispers any more.
 
 ## The Storyteller speaks (Level 1)
 
