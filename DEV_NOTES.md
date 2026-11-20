@@ -851,6 +851,11 @@ Stuff I need to remember about how Patchwork is put together.
 - To add more lines: put the clips in `Resources/Voice/LevelN`, named by their ID from the script. Any line whose text matches gets the voice; lines with no clip keep the murmur.
 - Level 1 lines were made with ElevenLabs, voice "Julian - Deep, Rich and Mature", model eleven_v4, one take each, with audio tags like [dryly] or [quietly] in the prompt. The digits in the "with N of its five" lines were written as words for the recording.
 
+- `SnarlKnot.HitHard` (used by every Fray creature): only a stomp from above, a dash, or an attached rope counts. The old `flat > 9` speed rule is gone (the run is 6.5 × 1.5 = 9.75, which beat it).
+- Fray "dread" on the music is now a cutoff of 22000·0.4^dread and a volume of 1 − 0.1·dread (it was 0.09^dread and 0.22).
+- `Narrator`: a voiced line is drawn whole (no typewriter).
+- `ToyboxIntro.StoryPace()`: as soon as a shot's voice starts, its pace is set to (time left in the shot) / (voice left + 0.6), clamped to 0.4..1, and `dt` is scaled by it. It holds at 0.1 s before a beat if he's still speaking.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

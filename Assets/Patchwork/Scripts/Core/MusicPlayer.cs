@@ -225,8 +225,9 @@ namespace Patchwork
             dread = Mathf.MoveTowards(dread, Mathf.Clamp01(FrayDread), udt * 0.8f);
             if (dread > 0.001f)
             {
-                cutoff = Mathf.Min(cutoff, 22000f * Mathf.Pow(0.09f, dread));   // down to about 2 kHz at most
-                master *= 1f - 0.22f * dread;
+                // (Only a touch: much more and it just sounds like the music's broken.)
+                cutoff = Mathf.Min(cutoff, 22000f * Mathf.Pow(0.4f, dread));   // down to about 9 kHz at most
+                master *= 1f - 0.1f * dread;
             }
             // Level soundtracks (like Toybox Town) crossfade with the Skiff's music.
             float skiff = UpdateLevelTrack(udt) * UpdatePodTrack(udt) * UpdateMuseumTrack(udt);

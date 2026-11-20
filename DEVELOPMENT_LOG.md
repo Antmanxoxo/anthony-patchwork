@@ -1,5 +1,14 @@
 # Development Log
 
+## You can be hurt again, quieter Fray music, and the story reads like a film
+
+- **Fixed: Patch couldn't be hurt while running.** Running into a Fray creature used to count as charging it, and his normal run is faster than the speed that counted, so holding Run made him impossible to hurt. Now only landing on one, a dash, or swinging in on the rope pops it. Running into one hurts.
+- **The music doesn't go muffled near the Fray any more.** Near the Fray (like the knot round the clock tower, right where you start) the music used to dull right down, which sounded like something was broken. Now it only goes a touch softer.
+- **The story feels more like a film:**
+  - **Spoken lines show whole, like subtitles,** instead of typing out letter by letter ahead of his voice.
+  - **Each shot of the opening runs at his pace.** A shot whose line is longer than the shot now plays a little slower all the way through, so the camera never stops dead waiting for him. It still never cuts away mid-sentence.
+- **No more whispering.** The lines about the Unravelled King and the Fray are being re-recorded in his normal storytelling voice. Two are done; until the rest are, those few lines still whisper.
+
 ## The Storyteller speaks (Level 1)
 
 - **The narrator now has a real voice in Toybox Town.** Every narrator line in Level 1 (44 of them) is read aloud by the Storyteller, in a warm, deep, slightly gravelly British voice:

@@ -70,7 +70,9 @@ namespace Patchwork
             lineAlpha = Mathf.MoveTowards(lineAlpha, text != null ? 1f : 0f, udt * (text != null ? 5f : 2.2f));
             if (lastShown != null && lineAlpha > 0.01f)
             {
-                written = Mathf.Min(lastShown.Length, written + udt * LettersPerSecond);
+                // A line he's reading aloud shows whole, like a subtitle (typing it out ahead of
+                // his voice looked wrong); the others write themselves out as before.
+                written = voiced ? lastShown.Length : Mathf.Min(lastShown.Length, written + udt * LettersPerSecond);
                 if (!voiced) Murmur();
                 DrawStrip(lastShown.Substring(0, Mathf.FloorToInt(written)), lastShown, lineAlpha * (cutscene ? k : 1f), cutscene);
             }

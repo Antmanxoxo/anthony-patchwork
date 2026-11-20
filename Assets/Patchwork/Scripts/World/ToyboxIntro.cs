@@ -103,9 +103,10 @@ namespace Patchwork
             }
 
             float dt = Time.deltaTime;
-            // The Storyteller reads each caption out: if he's still reading when the story
-            // reaches the next caption, the story waits for him at the end of the shot.
-            if (NarratorVoice.Speaking && NextBeat(t) - t < 0.15f) dt = 0f;
+            // The Storyteller reads each caption out, so each shot runs at the pace of his
+            // reading: a shot whose line is longer than the shot plays a little slower, all the
+            // way through, so the camera never stops dead waiting for him.
+            dt *= StoryPace();
             t += dt;
             // Hold Confirm (or Pause) to skip, so a stray jump press can't skip it by accident.
             bool held = t > 0.6f && (game.Input.Confirm.IsPressed() || game.Input.Pause.IsPressed());
@@ -402,6 +403,27 @@ namespace Patchwork
         {
             foreach (float b in Beats) if (b > at) return b;
             return float.MaxValue;
+        }
+
+        int paceShot = -1;
+        bool paceSet;
+        float pace = 1f;
+
+        float StoryPace()
+        {
+            int shot = 0;
+            foreach (float b in Beats) if (t >= b) shot++;
+            if (shot != paceShot) { paceShot = shot; paceSet = false; pace = 1f; }
+            float left = NextBeat(t) - t;
+            if (!paceSet && NarratorVoice.Speaking)
+            {
+                // (Worked out once, as soon as he starts the shot's line.)
+                pace = Mathf.Clamp(left / (NarratorVoice.Remaining + 0.6f), 0.4f, 1f);
+                paceSet = true;
+            }
+            // Never cut away while he's mid-sentence.
+            if (NarratorVoice.Speaking && left < 0.1f) return 0f;
+            return pace;
         }
 
         static void Caption(PatchworkGame game, string text)

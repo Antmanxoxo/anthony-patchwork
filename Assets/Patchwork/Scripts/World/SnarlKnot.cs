@@ -29,15 +29,17 @@ namespace Patchwork
             fc.Quiet = true;
         }
 
-        // Is the player hitting this hard enough to pop it? (Shared with Snarlings.)
+        // Is the player hitting this hard enough to pop it? (Shared with Snarlings.) Landing
+        // on it, a dash, or swinging in on the rope. Just running into it isn't enough: Patch's
+        // run (and his sprint) is faster than the old "fast enough" mark, so running anywhere
+        // made him impossible to hurt.
         public static bool HitHard(PatchworkPlayer player, Vector3 center)
         {
             var m = player.Motor;
             var yarn = player.Forms.Ability as YarnAbility;
             if (yarn != null && yarn.Attached) return true;
             bool fromAbove = m.Center.y > center.y + 0.1f && m.Velocity.y < -2f;
-            float flat = new Vector2(m.Velocity.x, m.Velocity.z).magnitude;
-            return fromAbove || flat > 9f || m.IsDashing;
+            return fromAbove || m.IsDashing;
         }
 
         // Pushes the player away (and up a little).
