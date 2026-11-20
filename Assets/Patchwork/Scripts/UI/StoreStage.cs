@@ -49,9 +49,11 @@ namespace Patchwork
 
             View = new RenderTexture(1100, 760, 24, RenderTextureFormat.ARGB32) { antiAliasing = 4, name = "StoreView" };
             cam = MakeCamera("StoreCamera", View);
-            cam.transform.localPosition = new Vector3(0f, 1.15f, 4.6f);
-            cam.transform.LookAt(root.transform.TransformPoint(new Vector3(0f, 0.68f, 0f)));
-            cam.fieldOfView = 30f;
+            // Far enough back and high enough to take in all three from their feet to the tops
+            // of the tallest hats, with a little of the stage showing round them.
+            cam.transform.localPosition = new Vector3(0f, 1.5f, 5.8f);
+            cam.transform.LookAt(root.transform.TransformPoint(new Vector3(0f, 0.9f, 0f)));
+            cam.fieldOfView = 34f;
             thumbCam = MakeCamera("StoreThumbCamera", null);
             thumbCam.enabled = false;
             thumbCam.fieldOfView = 26f;
@@ -212,6 +214,22 @@ namespace Patchwork
         public void Celebrate()
         {
             foreach (var m in models) { m.Dance = 2.6f; m.Visuals.SetDancing(true); }
+        }
+
+        // The picture is made the same shape as the box it's shown in, so nothing is cropped
+        // off the top or bottom (their hats were being cut off).
+        public void FitTo(float width, float height)
+        {
+            if (width < 10f || height < 10f || View == null) return;
+            float aspect = width / height;
+            if (Mathf.Abs(aspect - View.width / (float)View.height) < 0.01f) return;
+            int w = 1100, h = Mathf.Clamp(Mathf.RoundToInt(w / aspect), 200, 2000);
+            var old = View;
+            View = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32) { antiAliasing = 4, name = "StoreView" };
+            cam.targetTexture = View;
+            cam.aspect = aspect;
+            old.Release();
+            Object.Destroy(old);
         }
 
         // Spin them round to see the back (the right stick).

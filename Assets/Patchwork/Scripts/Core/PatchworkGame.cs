@@ -174,7 +174,10 @@ namespace Patchwork
             cam.farClipPlane = Level.FarClip;
             // Lighter meshes for small round things, no shadows from tiny ones, and distance
             // culling for small decorations (not in the Pod, where the stars outside need to show).
-            RenderOptimizer.WorldTiling = levelId == LevelId.Level2;
+            // Brick, cobble, plaster, planks and shingles repeat at their real size on every block
+            // (in the museum, and in Toybox Town, whose long walls (the ravine, the canal, the
+            // barracks) had their bricks squashed into thin shimmering stripes).
+            RenderOptimizer.WorldTiling = levelId == LevelId.Level2 || levelId == LevelId.Level1;
             // (Not in the museum: it's all indoors, and small things popping in and out at the
             // culling distance as the camera turned looked like flickering.)
             RenderOptimizer.Run(kit.Root, cam, Level.FarClip, !Level.IsHub && levelId != LevelId.Level2);

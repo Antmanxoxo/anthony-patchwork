@@ -422,8 +422,9 @@ namespace Patchwork
             UIKit.Fill(new Rect(view.x - 6f, view.y - 6f, view.width + 12f, view.height + 12f), new Color(0.55f, 0.36f, 0.24f, k), 16f);
             if (stage != null && stage.View != null)
             {
+                stage.FitTo(view.width, view.height);
                 GUI.color = new Color(1f, 1f, 1f, k);
-                GUI.DrawTexture(view, stage.View, ScaleMode.ScaleAndCrop);
+                GUI.DrawTexture(view, stage.View, ScaleMode.StretchToFill);
                 GUI.color = Color.white;
             }
             PauseMenu.MarchingStitches(new Rect(view.x - 2f, view.y - 2f, view.width + 4f, view.height + 4f), new Color(1f, 0.85f, 0.5f, 0.8f * k), time * 25f);

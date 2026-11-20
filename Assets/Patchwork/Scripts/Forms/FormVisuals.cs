@@ -460,10 +460,21 @@ namespace Patchwork
                 fits[f] = fit;
                 return fit;
             }
+            // Only measured while he's standing as himself: not halfway through changing form
+            // (when the body spins round and grows from nothing), which used to leave the
+            // clothes turned to one side or shrunk for good.
+            if (!Calm(f)) return null;
             fit = MeasureFit(f);
             if (fit != null && fit.Height > 0.2f) fits[f] = fit;
             else fit = null;
             return fit;
+        }
+
+        bool Calm(FormType f)
+        {
+            var b = BodyFor(f);
+            if (transitioning || b == null || b.Root == null) return false;
+            return Quaternion.Angle(b.Root.localRotation, Quaternion.identity) < 1f && Mathf.Abs(b.Root.localScale.x - 1f) < 0.02f;
         }
 
         // Reads the shape of the form (every point of its meshes, in the root's space) in thin
@@ -555,6 +566,35 @@ namespace Patchwork
             }
             if (fit.NeckBone == null) fit.NeckBone = root;
             if (fit.BodyBone == null) fit.BodyBone = root;
+            if (f == FormType.Yarn)
+            {
+                // The slices can't tell his arms (and the rope in his hand) from his body, so
+                // they made him look twice as wide as he is, and the clothes stood out past his
+                // sides. His proportions are taken from the model itself instead (measured in
+                // Blender, as parts of his full height from the soles of his feet to the tip of
+                // his antenna): his body is 0.25 across, 0.24 front to back and 0.28 tall, its
+                // middle a third of the way up; the tops of his shoulders are at 0.46, just
+                // under where his big round head starts to overhang (0.51).
+                // Only the middle line (across and front to back) is read here, from the slim
+                // slice at his neck, where nothing else gets in the way.
+                var band = new List<float>();
+                var bandZ = new List<float>();
+                foreach (var p in pts)
+                    if (p.y > y0 + h * 0.47f && p.y < y0 + h * 0.53f) { band.Add(p.x); bandZ.Add(p.z); }
+                float mx = 0f, mz = 0f;
+                if (band.Count > 4)
+                {
+                    band.Sort(); bandZ.Sort();
+                    mx = (band[(int)(band.Count * 0.05f)] + band[(int)(band.Count * 0.95f)]) * 0.5f;
+                    mz = (bandZ[(int)(bandZ.Count * 0.05f)] + bandZ[(int)(bandZ.Count * 0.95f)]) * 0.5f;
+                }
+                neckPt = new Vector3(mx, y0 + h * 0.45f, mz);
+                bodyPt = new Vector3(mx, y0 + h * 0.335f, mz);
+                fit.NeckSize = new Vector3(h * 0.14f, h * 0.09f, h * 0.135f);
+                fit.BodySize = new Vector3(h * 0.125f, h * 0.14f, h * 0.12f);
+                neckY = neckPt.y;
+                bodyY = bodyPt.y;
+            }
             fit.NeckAt = RestMatrix(fit.NeckBone, body.Root).inverse.MultiplyPoint3x4(neckPt);
             fit.BodyAt = RestMatrix(fit.BodyBone, body.Root).inverse.MultiplyPoint3x4(bodyPt);
             Debug.Log("[Wardrobe] " + f + " fit: height " + h.ToString("0.00") + ", neck at " + neckY.ToString("0.00") + " size " + fit.NeckSize.ToString("0.000") + ", body at " + bodyY.ToString("0.00") + " size " + fit.BodySize.ToString("0.000"));
@@ -641,12 +681,12 @@ namespace Patchwork
             var fit = FitFor(form);
             if (fit == null) return;
             // (Turned with his body as it leans and twists, not just with the way he faces.)
-            if (!fit.HasTurn)
+            if (!fit.HasTurn && Calm(form))
             {
                 fit.Turn = Quaternion.Inverse(RestMatrix(fit.BodyBone, BodyFor(form).Root).rotation);
                 fit.HasTurn = true;
             }
-            var rot = fit.BodyBone == root ? root.rotation : fit.BodyBone.rotation * fit.Turn;
+            var rot = fit.BodyBone == root || !fit.HasTurn ? root.rotation : fit.BodyBone.rotation * fit.Turn;
             neckRoot.SetPositionAndRotation(fit.NeckBone.TransformPoint(fit.NeckAt), rot);
             Vector3 grow = BodyFor(form).Root.localScale;   // (small while he's changing form)
             neckRoot.localScale = Vector3.Scale(fit.NeckSize, grow);
@@ -704,9 +744,10 @@ namespace Patchwork
             return Sheet(hem ? "CapeHem" : "Cape", 40, hem ? 1 : 14, (u, v) =>
             {
                 float vv = hem ? Mathf.Lerp(0.94f, 1.0f, v) : v * 0.95f;
-                float spread = Mathf.Lerp(78f, 108f, vv) * Mathf.Deg2Rad;
+                // (Wrapped round his back, not out to his sides: it hangs behind his arms.)
+                float spread = Mathf.Lerp(64f, 82f, vv) * Mathf.Deg2Rad;
                 float phi = Mathf.Lerp(-spread, spread, u);
-                float r = Mathf.Lerp(1.08f, 1.38f, vv) + 0.07f * vv * Mathf.Sin(u * Mathf.PI * 9f) + (hem ? 0.01f : 0f);
+                float r = Mathf.Lerp(1.1f, 1.3f, vv) + 0.06f * vv * Mathf.Sin(u * Mathf.PI * 9f) + (hem ? 0.01f : 0f);
                 float y = Mathf.Lerp(1.05f, -1.7f, vv);
                 return new Vector3(Mathf.Sin(phi) * r, y, -Mathf.Cos(phi) * r);
             });
@@ -790,10 +831,10 @@ namespace Patchwork
 
             // 1. A striped scarf round the neck, with an end hanging down his front.
             var scarf = OutfitPart(1, neckRoot, "Scarf").transform;
-            for (int i = 0; i < 14; i++)
+            for (int i = 0; i < 18; i++)
             {
-                float a = i / 14f * Mathf.PI * 2f;
-                Prim(PrimitiveType.Cube, scarf, new Vector3(Mathf.Sin(a) * 1.05f, -0.15f, Mathf.Cos(a) * 1.05f), new Vector3(0.52f, 0.5f, 0.34f), i % 2 == 0 ? red : cream, new Vector3(0f, a * Mathf.Rad2Deg, 0f));
+                float a = i / 18f * Mathf.PI * 2f;
+                Prim(PrimitiveType.Cube, scarf, new Vector3(Mathf.Sin(a) * 1.05f, -0.15f, Mathf.Cos(a) * 1.05f), new Vector3(0.42f, 0.5f, 0.36f), (i / 2) % 2 == 0 ? red : cream, new Vector3(0f, a * Mathf.Rad2Deg, 0f));
             }
             var tail = OutfitPart(1, torsoRoot, "ScarfEnd").transform;
             for (int i = 0; i < 4; i++)
@@ -805,7 +846,7 @@ namespace Patchwork
 
             // 2. A bow tie, just under his chin.
             var bow = OutfitPart(2, neckRoot, "BowTie").transform;
-            bow.localPosition = new Vector3(0f, -0.55f, 1.12f);
+            bow.localPosition = new Vector3(0f, -0.25f, 1.12f);
             bow.localRotation = Quaternion.Euler(-15f, 0f, 0f);
             var plum = PatchworkAssets.Felt(new Color(0.45f, 0.25f, 0.6f));
             for (int s = -1; s <= 1; s += 2)
@@ -820,16 +861,21 @@ namespace Patchwork
             var pack = OutfitPart(3, torsoRoot, "Backpack").transform;
             var canvas = PatchworkAssets.Fabric(new Color(0.55f, 0.45f, 0.3f));
             var strap = PatchworkAssets.Fabric(new Color(0.35f, 0.25f, 0.15f));
-            Prim(PrimitiveType.Cube, pack, new Vector3(0f, 0.45f, -1.45f), new Vector3(0.8f, 1.25f, 0.9f), canvas);
-            Prim(PrimitiveType.Cube, pack, new Vector3(0f, 0.86f, -1.93f), new Vector3(0.76f, 0.45f, 0.08f), PatchworkAssets.Fabric(new Color(0.45f, 0.35f, 0.22f)));
-            Prim(PrimitiveType.Cube, pack, new Vector3(0f, 0.15f, -1.93f), new Vector3(0.5f, 0.42f, 0.1f), PatchworkAssets.Fabric(new Color(0.5f, 0.4f, 0.26f)));
-            Prim(PrimitiveType.Sphere, pack, new Vector3(0f, 0.68f, -1.99f), Vector3.one * 0.1f, PatchworkAssets.Plain(new Color(0.85f, 0.7f, 0.35f), 0.7f));
-            Prim(PrimitiveType.Cylinder, pack, new Vector3(0f, 1.2f, -1.4f), new Vector3(0.34f, 0.46f, 0.6f), PatchworkAssets.Knit(new Color(0.3f, 0.55f, 0.4f)), new Vector3(0f, 0f, 90f));
+            // (Low enough on his back to show under his head, and deep enough to look full.)
+            // (Two thirds as wide as his back.)
+            Prim(PrimitiveType.Cube, pack, new Vector3(0f, -0.05f, -1.6f), new Vector3(1.3f, 1.3f, 1.25f), canvas);
+            Prim(PrimitiveType.Cube, pack, new Vector3(0f, 0.38f, -2.24f), new Vector3(1.22f, 0.46f, 0.08f), PatchworkAssets.Fabric(new Color(0.45f, 0.35f, 0.22f)));
+            Prim(PrimitiveType.Cube, pack, new Vector3(0f, -0.35f, -2.25f), new Vector3(0.8f, 0.44f, 0.12f), PatchworkAssets.Fabric(new Color(0.5f, 0.4f, 0.26f)));
+            Prim(PrimitiveType.Sphere, pack, new Vector3(0f, 0.2f, -2.3f), Vector3.one * 0.1f, PatchworkAssets.Plain(new Color(0.85f, 0.7f, 0.35f), 0.7f));
+            for (int s = -1; s <= 1; s += 2)
+                Prim(PrimitiveType.Cube, pack, new Vector3(s * 0.68f, -0.15f, -1.6f), new Vector3(0.12f, 0.8f, 0.9f), PatchworkAssets.Fabric(new Color(0.5f, 0.4f, 0.26f)));
+            Prim(PrimitiveType.Cylinder, pack, new Vector3(0f, 0.68f, -1.6f), new Vector3(0.36f, 0.72f, 0.7f), PatchworkAssets.Knit(new Color(0.3f, 0.55f, 0.4f)), new Vector3(0f, 0f, 90f));
+            // The straps: over each shoulder and down his front, close to him.
             for (int s = -1; s <= 1; s += 2)
             {
-                Prim(PrimitiveType.Cube, pack, new Vector3(s * 0.38f, 1.12f, -0.2f), new Vector3(0.16f, 0.14f, 1.7f), strap);
-                Prim(PrimitiveType.Cube, pack, new Vector3(s * 0.38f, 0.45f, 1.0f), new Vector3(0.16f, 1.3f, 0.12f), strap);
-                Prim(PrimitiveType.Cube, pack, new Vector3(s * 0.38f, 0.3f, 1.07f), new Vector3(0.2f, 0.1f, 0.06f), PatchworkAssets.Plain(new Color(0.85f, 0.7f, 0.35f), 0.7f));
+                Prim(PrimitiveType.Cube, pack, new Vector3(s * 0.55f, 1.0f, -0.3f), new Vector3(0.17f, 0.12f, 1.5f), strap, new Vector3(-6f, 0f, 0f));
+                Prim(PrimitiveType.Cube, pack, new Vector3(s * 0.55f, 0.48f, 0.98f), new Vector3(0.15f, 1.0f, 0.1f), strap, new Vector3(-14f, 0f, 0f));
+                Prim(PrimitiveType.Cube, pack, new Vector3(s * 0.55f, 0.32f, 1.02f), new Vector3(0.19f, 0.09f, 0.06f), PatchworkAssets.Plain(new Color(0.85f, 0.7f, 0.35f), 0.7f), new Vector3(-14f, 0f, 0f));
             }
 
             // 4. A hero's cape: from a collar round the neck, down over his back.

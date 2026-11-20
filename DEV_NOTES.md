@@ -808,6 +808,15 @@ Stuff I need to remember about how Patchwork is put together.
 - `Wardrobe.DyedAlbedo` now keeps the last 4 dyed textures (it used to keep 1). `FormVisuals.headMaskCache` is static, so every Patch shares it.
 - Level 1 photo tour: `World/Level1PhotoTour.cs` hooks itself on scene load. It's triggered by Screenshots/take_tour1.txt and saves to Screenshots/Level1Tour. `ZFightFix.Run` now runs at the end of `Level1Builder.Build`.
 
+- Yarn's outfit fit (`MeasureFit`, Yarn case) uses fractions of his measured height `h` (the soles of his feet to the tip of his antenna), taken from Patch.fbx:
+  - body centre at 0.335h; `BodySize` (0.125h, 0.14h, 0.12h);
+  - neck/shoulder ring at 0.45h; `NeckSize` (0.14h, 0.09h, 0.135h).
+
+  Only the x/z centre line is measured, from the slice at 0.47 to 0.53h.
+- Store: `StoreStage.FitTo(w, h)` remakes the RenderTexture to the box's shape (drawn with StretchToFill). The camera is at (0, 1.5, 5.8) looking at (0, 0.9, 0), with an FOV of 34.
+- `RenderOptimizer.WorldTiling` is now on for Level 1 as well as Level 2.
+- `Level1Builder.Gem(kit, foot, radius, tall, tip, mat, turn)` makes a flat-shaded six-sided crystal (a flat top when tip is 0). It's used for the Drain Grotto crystals; the pillars' own blocks stay as invisible colliders.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

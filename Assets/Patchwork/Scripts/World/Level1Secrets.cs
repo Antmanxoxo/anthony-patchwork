@@ -204,8 +204,9 @@ namespace Patchwork
                 {
                     float tilt = (k - 1) * 18f;
                     Vector3 basePos = o + new Vector3(x + (k - 1) * 0.3f, up ? 0f : size.y, z + (k % 2) * 0.25f);
-                    var c = kit.Deco(PrimitiveType.Cube, basePos + Vector3.up * (up ? h * 0.5f : -h * 0.5f) * (1f - k * 0.2f),
-                        new Vector3(0.3f, h * (1f - k * 0.2f), 0.3f), mat, new Vector3(tilt, i * 37f, tilt * 0.5f));
+                    // A six-sided crystal with a pointed tip, leaning out from its neighbours.
+                    float ch = h * (1f - k * 0.2f);
+                    var c = Gem(kit, basePos, 0.17f - k * 0.025f, ch * 0.78f, ch * 0.22f, mat, Quaternion.Euler(up ? tilt : 180f + tilt, i * 37f, tilt * 0.5f));
                     c.name = "Crystal";
                 }
                 if (up)
@@ -221,8 +222,26 @@ namespace Patchwork
             // Stepping-stone crystals up to a ledge, and a spring for Water to ride.
             var pillar = PatchworkAssets.Glow(new Color(0.6f, 0.85f, 1f), 0.5f);
             Vector3[] steps = { new Vector3(-3f, 1.2f, 2f), new Vector3(-0.8f, 2.4f, 3.6f), new Vector3(1.6f, 3.6f, 5f), new Vector3(4f, 4.8f, 6.4f) };
-            foreach (var s in steps)
-                kit.Block(o + new Vector3(s.x, s.y * 0.5f, s.z), new Vector3(1.6f, s.y, 1.6f), new Color(0.6f, 0.85f, 1f), "CrystalPillar", pillar);
+            // (Each one is a solid block to stand on, dressed as a fat six-sided crystal with a
+            // flat top, a paler cap, and little shards leaning out round its foot.)
+            var cap = PatchworkAssets.Glow(new Color(0.85f, 0.95f, 1f), 0.7f);
+            for (int si = 0; si < steps.Length; si++)
+            {
+                var s = steps[si];
+                var block = kit.Block(o + new Vector3(s.x, s.y * 0.5f, s.z), new Vector3(1.6f, s.y, 1.6f), new Color(0.6f, 0.85f, 1f), "CrystalPillar", pillar);
+                block.GetComponent<Renderer>().enabled = false;
+                Vector3 foot = o + new Vector3(s.x, 0f, s.z);
+                Gem(kit, foot, 0.92f, s.y - 0.06f, 0f, pillar, Quaternion.Euler(0f, si * 23f, 0f)).name = "CrystalPillar";
+                Gem(kit, foot + Vector3.up * (s.y - 0.06f), 0.86f, 0.06f, 0f, cap, Quaternion.Euler(0f, si * 23f, 0f)).name = "CrystalCap";
+                for (int k = 0; k < 4; k++)
+                {
+                    float a = (si * 40f + k * 90f + 20f) * Mathf.Deg2Rad;
+                    Vector3 at = foot + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * 0.85f;
+                    var lean = Quaternion.LookRotation(new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a))) * Quaternion.Euler(28f, 0f, 0f);
+                    float sh = 0.45f + (k % 2) * 0.35f + s.y * 0.06f;
+                    Gem(kit, at, 0.16f, sh * 0.75f, sh * 0.25f, PatchworkAssets.Glow(crystal[(k + si) % 3], 0.9f), lean).name = "Crystal";
+                }
+            }
             kit.Block(o + new Vector3(6.5f, 2.9f, 8f), new Vector3(5f, 0.4f, 3f), new Color(0.3f, 0.32f, 0.5f), "GrottoLedge", PatchworkAssets.Knit(new Color(0.3f, 0.32f, 0.5f)));
             kit.Fountain(o + new Vector3(2.4f, 0f, 8.6f), 6f, LevelKit.FountainStyle.Spring);
             SecretMarble.Place(kit, o + new Vector3(7.5f, 4.4f, 8f), MarbleIds[1], MarbleColor(1));
@@ -232,6 +251,49 @@ namespace Patchwork
             AddGlow(l1, new Color(0.5f, 0.8f, 1f), 18f, 2f);
             var l2 = kit.Group("GrottoLight", o + new Vector3(5f, 6f, 5f));
             AddGlow(l2, new Color(1f, 0.6f, 0.85f), 16f, 1.6f);
+        }
+
+        // A crystal: a six-sided prism standing on its foot, "tall" high, with a point "tip" long
+        // on top (or a flat top when tip is 0). Faces are flat-shaded so each catches the light.
+        static Transform Gem(LevelKit kit, Vector3 foot, float radius, float tall, float tip, Material mat, Quaternion turn)
+        {
+            const int sides = 6;
+            var v = new List<Vector3>();
+            var tris = new List<int>();
+            System.Func<int, Vector3> ring = i => { float a = i * Mathf.PI * 2f / sides; return new Vector3(Mathf.Cos(a) * radius, 0f, Mathf.Sin(a) * radius); };
+            for (int i = 0; i < sides; i++)
+            {
+                Vector3 a0 = ring(i), a1 = ring(i + 1), b0 = a0 + Vector3.up * tall, b1 = a1 + Vector3.up * tall;
+                int n = v.Count;
+                v.Add(a0); v.Add(a1); v.Add(b1); v.Add(b0);
+                tris.AddRange(new[] { n, n + 2, n + 1, n, n + 3, n + 2 });
+                n = v.Count;
+                if (tip > 0.001f)
+                {
+                    v.Add(b0); v.Add(b1); v.Add(Vector3.up * (tall + tip));
+                    tris.AddRange(new[] { n, n + 2, n + 1 });
+                }
+                else
+                {
+                    v.Add(b0); v.Add(b1); v.Add(Vector3.up * tall);
+                    tris.AddRange(new[] { n, n + 2, n + 1 });
+                }
+                n = v.Count;
+                v.Add(a0); v.Add(a1); v.Add(Vector3.zero);
+                tris.AddRange(new[] { n, n + 1, n + 2 });
+            }
+            var mesh = new Mesh { name = "Crystal" };
+            mesh.SetVertices(v);
+            mesh.SetTriangles(tris, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            var go = new GameObject("Crystal");
+            go.transform.SetParent(kit.Root, false);
+            go.transform.SetPositionAndRotation(foot, turn);
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            go.AddComponent<MeshRenderer>().sharedMaterial = mat;
+            go.AddComponent<OwnedMesh>().Mesh = mesh;
+            return go.transform;
         }
 
         // ---------------------------------------------------------------- 3. The xylophone tune

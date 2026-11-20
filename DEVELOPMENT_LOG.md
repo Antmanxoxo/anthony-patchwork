@@ -1,5 +1,24 @@
 # Development Log
 
+## Yarn Patch's clothes fitted to his real shape, the Store's stage reframed, and Toybox Town tidied from its photo tour
+
+- **Yarn Patch's clothes, properly this time.** The clothes used to measure his body from his shape. They couldn't tell his arms (and the rope in his hand) from his body, so they thought he was about twice as wide as he is. That's why:
+  - the cape stood out past his sides like a flat board;
+  - the scarf poked out at his shoulders;
+  - the backpack sat in a little square at his neck, with its straps up by his hat.
+
+  His proportions now come from the model itself, measured in Blender:
+  - his body is a quarter of his height across;
+  - its middle is a third of the way up;
+  - his shoulders are just under where his big round head starts.
+
+  Everything hugs him now. The cape wraps round his back behind his arms. The scarf, garland and collar sit on his shoulders under his chin. The backpack is two thirds as wide as his back, with its straps over his shoulders.
+- **The Store's stage** is filmed from further back and a little higher, and the picture is always made the same shape as its box. All three now fit from their feet to the tops of the tallest hats, with nothing cropped.
+- **Toybox Town, from its photo tour (142 pictures):**
+  - **Squashed textures fixed:** the long walls (the ravine's brick walls, the canal walls and the barracks walls) had their texture squeezed into thin stripes that shimmered as the camera moved. Bricks, cobbles, plaster, planks and shingles now repeat at their real size on every block in town, as they do in the museum.
+  - **Sugar crystals in the Drain Grotto:** these were plain pale boxes. They're now proper six-sided crystals. The climbing pillars are fat crystals with flat, paler tops and little shards leaning out round their feet, and the clusters on the floor and ceiling are pointed crystals.
+  - **Flickering:** with the stripes gone and the anti-flicker pass running, nothing flickered in the pictures. The clipping report's other finds were things meant to be like that (ground pieces meeting, chimneys in roofs).
+
 ## Sprinting, a quest menu, the Store, and Toybox Town's photo tour
 
 - **Sprinting.** Hold Run (L2, or Left Ctrl) for about half a second and Patch breaks into a full sprint, a fifth faster than his run. The extra speed is only on the ground, so running-jump distances stay the same. Each form sprints its own way:
