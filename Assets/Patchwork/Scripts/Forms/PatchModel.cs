@@ -444,6 +444,14 @@ namespace Patchwork
             leanRoll = Mathf.SmoothDamp(leanRoll, wantLeanRoll, ref leanRollVel, 0.12f, Mathf.Infinity, dt);
         }
 
+        // Give a wave now (a cutscene saying hello), if he's got the animation.
+        public void Wave()
+        {
+            if (!hasClip[(int)Anim.Wave]) return;
+            idleTime = 0f;
+            Play(Anim.Wave);
+        }
+
         void Play(Anim a)
         {
             int i = (int)a;

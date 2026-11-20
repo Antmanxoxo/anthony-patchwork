@@ -861,6 +861,15 @@ Stuff I need to remember about how Patchwork is put together.
 - `MuseumIntro.StoryPace()` works the same way as Level 1's, with the shots taken from `starts[]` and `total`. `Finish` stops the voice.
 - Level 2 voice so far: L2_003 to L2_011, L2_019 and L2_108 to L2_121 (ElevenLabs flow qYgQRUhLxwiIQfsjHvod).
 
+- **ToyboxIntro filming (Shot / Frame / Act).**
+  - Each shot calls `Shot(pos, look)`; `Frame` films it.
+  - `Frame` glides 1.2 s on a new shot or a jump over 6 m. It snaps behind a wipe, adds a Perlin "hand-held" drift (scaled to the camera's distance, on unscaled time), and adds a push-in while `StoryPace` is holding for the voice.
+  - `Frame` also drives `LevelLook.SetCutsceneFocus` (soft background when the look point is under 22 m away). `ClearCutsceneFocus` puts the normal miniature focus back.
+  - Wipes: `IsWipe(beat)` lists the beats that change place. When the story reaches one, `irisClosing` freezes `t`, closes `game.CutsceneIris` in 0.32 s, jumps `t` to the beat with `snapCam`, then opens it in 0.5 s.
+  - `PatchworkHUD.DrawIris` draws the wipe: a big `CircleOutline` ring with gold stitch dots.
+  - `Finish` sets the iris to closed, and the finished branch of `Update` opens it over gameplay. `OnDestroy` clears it.
+  - `Act` holds the toys' reactions, using `Cue(time)` (crossed this frame). It uses `ToyNpc.Hop`, `ToyNpc.Startle` and `ToyNpc.Focus`, which are set to whatever the Fray is doing and cleared in `Finish`, plus `FormVisuals.Wave` / `PatchModel.Wave`.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

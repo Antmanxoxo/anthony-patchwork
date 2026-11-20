@@ -58,6 +58,27 @@ namespace Patchwork
             if (miniature != null) miniature.active = on;
         }
 
+        const float MiniatureStart = 42f, MiniatureEnd = 150f;
+
+        // A cutscene's own focus, like a camera on a model town: whatever's about dist away
+        // stays sharp and the background melts softly away behind it. k: 0 = none (all sharp),
+        // 1 = full. (ClearCutsceneFocus puts the everyday miniature look back.)
+        public static void SetCutsceneFocus(float dist, float k)
+        {
+            if (miniature == null) return;
+            miniature.active = true;
+            float start = Mathf.Lerp(600f, Mathf.Max(6f, dist * 1.7f + 3f), Mathf.Clamp01(k));
+            miniature.gaussianStart.Override(start);
+            miniature.gaussianEnd.Override(start * 2.6f + 12f);
+        }
+
+        public static void ClearCutsceneFocus()
+        {
+            if (miniature == null) return;
+            miniature.gaussianStart.Override(MiniatureStart);
+            miniature.gaussianEnd.Override(MiniatureEnd);
+        }
+
         public static Volume Apply(LevelInfo level)
         {
             miniature = null;
@@ -115,8 +136,8 @@ namespace Patchwork
                 var dof = p.Add<DepthOfField>(true);
                 miniature = dof;
                 dof.mode.Override(DepthOfFieldMode.Gaussian);
-                dof.gaussianStart.Override(42f);
-                dof.gaussianEnd.Override(150f);
+                dof.gaussianStart.Override(MiniatureStart);
+                dof.gaussianEnd.Override(MiniatureEnd);
                 dof.gaussianMaxRadius.Override(Mathf.Lerp(0.5f, 1.1f, Mathf.Clamp01(level.Miniature)));
                 dof.highQualitySampling.Override(GameSettings.Graphics > 1);
             }

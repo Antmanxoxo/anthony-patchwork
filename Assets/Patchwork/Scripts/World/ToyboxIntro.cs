@@ -70,7 +70,18 @@ namespace Patchwork
 
         void Update()
         {
-            if (!active || finished) return;
+            if (finished)
+            {
+                // The last wipe opens back up onto Patch, ready to play.
+                if (iris > 0f)
+                {
+                    iris = Mathf.MoveTowards(iris, 0f, Time.unscaledDeltaTime / 0.55f);
+                    var g = PatchworkGame.Instance;
+                    if (g != null) g.CutsceneIris = iris;
+                }
+                return;
+            }
+            if (!active) return;
             var game = PatchworkGame.Instance;
             if (game == null || game.Player == null) return;
             if (t < 0f)
@@ -88,26 +99,58 @@ namespace Patchwork
                 // The whole town is on show from far off: draw every little thing at any
                 // distance while the story plays, so nothing pops in as the camera flies about.
                 RenderOptimizer.SetFarView(true);
-                LevelLook.SetMiniature(false);   // the whole town from far off: keep it sharp
+                // The soft focus follows the shot (sharp for the whole town from far off,
+                // the background melting away on the close-ups, like a model on a table).
+                LevelLook.SetCutsceneFocus(60f, 0f);
+                // The story opens like a book: out of the dark through a round, stitched wipe.
+                iris = 1f;
+                game.CutsceneIris = 1f;
             }
             if (game.Mode != UIMode.Cutscene) return;
+            float udt = Time.unscaledDeltaTime;
 
             // Hold on the opening shot until the loading screen has gone and the picture has
             // settled for a moment, then start the story.
             if (LoadingScreen.Busy || game.Fade > 0.02f) { wait = 0f; return; }
             if (wait < 0.6f)
             {
-                wait += Time.unscaledDeltaTime;
+                wait += udt;
+                iris = Mathf.MoveTowards(iris, 0f, udt / 1.1f);
+                game.CutsceneIris = iris;
                 Narrator.Card("Chapter One", "The Wedding That Nearly Wasn't");
                 return;
             }
 
-            float dt = Time.deltaTime;
             // The Storyteller reads each caption out, so each shot runs at the pace of his
             // reading: a shot whose line is longer than the shot plays a little slower, all the
             // way through, so the camera never stops dead waiting for him.
-            dt *= StoryPace();
-            t += dt;
+            float step = Time.deltaTime * StoryPace();
+            float beat = NextBeat(t);
+            if (irisClosing)
+            {
+                // Mid-wipe: the story waits while the circle closes, then jumps to the next shot
+                // behind it (so a change of place is never a hard jump cut).
+                step = 0f;
+                iris = Mathf.MoveTowards(iris, 1f, udt / 0.32f);
+                if (iris >= 1f)
+                {
+                    irisClosing = false;
+                    t = beat;
+                    snapCam = true;
+                }
+            }
+            else if (IsWipe(beat) && t + step >= beat - 0.02f)
+            {
+                // He's finished the line and the story is moving somewhere new: close the circle.
+                step = Mathf.Max(0f, beat - 0.02f - t);
+                irisClosing = true;
+                Sfx.Play(SfxId.PageTurn, 0.22f);
+            }
+            else iris = Mathf.MoveTowards(iris, 0f, udt / 0.5f);
+            game.CutsceneIris = iris;
+            holding = step <= 0f && !irisClosing;
+            prevT = t;
+            t += step;
             // Hold Confirm (or Pause) to skip, so a stray jump press can't skip it by accident.
             bool held = t > 0.6f && (game.Input.Confirm.IsPressed() || game.Input.Pause.IsPressed());
             skipHold = held ? skipHold + Time.unscaledDeltaTime : Mathf.Max(0f, skipHold - Time.unscaledDeltaTime * 2f);
@@ -128,7 +171,7 @@ namespace Patchwork
                 Narrator.Card("Chapter One", "The Wedding That Nearly Wasn't");
                 Caption(game, "Once upon a bedtime, at the foot of a perfectly ordinary bed, there sat a most extraordinary toybox.");
                 float k = Ease(t / TTown);
-                game.SetCutsceneCamera(outside + new Vector3(Mathf.Sin(k * 1.2f) * 30f, -k * 14f, k * 18f), new Vector3(0f, 26f, 0f));
+                Shot(outside + new Vector3(Mathf.Sin(k * 1.2f) * 30f, -k * 14f, k * 18f), new Vector3(0f, 26f, 0f));
             }
             else if (t < TBand)
             {
@@ -137,13 +180,13 @@ namespace Patchwork
                 Caption(game, "Inside it lay Toybox Town, which was having the finest morning of its life. The Mayor was getting married.");
                 float k = Ease((t - TTown) / (TBand - TTown));
                 Vector3 from = outside + new Vector3(Mathf.Sin(1.2f) * 30f, -14f, 18f);
-                game.SetCutsceneCamera(Vector3.Lerp(from, overWall, k) + Vector3.up * Mathf.Sin(k * Mathf.PI) * 10f, Vector3.Lerp(new Vector3(0f, 26f, 0f), band + Vector3.up * 3f, k));
+                Shot(Vector3.Lerp(from, overWall, k) + Vector3.up * Mathf.Sin(k * Mathf.PI) * 10f, Vector3.Lerp(new Vector3(0f, 26f, 0f), band + Vector3.up * 3f, k));
             }
             else if (t < TCrack)
             {
                 Caption(game, "The town band had been practising for weeks. They had very nearly learned the tune.");
                 float k = Ease((t - TBand) / (TCrack - TBand));
-                game.SetCutsceneCamera(Vector3.Lerp(new Vector3(7f, 3.5f, -3f), new Vector3(-7f, 3.8f, -2f), k), band + new Vector3(0f, 2.2f, 0f));
+                Shot(Vector3.Lerp(new Vector3(7f, 3.5f, -3f), new Vector3(-7f, 3.8f, -2f), k), band + new Vector3(0f, 2.2f, 0f));
             }
             else if (t < TSnap)
             {
@@ -189,13 +232,13 @@ namespace Patchwork
                     // Close on the lid: a slow push in on him.
                     float k = Ease(c / 4.6f);
                     Vector3 from = CrackPos + new Vector3(-8f, -14f, -34f), to = CrackPos + new Vector3(-4f, -16f, -22f);
-                    game.SetCutsceneCamera(Vector3.Lerp(from, to, k), Vector3.Lerp(CrackPos + Vector3.down * 4f, masterHead, Mathf.SmoothStep(0f, 1f, (c - 0.6f) / 2f)));
+                    Shot(Vector3.Lerp(from, to, k), Vector3.Lerp(CrackPos + Vector3.down * 4f, masterHead, Mathf.SmoothStep(0f, 1f, (c - 0.6f) / 2f)));
                 }
                 else
                 {
                     // Down at the bandstand, looking up as the Fray comes swooping in.
                     float k = Ease((c - 4.6f) / (CrackAnim - 4.6f));
-                    game.SetCutsceneCamera(Vector3.Lerp(new Vector3(-3f, 5f, -5f), new Vector3(0f, 6f, -9f), k), Vector3.Lerp(bp + Vector3.up * 2f, bp, k));
+                    Shot(Vector3.Lerp(new Vector3(-3f, 5f, -5f), new Vector3(0f, 6f, -9f), k), Vector3.Lerp(bp + Vector3.up * 2f, bp, k));
                 }
             }
             else if (t < THill)
@@ -205,7 +248,7 @@ namespace Patchwork
                 if (!snapped && t > TSnap + 0.5f) Snap(game);
                 Caption(game, "So it sent the Fray: the grey things that eat colour. They have never cared for music either.");
                 if (Master != null && Master.gameObject.activeSelf) Master.gameObject.SetActive(false);
-                game.SetCutsceneCamera(Vector3.Lerp(new Vector3(0f, 5.5f, -5.5f), new Vector3(1.5f, 6.5f, -7.5f), Ease((t - TSnap) / (THill - TSnap))), band + Vector3.up * 3.6f);
+                Shot(Vector3.Lerp(new Vector3(0f, 5.5f, -5.5f), new Vector3(1.5f, 6.5f, -7.5f), Ease((t - TSnap) / (THill - TSnap))), band + Vector3.up * 3.6f);
             }
             else if (t < TDye)
             {
@@ -228,7 +271,7 @@ namespace Patchwork
                 // The camera chases it, then settles looking up at where it came down.
                 Vector3 chase = p + new Vector3(9f, 4f, -11f);
                 Vector3 settle = hill + new Vector3(15f, 5f, -16f);
-                game.SetCutsceneCamera(Vector3.Lerp(chase, settle, Ease((k - 0.6f) / 0.4f)), Vector3.Lerp(p, hill, Ease((k - 0.6f) / 0.4f)));
+                Shot(Vector3.Lerp(chase, settle, Ease((k - 0.6f) / 0.4f)), Vector3.Lerp(p, hill, Ease((k - 0.6f) / 0.4f)));
             }
             else if (t < TVane)
             {
@@ -237,7 +280,7 @@ namespace Patchwork
                 Narrator.Place("The Dye Works");
                 Caption(game, "...gummed up the trumpet so thoroughly that only valve dew from the Dye Works will ever cure it...");
                 float k = Ease((t - TDye) / (TVane - TDye));
-                game.SetCutsceneCamera(dye + Vector3.Lerp(new Vector3(-20f, 13f, -22f), new Vector3(-12f, 9f, -19f), k), dye + new Vector3(0f, 5f, 0f));
+                Shot(dye + Vector3.Lerp(new Vector3(-20f, 13f, -22f), new Vector3(-12f, 9f, -19f), k), dye + new Vector3(0f, 5f, 0f));
             }
             else if (t < TKnot)
             {
@@ -264,7 +307,7 @@ namespace Patchwork
                 else Narrator.Place(null);
                 Vector3 chase = look + new Vector3(-8f, 3f, 12f);
                 Vector3 settle = wispTo + new Vector3(-7f, 2.5f, 9f);
-                game.SetCutsceneCamera(Vector3.Lerp(chase, settle, Ease((k - 0.6f) / 0.4f)), look);
+                Shot(Vector3.Lerp(chase, settle, Ease((k - 0.6f) / 0.4f)), look);
             }
             else if (t < TCouple)
             {
@@ -296,13 +339,13 @@ namespace Patchwork
                     Director.TowerKnot.localScale = knotScale * UIKit.EaseOutBack(Mathf.Clamp01((t - TKnot - 2f) / 0.8f));
                 // Pulling back and up, so you see the grey spreading out over the town.
                 float pull = Ease((t - TKnot) / (TCouple - TKnot));
-                game.SetCutsceneCamera(Vector3.Lerp(new Vector3(7f, 7f, -2f), new Vector3(10f, 24f, -30f), pull), Vector3.Lerp(blobHover, knotPos, Mathf.Clamp01(k * 1.3f)));
+                Shot(Vector3.Lerp(new Vector3(7f, 7f, -2f), new Vector3(10f, 24f, -30f), pull), Vector3.Lerp(blobHover, knotPos, Mathf.Clamp01(k * 1.3f)));
             }
             else if (t < TPatch)
             {
                 Caption(game, "No band, no music. No music, no wedding. It was all a dreadful pickle.");
                 Vector3 couple = (Director.MayorSpot + Director.BrideSpot) * 0.5f;
-                game.SetCutsceneCamera(Vector3.Lerp(couple + new Vector3(0f, 2.4f, -6f), couple + new Vector3(0f, 2.1f, -4.8f), Ease((t - TCouple) / (TPatch - TCouple))), couple + new Vector3(0f, 1.4f, 0f));
+                Shot(Vector3.Lerp(couple + new Vector3(0f, 2.4f, -6f), couple + new Vector3(0f, 2.1f, -4.8f), Ease((t - TCouple) / (TPatch - TCouple))), couple + new Vector3(0f, 1.4f, 0f));
             }
             else if (t < TEnd)
             {
@@ -312,9 +355,12 @@ namespace Patchwork
                 Vector3 patch = game.Player.transform.position;
                 Vector3 fwd = game.Player.transform.forward;
                 float k = Ease((t - TPatch) / (TEnd - TPatch));
-                game.SetCutsceneCamera(patch + Quaternion.AngleAxis(Mathf.Lerp(150f, 180f, k), Vector3.up) * fwd * -Mathf.Lerp(9f, 6f, k) + Vector3.up * Mathf.Lerp(5f, 2.6f, k), patch + Vector3.up * 1.1f);
+                Shot(patch + Quaternion.AngleAxis(Mathf.Lerp(150f, 180f, k), Vector3.up) * fwd * -Mathf.Lerp(9f, 6f, k) + Vector3.up * Mathf.Lerp(5f, 2.6f, k), patch + Vector3.up * 1.1f);
             }
             else Finish(game);
+            if (finished) return;
+            Act(game);
+            Frame(game, udt);
         }
 
         // When each part of the story starts, in seconds.
@@ -327,7 +373,9 @@ namespace Patchwork
         // The Fray hanging over the bandstand, twitching.
         void Hover()
         {
-            if (Blob != null) Blob.position = blobHover + new Vector3(Mathf.Sin(t * 5f) * 0.4f, Mathf.Sin(t * 3.3f) * 0.3f, 0f);
+            // (On the clock, not the story, so it keeps twitching while he finishes a line.)
+            float tt = Time.time;
+            if (Blob != null) Blob.position = blobHover + new Vector3(Mathf.Sin(tt * 5f) * 0.4f, Mathf.Sin(tt * 3.3f) * 0.3f, 0f);
         }
 
         Vector3 Bandstand()
@@ -389,7 +437,12 @@ namespace Patchwork
             GameState.SetHintSeen(SeenKey);
             game.CutsceneCaption = null;
             RenderOptimizer.SetFarView(false);
+            LevelLook.ClearCutsceneFocus();
             LevelLook.SetMiniature(true);
+            ToyNpc.Focus = null;
+            // Wipe out of the story and back into the game (skipped or not).
+            iris = 1f;
+            game.CutsceneIris = 1f;
             Narrator.Card(null, null);
             Narrator.Place(null);
             game.CutsceneSkipFill = 0f;
@@ -424,6 +477,171 @@ namespace Patchwork
             // Never cut away while he's mid-sentence.
             if (NarratorVoice.Speaking && left < 0.1f) return 0f;
             return pace;
+        }
+
+        // ------------------------------------------------------------------ Direction
+        // Each shot says where it wants the camera (Shot); Frame then films it the way a
+        // storybook cutscene would: a slow, floaty hand-held drift that never quite stops (even
+        // while he finishes a line), a gentle push in while it waits, a smooth glide when a shot
+        // moves on within the same place, a round stitched wipe between places, and the soft
+        // focus coming in on the close-ups. Act makes the toys react to what's happening.
+
+        Vector3 shotPos, shotLook, camPos, camLook, glideFromPos, glideFromLook, lastShotPos;
+        bool haveCam, snapCam, irisClosing, holding;
+        float glide = 1f, iris, push, holdTime, focusK, focusDist = 30f, prevT, noteTimer;
+        int lastShot = -1;
+
+        // (Leaving the level mid-wipe mustn't leave the screen dark.)
+        void OnDestroy()
+        {
+            var g = PatchworkGame.Instance;
+            if (iris > 0f && g != null) g.CutsceneIris = 0f;
+        }
+
+        void Shot(Vector3 pos, Vector3 look)
+        {
+            shotPos = pos;
+            shotLook = look;
+        }
+
+        // The places the story moves to somewhere new (rather than gliding on): a wipe.
+        static bool IsWipe(float b)
+        {
+            return b == TBand || b == TCrack || b == TDye || b == TVane || b == TKnot || b == TCouple || b == TPatch || b == TEnd;
+        }
+
+        // The story has just reached this moment (this frame).
+        bool Cue(float when)
+        {
+            return prevT < when && t >= when;
+        }
+
+        static float Noise(float x, float y)
+        {
+            return (Mathf.PerlinNoise(x, y) - 0.5f) * 2f;
+        }
+
+        void Frame(PatchworkGame game, float udt)
+        {
+            int shot = 0;
+            foreach (float b in Beats) if (t >= b) shot++;
+            bool newShot = shot != lastShot;
+            lastShot = shot;
+            float wantFocus = Vector3.Distance(shotPos, shotLook) < 22f ? 1f : 0f;
+            if (!haveCam || snapCam)
+            {
+                // Behind the wipe: straight there.
+                camPos = shotPos;
+                camLook = shotLook;
+                glide = 1f;
+                push = 0f;
+                holdTime = 0f;
+                focusK = wantFocus;
+                focusDist = Vector3.Distance(shotPos, shotLook);
+                haveCam = true;
+                snapCam = false;
+            }
+            else
+            {
+                // A new shot in the same place, or the shot itself jumping somewhere (the Fray
+                // swooping down from the lid): glide over rather than cut.
+                if (newShot || (shotPos - lastShotPos).sqrMagnitude > 36f)
+                {
+                    glideFromPos = camPos;
+                    glideFromLook = camLook;
+                    glide = 0f;
+                    holdTime = 0f;
+                }
+                glide = Mathf.MoveTowards(glide, 1f, udt / 1.2f);
+                float g = Ease(glide);
+                camPos = glide < 1f ? Vector3.Lerp(glideFromPos, shotPos, g) : shotPos;
+                camLook = glide < 1f ? Vector3.Lerp(glideFromLook, shotLook, g) : shotLook;
+            }
+            lastShotPos = shotPos;
+
+            float dist = Mathf.Max(0.5f, Vector3.Distance(camPos, camLook));
+            // Waiting for him to finish a line: creep in a little, so the picture stays alive.
+            holdTime = holding ? holdTime + udt : 0f;
+            float wantPush = Mathf.Min(holdTime, 5f) * 0.014f * dist;
+            push = Mathf.Lerp(push, wantPush, 1f - Mathf.Exp(-2.5f * udt));
+            Vector3 fwd = (camLook - camPos) / dist;
+
+            // The hand-held float: slow, small, and bigger the further off the camera is.
+            float time = Time.unscaledTime;
+            float amp = Mathf.Clamp(dist * 0.012f, 0.035f, 0.7f);
+            Vector3 sway = new Vector3(Noise(time * 0.23f, 1.7f), Noise(time * 0.19f, 7.3f) * 0.7f, Noise(time * 0.21f, 3.1f)) * amp;
+            Vector3 lookSway = new Vector3(Noise(time * 0.17f, 11.2f), Noise(time * 0.15f, 13.9f) * 0.6f, Noise(time * 0.16f, 17.4f)) * amp * 0.55f;
+            game.SetCutsceneCamera(camPos + fwd * push + sway, camLook + lookSway);
+
+            // The soft focus: the background goes soft on the close-ups.
+            focusK = Mathf.MoveTowards(focusK, wantFocus, udt * 0.9f);
+            focusDist = Mathf.Lerp(focusDist, dist, 1f - Mathf.Exp(-3f * udt));
+            LevelLook.SetCutsceneFocus(focusDist, focusK);
+        }
+
+        // The toys are part of the story too: they play, jump, look round at whatever's
+        // happening and show how they feel, like a puppet show behind the Storyteller.
+        void Act(PatchworkGame game)
+        {
+            var d = Director;
+            if (t >= TBand && t < TCrack + 2f)
+            {
+                // Practising: little notes popping up off the band in time.
+                noteTimer -= Time.deltaTime;
+                if (noteTimer <= 0f)
+                {
+                    noteTimer = Random.Range(0.45f, 0.85f);
+                    var players = new[] { d.Lute, d.Trumpet, d.Piper, d.Drummer };
+                    var who = players[Random.Range(0, players.Length)];
+                    if (who != null && who.gameObject.activeInHierarchy && who.Playing) Emote.Show(who.HeadPosition + Vector3.up * 0.4f, Emote.Kind.Note);
+                }
+            }
+            // "...very nearly learned the tune": one honk from the trumpet, and the drummer
+            // jumps at it.
+            if (Cue(TBand + (TCrack - TBand) * 0.72f))
+            {
+                Sfx.PlayPitched(SfxId.Squeak, 0.32f, 0.62f);
+                if (d.Trumpet != null) Emote.Show(d.Trumpet.HeadPosition + Vector3.up * 0.4f, Emote.Kind.Surprise);
+                if (d.Drummer != null) d.Drummer.Hop(4f);
+            }
+            // Everyone in town turns to look at whatever the Fray is up to.
+            if (t >= TCrack + 5.4f && t < TCouple)
+            {
+                Vector3? focus = null;
+                if (Streak != null && Streak.gameObject.activeSelf) focus = Streak.position;
+                else if (t >= TVane && t < TKnot && d.Piper != null && d.Piper.gameObject.activeSelf) focus = d.Piper.transform.position;
+                else if (Blob != null && Blob.gameObject.activeSelf) focus = Blob.position;
+                else if (t >= TKnot && d.TowerKnot != null) focus = d.TowerKnot.position;
+                if (focus.HasValue) ToyNpc.Focus = focus;
+            }
+            // The music stops: they all jump out of their skins.
+            if (Cue(TSnap + 0.55f))
+            {
+                if (game.CameraRig != null) game.CameraRig.Kick(0.35f);
+                foreach (var n in new[] { d.Lute, d.Trumpet, d.Piper, d.Drummer, d.Mayor, d.Bride })
+                    if (n != null && n.gameObject.activeInHierarchy) n.Startle();
+            }
+            // The happy couple, and their wedding with no band.
+            if (Cue(TCouple + 0.05f)) ToyNpc.Focus = null;
+            if (Cue(TCouple + 0.5f))
+            {
+                if (d.Mayor != null) Emote.Show(d.Mayor.HeadPosition + Vector3.up * 0.4f, Emote.Kind.Heart);
+                if (d.Bride != null) d.Bride.Hop(3f);
+            }
+            if (Cue(TCouple + 0.9f) && d.Bride != null) Emote.Show(d.Bride.HeadPosition + Vector3.up * 0.4f, Emote.Kind.Heart);
+            if (Cue(TCouple + (TPatch - TCouple) * 0.6f))
+            {
+                // "...a dreadful pickle": a sorry little sigh from the Mayor.
+                if (d.Mayor != null) d.Mayor.Hop(2.2f);
+                Sfx.PlayPitched(SfxId.Babble4, 0.22f, 0.55f);
+            }
+            // And Patch, who gives the camera a wave.
+            if (Cue(TPatch + 0.7f) && game.Player != null)
+            {
+                game.Player.Visuals.Wave();
+                game.Player.Visuals.PunchScale(new Vector3(0.9f, 1.12f, 0.9f));
+                Sfx.Voice(SfxId.VoiceYay, game.Player.Forms.Current, 0.24f);
+            }
         }
 
         static void Caption(PatchworkGame game, string text)

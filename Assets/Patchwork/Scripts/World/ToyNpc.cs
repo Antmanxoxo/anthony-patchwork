@@ -393,6 +393,19 @@ namespace Patchwork
             if (ok && instrumentRoot != null) FxBurst.Spawn(FxBurst.Kind.Sparkle, instrumentRoot.position, new Color(1f, 0.85f, 0.5f));
         }
 
+        // A little jump (a cutscene's reaction).
+        public void Hop(float speed)
+        {
+            if (hopY <= 0f) hopVel = speed;
+        }
+
+        // Jump out of their skin, with a "!" over their head.
+        public void Startle()
+        {
+            Hop(5f);
+            Emote.Show(HeadPosition + Vector3.up * 0.4f, Emote.Kind.Surprise);
+        }
+
         void Update()
         {
             float dt = Time.deltaTime;

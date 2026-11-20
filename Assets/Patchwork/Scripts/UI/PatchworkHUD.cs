@@ -296,6 +296,7 @@ namespace Patchwork
                 return;
             }
 
+            if (Game.CutsceneIris > 0.001f) DrawIris(Game.CutsceneIris);
             DrawLetterbox(kb);
             // The Storyteller: cutscene captions, chapter cards and place tags, and the odd
             // remark while Patch explores.
@@ -354,6 +355,31 @@ namespace Patchwork
             {
                 Color fc = Game.FadeColor;
                 UIKit.Fill(new Rect(0f, 0f, UIKit.Width, UIKit.Height), new Color(fc.r, fc.g, fc.b, Game.Fade));
+            }
+        }
+
+        // The round wipe between scenes in a story (like the end of an old cartoon, but sewn):
+        // the dark closes in to a circle with a ring of gold stitches round its edge.
+        void DrawIris(float k)
+        {
+            var dark = new Color(0.06f, 0.04f, 0.08f, 1f);
+            var screen = new Rect(0f, 0f, UIKit.Width, UIKit.Height);
+            if (k >= 0.995f) { UIKit.Fill(screen, dark); return; }
+            var c = new Vector2(UIKit.Width * 0.5f, UIKit.Height * 0.5f);
+            float far = Mathf.Sqrt(UIKit.Width * UIKit.Width + UIKit.Height * UIKit.Height) * 0.5f + 6f;
+            float r = far * Mathf.SmoothStep(0f, 1f, 1f - k);
+            UIKit.CircleOutline(c, far * 2f, dark, Mathf.Max(1f, far - r));
+            if (r > 24f && r < far - 30f)
+            {
+                var gold = new Color(1f, 0.85f, 0.5f, 0.85f);
+                float sr = r + 12f;
+                int n = Mathf.Max(12, Mathf.RoundToInt(2f * Mathf.PI * sr / 30f));
+                float spin = Time.unscaledTime * 0.25f;
+                for (int i = 0; i < n; i++)
+                {
+                    float a = spin + i * Mathf.PI * 2f / n;
+                    UIKit.Circle(c + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * sr, 6f, gold);
+                }
             }
         }
 

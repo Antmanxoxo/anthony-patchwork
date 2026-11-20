@@ -303,6 +303,9 @@ namespace Patchwork
 
         public void PunchScale(Vector3 s) { punch = s; }
 
+        // A friendly wave (cutscenes), on the knitted toy.
+        public void Wave() { if (patchModel != null) patchModel.Wave(); }
+
         // How high Patch sits above his feet (riding a yarn horse); eased.
         public float RideHeight;
         float rideY;

@@ -707,6 +707,7 @@ namespace Patchwork
         public string CutsceneCaption { get; set; }
         public bool CutsceneSkippable { get; set; }
         public float CutsceneSkipFill { get; set; }   // 0..1 while the skip button is held
+        public float CutsceneIris { get; set; }       // the round wipe between scenes: 0 open, 1 closed
         bool cutsceneManual;   // the camera is placed by whoever runs the cutscene
         Vector3 cutsceneCenter;
         float cutsceneRadius, cutsceneHeight, cutsceneAngle;

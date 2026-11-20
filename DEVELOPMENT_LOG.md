@@ -1,5 +1,18 @@
 # Development Log
 
+## Level 1's opening story, filmed like a storybook
+
+- **The camera never stops dead now.** It floats gently the whole time, like someone holding it, and while the Storyteller finishes a line it creeps slowly in rather than freezing.
+- **Changing place uses a round stitched wipe.** The dark closes in to a circle with a ring of gold stitches, with a soft page-turn sound, then opens on the next place, instead of a hard jump cut. Shots in the same place glide smoothly into each other, and so does the Fray swooping down from the lid.
+- **Close-ups get soft focus.** The background melts away behind the band, the couple and Patch, like a camera on a model town. The wide shots of the whole town stay sharp.
+- **The toys act out the story:**
+  - Music notes pop up off the band while they practise, and the trumpet honks a wrong note right on "very nearly learned the tune", which makes the drummer jump.
+  - When the music stops, everyone jumps with a "!" and the camera gives a jolt.
+  - Everyone in town turns to watch the Fray, the flying lute string and Wisp being blown away.
+  - The Mayor and his bride show little hearts, then the Mayor gives a sorry sigh.
+  - Patch waves hello to the camera at the end.
+- The story opens out of the dark and wipes back into the game at the end, and skipping does the same.
+
 ## The Storyteller starts on the museum (Level 2)
 
 - **Level 2's opening story is fully voiced.** All 14 lines, from "Out past the end of the pier..." to "Go and find Wick", are read in the same Storyteller voice as Level 1. Like Level 1's opening, each shot runs at his pace and never cuts away mid-sentence, and skipping stops him.
