@@ -61,15 +61,15 @@ namespace Patchwork
         const float MiniatureStart = 42f, MiniatureEnd = 150f;
 
         // A cutscene's own focus, like a camera on a model town: whatever's about dist away
-        // stays sharp and the background melts softly away behind it. k: 0 = none (all sharp),
-        // 1 = full. (ClearCutsceneFocus puts the everyday miniature look back.)
+        // stays sharp and the background melts softly away behind it. k: 0 = the everyday
+        // miniature look, 1 = focused on the subject. (ClearCutsceneFocus snaps straight back.)
         public static void SetCutsceneFocus(float dist, float k)
         {
             if (miniature == null) return;
-            miniature.active = true;
-            float start = Mathf.Lerp(600f, Mathf.Max(6f, dist * 1.7f + 3f), Mathf.Clamp01(k));
-            miniature.gaussianStart.Override(start);
-            miniature.gaussianEnd.Override(start * 2.6f + 12f);
+            k = Mathf.Clamp01(k);
+            float near = Mathf.Max(6f, dist * 1.7f + 3f);
+            miniature.gaussianStart.Override(Mathf.Lerp(MiniatureStart, near, k));
+            miniature.gaussianEnd.Override(Mathf.Lerp(MiniatureEnd, near * 2.6f + 12f, k));
         }
 
         public static void ClearCutsceneFocus()

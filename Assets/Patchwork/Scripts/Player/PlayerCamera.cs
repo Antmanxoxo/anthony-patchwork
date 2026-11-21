@@ -249,6 +249,16 @@ namespace Patchwork
                 Quaternion showRot = Quaternion.LookRotation((ShowcaseLookAt - ShowcasePosition).normalized, Vector3.up);
                 pos = Vector3.Lerp(pos, ShowcasePosition, s);
                 rot = Quaternion.Slerp(rot, showRot, s);
+                // Cutscenes and conversations are filmed "hand-held": a slow, small float that
+                // never quite stops, bigger the further off the camera is (see HandHeld).
+                float hh = HandHeld * s;
+                if (hh > 0.001f)
+                {
+                    float tt = Time.unscaledTime;
+                    float amp = Mathf.Clamp(Vector3.Distance(ShowcasePosition, ShowcaseLookAt) * 0.011f, 0.03f, 0.6f) * hh;
+                    pos += new Vector3(Drift(tt * 0.23f, 1.7f), Drift(tt * 0.19f, 7.3f) * 0.7f, Drift(tt * 0.21f, 3.1f)) * amp;
+                    rot *= Quaternion.Euler(Drift(tt * 0.17f, 11.2f) * 0.45f * hh, Drift(tt * 0.15f, 13.9f) * 0.6f * hh, Drift(tt * 0.13f, 17.4f) * 0.5f * hh);
+                }
             }
             // A gentle hum and wobble, like a little craft flying (the Pod).
             if (Rumble > 0f)
@@ -269,6 +279,10 @@ namespace Patchwork
         }
 
         [System.NonSerialized] public float Rumble;
+        // 0..1: how much of the hand-held float a showcase shot gets (the game raises it in
+        // cutscenes and conversations, and lets it down again after).
+        [System.NonSerialized] public float HandHeld;
+        static float Drift(float x, float y) { return (Mathf.PerlinNoise(x, y) - 0.5f) * 2f; }
         float kick;
         public void Kick(float amount) { kick = Mathf.Max(kick, amount); }
 

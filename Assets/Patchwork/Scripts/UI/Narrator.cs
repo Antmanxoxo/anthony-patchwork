@@ -12,7 +12,7 @@ namespace Patchwork
         const float LettersPerSecond = 34f;
 
         static string line, lastShown;
-        static float written, lineTimer, lineAlpha;
+        static float written, lineTimer, lineAlpha, linePop = 1f;
         static int lastLetter;
         static bool voiced;   // the line on the strip has a recording, being read out
         // Chapter card and place tag (set by whoever's telling the story; fade themselves out).
@@ -25,6 +25,7 @@ namespace Patchwork
             voiced = false;
             NarratorVoice.ResetStatics();
             written = lineTimer = lineAlpha = cardAlpha = cardWant = placePop = placeAlpha = 0f;
+            linePop = 1f;
         }
 
         // Say something while Patch is playing. It stays up long enough to read, then fades.
@@ -64,7 +65,7 @@ namespace Patchwork
             if (text != lastShown)
             {
                 // A new line: start writing from the top (after the last one has faded a little).
-                if (text != null) { lastShown = text; written = 0f; lastLetter = 0; voiced = NarratorVoice.Speak(text); }
+                if (text != null) { lastShown = text; written = 0f; lastLetter = 0; linePop = 0f; voiced = NarratorVoice.Speak(text); }
                 else if (lineAlpha <= 0.01f) lastShown = null;
             }
             lineAlpha = Mathf.MoveTowards(lineAlpha, text != null ? 1f : 0f, udt * (text != null ? 5f : 2.2f));
@@ -74,6 +75,7 @@ namespace Patchwork
                 // his voice looked wrong); the others write themselves out as before.
                 written = voiced ? lastShown.Length : Mathf.Min(lastShown.Length, written + udt * LettersPerSecond);
                 if (!voiced) Murmur();
+                linePop = Mathf.MoveTowards(linePop, 1f, udt * 3.2f);
                 DrawStrip(lastShown.Substring(0, Mathf.FloorToInt(written)), lastShown, lineAlpha * (cutscene ? k : 1f), cutscene);
             }
 
@@ -134,6 +136,11 @@ namespace Patchwork
             // Tall enough for the whole line from the start, so the strip doesn't jump as it's written.
             float h = Mathf.Max(64f, style.CalcHeight(new GUIContent(whole), w - 120f) + 30f);
             var r = new Rect((UIKit.Width - w) * 0.5f, UIKit.Height - (cutscene ? 46f : 150f) - h, w, h);
+            // A new line pops onto the strip, like a page of the story being turned up.
+            float pop = UIKit.EaseOutBack(linePop);
+            Matrix4x4 saved = GUI.matrix;
+            var pivot = new Vector3(r.center.x, r.yMax, 0f);
+            GUI.matrix = saved * Matrix4x4.TRS(pivot, Quaternion.identity, new Vector3(Mathf.Lerp(0.96f, 1f, pop), Mathf.Lerp(0.88f, 1f, pop), 1f)) * Matrix4x4.Translate(-pivot);
             UIKit.Fill(new Rect(r.x + 4f, r.y + 6f, r.width, r.height), new Color(0f, 0f, 0f, 0.28f * a), 18f);
             UIKit.Panel(r, new Color(Paper.r, Paper.g, Paper.b, 0.97f * a), new Color(Rose.r, Rose.g, Rose.b, 0.75f * a), 18f);
             // The Storyteller's mark: a round rose seal with a quotation mark, on the corner (or,
@@ -162,6 +169,7 @@ namespace Patchwork
                 UIKit.Label(new Rect(seal.x - 27f, seal.y - 20f, 54f, 54f), "“", UIKit.Style(44, true, TextAnchor.MiddleCenter, new Color(1f, 0.97f, 0.9f, a)));
             }
             UIKit.Label(new Rect(r.x + 60f, r.y, r.width - 120f, r.height), shown, style);
+            GUI.matrix = saved;
         }
 
         static void DrawCard(float a)

@@ -99,9 +99,6 @@ namespace Patchwork
                 // The whole town is on show from far off: draw every little thing at any
                 // distance while the story plays, so nothing pops in as the camera flies about.
                 RenderOptimizer.SetFarView(true);
-                // The soft focus follows the shot (sharp for the whole town from far off,
-                // the background melting away on the close-ups, like a model on a table).
-                LevelLook.SetCutsceneFocus(60f, 0f);
                 // The story opens like a book: out of the dark through a round, stitched wipe.
                 iris = 1f;
                 game.CutsceneIris = 1f;
@@ -437,7 +434,6 @@ namespace Patchwork
             GameState.SetHintSeen(SeenKey);
             game.CutsceneCaption = null;
             RenderOptimizer.SetFarView(false);
-            LevelLook.ClearCutsceneFocus();
             LevelLook.SetMiniature(true);
             ToyNpc.Focus = null;
             // Wipe out of the story and back into the game (skipped or not).
@@ -488,7 +484,7 @@ namespace Patchwork
 
         Vector3 shotPos, shotLook, camPos, camLook, glideFromPos, glideFromLook, lastShotPos;
         bool haveCam, snapCam, irisClosing, holding;
-        float glide = 1f, iris, push, holdTime, focusK, focusDist = 30f, prevT, noteTimer;
+        float glide = 1f, glideTime = 1.2f, iris, push, holdTime, prevT, noteTimer;
         int lastShot = -1;
 
         // (Leaving the level mid-wipe mustn't leave the screen dark.)
@@ -516,18 +512,12 @@ namespace Patchwork
             return prevT < when && t >= when;
         }
 
-        static float Noise(float x, float y)
-        {
-            return (Mathf.PerlinNoise(x, y) - 0.5f) * 2f;
-        }
-
         void Frame(PatchworkGame game, float udt)
         {
             int shot = 0;
             foreach (float b in Beats) if (t >= b) shot++;
             bool newShot = shot != lastShot;
             lastShot = shot;
-            float wantFocus = Vector3.Distance(shotPos, shotLook) < 22f ? 1f : 0f;
             if (!haveCam || snapCam)
             {
                 // Behind the wipe: straight there.
@@ -536,8 +526,6 @@ namespace Patchwork
                 glide = 1f;
                 push = 0f;
                 holdTime = 0f;
-                focusK = wantFocus;
-                focusDist = Vector3.Distance(shotPos, shotLook);
                 haveCam = true;
                 snapCam = false;
             }
@@ -551,8 +539,10 @@ namespace Patchwork
                     glideFromLook = camLook;
                     glide = 0f;
                     holdTime = 0f;
+                    // (Further to go, a little longer to get there, so it never whips.)
+                    glideTime = Mathf.Clamp(0.8f + Vector3.Distance(camPos, shotPos) / 45f, 0.8f, 1.9f);
                 }
-                glide = Mathf.MoveTowards(glide, 1f, udt / 1.2f);
+                glide = Mathf.MoveTowards(glide, 1f, udt / glideTime);
                 float g = Ease(glide);
                 camPos = glide < 1f ? Vector3.Lerp(glideFromPos, shotPos, g) : shotPos;
                 camLook = glide < 1f ? Vector3.Lerp(glideFromLook, shotLook, g) : shotLook;
@@ -561,22 +551,12 @@ namespace Patchwork
 
             float dist = Mathf.Max(0.5f, Vector3.Distance(camPos, camLook));
             // Waiting for him to finish a line: creep in a little, so the picture stays alive.
+            // (The hand-held float and the soft focus are added by the game, for every cutscene.)
             holdTime = holding ? holdTime + udt : 0f;
             float wantPush = Mathf.Min(holdTime, 5f) * 0.014f * dist;
             push = Mathf.Lerp(push, wantPush, 1f - Mathf.Exp(-2.5f * udt));
             Vector3 fwd = (camLook - camPos) / dist;
-
-            // The hand-held float: slow, small, and bigger the further off the camera is.
-            float time = Time.unscaledTime;
-            float amp = Mathf.Clamp(dist * 0.012f, 0.035f, 0.7f);
-            Vector3 sway = new Vector3(Noise(time * 0.23f, 1.7f), Noise(time * 0.19f, 7.3f) * 0.7f, Noise(time * 0.21f, 3.1f)) * amp;
-            Vector3 lookSway = new Vector3(Noise(time * 0.17f, 11.2f), Noise(time * 0.15f, 13.9f) * 0.6f, Noise(time * 0.16f, 17.4f)) * amp * 0.55f;
-            game.SetCutsceneCamera(camPos + fwd * push + sway, camLook + lookSway);
-
-            // The soft focus: the background goes soft on the close-ups.
-            focusK = Mathf.MoveTowards(focusK, wantFocus, udt * 0.9f);
-            focusDist = Mathf.Lerp(focusDist, dist, 1f - Mathf.Exp(-3f * udt));
-            LevelLook.SetCutsceneFocus(focusDist, focusK);
+            game.SetCutsceneCamera(camPos + fwd * push, camLook);
         }
 
         // The toys are part of the story too: they play, jump, look round at whatever's

@@ -870,6 +870,13 @@ Stuff I need to remember about how Patchwork is put together.
   - `Finish` sets the iris to closed, and the finished branch of `Update` opens it over gameplay. `OnDestroy` clears it.
   - `Act` holds the toys' reactions, using `Cue(time)` (crossed this frame). It uses `ToyNpc.Hop`, `ToyNpc.Startle` and `ToyNpc.Focus`, which are set to whatever the Fray is doing and cleared in `Finish`, plus `FormVisuals.Wave` / `PatchModel.Wave`.
 
+- **Cutscene filming for everything.**
+  - `PatchworkGame.FilmLook` runs every frame. In Cutscene or Talk mode it raises `PlayerCamera.HandHeld`, which adds a Perlin position float scaled to the shot's distance plus a tiny pitch/yaw/roll, inside the showcase blend.
+  - `FilmLook` also blends `LevelLook.SetCutsceneFocus(dist, k)`: k = 0 is the everyday miniature (42/150), and k = 1 starts the blur at 1.7 × the shot distance + 3.
+  - `game.IrisIn()` pops `WipeIris` closed so it opens by itself. The HUD draws the larger of `CutsceneIris` and `WipeIris`. MuseumIntro uses it in place of `Blackout`.
+  - ToyboxIntro no longer adds its own float or focus. Its glide time is 0.8 + distance/45 seconds, capped at 1.9.
+  - Narrator `linePop` scales the strip in from its bottom edge on each new line.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

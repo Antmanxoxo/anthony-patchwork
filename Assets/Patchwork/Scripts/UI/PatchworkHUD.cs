@@ -296,7 +296,8 @@ namespace Patchwork
                 return;
             }
 
-            if (Game.CutsceneIris > 0.001f) DrawIris(Game.CutsceneIris);
+            float iris = Mathf.Max(Game.CutsceneIris, Game.WipeIris);
+            if (iris > 0.001f) DrawIris(iris);
             DrawLetterbox(kb);
             // The Storyteller: cutscene captions, chapter cards and place tags, and the odd
             // remark while Patch explores.

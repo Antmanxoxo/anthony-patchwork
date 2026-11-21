@@ -1,5 +1,15 @@
 # Development Log
 
+## Every cutscene filmed the same storybook way
+
+- **All the game's cutscenes and conversations now get the storybook camera**, not just Level 1's opening:
+  - The camera floats slowly and gently and never sits frozen. It also tilts very slightly, like someone holding it.
+  - The background goes softly out of focus behind whatever the shot is on, and comes back into focus as the cutscene ends.
+  - This covers both openings, the wedding, the special-place fly-throughs, the lift and the telescope. Talking to someone gets a much smaller version.
+- **Level 2's opening uses the stitched round wipe** when the story moves to a new room, instead of dipping to black.
+- **Each new Storyteller line pops up onto its strip** with a little bounce, instead of the words just swapping.
+- **Level 1's opening:** a glide between shots takes a little longer the further it has to go, so long moves never whip past.
+
 ## Level 1's opening story, filmed like a storybook
 
 - **The camera never stops dead now.** It floats gently the whole time, like someone holding it, and while the Storyteller finishes a line it creeps slowly in rather than freezing.

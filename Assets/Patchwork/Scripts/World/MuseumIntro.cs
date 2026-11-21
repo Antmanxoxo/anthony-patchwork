@@ -174,9 +174,9 @@ namespace Patchwork
             var shot = beats[now].Shot;
             if (now != beat)
             {
-                // A dip to black whenever the story jumps somewhere else.
+                // The stitched wipe whenever the story jumps somewhere else.
                 bool sameRoom = shot == Shot.WhaleSong || shot == Shot.Rises || shot == Shot.Unscrew || shot == Shot.Whale && beats[Mathf.Max(0, now - 1)].Shot == Shot.Glass;
-                if (beat >= 0 && !sameRoom) game.Blackout(1f);
+                if (beat >= 0 && !sameRoom) game.IrisIn();
                 beat = now;
                 if (now > 0) Narrator.Card(null, null);
             }

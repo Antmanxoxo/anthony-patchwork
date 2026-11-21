@@ -425,6 +425,8 @@ namespace Patchwork
                     break;
             }
 
+            FilmLook(udt);
+
             if (Mode == UIMode.Gameplay || Mode == UIMode.FormWheel || Mode == UIMode.Dance || Mode == UIMode.Intro || Mode == UIMode.LevelSelect || Mode == UIMode.Talk || Mode == UIMode.Cutscene || Mode == UIMode.Ask || Mode == UIMode.Sticker)
             {
                 PlayerInputFrame frame;
@@ -708,6 +710,30 @@ namespace Patchwork
         public bool CutsceneSkippable { get; set; }
         public float CutsceneSkipFill { get; set; }   // 0..1 while the skip button is held
         public float CutsceneIris { get; set; }       // the round wipe between scenes: 0 open, 1 closed
+        public float WipeIris { get; private set; }   // the same wipe, opening by itself (IrisIn)
+        float filmFocus, filmFocusDist = 30f;
+
+        // A scene in a story jumps somewhere new: the picture opens out from a closed circle.
+        public void IrisIn()
+        {
+            WipeIris = 1f;
+            Sfx.Play(SfxId.PageTurn, 0.2f);
+        }
+
+        // How cutscenes and conversations are filmed, whoever runs them: the hand-held float,
+        // and the soft focus (the subject sharp, the background melting away behind it).
+        void FilmLook(float udt)
+        {
+            WipeIris = Mathf.MoveTowards(WipeIris, 0f, udt / 0.55f);
+            bool filming = Mode == UIMode.Cutscene || Mode == UIMode.Talk;
+            if (CameraRig == null) return;
+            CameraRig.HandHeld = Mathf.MoveTowards(CameraRig.HandHeld, filming ? 1f : 0f, udt * 1.5f);
+            if (!filming && filmFocus <= 0f) return;
+            float d = Vector3.Distance(CameraRig.ShowcasePosition, CameraRig.ShowcaseLookAt);
+            filmFocusDist = filmFocus <= 0f ? d : Mathf.Lerp(filmFocusDist, d, 1f - Mathf.Exp(-3f * udt));
+            filmFocus = Mathf.MoveTowards(filmFocus, filming ? CameraRig.ShowcaseBlend : 0f, udt * 1.2f);
+            LevelLook.SetCutsceneFocus(filmFocusDist, filmFocus);
+        }
         bool cutsceneManual;   // the camera is placed by whoever runs the cutscene
         Vector3 cutsceneCenter;
         float cutsceneRadius, cutsceneHeight, cutsceneAngle;
