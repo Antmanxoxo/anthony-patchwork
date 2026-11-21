@@ -44,7 +44,7 @@ namespace Patchwork
                 Snarling.Create(root, a + Vector3.up * 0.06f, b + Vector3.up * 0.06f);
             }
 
-            Vector3[] hoppers = { new Vector3(-18f, 0f, 22f), new Vector3(24f, 0f, 30f), new Vector3(54f, 0f, -10f), new Vector3(-66f, 4f, 30f), new Vector3(70f, 0f, 40f), new Vector3(-20f, 0f, 100f), new Vector3(80f, 0f, -100f) };
+            Vector3[] hoppers = { new Vector3(-18f, 0f, 22f), new Vector3(24f, 0f, 30f), new Vector3(54f, 0f, -10f), Level1Builder.OnHill(new Vector3(-66f, 4f, 30f)), new Vector3(70f, 0f, 40f), new Vector3(-20f, 0f, 100f), new Vector3(80f, 0f, -100f) };
             foreach (var h in hoppers)
             {
                 Vector3 p;
@@ -66,7 +66,7 @@ namespace Patchwork
             }
 
             // Felt hearts dotted round town.
-            Vector3[] hearts = { new Vector3(6f, 0f, -26f), new Vector3(-24f, 0f, -30f), new Vector3(48f, 0f, 10f), new Vector3(-62f, 4f, 10f), new Vector3(4f, 0f, 38f), new Vector3(64f, 0f, -40f), new Vector3(14f, 0f, 70f), new Vector3(53f, 0f, -70f), new Vector3(10f, 1.2f, 94f) };
+            Vector3[] hearts = { new Vector3(6f, 0f, -26f), new Vector3(-24f, 0f, -30f), new Vector3(48f, 0f, 10f), new Vector3(-62f, 0f, 9f), new Vector3(4f, 0f, 38f), new Vector3(64f, 0f, -40f), new Vector3(14f, 0f, 70f), new Vector3(53f, 0f, -70f), new Vector3(10f, 1.2f, 94f) };
             foreach (var h in hearts)
             {
                 Vector3 p;

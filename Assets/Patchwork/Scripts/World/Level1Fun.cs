@@ -45,8 +45,7 @@ namespace Patchwork
             ScoreBubbles.Place(kit, new Vector3(StreamWest + 1f, -3.8f, -30f), 10);
             ScoreBubbles.Place(kit, new Vector3(StreamEast - 1f, -3.8f, -30f), 10);
             ScoreBubbles.Place(kit, new Vector3((StreamWest + StreamEast) * 0.5f, -2.6f, -30f), 100);
-            // Along the top of Spindle Hill.
-            Trail(kit, new Vector3(-67f, 5.2f, 8f), new Vector3(-67f, 5.2f, 30f), 6);
+            // (Spindle Hill's bubbles show the way up its climb: see HillClimb.)
             // Over the rooftops of Chimney Lane (they follow the roofs up and down).
             Trail(kit, new Vector3(-28f, 0f, -46f), new Vector3(25.5f, 0f, -46f), 15, 1.2f);
             Trail(kit, new Vector3(-14f, 0f, -58f), new Vector3(16f, 0f, -60f), 9, 1.2f);
@@ -105,7 +104,7 @@ namespace Patchwork
             Grabbable.BeachBall(kit, new Vector3(9f, 0f, -6f), 0.75f);
             Grabbable.BeachBall(kit, new Vector3(-1f, 0f, 64f), 0.9f);
             Grabbable.BeachBall(kit, new Vector3(56f, 0f, 35f), 0.75f);
-            Grabbable.BeachBall(kit, new Vector3(-62f, 4f, 20f), 0.7f);
+            Grabbable.BeachBall(kit, OnHill(new Vector3(-65f, 4f, 27.5f)), 0.7f);
             // A tower of building blocks in the park, just asking to be knocked over.
             Color[] cols = { new Color(0.9f, 0.35f, 0.35f), new Color(0.35f, 0.6f, 0.9f), new Color(1f, 0.8f, 0.3f), new Color(0.45f, 0.75f, 0.45f), new Color(0.75f, 0.5f, 0.85f) };
             Vector3 t = new Vector3(-24f, 0f, 80f);

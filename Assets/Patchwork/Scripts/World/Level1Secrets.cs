@@ -336,7 +336,8 @@ namespace Patchwork
 
         static void DigSpots(LevelKit kit)
         {
-            Vector3 hill = new Vector3(-72f, 4f, 7f);
+            // (On top of Spindle Hill, round the back of the spinning wheel.)
+            Vector3 hill = OnHill(new Vector3(-72f, 4f, 34.5f));
             DigSpot.Place(kit, hill, SecretMarble.Place(kit, hill + Vector3.up * 1.3f, MarbleIds[3], MarbleColor(3), true));
             Vector3 ravine = new Vector3(-39.6f, -5f, -2f);
             DigSpot.Place(kit, ravine, SecretMarble.Place(kit, ravine + Vector3.up * 1.3f, MarbleIds[4], MarbleColor(4), true));
@@ -386,15 +387,15 @@ namespace Patchwork
 
         static void HillRush(LevelKit kit)
         {
-            Vector3 btn = new Vector3(-67f, 0f, 13.8f);
+            Vector3 btn = new Vector3(-67f, 0f, -0.2f);
             var rush = kit.Volume<BubbleRush>(btn + Vector3.up * 0.6f, new Vector3(1.8f, 1.4f, 1.8f), "BubbleRush");
             rush.Title = "Bubble Rush";
             rush.Duration = 16f;
             rush.Button = StopwatchButton(kit, btn, rush.transform);
             var purple = PatchworkAssets.Glow(new Color(0.75f, 0.5f, 1f), 0.8f);
-            // A loop round the meadow under the lantern gate.
-            Vector2[] path = { new Vector2(-76f, 14.5f), new Vector2(-70f, 16f), new Vector2(-64f, 14.5f), new Vector2(-58f, 16f), new Vector2(-58f, 22f),
-                               new Vector2(-64f, 24f), new Vector2(-70f, 22.5f), new Vector2(-76f, 24f), new Vector2(-80f, 19f), new Vector2(-67f, 19f) };
+            // A loop round the meadow at the foot of the hill.
+            Vector2[] path = { new Vector2(-76f, 0.5f), new Vector2(-70f, 2f), new Vector2(-64f, 0.5f), new Vector2(-58f, 2f), new Vector2(-58f, 8f),
+                               new Vector2(-64f, 10f), new Vector2(-70f, 8.5f), new Vector2(-76f, 10f), new Vector2(-80f, 5f), new Vector2(-67f, 5f) };
             for (int i = 0; i < path.Length; i++)
             {
                 var b = kit.Volume<RushBubble>(new Vector3(path[i].x, 1.2f, path[i].y), new Vector3(1.4f, 1.4f, 1.4f), "RushBubble");

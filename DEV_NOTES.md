@@ -877,6 +877,16 @@ Stuff I need to remember about how Patchwork is put together.
   - ToyboxIntro no longer adds its own float or focus. Its glide time is 0.8 + distance/45 seconds, capped at 1.9.
   - Narrator `linePop` scales the strip in from its bottom edge on each new line.
 
+- **Spindle Hill (Level1SpindleHill.cs).**
+  - `HillHeight(x, z)` is the one shape everything uses. It's an ellipse round `HillCentre` (-73, 0, 33), radii 20 × 22. The profile is a monotone cubic through `ProfileS`/`ProfileH`: flat at `HillTop` 16 out to s = 0.33, steep from 0.40 to 0.60, gentle foot to 1.0. `Wobble(a)` shapes the outline and `HeightAt` varies the shoulders.
+  - The mesh comes in two pieces: `HillTop` (a flat disc, flat UVs) and `HillSides` (UVs round and down the hill, with a skirt below the ground). `HillSides` has `NoClimb`.
+  - `OnHill(old)` moves a position from the old box summit (-67, 4, 32) onto the new one. Anything that was up there uses it: SpinningWheel, BandPieceAt (lute), the home hoop, the Fray bits, the pirate and flag, the dig spot, the yarn bird, the butterfly, the beach ball, the hopper, and ToyboxIntro's hill shots.
+  - `HillClimb` builds the route with `Step(angle, top, width, kind)`. Each step sits where the hill is `top - 0.7` high at that angle, facing out, with a box collider whose top is at `top`. The gaps were checked: the widest is 3 m with a rise of 0.6 (the swing).
+  - `HillWood` places trees, undergrowth, leaf litter and tufts, kept clear of the route by `HillClear`. Hill pines are named "SpookyPine" so Declutter treats them as trees.
+  - GroundCover's old y = 4 summit grass is now at `HillTop` over the new summit.
+- **NoClimb (PlayerMotor).** After `Move`, if the most upward-facing thing touched has normal.y < 0.62 and a `NoClimb` component, the motor isn't grounded. Patch can't jump, slides down (fall speed capped at 14) and `Sliding` is true. `PatchworkPlayer.SlideDust` makes the puffs and the rustle.
+- **Level2Details.LeftBehind:** the visitors' things on five benches, placed with `on(bench, yaw, local)` (seat top 0.55).
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

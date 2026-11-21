@@ -95,7 +95,7 @@ namespace Patchwork
             P.Add(new MapPin("Picnic Park", new Vector3(-12f, 0f, 74f)));
             P.Add(new MapPin("Duck Pond", new Vector3(14f, 0f, 74f)));
             P.Add(new MapPin("Thread Ravine", new Vector3((RavineEast + RavineWest) * 0.5f, 0f, -30f), MapPin.Kind.Area));
-            P.Add(new MapPin("Spindle Hill", new Vector3(-67f, 0f, 8f), MapPin.Kind.Area));
+            P.Add(new MapPin("Spindle Hill", new Vector3(-73f, 0f, 33f), MapPin.Kind.Area));
             P.Add(new MapPin("Inkwell Canal", new Vector3((CanalWest + CanalEast) * 0.5f, 0f, 30f), MapPin.Kind.Area));
             P.Add(new MapPin("Dye Works", Mill + new Vector3(0f, 0f, -6f)));
             P.Add(new MapPin("Tea House", new Vector3(53f, 0f, -30f), MapPin.Kind.Shop));
@@ -105,7 +105,7 @@ namespace Patchwork
             P.Add(new MapPin("Landing Meadow", PodLanding, MapPin.Kind.Area));
             P.Add(new MapPin("Bouncy Castle", new Vector3(20f, 0f, 102f)));
             P.Add(new MapPin("Sky Hoops", new Vector3(100f, 0f, -20f)));
-            P.Add(new MapPin("Lute String", new Vector3(-67f, 0f, 31f), MapPin.Kind.Band, Level1Director.LuteId));
+            P.Add(new MapPin("Lute String", new Vector3(-73f, 0f, 32f), MapPin.Kind.Band, Level1Director.LuteId));
             P.Add(new MapPin("Valve Dew", Mill + new Vector3(2.6f, 0f, 0.6f), MapPin.Kind.Band, Level1Director.TrumpetId));
             P.Add(new MapPin("Wisp the Piper", new Vector3(1.4f, 0f, -71.2f), MapPin.Kind.Band, Level1Director.PiperId));
 
@@ -585,32 +585,24 @@ namespace Patchwork
             TownKit.MakeHouse(kit, new Vector3(-64f, 0f, -12f), new Vector3(9f, 6f, 8f), 0f, Walls[4], Roofs[0], 13, 1, 2f, TownKit.Sign.Spool);
             kit.YarnTree(new Vector3(-56f, 0f, -6f), 4f, LevelKit.Palette.Sage);
             kit.YarnTree(new Vector3(-80f, 0f, -4f), 5f, LevelKit.Palette.Rose);
-            kit.YarnTree(new Vector3(-82f, 0f, 14f), 4.5f, LevelKit.Palette.Butter);
-            kit.YarnTree(new Vector3(-56f, 0f, 22f), 3.6f, LevelKit.Palette.Lavender);
+            kit.YarnTree(new Vector3(-84f, 0f, 8f), 4.5f, LevelKit.Palette.Butter);
+            kit.YarnTree(new Vector3(-54.5f, 0f, 11f), 3.6f, LevelKit.Palette.Lavender);
             TownKit.FlowerBed(kit, new Vector3(-58f, 0f, -18f), new Vector2(3f, 2f), 4);
             kit.SpoolTower(new Vector3(-84f, 0f, -20f), 6f, SpoolThreads);
             kit.Spool(new Vector3(-78f, 0f, -16f), 1.6f, LevelKit.Palette.Sky);
-            kit.AddBouncePad(new Vector3(-67f, 0f, 1.5f), 16f);
-            kit.Thread(new Vector3(-67f, 3f, 1.5f), LevelKit.Palette.Gold);
-            // Terrace 1 (top 4) and the summit (top 4) across a 14 m gap, with a lantern gate to swing on.
-            var hillMat = PatchworkAssets.Knit(new Color(0.55f, 0.72f, 0.45f));
-            kit.Block(new Vector3(-67f, 2f, 8f), new Vector3(14f, 4f, 8f), GrassCol, "HillTerrace", hillMat);
-            kit.Hint(new Vector3(-67f, 5.5f, 8f), new Vector3(14f, 3f, 8f), "The Lantern Gate",
-                "Swing from the lantern to the old spinning wheel. Fall short and you'll just land in the meadow.", HintTheme.Yarn);
-            TownKit.LanternGate(kit, new Vector3(-71.5f, 0f, 19f), new Vector3(-62.5f, 0f, 19f), 14.4f, 12f);
-            kit.AddCameraZone(new Vector3(-67f, 6f, 19f), new Vector3(16f, 20f, 18f), 2.5f, 6f);
-            SwingThreadsZ(kit, -67f, 12f, 19f);
-            kit.Block(new Vector3(-67f, 2f, 32f), new Vector3(14f, 4f, 12f), GrassCol, "HillSummit", hillMat);
-            SpinningWheel(kit, new Vector3(-67f, 4f, 35.5f));
-            BandPieceAt(kit, Level1Director.LuteId, BandPiece.Part.Lute, "The Lute String", new Vector3(-67f, 5.6f, 31f), null);
-            MakeHomeHoop(kit, new Vector3(-62.5f, 4f, 29f));
+            // The hill itself, its wood, and the climb up it (see Level1SpindleHill).
+            BuildSpindleHill(kit, region);
+            // On the summit.
+            SpinningWheel(kit, OnHill(new Vector3(-67f, 4f, 35.5f)));
+            BandPieceAt(kit, Level1Director.LuteId, BandPiece.Part.Lute, "The Lute String", OnHill(new Vector3(-67f, 5.6f, 31f)), null);
+            MakeHomeHoop(kit, OnHill(new Vector3(-62.5f, 4f, 29f)));
             // The Fray up here.
-            FrayTendril(kit, region, new Vector3(-71f, 4f, 30f), 3.2f);
-            FrayTendril(kit, region, new Vector3(-63f, 4f, 36f), 2.8f);
-            FrayTear(kit, region, new Vector3(-69f, 4f, 28.5f), 2f);
+            FrayTendril(kit, region, OnHill(new Vector3(-71f, 4f, 30f)), 3.2f);
+            FrayTendril(kit, region, OnHill(new Vector3(-63f, 4f, 36f)), 2.8f);
+            FrayTear(kit, region, OnHill(new Vector3(-69f, 4f, 28.5f)), 2f);
             FrayTear(kit, region, new Vector3(-60f, 0f, -2f), 2.2f);
             FrayTendril(kit, region, new Vector3(-74f, 0f, 6f), 3f);
-            Blooms(kit, region, new Vector3(-67f, 4f, 31f), new Vector2(5f, 3f), 8);
+            Blooms(kit, region, OnHill(new Vector3(-67f, 4f, 31f)), new Vector2(5f, 3f), 8);
             Blooms(kit, region, new Vector3(-66f, 0f, -2f), new Vector2(8f, 6f), 12);
             Snarling.Create(kit.Root, new Vector3(-62f, 0f, -4f), new Vector3(-72f, 0f, -4f));
         }
@@ -1116,7 +1108,7 @@ namespace Patchwork
             kit.YarnBird(new Vector3(0f, 30f, 27f), c[0], true, 9f);
             kit.YarnBird(new Vector3(-44f, 6f, 10f), c[1], true, 7f);
             kit.YarnBird(new Vector3(-56f, 4.1f, -6f), c[2], false);
-            kit.YarnBird(new Vector3(-69.3f, 5.22f, 35.5f), c[3], false);   // on the end of the spinning wheel's bench
+            kit.YarnBird(OnHill(new Vector3(-69.3f, 5.22f, 35.5f)), c[3], false);   // on the end of the spinning wheel's bench
             kit.YarnBird(new Vector3(41f, 5.2f, 18f), c[4], false);
             kit.YarnBird(new Vector3(52f, 14f, 0f), c[0], true, 10f);
             kit.YarnBird(new Vector3(0f, 10.6f, -46f), c[1], false);

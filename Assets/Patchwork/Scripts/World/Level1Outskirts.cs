@@ -1493,7 +1493,7 @@ namespace Patchwork
             at(new Vector3(88f, 0f, -96f), p => ToyCritter.Deer(kit, p));
             at(new Vector3(58f, 0f, -110f), p => ToyCritter.Hedgehog(kit, p));
             at(new Vector3(-58f, 0f, 70f), p => ToyCritter.Deer(kit, p));
-            at(new Vector3(-80f, 0f, 30f), p => ToyCritter.Hedgehog(kit, p));
+            at(new Vector3(-84f, 0f, 3f), p => ToyCritter.Hedgehog(kit, p));
             at(new Vector3(-90f, 0f, -20f), p => ToyCritter.Mouse(kit, p));
             at(new Vector3(-100f, 0f, 0f), p => ToyCritter.Bunny(kit, p, bunnies[2]));
             at(new Vector3(84f, 0f, -40f), p => ToyCritter.Mouse(kit, p));

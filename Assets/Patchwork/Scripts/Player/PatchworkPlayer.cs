@@ -43,6 +43,25 @@ namespace Patchwork
             return player;
         }
 
+        // Sliding down a hillside too steep to climb: grass and dust kicked up under him, and a
+        // soft rustle now and then, so it's clear he's slipping, not falling.
+        float slideTimer, slideSound;
+        void SlideDust(float dt)
+        {
+            if (!Motor.Sliding) { slideSound = 0f; return; }
+            slideTimer -= dt;
+            slideSound -= dt;
+            if (slideTimer > 0f) return;
+            slideTimer = 0.09f;
+            Vector3 v = Motor.Velocity;
+            FxBurst.Spawn(FxBurst.Kind.Puff, transform.position + Vector3.up * 0.1f, new Color(0.7f, 0.78f, 0.55f), -v.normalized * 0.5f + Vector3.up * 0.3f);
+            if (slideSound <= 0f)
+            {
+                slideSound = 0.45f;
+                Sfx.PlayPitched(SfxId.Rustle, 0.18f, 0.9f + Random.value * 0.2f);
+            }
+        }
+
         // Little puffs kicked up behind him while he runs, in his form's own colour.
         float dustTimer;
         float runTipTimer;
@@ -107,6 +126,7 @@ namespace Patchwork
             bool wantRun = input.RunHeld && input.Move.sqrMagnitude > 0.3f;
             Motor.Running = Motor.Grounded || Motor.Swimming ? wantRun : Motor.Running && wantRun;
             RunDust(dt);
+            SlideDust(dt);
             Motor.Step(input.MoveWorld, input.JumpPressed, input.JumpHeld, dt);
             Forms.Ability.PostMove(dt);
             if (Motor.JustSprinted) SprintKick();

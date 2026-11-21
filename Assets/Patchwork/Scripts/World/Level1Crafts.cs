@@ -24,7 +24,7 @@ namespace Patchwork
         {
             Remark(kit, "square", new Vector3(0f, 2f, 2f), 18f, "The town square. On an ordinary day there would be dancing. Today there is mostly worrying.");
             Remark(kit, "tower", new Vector3(0f, 2f, 24f), 12f, "And there it sits: the Fray, knotted round the clock like a sulking scarf.");
-            Remark(kit, "hill", new Vector3(-67f, 5f, 14f), 22f, "Spindle Hill. The wind up here has opinions, and shares them freely.");
+            Remark(kit, "hill", new Vector3(-68f, 3f, 16f), 22f, "Spindle Hill. The wind up here has opinions, and shares them freely.");
             Remark(kit, "dye", new Vector3(64f, 2f, 2f), 18f, "The Dye Works, where every colour in town is brewed. Do mind the vats. Purple never quite washes out.");
             Remark(kit, "lane", new Vector3(0f, 2f, -62f), 16f, "Chimney Lane. If you listen closely, you can hear a very small piper being very brave indeed.");
             Remark(kit, "dell", new Vector3(-62f, 2f, 100f), 20f, "Toadstool Dell. Everything here is either bouncy or asleep, and occasionally both.");

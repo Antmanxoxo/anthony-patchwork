@@ -159,7 +159,7 @@ namespace Patchwork
             }
 
             var band = Bandstand();
-            Vector3 hill = new Vector3(-67f, 6f, 31f);
+            Vector3 hill = Level1Builder.OnHill(new Vector3(-67f, 6f, 31f));
             Vector3 dye = Level1Builder.DyeWorksPoint;
             Vector3 outside = new Vector3(0f, 150f, -200f), overWall = new Vector3(0f, 44f, -82f);
             if (t < TTown)
@@ -394,7 +394,7 @@ namespace Patchwork
                 Director.Lute.SetInstrumentFixed(false);
                 Director.Lute.Playing = false;
                 streakFrom = Director.Lute.transform.position + Vector3.up * 1.2f;
-                streakTo = new Vector3(-67f, 6f, 31f);
+                streakTo = Level1Builder.OnHill(new Vector3(-67f, 6f, 31f));
                 if (Streak != null) { Streak.position = streakFrom; Streak.gameObject.SetActive(true); }
             }
             if (Director.Trumpet != null)

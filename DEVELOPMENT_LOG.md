@@ -1,5 +1,23 @@
 # Development Log
 
+## Spindle Hill is a real hill now
+
+- **Spindle Hill is a tall, rounded hill instead of two green boxes.** It's 16 m high (it was 4), with a flat top, a rounded shoulder, steep sides and a gentle foot that blends into the meadow.
+- **You have to climb it.** The sides are too steep to walk or hop up: Patch slides back down, with grass puffs and a rustle so it's clear he's slipping. The way up winds round the side facing town:
+  - Tree stumps step up out of the meadow onto a plank ledge.
+  - A pincushion bounces you up to a branch.
+  - A lantern hangs off a giant knitting needle stuck in the hill. Swing across on it as Yarn, or make a good jump.
+  - Giant sewing buttons sewn into the hillside take you up onto the summit.
+  - A signpost and a hint mark the start, with a checkpoint at the bottom. A trail of bubbles shows the way, and the camera stands back while you climb.
+- **It's its own little autumn wood.** About 55 knitted trees cover it: pompom trees in russet, mustard and plum, warm little pines and button trees. There are also ferns, toadstools, bramble bushes, cotton reels half sunk into the slopes, fallen felt leaves and tufts of grass.
+- **Everything that was on the old summit is on the new one:**
+  - the spinning wheel and the lute string
+  - Captain Buttonbeard and his flag
+  - the home hoop, the Fray, the dig spot, the yarn bird, a butterfly and a beach ball
+- **The Captain has a little camp up there:** a bedroll, a lantern, a mug and his treasure map.
+- **Moved to make room:** the Bubble Rush loop and its stopwatch are in the meadow at the hill's foot. A few trees, a yarn ball and a hedgehog that stood where the hill is now have been moved nearby.
+- **A few lived-in touches in the museum:** things visitors left on the benches. There's a folded guide and a paper cup, a knitted scarf, a straw sun hat, an open sketchbook with a pencil, and a newspaper with an umbrella leaning on the bench.
+
 ## Every cutscene filmed the same storybook way
 
 - **All the game's cutscenes and conversations now get the storybook camera**, not just Level 1's opening:

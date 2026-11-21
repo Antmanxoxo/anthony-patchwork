@@ -93,7 +93,7 @@ namespace Patchwork
             s.Add(Look("Ravine_n", new Vector3(-44f, 3f, -60f), new Vector3(-44f, -4f, -20f)));
             s.Add(Look("Ravine_s", new Vector3(-44f, 3f, 60f), new Vector3(-44f, -4f, 20f)));
             s.Add(Look("Ravine_down", new Vector3(-36f, 4f, 0f), new Vector3(-48f, -5f, 0f)));
-            s.Add(Look("SpindleHill", new Vector3(-30f, 6f, 0f), new Vector3(-70f, 6f, 0f)));
+            s.Add(Look("SpindleHill", new Vector3(-30f, 14f, 6f), new Vector3(-73f, 8f, 30f)));
             s.Add(Look("Rooftops", new Vector3(14f, 14f, -44f), new Vector3(0f, 6f, -60f)));
             s.Add(Look("Weathervane_clouds", new Vector3(24f, 22f, -70f), new Vector3(12f, 26f, -92f)));
             s.Add(Look("Wood_gate", new Vector3(-64f, 3f, -72f), new Vector3(-71.5f, 2f, -79f)));

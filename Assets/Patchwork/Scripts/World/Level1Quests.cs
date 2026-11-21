@@ -73,12 +73,12 @@ namespace Patchwork
             }
 
             // The Captain, on the summit beside the old spinning wheel, with his flag planted.
-            var pirate = Toy(kit, new Vector3(-64.4f, 4.02f, 32.4f), 200f, ToyNpc.Kind.Pirate, "Captain Buttonbeard",
+            var pirate = Toy(kit, OnHill(new Vector3(-64.4f, 4.02f, 32.4f)), 200f, ToyNpc.Kind.Pirate, "Captain Buttonbeard",
                 new Color(0.2f, 0.3f, 0.5f), new Color(0.85f, 0.25f, 0.3f), ToyNpc.Instrument.None, 0.62f, new Color(0.2f, 0.28f, 0.45f));
             pirate.Lines = quest.Lines;
             pirate.TalkEnded = quest.TalkEnded;
             quest.Pirate = pirate;
-            Vector3 flag = new Vector3(-61.6f, 4f, 34.6f);
+            Vector3 flag = OnHill(new Vector3(-61.6f, 4f, 34.6f));
             var pole = PatchworkAssets.Wood(new Color(0.6f, 0.42f, 0.28f));
             kit.Deco(PrimitiveType.Cylinder, flag + Vector3.up * 1.6f, new Vector3(0.09f, 1.6f, 0.09f), pole);
             kit.Deco(PrimitiveType.Sphere, flag + Vector3.up * 3.25f, Vector3.one * 0.2f, PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.75f));

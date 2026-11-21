@@ -374,6 +374,47 @@ namespace Patchwork
             DeepDetails(kit);
             RuinsDetails(kit);
             SkyDetails(kit);
+            LeftBehind(kit);
+        }
+
+        // Little signs that people come here: things visitors have left on the benches.
+        static void LeftBehind(LevelKit kit)
+        {
+            System.Func<Vector3, float, Vector3, Vector3> on = (bench, yaw, local) => bench + Quaternion.Euler(0f, yaw, 0f) * (local + Vector3.up * 0.55f);
+            var paper = PatchworkAssets.Felt(new Color(0.97f, 0.94f, 0.86f));
+            // A folded museum guide and a paper cup, by the armillary.
+            Vector3 b = new Vector3(-9.5f, 0f, -86f);
+            NoShadow(kit.Deco(PrimitiveType.Cube, on(b, 90f, new Vector3(-0.5f, 0.015f, 0.05f)), new Vector3(0.32f, 0.03f, 0.44f), paper, new Vector3(0f, 90f + 12f, 0f)));
+            NoShadow(kit.Deco(PrimitiveType.Cube, on(b, 90f, new Vector3(-0.5f, 0.032f, 0.05f)), new Vector3(0.24f, 0.005f, 0.12f), PatchworkAssets.Felt(new Color(0.35f, 0.5f, 0.75f)), new Vector3(0f, 90f + 12f, 0f)));
+            var cup = kit.Group("PaperCup", on(b, 90f, new Vector3(0.6f, 0f, 0.1f)));
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.09f, 0f), new Vector3(0.12f, 0.09f, 0.12f), paper, default(Vector3), cup);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.09f, 0f), new Vector3(0.125f, 0.035f, 0.125f), PatchworkAssets.Felt(new Color(0.75f, 0.45f, 0.3f)), default(Vector3), cup);
+            // A knitted scarf, half off the seat.
+            b = new Vector3(9.5f, 0f, -86f);
+            var scarf = PatchworkAssets.Knit(new Color(0.85f, 0.35f, 0.4f));
+            kit.Deco(PrimitiveType.Cube, on(b, 270f, new Vector3(0.2f, 0.03f, 0.05f)), new Vector3(0.9f, 0.06f, 0.22f), scarf, new Vector3(0f, 270f + 8f, 0f));
+            kit.Deco(PrimitiveType.Cube, on(b, 270f, new Vector3(0.62f, -0.22f, 0.34f)), new Vector3(0.22f, 0.5f, 0.05f), scarf, new Vector3(18f, 270f + 8f, 0f));
+            for (int i = 0; i < 4; i++)
+                kit.Deco(PrimitiveType.Cylinder, on(b, 270f, new Vector3(0.55f + i * 0.05f, -0.5f, 0.4f)), new Vector3(0.03f, 0.06f, 0.03f), scarf, default(Vector3));
+            // A straw sun hat.
+            b = new Vector3(-42f, 0f, -62f);
+            var straw = PatchworkAssets.Felt(new Color(0.93f, 0.82f, 0.55f));
+            kit.Deco(PrimitiveType.Cylinder, on(b, 270f, new Vector3(-0.4f, 0.015f, 0.05f)), new Vector3(0.62f, 0.015f, 0.62f), straw, default(Vector3));
+            kit.Deco(PrimitiveType.Sphere, on(b, 270f, new Vector3(-0.4f, 0.08f, 0.05f)), new Vector3(0.32f, 0.22f, 0.32f), straw, default(Vector3));
+            kit.Deco(PrimitiveType.Cylinder, on(b, 270f, new Vector3(-0.4f, 0.06f, 0.05f)), new Vector3(0.335f, 0.025f, 0.335f), PatchworkAssets.Felt(new Color(0.45f, 0.6f, 0.85f)), default(Vector3));
+            // A sketchbook, open, with a pencil.
+            b = new Vector3(-70f, 0f, -45.5f);
+            kit.Deco(PrimitiveType.Cube, on(b, 0f, new Vector3(0.45f, 0.02f, 0.05f)), new Vector3(0.6f, 0.04f, 0.4f), paper, new Vector3(0f, -6f, 0f));
+            kit.Deco(PrimitiveType.Cube, on(b, 0f, new Vector3(0.45f, 0.042f, 0.05f)), new Vector3(0.02f, 0.005f, 0.4f), PatchworkAssets.Felt(new Color(0.55f, 0.45f, 0.4f)), new Vector3(0f, -6f, 0f));
+            kit.Deco(PrimitiveType.Cylinder, on(b, 0f, new Vector3(0.62f, 0.06f, 0.08f)), new Vector3(0.025f, 0.12f, 0.025f), PatchworkAssets.Felt(new Color(0.98f, 0.8f, 0.3f)), new Vector3(90f, 30f, 0f));
+            // Out on the forecourt: a newspaper, and an umbrella leaning on the end.
+            b = new Vector3(24f, 0f, -127.5f);
+            kit.Deco(PrimitiveType.Cube, on(b, 180f, new Vector3(-0.3f, 0.02f, 0.05f)), new Vector3(0.5f, 0.04f, 0.34f), PatchworkAssets.Felt(new Color(0.88f, 0.87f, 0.84f)), new Vector3(0f, 180f - 10f, 0f));
+            var brolly = kit.Group("Umbrella", b + Quaternion.Euler(0f, 180f, 0f) * new Vector3(1.25f, 0f, 0.1f));
+            brolly.rotation = Quaternion.Euler(0f, 0f, -14f);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.45f, 0f), new Vector3(0.025f, 0.45f, 0.025f), PatchworkAssets.Felt(new Color(0.2f, 0.18f, 0.2f)), default(Vector3), brolly);
+            kit.Deco(PrimitiveType.Capsule, new Vector3(0f, 0.55f, 0f), new Vector3(0.14f, 0.32f, 0.14f), PatchworkAssets.Felt(new Color(0.25f, 0.35f, 0.6f)), default(Vector3), brolly);
+            kit.Deco(PrimitiveType.Capsule, new Vector3(0.05f, 0.94f, 0f), new Vector3(0.04f, 0.06f, 0.04f), PatchworkAssets.Felt(new Color(0.55f, 0.35f, 0.22f)), new Vector3(0f, 0f, 60f), brolly);
         }
 
         // The quay and the sea round it.

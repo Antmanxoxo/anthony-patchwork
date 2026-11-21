@@ -20,6 +20,8 @@ namespace Patchwork
 
         public Vector3 Velocity;
         public bool Grounded { get; private set; }
+        // Sliding down a slope too steep to stand on (see NoClimb).
+        public bool Sliding { get; private set; }
         public bool JustLanded { get; private set; }
         public bool JustJumped { get; private set; }
 
@@ -87,9 +89,15 @@ namespace Patchwork
         public Collider GroundCollider { get; private set; }
         Collider groundHit;
 
+        // The most upward-facing thing touched this move, to tell standing on a slope too steep
+        // to climb (a NoClimb surface, like Spindle Hill's sides) from standing on the ground.
+        float bestUp;
+        Collider bestUpCollider;
+
         void OnControllerColliderHit(ControllerColliderHit hit)
         {
             if (hit.normal.y > 0.6f) groundHit = hit.collider;
+            if (hit.normal.y > bestUp) { bestUp = hit.normal.y; bestUpCollider = hit.collider; }
             // Running into a ball or a toy block knocks it along.
             var rb = hit.rigidbody;
             if (rb == null || rb.isKinematic || hit.moveDirection.y < -0.5f) return;
@@ -267,9 +275,19 @@ namespace Patchwork
             // "speed after gravity x time" the jump height changed with the frame rate.
             bool wasGrounded = Grounded;
             groundHit = null;
+            bestUp = -1f;
+            bestUpCollider = null;
             Vector3 step = new Vector3(horizontal.x, (vyStart + vy) * 0.5f, horizontal.z) * dt;
             CollisionFlags flags = Controller.Move(step);
             Grounded = Controller.isGrounded;
+            Sliding = false;
+            // Too steep to stand on: he slides back down it, and can't jump up it.
+            if (Grounded && bestUp < 0.62f && bestUpCollider != null && bestUpCollider.GetComponent<NoClimb>() != null)
+            {
+                Grounded = false;
+                Sliding = true;
+                if (Velocity.y < -14f) Velocity = new Vector3(Velocity.x, -14f, Velocity.z);
+            }
             GroundCollider = Grounded ? groundHit : null;
 
             if ((flags & CollisionFlags.Above) != 0 && Velocity.y > 0f)
