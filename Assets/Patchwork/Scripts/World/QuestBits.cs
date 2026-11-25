@@ -69,10 +69,10 @@ namespace Patchwork
                 return new[] { "Shiver me stitches... is that me TREASURE? Ye dug it up!", "Every last button, all present and correct. Ye're a fine wee swab.",
                                "A deal's a deal. Here: one coil of loot. Lute. Whatever ye call it." };
             if (Met)
-                return new[] { "No treasure yet? Me ship's wrecked in a sea of sand, out east on the way to the Sky Hoops.", "Dig where the X be stitched. Then the string's yours." };
+                return new[] { "No treasure yet? Me ship's wrecked in a sea of sand, out east on the way to the Tilting Rings.", "Dig where the X be stitched. Then the string's yours." };
             return new[] { "Arr! Captain Buttonbeard, terror of the Inkwell Canal! Come for me LOOT, have ye?",
                            "...A LUTE string? Never heard of such a thing. This shiny coil be LOOT, and the only loot I've got since me ship ran aground.",
-                           "Tell ye what. Me real treasure's buried where the ship went down: wrecked in a sea of sand, out east on the way to the Sky Hoops.",
+                           "Tell ye what. Me real treasure's buried where the ship went down: wrecked in a sea of sand, out east on the way to the Tilting Rings.",
                            "Dig it up and bring it here, and ye can have the coil. Look for the X!" };
         }
 

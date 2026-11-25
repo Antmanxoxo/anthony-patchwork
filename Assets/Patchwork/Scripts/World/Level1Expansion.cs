@@ -8,7 +8,7 @@ namespace Patchwork
     //                                 bubbles lead north to the bridge into town
     //   The Bouncy Castle (north)    - an inflatable castle: the whole floor bounces; bounce up
     //                                 the corner towers to the keep for the crown
-    //   Sky Hoops (east)             - ride a tall updraft up as Wind and glide through eight
+    //   Tilting Rings (east)         - ride a tall updraft up as Wind and glide through eight
     //                                 felt hoops against the clock
     public static partial class Level1Builder
     {
@@ -163,7 +163,7 @@ namespace Patchwork
             kit.AddCameraZone(c + new Vector3(0f, 6f, 0f), new Vector3(22f, 14f, 18f), 3f, 6f);
         }
 
-        // ---------------------------------------------------------------- Sky Hoops
+        // ---------------------------------------------------------------- Tilting Rings (Sky Hoops)
 
         // A tall spool tower with a big updraft on the east side. Step on its button, float up
         // as Wind and glide down through eight felt hoops before the clock runs out.
@@ -174,7 +174,7 @@ namespace Patchwork
             kit.SpoolTower(towerFeet + new Vector3(4.5f, 0f, 0f), 14f, threads);
             kit.Updraft(towerFeet, 22f, LevelKit.UpdraftStyle.Vent);
             var game = kit.Volume<SkyHoopChallenge>(towerFeet + new Vector3(-3.5f, 1f, -1f), new Vector3(1.8f, 2f, 1.8f), "SkyHoops");
-            game.Title = "Sky Hoops";
+            game.Title = "Tilting Rings";
             game.Duration = 50f;
             var btnRoot = kit.Group("SkyHoopsButton", towerFeet + new Vector3(-3.5f, 0f, -1f));
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.06f, 0f), new Vector3(1.6f, 0.06f, 1.6f), PatchworkAssets.Felt(new Color(0.99f, 0.95f, 0.88f)), default(Vector3), btnRoot);
@@ -199,12 +199,12 @@ namespace Patchwork
                 QuestCloud(kit, c, 3.2f);
                 kit.Updraft(c, heights[after + 1] - c.y + 4f, LevelKit.UpdraftStyle.Steam);
             }
-            kit.Hint(towerFeet + new Vector3(-3.5f, 1.5f, -3.5f), new Vector3(5f, 3f, 3f), "Sky Hoops",
-                "Step on the button, then float up the updraft as Wind and glide through all eight hoops before time runs out! Too low? Land on a rest cloud and ride its steam back up. Tap {Ability} for a gust if you're dropping too fast.", HintTheme.Wind);
+            kit.Hint(towerFeet + new Vector3(-3.5f, 1.5f, -3.5f), new Vector3(5f, 3f, 3f), "Tilting Rings",
+                "A knight's game, played in the sky. Step on the button, then float up the updraft as Wind and glide through all eight rings before time runs out! Too low? Land on a rest cloud and ride its steam back up. Tap {Ability} for a gust if you're dropping too fast.", HintTheme.Wind);
         }
     }
 
-    // The Sky Hoops race: glide through every hoop before the clock runs out.
+    // The Tilting Rings race: glide through every hoop before the clock runs out.
     public class SkyHoopChallenge : TimedChallenge
     {
         public readonly List<SkyHoop> Hoops = new List<SkyHoop>();
@@ -254,7 +254,8 @@ namespace Patchwork
         {
             var h = kit.Volume<SkyHoop>(pos, new Vector3(3.6f, 3.6f, 1.6f), "SkyHoop");
             h.Game = game;
-            h.off = PatchworkAssets.Felt(col);
+            // (A tilting ring: dull iron until you pass through, then gold.)
+            h.off = PatchworkAssets.Plain(Color.Lerp(new Color(0.35f, 0.34f, 0.4f), col, 0.25f), 0.6f);
             h.on = PatchworkAssets.Glow(new Color(1f, 0.85f, 0.35f), 1.2f);
             for (int k = 0; k < 18; k++)
             {
@@ -263,6 +264,13 @@ namespace Patchwork
                 b.localPosition = new Vector3(Mathf.Cos(a) * 2.1f, Mathf.Sin(a) * 2.1f, 0f);
                 b.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 h.beads.Add(b.GetComponent<Renderer>());
+            }
+            // Two ribbons in the ring's colour, streaming from the bottom.
+            var ribbon = PatchworkAssets.Felt(col);
+            for (int s = -1; s <= 1; s += 2)
+            {
+                var rb = kit.Deco(PrimitiveType.Cube, new Vector3(s * 0.35f, -2.9f, 0f), new Vector3(0.22f, 1.5f, 0.03f), ribbon, new Vector3(0f, 0f, s * 8f), h.transform);
+                rb.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
             var bob = h.gameObject.AddComponent<Spinner>();
             bob.Speed = 0f;

@@ -106,7 +106,7 @@ namespace Patchwork
             P.Add(new MapPin("Weathervane", new Vector3(0f, 0f, -72f)));
             P.Add(new MapPin("Landing Meadow", PodLanding, MapPin.Kind.Area));
             P.Add(new MapPin("Bouncy Castle", new Vector3(20f, 0f, 102f)));
-            P.Add(new MapPin("Sky Hoops", new Vector3(100f, 0f, -20f)));
+            P.Add(new MapPin("Tilting Rings", new Vector3(100f, 0f, -20f)));
             P.Add(new MapPin("Lute String", new Vector3(-73f, 0f, 32f), MapPin.Kind.Band, Level1Director.LuteId));
             P.Add(new MapPin("Valve Dew", Mill + new Vector3(2.6f, 0f, 0.6f), MapPin.Kind.Band, Level1Director.TrumpetId));
             P.Add(new MapPin("Wisp the Piper", new Vector3(1.4f, 0f, -71.2f), MapPin.Kind.Band, Level1Director.PiperId));

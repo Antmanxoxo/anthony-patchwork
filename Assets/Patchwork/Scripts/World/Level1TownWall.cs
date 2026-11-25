@@ -226,6 +226,34 @@ namespace Patchwork
             }
         }
 
+        // The village's colours, for bunting along the streets.
+        static readonly Color[] Heraldic =
+        {
+            new Color(0.82f, 0.3f, 0.3f), new Color(0.98f, 0.94f, 0.86f), new Color(0.3f, 0.45f, 0.72f), new Color(0.95f, 0.75f, 0.3f)
+        };
+
+        // A village well: a ring of stone, a little shingled roof on two posts, a winch and a bucket.
+        static void TownWell(LevelKit kit, Vector3 feet)
+        {
+            var g = kit.Group("Well", feet);
+            var stone = PatchworkAssets.Cobble(new Color(0.75f, 0.72f, 0.68f));
+            var wood = PatchworkAssets.Wood(TownKit.DarkWood);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.45f, 0f), new Vector3(1.7f, 0.45f, 1.7f), stone, default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.91f, 0f), new Vector3(1.85f, 0.04f, 1.85f), PatchworkAssets.Cobble(new Color(0.85f, 0.82f, 0.76f)), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 0.92f, 0f), new Vector3(1.3f, 0.02f, 1.3f), PatchworkAssets.Plain(new Color(0.15f, 0.2f, 0.32f), 0.3f), default(Vector3), g);
+            for (int s = -1; s <= 1; s += 2)
+                kit.Deco(PrimitiveType.Cube, new Vector3(s * 0.8f, 1.5f, 0f), new Vector3(0.14f, 1.3f, 0.14f), wood, default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.75f, 0f), new Vector3(0.12f, 0.8f, 0.12f), wood, new Vector3(0f, 0f, 90f), g);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0.95f, 1.6f, 0f), new Vector3(0.06f, 0.35f, 0.06f), PatchworkAssets.Plain(TownKit.Iron, 0.5f), default(Vector3), g);
+            var roof = PatchworkAssets.Shingle(new Color(0.68f, 0.35f, 0.27f));
+            for (int s = -1; s <= 1; s += 2)
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 2.35f, s * 0.42f), new Vector3(2f, 0.08f, 1f), roof, new Vector3(s * 35f, 0f, 0f), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0.2f, 1.2f, 0f), new Vector3(0.36f, 0.2f, 0.36f), PatchworkAssets.Planks(new Color(0.6f, 0.42f, 0.28f)), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0.2f, 1.6f, 0f), new Vector3(0.02f, 0.25f, 0.02f), PatchworkAssets.Felt(new Color(0.85f, 0.75f, 0.55f)), default(Vector3), g);
+            TownKit.Solid(kit, feet + Vector3.up * 0.5f, new Vector3(1.6f, 1f, 1.6f), 0f);
+            ClearGrass(feet, 1.2f);
+        }
+
         // A cone, point up, for the tower roofs.
         static void TowerCone(LevelKit kit, Transform parent, Vector3 localBase, float radius, float height, Material mat)
         {

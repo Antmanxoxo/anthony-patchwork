@@ -896,6 +896,12 @@ Stuff I need to remember about how Patchwork is put together.
   - The barracks' own north wall block was removed (the town wall replaces it). The ravine hedges are gone, and the canal railings now only run outside the wall.
 - **Medieval street style (TownKit).** `MakeHouse` has a jettied beam band at every floor line and no gutters. `StreetLamp` builds a wooden lantern post, with its light at the lantern. Level 1's `Walls`/`Roofs` palettes are medieval.
 
+- **Village re-themes.**
+  - `Carousel` uses `TowerCone` for its canopy, plus pennant flaps, a top flag and caparisons and lances on the horses.
+  - `BubbleWand` builds the cauldron: the ring for `BubbleBlower` is 3.1 m up, and the sponge is now a plank "Lookout" on a pole with the same Heartstring id `L1_hs_bubbles`.
+  - `SkyHoop.Create` beads use iron `Plain` (gold when passed) plus two ribbons. The challenge title is "Tilting Rings".
+  - `Heraldic` colours (Level1TownWall) are used for street bunting. `TownWell` replaces `PostBox`. `PostBox`, `PennyFarthing` and `StringLights` are no longer called.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

@@ -4,6 +4,15 @@ A dated record of every change to Patchwork, newest first. Each day lists the ch
 
 ## November 25, 2026
 
+### Toybox Town becomes a walled medieval village (part two)
+- **A jousting carousel.** Its roof is a tournament pavilion's: a pointed canopy with a blue band, red and white pennant flaps round the edge and a flag on top. The horses wear caparisons in their knights' colours, with little shields and striped lances.
+- **The bubble wand is now the Bubbling Cauldron:** a great iron pot on three legs over a little fire, with a shelf of jars beside it. The bubbles and the climb work the same. At the top is a lookout platform on a pole, with the same Heartstring (now called "The Cauldron's Lookout").
+- **Sky Hoops are now the Tilting Rings,** a knight's game played in the sky. The rings are dull iron until you pass through them, with ribbons streaming from each one. The map, the hint and Captain Buttonbeard all use the new name.
+- **Medieval swaps in the streets:**
+  - heraldic bunting instead of the fairy lights
+  - a village well (stone ring, little shingled roof, winch and bucket) instead of the pillar post box
+  - a cart instead of the penny-farthing
+
 ### Toybox Town becomes a walled medieval village (part one)
 - **A town wall round the middle of town**, like a toy fort from a toybox:
   - cream stone blocks with red and blue painted battlements you can walk along the top of

@@ -624,7 +624,7 @@ namespace Patchwork
             MarketStall(kit, new Vector3(16.5f, 0.06f, 11f), -90f, new Color(0.3f, 0.5f, 0.85f), 1);
 
             // A red pillar post box, a signpost pointing to each part of town, flower pots by the doors.
-            PostBox(kit, new Vector3(4.2f, 0.06f, -17.6f));
+            TownWell(kit, new Vector3(4.2f, 0.06f, -17.6f));
             Signpost(kit, new Vector3(-4.4f, 0.06f, -17.4f));
             var houses = new[] { new Vector4(-12f, 27f, 180f, 8f), new Vector4(12f, 27f, 180f, 8f), new Vector4(-24f, 13f, 90f, 9f), new Vector4(-24f, -14f, 90f, 9f),
                                  new Vector4(24f, 13f, -90f, 9f), new Vector4(24f, -13f, -90f, 9f), new Vector4(-13f, -26f, 0f, 8f), new Vector4(13f, -26f, 0f, 8f) };
@@ -641,7 +641,7 @@ namespace Patchwork
                 if (i % 2 == 0) Barrel(kit, c + r * new Vector3(-3.8f, 0f, h.w * 0.5f + 0.7f), i * 40f);
             }
             // A penny-farthing leaning by the bakery.
-            PennyFarthing(kit, new Vector3(-16.6f, 0f, 22.4f), 90f);
+            TownKit.ToyCart(kit, new Vector3(-16.6f, 0.06f, 22.4f), 90f);
             // Puddles on the cobbles.
             var puddle = PatchworkAssets.Water(new Color(0.55f, 0.7f, 0.88f));
             kit.Deco(PrimitiveType.Cylinder, new Vector3(-2.5f, 0.065f, -28f), new Vector3(1.6f, 0.005f, 1.1f), puddle);
@@ -765,10 +765,10 @@ namespace Patchwork
 
         static void StreetDressing(LevelKit kit)
         {
-            StringLights(kit, new Vector3(-8.4f, 5.4f, -23.5f), new Vector3(8.4f, 5.4f, -23.5f), 0.7f);
-            StringLights(kit, new Vector3(-8.4f, 5.4f, -28.5f), new Vector3(8.4f, 5.4f, -28.5f), 0.7f);
-            StringLights(kit, new Vector3(-28.4f, 5.4f, 8.05f), new Vector3(-28.4f, 5.4f, -8.95f), 0.8f);
-            StringLights(kit, new Vector3(19.6f, 5.4f, 8.05f), new Vector3(19.6f, 5.4f, -8.05f), 0.8f);
+            kit.Bunting(new Vector3(-8.4f, 5.4f, -23.5f), new Vector3(8.4f, 5.4f, -23.5f), Heraldic);   // (heraldic bunting, not fairy lights, in a medieval street)
+            kit.Bunting(new Vector3(-8.4f, 5.4f, -28.5f), new Vector3(8.4f, 5.4f, -28.5f), Heraldic);   // (heraldic bunting, not fairy lights, in a medieval street)
+            kit.Bunting(new Vector3(-28.4f, 5.4f, 8.05f), new Vector3(-28.4f, 5.4f, -8.95f), Heraldic);   // (heraldic bunting, not fairy lights, in a medieval street)
+            kit.Bunting(new Vector3(19.6f, 5.4f, 8.05f), new Vector3(19.6f, 5.4f, -8.05f), Heraldic);   // (heraldic bunting, not fairy lights, in a medieval street)
 
             // Hedges round the barracks. (Along the ravine and the canal is the town wall now.)
             Hedge(kit, new Vector3(-17f, 0f, 33f), new Vector3(-17f, 0f, 57f));
@@ -1317,7 +1317,7 @@ namespace Patchwork
             pins.Add(new MapPin("Xylophone Bridge", new Vector3((CanalWest + CanalEast) * 0.5f, 0f, 60f)));
             pins.Add(new MapPin("Carousel", new Vector3(-22f, 0f, 65f)));
             pins.Add(new MapPin("Domino Run", new Vector3(24f, 0f, 44f)));
-            pins.Add(new MapPin("Bubble Wand", new Vector3(4f, 0f, 80f)));
+            pins.Add(new MapPin("Bubbling Cauldron", new Vector3(4f, 0f, 80f)));
         }
 
         // Giant dominoes in a wiggly line up the east side of town. Walk into the first one to
@@ -1395,28 +1395,39 @@ namespace Patchwork
                 kit.Deco(PrimitiveType.Cylinder, new Vector3(s.x, y + s.y, -0.42f), new Vector3(0.16f, 0.02f, 0.16f), m, new Vector3(90f, 0f, 0f), pivot);
         }
 
-        // A giant bubble wand on a stand by a big bottle of bubble mix. It keeps blowing bubbles
+        // The bubbling cauldron (it used to be a giant bubble wand): a great iron pot over a fire,
+        // with a shelf of jars beside it. It keeps blowing bubbles
         // that float up; hop from bubble to bubble to reach the sponge up high.
         static void BubbleWand(LevelKit kit, Vector3 feet)
         {
-            var wood = PatchworkAssets.Wood(new Color(0.85f, 0.55f, 0.65f));
-            kit.Deco(PrimitiveType.Cylinder, feet + new Vector3(0f, 1.2f, 0f), new Vector3(0.2f, 1.2f, 0.2f), wood);
-            kit.Deco(PrimitiveType.Cylinder, feet + new Vector3(0f, 0.08f, 0f), new Vector3(1.2f, 0.08f, 1.2f), wood);
-            Solid(kit, feet + Vector3.up * 1.2f, new Vector3(0.35f, 2.4f, 0.35f));
-            Vector3 ring = feet + new Vector3(0f, 2.9f, 0f);
-            var loop = PatchworkAssets.Plain(new Color(0.98f, 0.5f, 0.7f), 0.7f);
-            for (int i = 0; i < 20; i++)
+            // A great iron cauldron on three legs over a little fire, bubbling over.
+            var iron = PatchworkAssets.Plain(new Color(0.22f, 0.21f, 0.25f), 0.45f);
+            for (int l = 0; l < 3; l++)
             {
-                float a = i / 20f * Mathf.PI * 2f;
-                kit.Deco(PrimitiveType.Sphere, ring + new Vector3(Mathf.Cos(a) * 0.7f, Mathf.Sin(a) * 0.7f, 0f), Vector3.one * 0.18f, loop);
+                float la = l * Mathf.PI * 2f / 3f;
+                kit.Deco(PrimitiveType.Cylinder, feet + new Vector3(Mathf.Cos(la) * 0.9f, 0.35f, Mathf.Sin(la) * 0.9f), new Vector3(0.14f, 0.35f, 0.14f), iron);
             }
-            kit.Deco(PrimitiveType.Cylinder, ring + new Vector3(0f, 0f, 0.02f), new Vector3(1.3f, 0.005f, 1.3f), PatchworkAssets.Bubble(new Color(0.85f, 0.9f, 1f, 0.3f)), new Vector3(90f, 0f, 0f));
-            // The bottle of bubble mix.
-            Vector3 bottle = feet + new Vector3(-1.8f, 0f, 0.6f);
-            kit.Deco(PrimitiveType.Cylinder, bottle + Vector3.up * 0.9f, new Vector3(1f, 0.9f, 1f), PatchworkAssets.Bubble(new Color(0.8f, 0.9f, 1f, 0.45f)));
-            kit.Deco(PrimitiveType.Cylinder, bottle + Vector3.up * 0.7f, new Vector3(0.9f, 0.68f, 0.9f), PatchworkAssets.Glow(new Color(1f, 0.6f, 0.8f), 0.25f));
-            kit.Deco(PrimitiveType.Cylinder, bottle + Vector3.up * 1.95f, new Vector3(0.6f, 0.15f, 0.6f), PatchworkAssets.Plain(new Color(0.4f, 0.75f, 0.95f), 0.6f));
-            Solid(kit, bottle + Vector3.up * 1f, new Vector3(1f, 2f, 1f));
+            kit.Deco(PrimitiveType.Sphere, feet + new Vector3(0f, 1.35f, 0f), new Vector3(2.4f, 1.9f, 2.4f), iron);
+            kit.Deco(PrimitiveType.Cylinder, feet + new Vector3(0f, 2.2f, 0f), new Vector3(1.9f, 0.1f, 1.9f), iron);
+            kit.Deco(PrimitiveType.Cylinder, feet + new Vector3(0f, 2.24f, 0f), new Vector3(1.7f, 0.04f, 1.7f), PatchworkAssets.Glow(new Color(0.75f, 0.55f, 0.95f), 0.6f));
+            for (int k = 0; k < 6; k++)
+            {
+                float ka = k * 1.05f;
+                kit.Deco(PrimitiveType.Sphere, feet + new Vector3(Mathf.Cos(ka) * 0.55f, 2.3f, Mathf.Sin(ka) * 0.55f), Vector3.one * (0.25f + (k % 3) * 0.08f), PatchworkAssets.Bubble(new Color(0.85f, 0.8f, 1f, 0.45f)));
+            }
+            // The fire: logs and felt flames.
+            for (int f = 0; f < 3; f++)
+                kit.Deco(PrimitiveType.Cylinder, feet + new Vector3(0f, 0.12f, 0f), new Vector3(0.18f, 0.55f, 0.18f), PatchworkAssets.Wood(new Color(0.45f, 0.3f, 0.2f)), new Vector3(90f, f * 60f, 0f));
+            kit.Deco(PrimitiveType.Sphere, feet + new Vector3(0f, 0.3f, 0f), new Vector3(0.5f, 0.6f, 0.5f), PatchworkAssets.Glow(new Color(1f, 0.55f, 0.25f), 1.2f));
+            Solid(kit, feet + Vector3.up * 1.2f, new Vector3(2.2f, 2.4f, 2.2f));
+            Vector3 ring = feet + new Vector3(0f, 3.1f, 0f);
+            // The cauldron keeper's shelf of jars beside it.
+            Vector3 shelf = feet + new Vector3(-2.4f, 0f, 0.6f);
+            kit.Deco(PrimitiveType.Cube, shelf + Vector3.up * 0.9f, new Vector3(0.9f, 1.8f, 0.5f), PatchworkAssets.Planks(new Color(0.55f, 0.38f, 0.25f)));
+            Color[] jars = { new Color(0.75f, 0.55f, 0.95f, 0.6f), new Color(0.55f, 0.85f, 0.6f, 0.6f), new Color(1f, 0.6f, 0.4f, 0.6f) };
+            for (int k = 0; k < 3; k++)
+                kit.Deco(PrimitiveType.Cylinder, shelf + new Vector3(-0.25f + k * 0.25f, 1.95f, 0f), new Vector3(0.18f, 0.14f, 0.18f), PatchworkAssets.Bubble(jars[k]));
+            Solid(kit, shelf + Vector3.up * 0.9f, new Vector3(0.9f, 1.8f, 0.5f));
             ClearGrass(feet, 1.4f);
             // The bubbles.
             var blower = kit.Group("BubbleBlower", feet).gameObject.AddComponent<BubbleBlower>();
@@ -1432,14 +1443,15 @@ namespace Patchwork
                 pool[i] = b.transform;
             }
             blower.Setup(ring, pool);
-            // The sponge up top, with a Heartstring on it.
+            // Up top, where the bubbles rise: a lookout platform on a pole, with a Heartstring on it.
             Vector3 sponge = feet + new Vector3(2.8f, 12.4f, 2f);
-            kit.Block(sponge, new Vector3(3f, 1.1f, 2f), new Color(1f, 0.85f, 0.35f), "Sponge", PatchworkAssets.Felt(new Color(1f, 0.85f, 0.35f)));
-            for (int i = 0; i < 9; i++)
-                kit.Deco(PrimitiveType.Sphere, sponge + new Vector3(-1.2f + (i % 5) * 0.6f, (i % 2 == 0 ? 0.3f : -0.2f), -1.01f), new Vector3(0.22f, 0.18f, 0.04f), PatchworkAssets.Felt(new Color(0.85f, 0.65f, 0.2f)));
-            MakeHeartstring(kit, "L1_hs_bubbles", "Bubble Bath", sponge + new Vector3(0f, 1.8f, 0f), false);
+            kit.Block(sponge, new Vector3(3f, 0.5f, 2f), new Color(0.72f, 0.52f, 0.34f), "Lookout", PatchworkAssets.Planks(new Color(0.72f, 0.52f, 0.34f)));
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(sponge.x, sponge.y * 0.5f, sponge.z), new Vector3(0.3f, sponge.y * 0.5f - 0.2f, 0.3f), PatchworkAssets.Wood(new Color(0.45f, 0.32f, 0.22f)));
+            Solid(kit, new Vector3(sponge.x, sponge.y * 0.5f, sponge.z), new Vector3(0.35f, sponge.y - 0.6f, 0.35f));
+            kit.Bunting(sponge + new Vector3(-1.5f, 0.6f, -1f), sponge + new Vector3(1.5f, 0.6f, -1f), LevelKit.Palette.Quilt);
+            MakeHeartstring(kit, "L1_hs_bubbles", "The Cauldron's Lookout", sponge + new Vector3(0f, 1.5f, 0f), false);
             kit.ThreadLine(feet + new Vector3(0.3f, 4.5f, 0.3f), feet + new Vector3(1.8f, 10.5f, 1.4f), 4);
-            kit.Hint(feet + new Vector3(0f, 1.5f, -2.5f), new Vector3(4f, 3f, 3f), "Bubble Wand", "Land on a bubble to bounce off it. Hop from bubble to bubble to reach the sponge!");
+            kit.Hint(feet + new Vector3(0f, 1.5f, -2.5f), new Vector3(4f, 3f, 3f), "The Bubbling Cauldron", "Land on a bubble to bounce off it. Hop from bubble to bubble up to the lookout!");
         }
 
         // A set of wind chimes on a little bracket. Brush through them to make them ring.
@@ -1581,6 +1593,7 @@ namespace Patchwork
         }
 
         // A merry-go-round turning slowly, its horses rising and falling.
+        // A jousting carousel: knights' horses in their colours under a tournament pavilion's roof.
         static void Carousel(LevelKit kit, Vector3 c)
         {
             var cream = PatchworkAssets.Plain(new Color(0.97f, 0.93f, 0.85f), 0.6f);
@@ -1593,14 +1606,20 @@ namespace Patchwork
             var red = PatchworkAssets.Felt(new Color(0.88f, 0.3f, 0.35f));
             var white = PatchworkAssets.Felt(new Color(0.98f, 0.95f, 0.9f));
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 4.9f, 0f), new Vector3(9.4f, 0.12f, 9.4f), red, default(Vector3), spin);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 5.3f, 0f), new Vector3(7.2f, 0.3f, 7.2f), white, default(Vector3), spin);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 5.8f, 0f), new Vector3(4.6f, 0.25f, 4.6f), red, default(Vector3), spin);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 6.2f, 0f), new Vector3(2f, 0.2f, 2f), white, default(Vector3), spin);
-            kit.Deco(PrimitiveType.Sphere, new Vector3(0f, 6.6f, 0f), Vector3.one * 0.6f, gold, default(Vector3), spin);
+            // A tournament pavilion's roof: a pointed canopy with a band of blue, pennant flaps
+            // round the edge in red and white, and a flag on top.
+            TowerCone(kit, spin, new Vector3(0f, 4.96f, 0f), 4.8f, 2.6f, white);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 5.05f, 0f), new Vector3(9.2f, 0.1f, 9.2f), PatchworkAssets.Felt(new Color(0.3f, 0.45f, 0.72f)), default(Vector3), spin);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 7.9f, 0f), new Vector3(0.08f, 0.7f, 0.08f), gold, default(Vector3), spin);
+            var topFlag = kit.Group("CarouselFlag", c + new Vector3(0f, 8.3f, 0f));
+            topFlag.SetParent(spin, true);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0.5f, 0f, 0f), new Vector3(1f, 0.45f, 0.04f), red, default(Vector3), topFlag);
+            topFlag.gameObject.AddComponent<FlagWave>();
             for (int i = 0; i < 16; i++)
             {
                 float a = i / 16f * Mathf.PI * 2f;
-                kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 4.7f, 4.75f, Mathf.Sin(a) * 4.7f), new Vector3(0.6f, 0.4f, 0.6f), i % 2 == 0 ? red : white, default(Vector3), spin);
+                var flap = kit.Deco(PrimitiveType.Cube, new Vector3(Mathf.Cos(a) * 4.72f, 4.55f, Mathf.Sin(a) * 4.72f), new Vector3(1.6f, 0.62f, 0.05f), i % 2 == 0 ? red : white, new Vector3(0f, -a * Mathf.Rad2Deg + 90f, 0f), spin);
+                flap.name = "Pennant";
                 kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * 4.75f, 5f, Mathf.Sin(a) * 4.75f), Vector3.one * 0.16f, PatchworkAssets.Glow(new Color(1f, 0.85f, 0.55f), 1.2f), default(Vector3), spin);
             }
             Color[] horses = { new Color(0.98f, 0.95f, 0.9f), new Color(0.75f, 0.55f, 0.4f), new Color(0.6f, 0.62f, 0.68f), new Color(0.98f, 0.85f, 0.6f), new Color(0.8f, 0.75f, 0.9f), new Color(0.98f, 0.8f, 0.85f) };
@@ -1617,6 +1636,15 @@ namespace Patchwork
                 kit.Deco(PrimitiveType.Capsule, Vector3.zero, new Vector3(0.45f, 0.6f, 0.45f), coat, new Vector3(90f, 0f, 0f), horse);
                 kit.Deco(PrimitiveType.Capsule, new Vector3(0f, 0.45f, 0.55f), new Vector3(0.28f, 0.35f, 0.28f), coat, new Vector3(25f, 0f, 0f), horse);
                 kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.25f, -0.05f), new Vector3(0.47f, 0.08f, 0.45f), PatchworkAssets.Felt(FlowerColors[i % FlowerColors.Length]), default(Vector3), horse);
+                // Dressed for the tournament: a caparison in its knight's colours, a little shield
+                // on its side, and a striped lance pointing the way round.
+                Color[] heraldry = { new Color(0.82f, 0.3f, 0.3f), new Color(0.3f, 0.45f, 0.72f), new Color(0.95f, 0.75f, 0.3f) };
+                var cloth = PatchworkAssets.Felt(heraldry[i % heraldry.Length]);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, -0.08f, -0.05f), new Vector3(0.56f, 0.5f, 0.95f), cloth, default(Vector3), horse);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, -0.36f, -0.05f), new Vector3(0.6f, 0.08f, 1f), PatchworkAssets.Felt(LevelKit.Palette.Gold), default(Vector3), horse);
+                kit.Deco(PrimitiveType.Cube, new Vector3(-0.3f, 0.02f, -0.05f), new Vector3(0.04f, 0.34f, 0.3f), PatchworkAssets.Felt(heraldry[(i + 1) % heraldry.Length]), default(Vector3), horse);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0.3f, 0.42f, 0.55f), new Vector3(0.07f, 0.75f, 0.07f), PatchworkAssets.Felt(new Color(0.98f, 0.95f, 0.9f)), new Vector3(80f, 0f, 0f), horse);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0.3f, 0.43f, 0.75f), new Vector3(0.08f, 0.08f, 0.08f), cloth, new Vector3(80f, 0f, 0f), horse);
                 for (int l = 0; l < 4; l++)
                     kit.Deco(PrimitiveType.Cylinder, new Vector3((l % 2 == 0 ? -0.12f : 0.12f), -0.4f, (l < 2 ? -0.35f : 0.35f)), new Vector3(0.08f, 0.25f, 0.08f), coat, new Vector3((l < 2 ? -20f : 30f), 0f, 0f), horse);
                 var bob = horse.gameObject.AddComponent<Spinner>();
