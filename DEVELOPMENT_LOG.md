@@ -2,6 +2,14 @@
 
 A dated record of every change to Patchwork, newest first. Each day lists the changes made that day.
 
+## November 25, 2026
+
+### A new home for the project page
+- The project page has been redesigned with illustrated artwork made in the game's own fonts and colours: a quilted title banner, cards for Patch's three forms, postcards from each place, a Fray panel and stitched labels for each section.
+- New write-ups for the story, the places, the cast and the features, with dated highlights of recent work.
+- Controls and setup steps are tucked into fold-out sections at the bottom.
+- The development log is now grouped by date, and the project status page has been brought up to date.
+
 ## November 20, 2026
 
 ### Spindle Hill is a real hill now

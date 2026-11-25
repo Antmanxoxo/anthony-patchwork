@@ -3,199 +3,190 @@
 </p>
 
 <p align="center">
-  <b>A stitched-together little hero. A world coming apart at the seams. A needle, some thread, and a lot of heart.</b>
+  <i>A small woollen hero, a world coming apart at the seams, and a great deal of thread.</i>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Unity-6000.6.7f1-222222?logo=unity&logoColor=white" alt="Unity 6">
-  <img src="https://img.shields.io/badge/URP-render%20pipeline-5b8def" alt="URP">
-  <img src="https://img.shields.io/badge/C%23-game%20code-7a4fb5" alt="C#">
-  <img src="https://img.shields.io/badge/Windows-playable%20build-0a7bbb" alt="Windows">
-  <img src="https://img.shields.io/badge/status-in%20development-e8a33d" alt="In development">
+  <img src="https://img.shields.io/badge/Unity-6000.6.7f1-3b2c45?style=flat-square&logo=unity&logoColor=white" alt="Unity 6">
+  <img src="https://img.shields.io/badge/URP-render%20pipeline-6aa6cf?style=flat-square" alt="URP">
+  <img src="https://img.shields.io/badge/C%23-game%20code-9b7fc4?style=flat-square" alt="C#">
+  <img src="https://img.shields.io/badge/Windows-playable-8fbf7a?style=flat-square" alt="Windows">
+  <img src="https://img.shields.io/badge/status-in%20the%20workshop-e0795f?style=flat-square" alt="In development">
 </p>
 
 <p align="center">
-  <a href="#-meet-patch">Meet Patch</a> •
-  <a href="#%EF%B8%8F-places-to-explore">Places</a> •
-  <a href="#-who-youll-meet">Characters</a> •
-  <a href="#%EF%B8%8F-the-fray">The Fray</a> •
-  <a href="#-things-to-do">Things to do</a> •
-  <a href="#-recent-updates">Updates</a>
+  <a href="#story"><b>Story</b></a> &nbsp;·&nbsp;
+  <a href="#patch"><b>Patch</b></a> &nbsp;·&nbsp;
+  <a href="#places"><b>Places</b></a> &nbsp;·&nbsp;
+  <a href="#cast"><b>Cast</b></a> &nbsp;·&nbsp;
+  <a href="#features"><b>Features</b></a> &nbsp;·&nbsp;
+  <a href="#updates"><b>Updates</b></a>
 </p>
 
-<img src=".github/assets/stitch.svg" width="100%" alt="">
-
-> *Once upon a time, in a world sewn together from felt and buttons and thread, something began to
-> pull at the seams. Stitch by stitch, colour by colour, the Fray was unpicking everything.
-> And the only one small enough, and stubborn enough, to sew it all back together... was Patch.*
-
-**Patchwork** is a 3D platformer where every blade of grass is knitted, every tree is a pompom and
-every cutscene is read aloud like a bedtime story. You play Patch, a little toy who can turn into
-water, yarn or wind. Each place you visit has been spoiled by the Fray, and it's up to you to mend it.
-
-<img src=".github/assets/stitch.svg" width="100%" alt="">
-
-## 🧵 Meet Patch
-
-Patch has three forms, and he can switch between them at any moment, even in mid-air.
-
-<table>
-  <tr>
-    <th width="33%">💧 Water</th>
-    <th width="33%">🧶 Yarn</th>
-    <th width="33%">🌬️ Wind</th>
-  </tr>
-  <tr>
-    <td valign="top">A wobbly, jiggly bubble. Squeezes through drain grates, swims through deep water and rides fountains high into the air.</td>
-    <td valign="top">The knitted toy himself, with a yarn-ball head, button eyes and a stitched suit. Throws his yarn arm at anchors and lanterns to swing across huge gaps.</td>
-    <td valign="top">A cheerful little cloud. Glides on the breeze, drifts down slowly and gets one big gust of lift every jump.</td>
-  </tr>
-</table>
-
-Open the **Form Wheel** and time slows right down while you pick. Every form can wear the
-dyes, hats and outfits you buy along the way.
-
-## 🗺️ Places to explore
-
-<details open>
-<summary><b>🏠 The Pod</b>: your home in the paper sky</summary>
 <br>
 
-A cosy cardboard pod floating among paper clouds. Pick up the giant controller under the window
-and turn the patchwork planet outside to choose where to go next.
+<a name="story"></a>
+<img src=".github/assets/h-story.svg" alt="The story so far" width="100%">
 
-- **The Store**: spend the points you've earned on dyes, hats and outfits, with its own little shop song
-- **The Wardrobe**: try everything on and see how it looks on every form
-- **The Trophy Room**: souvenirs from your travels, and a Merit cabinet that fills as you go
+> The world was sewn together a long time ago, and for the most part it has held.
+>
+> Lately, though, something has been pulling at the seams. Colours are draining out of things.
+> A town band has lost its instruments on the morning of a wedding. A museum has mislaid an
+> entire night.
+>
+> Someone ought to do something about it. As luck would have it, someone small, woollen and
+> extremely determined has volunteered.
+
+**Patchwork** is a 3D platformer in which the grass is knitted, the trees are pompoms, the sky is
+cardboard and every cutscene is read aloud like a bedtime story. You play Patch, a toy who can
+become water, yarn or wind, and the job is simple: go wherever the Fray has been, and mend it.
+
+<br>
+
+<a name="patch"></a>
+<img src=".github/assets/h-patch.svg" alt="Meet Patch" width="100%">
+
+<p align="center">
+  <img src=".github/assets/forms.svg" alt="Patch's three forms. Water squeezes through drain grates, swims and rides fountains. Yarn swings from anchors and lanterns. Wind glides, drifts and gusts upward." width="100%">
+</p>
+
+Patch can change at any moment, mid-jump included. Hold the **Form Wheel** and the world slows
+down politely while he decides. Whatever he's wearing, whether dye, hat or entire outfit, comes
+along for the ride in every form.
+
+<br>
+
+<a name="places"></a>
+<img src=".github/assets/h-places.svg" alt="Places to go" width="100%">
+
+<p align="center">
+  <img src=".github/assets/places.svg" alt="Postcards from the Pod, Toybox Town and the Oceanic Museum" width="100%">
+</p>
+
+<details open>
+<summary><b>The Pod</b> &nbsp;<sub>HUB</sub></summary>
+<br>
+
+A cardboard pod drifting through a paper sky. Pick up the giant controller under the window and
+turn the patchwork planet outside to choose where to go next. It's also home to:
+
+- **The Store**, where your points become dyes, hats and outfits (it has its own song)
+- **The Wardrobe**, for trying it all on, in every form
+- **The Trophy Room**, for souvenirs, with a Merit cabinet that fills up as you go
 </details>
 
 <details>
-<summary><b>🎪 Toybox Town</b>: <i>Chapter One: The Wedding That Nearly Wasn't</i></summary>
+<summary><b>Toybox Town</b> &nbsp;<sub>CHAPTER ONE · THE WEDDING THAT NEARLY WASN'T</sub></summary>
 <br>
 
-It's the Mayor's wedding day, and the Fray has scattered the town band. No band, no music.
-No music, no wedding. Find the missing band pieces and bring the town back to life.
+The Mayor is getting married today. The band, however, has been scattered across town by the
+Fray, and a wedding without music is just a lot of people standing about in hats.
 
-| Around town | Out in the wild |
+| Around town | Further out |
 |---|---|
-| Town Square and the Bandstand | **Spindle Hill**, a towering knitted hill with its own autumn wood |
+| Town Square and the Bandstand | **Spindle Hill**, sixteen metres of knitted hillside and its own autumn wood |
 | The Clock Tower and Chimney Lane | The Whispering Wood and Moonglow Glade |
 | The Dye Works and the Toy Workshop | Thread Ravine and the Tape-Measure Bridge |
 | Inkwell Canal and the Duck Pond | Pom-Pom Grove and the Button Orchard |
 | The Tea House and Picnic Park | Wildflower Meadow and Patchwork Farm |
 | The Toy Barracks and the Toybox Express | The Wishing Willow and Toadstool Dell |
 
-**Things to play with:** the Xylophone Bridge, the carousel, the domino run, a giant bubble wand,
-a bouncy castle, sky hoops, paper boats, wind chimes and a whole lot more.
+Also present: a xylophone bridge, a carousel, a domino run, a giant bubble wand that never stops blowing,
+a bouncy castle, sky hoops, paper boats, and more things to poke than is strictly necessary.
 </details>
 
 <details>
-<summary><b>🐋 The Oceanic Museum</b>: <i>Chapter Two: The Night Glass</i></summary>
+<summary><b>The Oceanic Museum</b> &nbsp;<sub>CHAPTER TWO · THE NIGHT GLASS</sub></summary>
 <br>
 
-A grand museum after closing time, where the exhibits are far from asleep. Help the night
-watchman, piece the Night Glass back together, and keep one step ahead of the Fray until
-morning.
+A grand museum after closing time. The visitors have gone home; the exhibits have not gone to
+sleep. Help the night watchman put the Night Glass back together before morning, and try not to
+let the Fray into the good rooms.
 
 | The halls | The deep |
 |---|---|
 | The Forecourt and the Grand Atrium | The Kelp Galleries and the Coral Nursery |
-| The Hall of Deep Time and its Tyrannosaurus | The Deepsea Tunnel and the Lantern Deep |
-| The Hall of Arms and the Longship | The Sunken Ruins and the Drowned Temple |
+| The Hall of Deep Time, and its Tyrannosaurus | The Deepsea Tunnel and the Lantern Deep |
+| The Hall of Arms, and its Longship | The Sunken Ruins and the Drowned Temple |
 | The Star Corridor and the Observatory | The Frozen Sea, the Mangrove and the Wreck |
 | The Keepers' Room and the Undercroft | The Great Window and the Sea Gate |
 
-**Things to do:** the Curator's Audit, a Museum Passport to stamp, hands-on exhibits, a whale-song
-gramophone, nine secrets hidden in the Night Glass, and a certain gang of dust-sheet ghosts.
+On the itinerary: the Curator's Audit, a Museum Passport to stamp, five exhibits you're actually
+allowed to touch, a whale who sings to herself every half minute, a Long Gallery best walked
+through quickly, and five ghosts who are really just dust sheets with ambition.
 </details>
 
-## 🎭 Who you'll meet
+<br>
 
-| | |
-|---|---|
-| 📖 **The Storyteller** | Narrates the whole adventure, page by page, with a fully voiced script. |
-| 🎩 **The Mayor and his bride** | About to be married, if only the band would turn up. |
-| 🎺 **The town band** | Lute, trumpet, drum and Wisp the Piper, scattered all over town. |
-| 🏴‍☠️ **Captain Buttonbeard** | A pirate camped on top of Spindle Hill, with treasure on his mind. |
-| 🎁 **Lady Lacewing** | Has lost her presents, and has a hint for every one of them. |
-| 🕯️ **Wick** | The museum's night watchman, with his sentry box, his keys and his mug of tea. |
-| 🎓 **Professor Hoot and Professor Plume** | The museum's two professors, full of hints and tasks. |
+<p align="center">
+  <img src=".github/assets/fray.svg" alt="The Fray" width="100%">
+</p>
 
-## 🕸️ The Fray
+The Fray is a grey, tangling sort of nothing that drains the colour out of whatever it touches.
+Its creatures are knotted together from loose ends: **Snarl Knots**, **Tangle Hoppers**, rollers,
+and lantern lurkers waiting in the deep. They can be stomped, dashed through or given a firm
+three-hit talking-to. Somewhere behind all of it is the **Unravelled King**: tall, needle-thin, and wearing a
+thimble for a hat.
 
-The Fray is a grey, tangling force that drains the colour out of everything it touches. Its
-creatures are knotted out of loose threads: Snarl Knots, Tangle Hoppers, rollers, and lantern
-lurkers waiting in the deep. Stomp them, dash through them, or land a three-hit strike combo.
+<br>
 
-Behind it all is its mastermind, **the Unravelled King**.
+<a name="cast"></a>
+<img src=".github/assets/h-cast.svg" alt="The cast" width="100%">
 
-## ✨ Things to do
+| Who | What they're up to |
+|:--|:--|
+| **The Storyteller** | Reads the whole adventure aloud, page by page. Fully voiced, occasionally dry. |
+| **The Mayor and his bride** | Due at the altar this afternoon. Waiting on a band. |
+| **The town band** | Lute, trumpet, drum and Wisp the Piper. Currently in several places at once. |
+| **Captain Buttonbeard** | A pirate camped at the top of Spindle Hill, for reasons he insists are nautical. |
+| **Lady Lacewing** | Has lost every one of her presents, and remembers roughly where. |
+| **Wick** | The museum's night watchman. Keys, stool, mug of tea. Has seen things. |
+| **Professor Hoot & Professor Plume** | The museum's resident academics. One sets the homework, the other drops the hints. |
+
+<br>
+
+<a name="features"></a>
+<img src=".github/assets/h-features.svg" alt="In the box" width="100%">
 
 <table>
   <tr>
-    <td width="50%" valign="top">
-      <b>📖 Storybook cutscenes</b><br>
-      A voiced narrator, a floating hand-held camera, soft focus on the close-ups and stitched
-      round wipes between scenes.
-    </td>
-    <td width="50%" valign="top">
-      <b>🧗 Climbing and parkour</b><br>
-      Stumps, ledges, pincushion bounce pads, lanterns to swing on and giant buttons stitched into
-      hillsides.
-    </td>
+    <td width="50%" valign="top"><b>Storybook cutscenes</b><br><sub>A voiced narrator, a floating hand-held camera, soft focus on the close-ups, and stitched round wipes between scenes.</sub></td>
+    <td width="50%" valign="top"><b>Proper climbing</b><br><sub>Stumps, ledges, pincushion bounce pads, lanterns to swing from, and giant buttons sewn into hillsides.</sub></td>
   </tr>
   <tr>
-    <td valign="top">
-      <b>🗝️ Quests and secrets</b><br>
-      Side stories for the townsfolk, hidden dig spots, bubble trails, timed rushes, Heartstrings
-      and threads to collect.
-    </td>
-    <td valign="top">
-      <b>🎨 Make Patch your own</b><br>
-      Dyes, hats and outfits from the Store, plus three faces: happy, sad and angry.
-    </td>
+    <td valign="top"><b>Quests and secrets</b><br><sub>Side stories for the townsfolk, buried treasure, bubble trails, timed rushes, Heartstrings and threads to gather.</sub></td>
+    <td valign="top"><b>Dress-up</b><br><sub>Dyes, hats and outfits from the Store, and three faces for Patch: happy, sad and cross.</sub></td>
   </tr>
   <tr>
-    <td valign="top">
-      <b>📸 Photo Mode and stickers</b><br>
-      Pose Patch, frame the perfect shot, and decorate the world with stickers.
-    </td>
-    <td valign="top">
-      <b>🎵 Music that grows</b><br>
-      Original songs for every place, which build up as you set things right.
-    </td>
+    <td valign="top"><b>Photo Mode and stickers</b><br><sub>Pose him, frame it, and decorate the world while you're at it.</sub></td>
+    <td valign="top"><b>Music that fills in</b><br><sub>Original songs for every place, which grow fuller as you put things right.</sub></td>
   </tr>
   <tr>
-    <td valign="top">
-      <b>🎮 Controller first</b><br>
-      Built around a PlayStation controller, with full keyboard and mouse support and button prompts
-      that follow whatever you're using.
-    </td>
-    <td valign="top">
-      <b>🖌️ Three looks</b><br>
-      Play in Storybook, Stitched or Plain style.
-    </td>
+    <td valign="top"><b>Controller first</b><br><sub>Built around a PlayStation controller, with full keyboard and mouse support and prompts that follow whatever's in your hands.</sub></td>
+    <td valign="top"><b>Three looks</b><br><sub>Storybook, Stitched or Plain, depending on how handmade you're feeling.</sub></td>
   </tr>
 </table>
 
-## 📰 Recent updates
+<br>
 
-| Date | What's new |
-|---|---|
-| **Nov 20, 2026** | 🏔️ **Spindle Hill rebuilt** as a towering knitted hill with its own autumn wood and a climbing route to the top. |
-| **Nov 20, 2026** | 🎬 **Storybook cutscenes** everywhere: a hand-held camera, soft focus and stitched wipes between scenes. |
-| **Nov 20, 2026** | 🎙️ **Full narration** for Toybox Town and the museum's opening, and the villain gets a name: the Unravelled King. |
-| **Nov 19, 2026** | 🛍️ **The Store** gets a shopfront and its own song, plus a new in-game controller menu. |
-| **Nov 17, 2026** | 🏆 **The Trophy Room**, a Merit cabinet, and a Wardrobe with real dyes and fitted outfits. |
-| **Nov 16, 2026** | 🏃 **Running and sprinting**, livelier combat, the Wardrobe and the museum's opening story. |
+<a name="updates"></a>
+<img src=".github/assets/h-updates.svg" alt="Latest from the workshop" width="100%">
 
-Every change, with its date, is in the [**Development Log**](DEVELOPMENT_LOG.md).
-What's finished and what's next is in [**Project Status**](PROJECT_STATUS.md).
+| When | What changed |
+|:--|:--|
+| **Nov&nbsp;20,&nbsp;2026** | **Spindle Hill, rebuilt.** Sixteen metres of knitted hill, an autumn wood, and a climb to the top. |
+| **Nov&nbsp;20,&nbsp;2026** | **Storybook cutscenes everywhere.** A hand-held camera, soft focus and stitched wipes between scenes. |
+| **Nov&nbsp;20,&nbsp;2026** | **The Storyteller speaks.** Full narration for Toybox Town and the museum's opening. The villain gets a name. |
+| **Nov&nbsp;19,&nbsp;2026** | **The Store opens properly,** with a shopfront and its own song, plus a new in-game controller menu. |
+| **Nov&nbsp;17,&nbsp;2026** | **The Trophy Room** and its Merit cabinet, and a Wardrobe with real dyes and fitted outfits. |
+| **Nov&nbsp;16,&nbsp;2026** | **Running and sprinting,** livelier combat, the Wardrobe, and the museum's opening story. |
+
+<sub>The complete, dated history lives in the <a href="DEVELOPMENT_LOG.md"><b>Development Log</b></a>. What's done and what's next is in <a href="PROJECT_STATUS.md"><b>Project Status</b></a>.</sub>
 
 <img src=".github/assets/stitch.svg" width="100%" alt="">
 
 <details>
-<summary><b>🎮 Controls</b></summary>
+<summary><b>Controls</b></summary>
 <br>
 
 | Action | PlayStation | Keyboard / Mouse |
@@ -217,7 +208,7 @@ What's finished and what's next is in [**Project Status**](PROJECT_STATUS.md).
 </details>
 
 <details>
-<summary><b>🛠️ For developers: running and building the project</b></summary>
+<summary><b>For developers: running and building the project</b></summary>
 <br>
 
 **Requirements:** Unity **6000.6.7f1** (Unity 6) with the Universal Render Pipeline, on Windows.
