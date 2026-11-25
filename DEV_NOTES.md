@@ -839,7 +839,7 @@ Stuff I need to remember about how Patchwork is put together.
 - The Chimney Lane end house is now at x 25.5 with width 10.5 (it was at 28 with width 12, and went past `CanalWest`).
 
 - The villain is the Unravelled King. In code: `FrayBodies.UnravelledKing`, `KingWatch` (Level 1), `KingVisit` and `Level2Quest.KingKnocked` (Level 2), and the objects `TheUnravelledKing*`. The save keys `L1_unpicker_seen`/`L1_unpicker_named` were deliberately left as they were.
-- Narrator voice lines: the script is kept outside the project (a Sheet with columns ID, Level, When it plays, Line, How to say it). IDs are `L1_###`/`L2_###`, in order of source file and line. The voice is Julian (ElevenLabs, model eleven_v4).
+- Narrator voice lines: the script is kept outside the project (a Sheet with columns ID, Level, When it plays, Line, How to say it). IDs are `L1_###`/`L2_###`, in order of source file and line. Every line uses the same narrator voice.
 
 - Narrator voice: `NarratorVoice` (UI/NarratorVoice.cs).
   - `Resources/Voice/NarratorLines.txt` maps `ID|text`. Matching is on trimmed text with collapsed whitespace and straight quotes.
@@ -849,7 +849,7 @@ Stuff I need to remember about how Patchwork is put together.
   - The source ignores listener pause.
 - `ToyboxIntro` holds `t` just before the next caption beat (the `Beats` list) while the voice is still speaking, and `Finish` stops the voice.
 - To add more lines: put the clips in `Resources/Voice/LevelN`, named by their ID from the script. Any line whose text matches gets the voice; lines with no clip keep the murmur.
-- Level 1 lines were made with ElevenLabs, voice "Julian - Deep, Rich and Mature", model eleven_v4, one take each, with audio tags like [dryly] or [quietly] in the prompt. The digits in the "with N of its five" lines were written as words for the recording.
+- Recording notes: one take per line, with delivery cues like [dryly] written in the script. The digits in the "with N of its five" lines were written as words for the recording.
 
 - `SnarlKnot.HitHard` (used by every Fray creature): only a stomp from above, a dash, or an attached rope counts. The old `flat > 9` speed rule is gone (the run is 6.5 × 1.5 = 9.75, which beat it).
 - Fray "dread" on the music is now a cutoff of 22000·0.4^dread and a volume of 1 − 0.1·dread (it was 0.09^dread and 0.22).
@@ -859,7 +859,7 @@ Stuff I need to remember about how Patchwork is put together.
 - Area-sound beds: avoid short pitched knocks or rising blips in any bed (they read as hopping creatures). The town bed has no clip-clop, and the canal's slaps are low-passed noise bursts.
 
 - `MuseumIntro.StoryPace()` works the same way as Level 1's, with the shots taken from `starts[]` and `total`. `Finish` stops the voice.
-- Level 2 voice so far: L2_003 to L2_011, L2_019 and L2_108 to L2_121 (ElevenLabs flow qYgQRUhLxwiIQfsjHvod).
+- Level 2 voice so far: L2_003 to L2_011, L2_019 and L2_108 to L2_121.
 
 - **ToyboxIntro filming (Shot / Frame / Act).**
   - Each shot calls `Shot(pos, look)`; `Frame` films it.

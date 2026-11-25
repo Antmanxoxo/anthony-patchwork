@@ -1,7 +1,10 @@
 # Development Log
 
-## Spindle Hill is a real hill now
+A dated record of every change to Patchwork, newest first. Each day lists the changes made that day.
 
+## November 20, 2026
+
+### Spindle Hill is a real hill now
 - **Spindle Hill is a tall, rounded hill instead of two green boxes.** It's 16 m high (it was 4), with a flat top, a rounded shoulder, steep sides and a gentle foot that blends into the meadow.
 - **You have to climb it.** The sides are too steep to walk or hop up: Patch slides back down, with grass puffs and a rustle so it's clear he's slipping. The way up winds round the side facing town:
   - Tree stumps step up out of the meadow onto a plank ledge.
@@ -18,8 +21,7 @@
 - **Moved to make room:** the Bubble Rush loop and its stopwatch are in the meadow at the hill's foot. A few trees, a yarn ball and a hedgehog that stood where the hill is now have been moved nearby.
 - **A few lived-in touches in the museum:** things visitors left on the benches. There's a folded guide and a paper cup, a knitted scarf, a straw sun hat, an open sketchbook with a pencil, and a newspaper with an umbrella leaning on the bench.
 
-## Every cutscene filmed the same storybook way
-
+### Every cutscene filmed the same storybook way
 - **All the game's cutscenes and conversations now get the storybook camera**, not just Level 1's opening:
   - The camera floats slowly and gently and never sits frozen. It also tilts very slightly, like someone holding it.
   - The background goes softly out of focus behind whatever the shot is on, and comes back into focus as the cutscene ends.
@@ -28,8 +30,7 @@
 - **Each new Storyteller line pops up onto its strip** with a little bounce, instead of the words just swapping.
 - **Level 1's opening:** a glide between shots takes a little longer the further it has to go, so long moves never whip past.
 
-## Level 1's opening story, filmed like a storybook
-
+### Level 1's opening story, filmed like a storybook
 - **The camera never stops dead now.** It floats gently the whole time, like someone holding it, and while the Storyteller finishes a line it creeps slowly in rather than freezing.
 - **Changing place uses a round stitched wipe.** The dark closes in to a circle with a ring of gold stitches, with a soft page-turn sound, then opens on the next place, instead of a hard jump cut. Shots in the same place glide smoothly into each other, and so does the Fray swooping down from the lid.
 - **Close-ups get soft focus.** The background melts away behind the band, the couple and Patch, like a camera on a model town. The wide shots of the whole town stay sharp.
@@ -41,20 +42,17 @@
   - Patch waves hello to the camera at the end.
 - The story opens out of the dark and wipes back into the game at the end, and skipping does the same.
 
-## The Storyteller starts on the museum (Level 2)
-
+### The Storyteller starts on the museum (Level 2)
 - **Level 2's opening story is fully voiced.** All 14 lines, from "Out past the end of the pier..." to "Go and find Wick", are read in the same Storyteller voice as Level 1. Like Level 1's opening, each shot runs at his pace and never cuts away mid-sentence, and skipping stops him.
 - **The museum's room names are voiced:** the Observatory, the Star Corridor, the Orrery Bridge, the Grand Atrium, the Hall of Deep Time, the Kelp Galleries, the Hall of Arms, the Sunken Ruins, the Deepsea Tunnel and the Coral Nursery.
-- The rest of Level 2's lines still show as text with the soft murmur until they're recorded (they need more voice credits).
+- The rest of Level 2's lines still show as text with the soft murmur until they're recorded.
 
-## No more phantom hopping
-
+### No more phantom hopping
 - **Fixed: a hopping sound all over town.** It wasn't the Tangle Hoppers this time. It came from two of the new background sounds:
   - The town's sound had a toy horse clip-clopping past, and its little knocks sounded just like something bouncing nearby. It's gone.
   - The canal's water made small rising "plip" sounds where it slapped the wall, which sounded like hops too, and you hear the canal from the street. They're now soft splashes.
 
-## You can be hurt again, quieter Fray music, and the story reads like a film
-
+### You can be hurt again, quieter Fray music, and the story reads like a film
 - **Fixed: Patch couldn't be hurt while running.** Running into a Fray creature used to count as charging it, and his normal run is faster than the speed that counted, so holding Run made him impossible to hurt. Now only landing on one, a dash, or swinging in on the rope pops it. Running into one hurts.
 - **The music doesn't go muffled near the Fray any more.** Near the Fray (like the knot round the clock tower, right where you start) the music used to dull right down, which sounded like something was broken. Now it only goes a touch softer.
 - **The story feels more like a film:**
@@ -62,8 +60,7 @@
   - **Each shot of the opening runs at his pace.** A shot whose line is longer than the shot now plays a little slower all the way through, so the camera never stops dead waiting for him. It still never cuts away mid-sentence.
 - **No more whispering.** The lines about the Unravelled King and the Fray have been re-recorded in his normal storytelling voice (all six of them), so nothing in Level 1 whispers any more.
 
-## The Storyteller speaks (Level 1)
-
+### The Storyteller speaks (Level 1)
 - **The narrator now has a real voice in Toybox Town.** Every narrator line in Level 1 (44 of them) is read aloud by the Storyteller, in a warm, deep, slightly gravelly British voice:
   - the whole opening story;
   - the remarks as you walk into each part of town ("Spindle Hill. The wind up here has opinions...");
@@ -75,19 +72,16 @@
 - **A new setting: Storyteller Voice.** It's in Settings, under Sound Volume, and sets how loud he is (0 turns him off).
 - The toys and other characters keep their own little noises. Only the Storyteller speaks.
 
-## The Fray's mastermind is the Unravelled King
-
+### The Fray's mastermind is the Unravelled King
 - **New name.** The tall, needle-thin figure with a thimble for a hat, who sends the Fray and keeps the stolen colours in jars, is now called **the Unravelled King**. He used to be "the Unpicker".
   - It's changed everywhere he's named: the narrator's lines in Toybox Town and the museum, the line in Wick's chat, and the secret in his larder, which is now "The Unravelled King's Larder".
   - Saved games carry on as before. The saved flags for having seen him and heard his name keep their old names, so nobody has to see him "for the first time" again.
 
-## Patch's arms really are out of his tummy now
-
+### Patch's arms really are out of his tummy now
 - **Fixed: Patch's arms sank into his body, standing still and running.** The last fix (keeping his arms out from his sides) had his left and right swapped. The model's "right arm" ends up on his left once it's turned to face forward, so it pushed both hands *into* his tummy instead of away from it. It now works out which way is "out" from where his two shoulders actually are, so it can't mix them up. Standing still, his arms hang where they always did. When he runs, his hands pass outside his body.
 - **The sprint arms go back on the right sides too.** They had the same mix-up, which is why they crossed behind him and through his body when he sprinted.
 
-## Sounds that fit where you are, quieter hoppers, and Store fixes
-
+### Sounds that fit where you are, quieter hoppers, and Store fixes
 - **Every part of Toybox Town has its own background sound now.** As you walk from one area to the next, the sounds fade into each other over a couple of seconds:
   - **The streets:** a light breeze between the houses, pigeons cooing on the gutters, wind chimes on a porch, a bicycle bell, and a toy horse clip-clopping past.
   - **Inkwell Canal:** slow water lapping against the stone walls, with little plips where it slaps the side. You hear it from the street beside it too, just softer. The duck pond in Picnic Park laps quietly as well.
@@ -105,8 +99,9 @@
   - **The clothes sit properly on the models.** The Store's models were only dressed properly if Patch himself was wearing an outfit, so otherwise the clothes floated off at the wrong size. Each model now keeps track of what it's been dressed in.
   - **The tags no longer cover the names.** On each card the picture is a little smaller, the name sits on its own line under it (and gets smaller if it's long), and the "Owned"/"Wearing" tag sits underneath. The big name under the stage keeps clear of its tag too.
 
-## The Store gets a shopfront and its own song
+## November 19, 2026
 
+### The Store gets a shopfront and its own song
 - **The Store looks like a little shop now.**
   - **Behind everything:** candy-striped wallpaper in the colour of the tab you're on, a panelled dado with a wooden rail, a strip of floorboards, a warm glow from above, and dust motes drifting up through the light.
   - **Across the top:** a striped awning with a scalloped edge, a gold trim and a shadow underneath, with a string of felt bunting swinging under it.
@@ -120,8 +115,7 @@
 
   It's sixteen bars that loop without a seam. It fades in when you open the Store, the Pod's music drops back while it plays (as in the lift), and it fades away when you leave. It's an original tune.
 
-## The controller's own menu (with the Store), a new controller, and smoother round things everywhere
-
+### The controller's own menu (with the Store), a new controller, and smoother round things everywhere
 - **The Store moved to the controller.** Picking up the controller in the Pod now opens its own menu: **Set Sail** (the globe, as before) or **The Store**, with your points shown underneath. Backing out of the globe or the Store brings you back to that menu, and backing out of the menu puts the controller down. The Store is no longer in the pause menu.
 - **A new controller: the Patchwork Pad.** It's an original design, built to match the rest of the Pod:
   - a plum felt body with rounded edges and coral knitted grips;
@@ -137,8 +131,7 @@
   - Cylinders go from 20 sides to 28 (Balanced) or 40 (Best).
 - **Sharper textures at a slant.** The ground, cobbles and long walls stay sharp at a distance instead of going blurry (anisotropic filtering, forced on for Balanced and Best).
 
-## Yarn Patch's clothes fitted to his real shape, the Store's stage reframed, and Toybox Town tidied from its photo tour
-
+### Yarn Patch's clothes fitted to his real shape, the Store's stage reframed, and Toybox Town tidied from its photo tour
 - **Yarn Patch's clothes, properly this time.** The clothes used to measure his body from his shape. They couldn't tell his arms (and the rope in his hand) from his body, so they thought he was about twice as wide as he is. That's why:
   - the cape stood out past his sides like a flat board;
   - the scarf poked out at his shoulders;
@@ -156,8 +149,9 @@
   - **Sugar crystals in the Drain Grotto:** these were plain pale boxes. They're now proper six-sided crystals. The climbing pillars are fat crystals with flat, paler tops and little shards leaning out round their feet, and the clusters on the floor and ceiling are pointed crystals.
   - **Flickering:** with the stripes gone and the anti-flicker pass running, nothing flickered in the pictures. The clipping report's other finds were things meant to be like that (ground pieces meeting, chimneys in roofs).
 
-## Sprinting, a quest menu, the Store, and Toybox Town's photo tour
+## November 17, 2026
 
+### Sprinting, a quest menu, the Store, and Toybox Town's photo tour
 - **Sprinting.** Hold Run (L2, or Left Ctrl) for about half a second and Patch breaks into a full sprint, a fifth faster than his run. The extra speed is only on the ground, so running-jump distances stay the same. Each form sprints its own way:
   - **Yarn:** chest pushed forward, both arms flung straight out behind him and fluttering, with a loose strand of his own yarn unspooling and wiggling behind him.
   - **Water:** a belly slide. He flops forward onto his tummy with his arms out in front like a superhero, his feet kicking behind and his face tipped up to see where he's going, leaving a shiny wet streak along the ground.
@@ -182,8 +176,7 @@
   - solid things sunk into each other.
 - **Toybox Town tidy:** the museum's flicker fix now runs on Toybox Town too. Anything with a face sitting exactly on another (rugs, trim, slabs) is nudged a couple of centimetres apart.
 
-## Yarn Patch's clothes, a cosier Trophy Room, and clearer directions in the museum
-
+### Yarn Patch's clothes, a cosier Trophy Room, and clearer directions in the museum
 - **Yarn Patch's outfits fit properly now.**
   - The **cape** is one smooth piece of cloth: it hangs from the shoulders, flares out and falls in soft folds, with a gold felt hem. It no longer looks like a flat board sticking out at the sides.
   - The **sash** is a smooth band that runs from one shoulder down across the body to the opposite hip, with a gold star on it. The blocky pieces sticking out at the hips are gone.
@@ -199,8 +192,7 @@
   - **Heartstrings:** with all three lenses found but too few Heartstrings, the pointer used to lead you to the lift, which was still shut. Now it leads you to the nearest Heartstring on the ground floor, and the objective says how many more the lift needs.
   - **Stella's riddle:** after she gives the rhyme, the pointer now leads to each gold-star plaque you haven't read yet (by way of the lift if needed), and only then to the dials. The game also remembers which ones you've read, so reloading doesn't send you round them again.
 
-## The Trophy Room, and curtains in front of the struts
-
+### The Trophy Room, and curtains in front of the struts
 - **The Button Box is now the Trophy Room.** It's always open: a short passage through the doorway (with TROPHIES in gold letters on the lintel) opens into a wider, taller cardboard room behind.
   - **Back wall:** the Merit quilt, flat and centred, in a wooden frame under a felt banner reading MERIT PATCHES, with little flags. It's moved off the Pod's curved wall, so nothing clips it and there's no gap in the struts.
   - **Left wall:** a two-tier trophy shelf. There are trophies for the Toybox Town wedding, the Big Top's Ringmaster, the golden buttons (in a little glass case, one slot per button found), mending the Night Glass, the Great Whale and the Button Moon's secret. Each is gold once won and grey with a strand of cobweb until then, and each has a brass plate.
@@ -209,16 +201,12 @@
   - **The Golden Crown** no longer sits on a pedestal: finding all the golden buttons now puts it straight into the Satchel (with a message the next time you're in the Pod). Captain Yarny's lines say so, and point to the Trophy Room for the Merit quilt.
 - **Curtains.** They now hang in front of the wall's cardboard struts instead of behind them, with deeper, rounder folds. Anything on the desk that would have been behind them is slid forward along the desk.
 
-
-## Softer curtains, a Merit cabinet, and the toy chest stops flickering
-
+### Softer curtains, a Merit cabinet, and the toy chest stops flickering
 - **Curtains.** Each drape is now one soft cloth that follows the curve of the window, with rounded folds rippling across it and a gold hem, instead of a wall of flat boards with a seam halfway up. A scalloped velvet pelmet with gold trim and pom-poms runs across the top of the window and hides where they hang from. When they open they bunch into deeper folds at the sides, pinched in by a gold rope tie-back with a tassel.
 - **Merit board.** It's now a shallow wooden cabinet standing out from the wall: a deep box along the top carrying the felt banner and star, deep sides, a deep bottom rail with the brass plate, and a backing board behind the quilt. The wall's cardboard struts run on unbroken behind it, instead of stopping short round it.
 - **Toy chest.** The flicker on top of it is gone (a dark panel sat exactly on its lid face and the two fought over which to show).
 
-
-## The Pod: curtains, a new Merit board, tidier corners and six souvenirs from Level 2
-
+### The Pod: curtains, a new Merit board, tidier corners and six souvenirs from Level 2
 - **Curtains.** Pleated fabric drapes hang from a wooden rod across the window. Every time you come into the Pod (starting the game or coming home from a level) they're drawn shut over the glass. The first time you pick up the controller they sweep open, gather at the sides and are tied back with gold felt, and they stay open for the rest of that visit. The old gingham curtain blobs are gone.
 - **Merit board.** The Merit quilt is now a framed board: wooden rails and posts that follow the wall's curve, quilt squares lying flat on the wall with running stitches round each one, a felt banner with little flags and a gold star along the top, and a brass plate underneath. The wall's cardboard struts stop short of it instead of running across it.
 - **Pictures and cork board.** The four framed pictures hang in the gaps between the struts and lie flat on the sloping wall, so no strut cuts across them and no corner pokes into the wall. The cork board lies flat too.
@@ -227,34 +215,24 @@
 - **Bounce pad.** The pin-cushion bounce pad in the Pod works again: a solid box had been put over it, which held Patch up off the cushion.
 - **Six new Pod decorations from Level 2,** each in a prize bubble in the Oceanic Museum: a Ship in a Bottle (the Keeper's room), a Jellyfish Lamp (the kelp galleries), an Ammonite Fossil (the Deep Time hall), a Brass Telescope (the Star Corridor), a Star Chart (the Hall of Arms) and a Whale Plush (the sunken ruins). Each bubble lifts itself clear of anything solid where it's placed. In the Pod they go on the shelves, hang from the roof, stand by the pattern book, hang on the wall above the shelves and lie on the floor by the clock, and they can be switched on and off in the decorating menu like the others.
 
-
-## The Pod, tidied from its photo tour
-
+### The Pod, tidied from its photo tour
 - The wall panels are cut to the shape of the egg (wider at the bottom of each ring than the top), so the little dark slits between panels up where the roof curves in are gone, inside and out.
 - The desk under the window, its zigzag trim, the felt piping over the window, the two curved shelves and the ledge round the outside are each cut into wedges, so their pieces meet edge to edge instead of overlapping in steps.
 - The Button Box doorway has a proper cardboard door frame: two posts and a deep lintel with the three button sockets set in its face (they used to be half hidden behind the box's roof). The box is a little narrower so the pod's wall no longer slices through its sides, its roof no longer sticks out into the room, it has a cardboard bottom (from below you could see straight up into it), and no wall struts run down the doorway.
 - The launch tube's back end stops inside the wall (it poked out through the outside of the pod).
 - The crescent moon and the felt stars on the ceiling lie flat against the sloping roof, so no edge pokes through.
 
-
-## Pod photo tour
-
+### Pod photo tour
 - A photo tour of the Pod and the space round it. Put a file called `take_pod_tour.txt` in the Screenshots folder and load the Pod. The camera takes about 150 pictures: inside from the middle, from the edges, up high, along the floor and side-on to the wall, the desk, window and Button Box, and all round the outside (near, far, above and below). They go into `Screenshots/PodTour`, with `clipping_report.txt` listing anything that pokes through the wall or the floor and any solid things sinking into each other.
 
-
-## Code clean-up
-
+### Code clean-up
 - Removed code left over from the wardrobe work that nothing uses any more: the old outfit placement (`PatchModel.BodyPose`), an unused hat-height helper, the old framing box for the photo tour, the glitter glow and its sparkle texture (glitter is woven in now), and an unused list of wardrobe category names.
 - Removed `CloudDrift`, a cloud-sliding script that no scene or code uses.
 
-
-## Last outfit touches
-
+### Last outfit touches
 - From the third wardrobe photos: the star sash on the Yarn form is now made of more, closer pieces that stay on his jacket, rather than blocky steps sticking out past his hip. The Wind form's outfits sit a little wider, so the lifebuoy and backpack clear its twister rings.
 
-
-## Outfits tuned from the second wardrobe photos
-
+### Outfits tuned from the second wardrobe photos
 - The Water and Wind forms now use their own known shapes for the outfit fit (the neck is where the head joins, the body is the jelly tummy or the top of the twister). Measuring them had put everything down at the Water form's belly and at the tip of the Wind twister.
 - Bow tie: bigger, and moved up under his chin. On Patch it covers his own little bow.
 - Backpack: higher up his back and properly deep, with a flap, pocket, buckle and bedroll, plus straps over his shoulders and down his front.
@@ -263,40 +241,33 @@
 - Lifebuoy: a touch higher and rounder.
 - The wardrobe tour frames Patch by his height, so the camera can't end up out in space.
 
-
-## Outfit fit fixes, and his eyes keep their colours
-
+### Outfit fit fixes, and his eyes keep their colours
 - On the Yarn form the outfit's "neck" was being found up at his eyes (his round head narrows towards the top), so scarves and garlands stuck out of his face. Now the head is found first (the widest part of his top half) and the neck is the narrowest point under it.
 - On the Water and Wind forms the outfits didn't show at all: they were measured while the body was shrunk to nothing mid-change, so they were sized to nothing. The measuring now ignores that shrink, and the outfit shrinks and grows with him while he changes form.
 - The dye no longer turns his teal button eye another colour: on his head only the gold knit takes the dye.
 
-
-## Outfits measured to fit each form
-
+### Outfits measured to fit each form
 - From the first wardrobe photos: the outfits sat too low and too wide on Patch, and were tiny or hidden on the Water form. Now each form's shape is measured the first time he's dressed in it: it's read in slices from his feet up, his neck is the narrowest point between body and head, and his body is the part under it. Every outfit is stretched to that neck and body (wider than deep where he is), and follows his head and body bones as he moves.
 - Fabrics on the Water and Wind forms only change how shiny they are part of the way, so the jelly stays glossy and the cloud stays soft. Their own finish comes back with the plain knit.
 - Glitter is now woven into the fabric as little white-gold specks, with a metallic shine. The glow it used before made the Yarn form shine one flat cyan all over.
 - The wardrobe photo tour now holds Patch still and facing the same way, and frames him close up, so front and back pictures really are front and back.
 
-
-## Wardrobe photo tour
-
+### Wardrobe photo tour
 - A photo tour for the wardrobe, like the Level 2 one. Put a file called `take_wardrobe.txt` in the Screenshots folder and play any level: the camera turns to Patch and photographs every outfit (front and back), every colour scheme, and every fabric (in his own colours and dyed) on all three forms, into `Screenshots/Wardrobe`. Then his own look and the camera are put back.
 
-
-## Wardrobe fine-tuning: real dye, fabrics you can see, outfits that fit
-
+### Wardrobe fine-tuning: real dye, fabrics you can see, outfits that fit
 - **Colours dye Patch properly.** The Yarn form's own texture is re-dyed: the gold knit takes the scheme's main colour and the teal patches its second colour, keeping all the light and shade of the stitches, instead of a coloured filter laid over everything. Water and Wind keep the tint, which already looked right.
 - **Fabrics look different.** Felt is speckled and fuzzy, velvet has a crushed sheen, corduroy has ribs, satin is bright and smooth, patent leather is dark and glossy, and glitter has little specks that sparkle on their own. The weave goes into Patch's texture for the Yarn form and is laid over the Water and Wind forms.
 - **Outfits fit every form.** Each outfit is now built round a neck and a body of one unit, and every frame it's moved and sized to the neck and middle of whichever form he's in (taken from the Yarn model's own bones, and from the Water and Wind heads and bodies). Scarf and garland sit round the neck, the cape hangs from a collar over his back, the backpack has straps over the shoulders, the sash hugs the curve of him from shoulder to hip, and the lifebuoy goes round his middle.
 
+## November 16, 2026
 
-## Dev mode, and story stickers
+### Dev mode, and story stickers
 - Dev Mode (Pause > Settings > Dev Mode): every hat, sticker, Pod decoration, colour, fabric and outfit unlocked, 999,999 points to spend (nothing is taken off), no damage, and the Observatory lift always open. It's a setting on the computer (PlayerPrefs "pw_dev_mode"), not part of the save, so turning it off puts everything back as it was.
 - Ten new story stickers, each earned for a big moment and drawn in code like the others: Lute, Trumpet and Wisp's Feather (each band piece in Toybox Town), Wedding Cake (finishing Toybox Town), Hall of Arms Shield, Night Glass Lens and Helmet Crab (the three lenses), The Night Glass (setting the star dials), The Great Whale (finishing the museum) and Button Moon (the moon egg). A toast says when you get one.
 - The sticker book along the bottom of the screen now scrolls when there are more stickers than fit across it.
 
-## The wardrobe (points buy looks), no Pod checkpoint, and Level 2's helpers in Level 1
+### The wardrobe (points buy looks), no Pod checkpoint, and Level 2's helpers in Level 1
 - Points now mean something: every point scored anywhere goes into Patch's purse (GameState.Purse, saved), and the Satchel has a Wardrobe to spend it in. Up and down picks a row (Hat, Colours, Fabric, Outfit), left and right looks along it (owned things go straight on), Confirm buys.
   - Colours: Classic, Sky, Mint, Sunflower, Lavender, Coral, Cocoa, Midnight, Seafoam, Rosewood (1,500 to 5,000), dyeing every form.
   - Fabric: Knit, Felt, Velvet, Satin, Corduroy, Patent Leather, Glitter (1,200 to 8,000): how shiny, metallic and bumpy he is.
@@ -307,7 +278,7 @@
 - Toybox Town's opening is retimed so every line has time to be written out and read (it runs about 73 seconds instead of 53); the crack scene's animation stretches to fit.
 - The pointer now works for any level through QuestGuide.Current (Level1Guide, Level2Quest).
 
-## Running, livelier combat, the star dials, a lens fanfare and more Fray
+### Running, livelier combat, the star dials, a lens fanfare and more Fray
 - Run: hold L2 (or click the left stick, or Left Ctrl) to run in every form: Yarn and Wind 1.5 times as fast, Water 1.45. A running jump keeps the speed, the run animation speeds up, and little puffs (or drips, for Water) kick up behind. A tip appears the first time you've been walking a while.
 - Combat: hits chain into a combo counter on the right ("Nice!" at 5, "Super!" at 10, "Stitchtastic!" at 15, "Unravelling!" at 25); every hit that lands pops a word into the air (BOP! THWAP! BONK!, SPLISH! SPLASH! SPLOSH!, PUFF! WHIRL! FWOOSH!); a hit that lands in mid-air bounces Patch back up so he can bop along a row; running into a fight makes the first hit a lunge (further, harder, "DASH!"); and holding Attack then letting go is a charged spin that hits everything round him at full strength.
 - Lens fanfare: winning a lens stops everything, the camera swings round in front of Patch, and he holds the lens up over his head with a spinning sunburst and sparkles, to a fanfare, with its name on the big card.
@@ -319,14 +290,14 @@
 - Observatory: nothing outside the north side of the glass any more (no rocks, kelp, bubbles or jellyfish poking into the Orrery Bridge by the way in), and the turtles and new shoals go round high enough to pass over the bridge's roof.
 - Text boxes: hint cards and the talk box now grow to fit long text (the "Behind the Glass" hint by the tanks used to run out of the bottom), and very long lines in the talk box use slightly smaller writing.
 
-## Level 2 opening shows the Fray at work, calmer HUD, easier-to-find clock tower
+### Level 2 opening shows the Fray at work, calmer HUD, easier-to-find clock tower
 - The opening cutscene now shows the Fray doing the damage, like Toybox Town's: a seam splits in the Atrium floor and a grey knot of Fray climbs out with grey creep spreading under it; it flies up and circles the Night Glass; the three lenses pop out and it splits into three; one flies into the Hall of Arms and climbs into the oldest armour (which shudders and turns its head), one dives into the keepers' tanks and balls up into the grey clot, and one hides in the brass diving helmet, which hops up on its legs and trots off. Then a wide shot as the colour drains, Wick's clock, and Patch.
 - No more lines skipping past: every shot now lasts as long as its caption needs to be written out and read (at least 2.8 seconds after the last letter), instead of a fixed time. The telescope ending got the same treatment (each of its three lines has time now).
 - Calmer HUD in the museum: before you meet Wick there's only a small "Tonight" card telling you to find him. After that, a compact Night Glass card (three lens dots, the clock and the next step). The per-lens details and the tallies (seams, pages, lamps, fakes, secrets, buttons, marbles, threads) only show with the game paused. The Heartstrings counter stays hidden until you've been told what it's for.
 - Wick now explains the lift and the Heartstrings (the only way up to the Observatory, it needs three golden threads from the big halls), and the Storyteller says it again once, after you've met him (or when you pick up your first Heartstring, if you find one before meeting him). The arrival hint no longer mentions Heartstrings.
 - The wind-up clock tower toy now stands right beside the path from the Pod, just ahead and to the right, with its own warm light. Ticket-master Tock mentions it "by the Pod".
 
-## Level 2: opening story, owl Storyteller, the moon, the whale and clearer quests
+### Level 2: opening story, owl Storyteller, the moon, the whale and clearer quests
 - Opening cutscene for the Oceanic Museum (MuseumIntro.cs), like Toybox Town's: the museum from the sea under the button moon with the "Chapter Two: The Night Glass" card, the Observatory and the Night Glass, the Great Whale singing over the dome, the three lenses popping out of the telescope, then where each went (Hall of Arms, the keepers' tanks, the Atrium with the Helmet Crab), Wick's clock at eleven, and Patch at the Pod told to find Wick. Hold Confirm or Pause to skip. Plays once, never once the story has started, and not during the photo tour.
 - The Storyteller in Level 2 is an old owl: a soft synthesised "hoo" voice instead of the murmur, and an owl's face on the caption seal (Narrator.Owl, Sfx.OwlSyllable).
 - Easter egg, the Moon That Wouldn't Wait (MuseumMoon.cs): a wind-up toy clock tower on the quay. Wind it and the button moon grows a glaring face (its top buttonholes are the eyes, with a stitched grimace) and comes down over 90 seconds, with "Dawn of the First / Second / Final Stitch" banners, a countdown, rumbles that grow, and the music stopping on the last stitch. Wind the toy backwards in time to send it home, or let it arrive and it just blinks, yawns and goes home. Either way is the new secret "Three Stitches Remain" (19 secrets now; the lost property shelf lays them out three rows of seven).
@@ -336,24 +307,24 @@
 - Clearer quest: the panel lists each lens with what it still needs (for example "Keepers' tanks: clots 2/4" or "Helmet Crab, in the Kelp Galleries"), then "Next:" and the step. A gold pointer on screen shows where to go (the nearest lens still to win, or Wick, the lift, Stella, the Great Seam, the Night Glass) with the distance, and waits at the screen edge when it's behind you. A "Next:" toast pops up whenever the step changes.
 - Livelier people: a gold "!" over anyone with news for you (Wick when there's a lens he hasn't heard about, Stella, and the people with jobs until you've asked them), little speech bubbles with a remark when Patch walks by (different as the night goes on), and idle fidgets (glancing round, hopping, humming).
 
-## Fix the rail poking through the Star Corridor
+### Fix the rail poking through the Star Corridor
 - The panelling rail, gilt line and cornice on the Star Corridor's north-south walls were made longer than their walls (1.2 to 3 times), when they were only meant to be thicker. The rail stuck out past the wall ends at waist height, across the doorways and through the pillars, and the long west wall's rail ran on into the Orrery Bridge.
 - Now each one is exactly as long as its wall and only sticks out further from it.
 
-## Solid easels and a bigger photo tour
+### Solid easels and a bigger photo tour
 - Checkpoint hoop easels are now solid (a box collider on the easel), so you walk round them instead of through their wooden legs. This covers every checkpoint in both levels.
 - The Orrery Bridge checkpoint moved to beside the east wall, so its easel is out of the way in from the Star Corridor door.
 - The party coat stand in the Night Sky Gallery (left after the Long Gallery secret) is solid now too.
 - The Level 2 photo tour takes 22 more pictures (67 in all): the Star Corridor at walking height every few yards both ways, each corridor room, the Orrery Bridge, the middle of the Atrium and the Hall of Arms aisle. The two gallery end shots no longer start inside the grandfather clock.
 
-## Level 2 photo tour review fixes
+### Level 2 photo tour review fixes
 - Walked through all 45 photo tour pictures and the level audit (0 flickering faces, 0 invisible walls).
 - Grand Atrium checkpoint moved to (-3, -101.5) so its hoop easel stands off the carpet and out of the turnstile gap by the front doors.
 - Hall of Arms checkpoint moved to beside the aisle carpet, so the easel no longer stands in the doorway.
 - Two upper paintings on the Atrium's west wall moved between the hanging banners instead of behind them.
 - The Atrium's Fray seam now looks for its spot on the west side, away from the mop bucket and wet-floor sign.
 
-## More Level 2 clean-up from the level check
+### More Level 2 clean-up from the level check
 - The Great Window's glass shared a face with its iron frame (flicker along every bar).
   The glass is now thinner than the frame and sits inside it.
 - Pip the stargazer and a star-chart table were standing in the doorway between the comet
@@ -365,7 +336,7 @@
 - The photo tour can also be started by a file called take_tour.txt in the project's
   Screenshots folder, so it just runs the next time Level 2 is played.
 
-## Fix: the tidy pass was taking the building apart
+### Fix: the tidy pass was taking the building apart
 The last run's log showed the automatic tidy-up removing over 400 pieces of the museum.
 The building is made of many separate blocks that overlap on purpose (the entrance
 columns, the clock over the doors, fountains, tunnel frames), and the tidy-up took those
@@ -384,11 +355,11 @@ already reports overlaps properly, and this round's fixes come from it:
   narrow undercroft and the gallery no longer fitted.
 - The photo tour no longer waits for opening scenes to end (it was waiting forever).
 
-## Fix: photo tour compile error
+### Fix: photo tour compile error
 The photo tour's list of camera spots used the name `Shot`, which Level 2's cutscene code
 already uses. Renamed it `TourShot`.
 
-## Finishing pass on Level 2: floors, crowding, and a photo tour
+### Finishing pass on Level 2: floors, crowding, and a photo tour
 - Floor seams: where two floors overlap, boards that ran into the earlier floor used to be
   either doubled (flicker) or dropped (a bare strip). They're now cut off exactly at the
   earlier floor's edge, so floors meet cleanly.
@@ -401,7 +372,7 @@ already uses. Renamed it `TourShot`.
   gallery, the Observatory and inside each tank) and saves about 60 pictures to
   Screenshots/Level2Tour, so the whole level can be checked over at once.
 
-## Tidying the museum
+### Tidying the museum
 - Doorways are kept clear. The level now finds every doorway from its walls (two wall
   pieces on one line with a gap between them) and keeps a space as wide as the door and
   three metres deep on each side free. Everything that finds its own spot (room details,
@@ -420,7 +391,9 @@ already uses. Renamed it `TourShot`.
   lantern, the lens lamps, and the lost property shelf. The clock and shelf are now solid.
 - Removed the checkpoint easel at the landed pod. You start there anyway.
 
-## The Long Gallery, scarier
+## November 15, 2026
+
+### The Long Gallery, scarier
 - The music now cuts out completely (it used to only drop to a tenth). In its place is a
   low drone made in code: two deep notes slightly out of tune with each other so they throb,
   a wavering cold note above, and a draught of noise that swells and dies. It deepens as
@@ -439,7 +412,7 @@ already uses. Renamed it `TourShot`.
 - The Ship's Bell (hands-on exhibit) had nowhere to fit; it now looks for room on the Ruins
   terrace.
 
-## Patchwork touches on the museum
+### Patchwork touches on the museum
 Hand-made details so the Oceanic Museum looks like it belongs in Patchwork's world.
 - Mended patches: squares of coloured felt sewn onto the stone walls here and there, a
   little crooked, each with a ring of big cream stitches round it, and now and then a
@@ -451,7 +424,7 @@ Hand-made details so the Oceanic Museum looks like it belongs in Patchwork's wor
 - Knitted column socks: every big column has a striped knitted band round it above the base,
   stitched top and bottom, in one of five wool colours.
 
-## Hands-on exhibits and the Museum Passport
+### Hands-on exhibits and the Museum Passport
 Five machines in the Oceanic Museum you're meant to touch. Use one and it does something
 for a few seconds while the Storyteller tells you a true thing about it. Each has its own
 brass card too.
@@ -467,7 +440,7 @@ brass card too.
 - Ticket-master Tock hands out the Museum Passport: each machine stamps it, and a full
   passport is a secret (eighteen secrets now).
 
-## Fix: shiny, flickering museum floors
+### Fix: shiny, flickering museum floors
 - Too glossy: the new wooden floors were waxed to a mirror shine, and the wood grain's
   bumps made that shine sparkle and crawl as the camera moved. They now have a soft sheen
   (galleries) or none (decks and stone), gentler grain bumps, and no reflections.
@@ -479,7 +452,7 @@ brass card too.
   stitched seams sit a little higher, so nothing lying flat on the floor is close enough
   to the boards to fight them.
 
-## Fix a compile error, and tidy the quest's dialogue code
+### Fix a compile error, and tidy the quest's dialogue code
 - The compile error: the museum clock's pendulum had been given a second script with the
   same name as the one the grandfather clock upstairs already uses. The duplicate is gone
   and the museum clock uses the existing one.
@@ -492,7 +465,7 @@ brass card too.
   - Removed a few unused bits (an unused parameter, two unused fields, an unused method, a
     redundant check in the strike code).
 
-## The Curator's Audit, the Long Gallery and the Dust Sheet Five
+### The Curator's Audit, the Long Gallery and the Dust Sheet Five
 Three new things to do in the Oceanic Museum.
 - The Curator's Audit (a reason to read the cards):
   - Twelve small exhibits on plinths in the Atrium, History hall, Kelp Galleries and Sunken
@@ -528,7 +501,7 @@ Three new things to do in the Oceanic Museum.
   - Catch all five for a secret, full hearts and a new line from Mrs. Sudsbury.
 - Seventeen secrets now. The quest panel also counts fakes found.
 
-## More detail on the Fray, the fights and Wick's post
+### More detail on the Fray, the fights and Wick's post
 - Fighting reads better:
   - Anything with more than one hit point shows a row of small lights over its head when
     hit: lit for health left, dark for health gone. They fade after a few seconds.
@@ -550,13 +523,13 @@ Three new things to do in the Oceanic Museum.
   - Lit night lamps each attract two small harmless moths.
 - The Observatory floor is polished boards now, matching the galleries.
 
-## Fix: Level 2 stopped building half way
+### Fix: Level 2 stopped building half way
 Level 2 opened facing a blank wall with a NullReferenceException. The room-detail pass threw
 away its record of where everything was as soon as it finished, but the quest (which is
 built straight after) uses that same record to find space for Wick's clock, the lamps, the
 seams and the rest. Now the record is kept until the quest is built too, then let go.
 
-## Real floors in the museum
+### Real floors in the museum
 The museum's fabric-patch floors are now proper floors, still pieced together like a quilt.
 - Galleries and halls: polished parquet. Square panels of boards, each panel laid across
   its neighbours and stained a slightly different shade. The stains are the room's old
@@ -567,7 +540,7 @@ The museum's fabric-patch floors are now proper floors, still pieced together li
 - The Sunken Ruins and the temple: stone flags in shifted rows.
 - Nothing about where you can walk has changed; only the surface.
 
-## The museum shows the night going by
+### The museum shows the night going by
 The level itself now changes as the quest goes on, with more to find.
 - Colour: the whole museum starts a little grey and the colour comes back in steps, one for
   each lens, and fully once the telescope is safe.
@@ -590,7 +563,9 @@ The level itself now changes as the quest goes on, with more to find.
   - Three at a Blow (hit three Fray with one strike): Sergeant Stanchion
 - "Midnight: The Great Seam" title card when the ending begins.
 
-## Nine secrets in the Night Glass
+## November 14, 2026
+
+### Nine secrets in the Night Glass
 Optional things you can do in Level 2's quest, each of which gets somebody to say something
 they otherwise never would. The quest panel counts them (Secrets n / 9).
 - Not a Scratch: win the Hall of Arms without losing a heart. (The Castellan, Wick)
@@ -606,7 +581,7 @@ they otherwise never would. The quest panel counts them (Secrets n / 9).
 - The King in the Biscuits: the chess king, hiding in the biscuit stash. (Button)
 - A Jar of Red: in the Frozen Sea's ice cave. (Old Barnacle, who now hints at it)
 
-## Seams, rollers, lurkers and a rallying Captain
+### Seams, rollers, lurkers and a rallying Captain
 More Fray in the museum, and a bigger ending.
 - Seams: five rips in the floor (Atrium, Deep Time, Kelp Galleries, Sunken Ruins, keepers'
   aisle) where the Fray came up. While one is open, things keep climbing out. One full
@@ -626,7 +601,9 @@ More Fray in the museum, and a bigger ending.
   Hoot), most with a hint in it, some with a second line once their bit of trouble is over.
 - The quest panel also counts seams stitched and pages found.
 
-## The Night Glass, deeper
+## November 13, 2026
+
+### The Night Glass, deeper
 More to find and more to do along the way to the three lenses.
 - Wick's night book: six pages are scattered round the museum (Atrium, Deep Time, the old
   ship, Kelp Galleries, Keepers' Room, outside the Hall of Arms). Each is an hour of the
@@ -640,7 +617,7 @@ More to find and more to do along the way to the three lenses.
 - The Helmet Crab in the Kelp Galleries stays tucked in its helmet until its chessmen are
   popped; then it bolts.
 
-## The Night Glass: Level 2's story, its Fray, and three-hit strikes
+### The Night Glass: Level 2's story, its Fray, and three-hit strikes
 The Oceanic Museum now has a proper story, enemies of its own, and Patch can hit things.
 - The story ("Chapter Two: The Night Glass"):
   - Every midnight the keepers point the Observatory's great telescope at the Great Whale as
@@ -679,7 +656,9 @@ The Oceanic Museum now has a proper story, enemies of its own, and Patch can hit
   - Old Fray and snarl knots pop in one hit; stomping still works.
   - The form badge shows the name of the next hit.
 
-## The landed Pod, lived in
+## November 12, 2026
+
+### The landed Pod, lived in
 The Pod you arrive in at each level now looks well-travelled and lived-in, and Patch has made a
 little yard round it in the crater.
 - On the shell:
@@ -713,14 +692,14 @@ little yard round it in the crater.
   - the repair kit by the bent leg, a picnic blanket, and a bucket and sponge for the soot
   - a windsock lifting in the breeze, and supply boxes marked BUTTONS and YARN
 
-## The last room details find their places
+### The last room details find their places
 - 11 of the new room details couldn't find a spot when the level was built. They're all in now:
   - The eight painted shields hang right on the stone piers of the Hall of Arms.
   - The pigeons sit on top of the Tank Hall's temperature board.
   - The Mangrove's spider's web is strung higher up, above the arching roots.
   - The tree-climbing crabs cling to the bark above where the roots spring out.
 
-## The Skyward Waltz sounds like its preview, and the camera starts outside the Pod
+### The Skyward Waltz sounds like its preview, and the camera starts outside the Pod
 - In the game, The Skyward Waltz now plays exactly the way the preview was made: on the
   preview's own light, clear instruments, in the same soft room echo. The whole song plays
   from the start, with no waiting for later layers to unlock the accordion, flute, horns
@@ -730,7 +709,7 @@ little yard round it in the crater.
   knows the Pod's real egg shape (the invisible block it used to stop at sits inside the
   egg), and when a level starts it rises until it has a clear view of Patch.
 
-## A third song for the museum: The Skyward Waltz
+### A third song for the museum: The Skyward Waltz
 - The Oceanic Museum now plays "The Skyward Waltz", an original waltz that takes off. It
   starts on its toes in G minor: the accordion has the tune, the bass steps down a half-step
   at a time, and the piano goes "pah-pah" on two and three. Then the violins take the tune
@@ -742,7 +721,7 @@ little yard round it in the crater.
 - Both older pieces are kept. Patchwork > Level 2 Music now has The Skyward Waltz (new),
   The Star Carousel (the first waltz) and The Lantern Tide (the second piece).
 
-## Six new things in every room of the Oceanic Museum
+### Six new things in every room of the Oceanic Museum
 Every room in Level 2 has six new hand-made details. Each one is fitted in round what's
 already there: it looks for clear floor, wall, air or water near where it wants to be and takes
 the nearest spot that's free, so nothing ends up inside anything else. If a spot can't be found,
@@ -796,7 +775,7 @@ that detail is left out and the log says which one.
 - The Mangrove: a kingfisher on a snag who watches you, floating mangrove seedlings, a mud
   lobster's mound, a spider's web with dew, tree-climbing crabs, and a crocodile being a log.
 
-## A new song for the museum, mice, and reef walls
+### A new song for the museum, mice, and reef walls
 - A new piece for the Oceanic Museum, "The Lantern Tide": a gentle, glowing walk through an
   aquarium at night in F major. A harp rippling in quavers, a marimba bobbing like something
   afloat, plucked basses and bubbles rising through it; the flute sings the tune, then it
@@ -814,7 +793,7 @@ that detail is left out and the log says which one.
   sea cliff) instead of bare render, kept clear of the cave, the moray, the pipes, the
   Undercroft's windows and June's torch.
 
-## Rippling light, dressed tank walls, and the Undercroft finished
+### Rippling light, dressed tank walls, and the Undercroft finished
 - Each tank throws dancing ripples of light up onto the Tank Hall's roof, like the ceiling
   over a real pool, and the Coral Nursery's ripples play across the Undercroft through its
   windows (with a fainter blue from the Lantern Deep on the other side).
@@ -828,7 +807,7 @@ that detail is left out and the log says which one.
 - Dust drifting in the lamplight in the Tank Hall, the Keepers' Room, the Hall of Arms, the
   Night Sky Gallery and the Planet Walk.
 
-## The fine detail: a working back-of-house, and living tanks
+### The fine detail: a working back-of-house, and living tanks
 - The Keepers' Room: white tiled walls with a teal edge, a clock, a deep sink under a mirror
   with a tap that drips, yellow raincoats, sou'westers and wellies by the door, the first-aid
   box and the fuse box (its little green light on), the tide tables pinned up, and pipes
@@ -851,7 +830,7 @@ that detail is left out and the log says which one.
   telescope at a night window, a roundel for each planet on the Planet Walk's wall, a piece
   of the Moon in a case, and the Comet Gallery's night windows lifted clear of the panelling.
 
-## Behind the Glass: the keepers' side of the aquarium
+### Behind the Glass: the keepers' side of the aquarium
 - Fixed the compile error (an old Unity call the flicker fixer used).
 - A new part of the museum through a KEEPERS ONLY door at the far end of the Kelp Galleries:
   - The Keepers' Room: named lockers (one left open), wetsuits and flippers on pegs, a brass
@@ -891,7 +870,7 @@ that detail is left out and the log says which one.
     and its own pin on the map. Four new secret marbles.
 - Swimmers can now dive below the old depth limit without being sent back to a checkpoint.
 
-## Weathered stone, embroidery-hoop checkpoints, and the flicker hunt
+### Weathered stone, embroidery-hoop checkpoints, and the flicker hunt
 - The museum's stone is now old dressed stone: long blocks in courses, each its own shade
   of honey, cream or grey, with worn and chipped edges, pitted faces, soft rain streaks
   under the joints and a little lichen in the mortar. Weathered, but still pale and grand.
@@ -910,7 +889,7 @@ that detail is left out and the log says which one.
 - Hanging lanterns hang on proper chains from plaster ceiling roses; wall lamps have brass
   wall plates and a curl of bracket.
 
-## Lettering, carving and a compass rose
+### Lettering, carving and a compass rose
 - The museum's front now carries its name: gilt letters reading THE OCEANIC MUSEUM across
   the portico, and the motto OPEN TO ALL WHO WONDER along the frieze under the cornice.
 - The towers have carved stone tablets reading ANNO and MDCCCLIII (1853, the year the first
@@ -925,7 +904,7 @@ that detail is left out and the log says which one.
 - Fixed the real-size textures over-repeating on blocks that already had a repeat count
   baked into their material.
 
-## Attention to detail: solid statues, picture lights, the side of the museum
+### Attention to detail: solid statues, picture lights, the side of the museum
 - Things you could walk straight through are now solid: the stone piers down the atrium's
   west wall, both Keeper statues, the sleeping guard, the stone cat, the Rosetta Stone, the
   jars on the shelves in the Hall of Deep Time, and the feet of the armillary sphere.
@@ -941,7 +920,7 @@ that detail is left out and the log says which one.
   filling the passage and pushing it up through the roof).
 - The level check now spots flickering faces again (it had stopped recognising the cubes).
 
-## Real-size stonework, a finished front, and a tidier Star Corridor
+### Real-size stonework, a finished front, and a tidier Star Corridor
 - Level 2's brick, stone, plaster, plank, roof-tile and wallpaper textures are now laid on
   at real size instead of one copy stretched over each face. The big walls used to show a
   handful of giant bricks; now they show proper courses that line up from block to block.
@@ -958,7 +937,7 @@ that detail is left out and the log says which one.
 - The sunken treasure's marble sits a little further from the chest so it no longer gets
   pushed up out of place.
 
-## Sewing-station checkpoints, and more detail
+### Sewing-station checkpoints, and more detail
 - Checkpoints in every level are now sewing stations instead of pins with flags: a big
   tomato pincushion bristling with coloured pins, a wooden cotton reel on top and a
   needle asleep across it. Touch one and it's stitched: the needle springs upright and
@@ -970,7 +949,7 @@ that detail is left out and the log says which one.
   of dinosaur footprints walking in to the T. rex; and old glass fishing floats in rope
   nets along the Kelp Galleries' wall.
 
-## Level 2: the Star Corridor
+### Level 2: the Star Corridor
 - The way to the Observatory is now much longer. The cardboard lift's top floor opens
   into the Star Corridor, about a hundred metres winding round the back of the museum
   before it comes out through a new arch onto the Orrery Bridge.
@@ -988,7 +967,7 @@ that detail is left out and the log says which one.
 - Its own checkpoint, a hint, a camera moment the first time, bubbles, a golden thread
   line, its own lighting mood, and a place on the map.
 
-## Level 2: third clean-up
+### Level 2: third clean-up
 - Flicker: see-through things now draw in a fixed order (glass first, then what's inside or
   around it, then water surfaces, then light beams) instead of swapping as you move; the
   bell's glass dome is two one-sided shells instead of one two-sided one; the fountains'
@@ -1000,7 +979,9 @@ that detail is left out and the log says which one.
 - The lighthouse has its beams back as two soft shafts of light sweeping round with the
   lamp.
 
-## Level 2: second clean-up
+## November 11, 2026
+
+### Level 2: second clean-up
 - Light beams are back, done properly: soft glowing shafts with feathered edges that fade
   towards the floor and always face you, so they never show a flat edge. Moonlight down
   from the atrium skylights, sunlight inside the Great Window's tank, through the kelp
@@ -1016,7 +997,7 @@ that detail is left out and the log says which one.
 - The lion spouts in the Ruins have open mouths and the water arcs out of them; the
   springs in the Ruins and the kelp pool rise from the mouth of a big stone fish.
 
-## Level 2: clean-up from the playtest videos
+### Level 2: clean-up from the playtest videos
 - Removed every flat "beam of light" sheet: the atrium's skylight and window beams, the
   haze under the star ceiling, the shafts in the tanks, the kelp galleries, the Great Deep
   and the Ruins, and the lighthouse's long flat beam (now a real light sweeping round).
@@ -1032,18 +1013,18 @@ that detail is left out and the log says which one.
 - The treasure chest's marble sits just in front of the chest (it was being pushed up out
   of the water when the level loaded).
 
-## God Mode Halo (testing hat)
+### God Mode Halo (testing hat)
 - A new hat for testing, only in the editor: a ring of glowing gold beads and two little
   felt wings. Wearing it, Patch runs over three times as fast, jumps much higher, can jump
   again in mid-air, flies upward while Jump is held, falls gently, and can swim in any
   form. Pick it in the Satchel like any other hat; take it off to play normally.
 
-## Replaying Level 2 from the editor
+### Replaying Level 2 from the editor
 - Patchwork menu: "Replay Level 2 Moments (keep what you found)" makes every cutscene,
   card, Storyteller line and the map play fresh again; "Reset Level 2 (first visit)" also
   puts every Heartstring, golden button and marble back. Other levels are left alone.
 
-## Level 2: light, moments, and the world under the water
+### Level 2: light, moments, and the world under the water
 - Water Form can dive in the museum's pools: hold Ability to swim down, let go to float
   back up, Jump to kick for the surface. The camera follows him under, the water turns a
   deep blue-green, the far side fades into the murk and the music goes far away.
@@ -1069,7 +1050,7 @@ that detail is left out and the log says which one.
   "out of order" sign drops off the cardboard lift, the doors slide open, ding.
 - The map has two new places: the Sea Gate and the Drowned Colonnade.
 
-## Level 2: the cardboard lift, a new map, a new waltz, and more wonder
+### Level 2: the cardboard lift, a new map, a new waltz, and more wonder
 - The Observatory lift is now the Observatory Express: a huge cardboard box wedged in the
   corner of the Sunken Ruins and vanishing up through the ceiling, covered in parcel tape,
   "this way up" arrows and a felt label. Walk in, press Ability, and the doors slide shut;
@@ -1095,7 +1076,7 @@ that detail is left out and the log says which one.
   calf swimming with its mother in the Great Deep, fireflies over the Ruins, and pennants
   of the old houses under the Hall of Arms' roof.
 
-## Level 2: life and grandeur
+### Level 2: life and grandeur
 - The museum has people in it now, and they all have a reason to be there after hours:
   - a night watchman doing his rounds of the Hall of Deep Time with a lantern (its light
     moves with him), and another asleep at his post by the front doors (nudge him)
@@ -1121,7 +1102,7 @@ that detail is left out and the log says which one.
 - Fixes from the level check: palms, bookcases and banners that were sunk into columns,
   and a palm on top of a marble.
 
-## Level 2: depth, detail, a new hall and new music
+### Level 2: depth, detail, a new hall and new music
 - The pole in the atrium's west doorway is gone (a wall pier was standing in the arch).
 - The atrium's ceiling is now the showpiece: twinkling stars and a milky way, six
   constellations of the sea (whale, turtle, ship, anchor, seahorse, lighthouse) that light
@@ -1152,7 +1133,7 @@ that detail is left out and the log says which one.
   the portico's columns.
 - Now 5 golden buttons and 4 marbles in Level 2.
 
-## Level 2: The Oceanic Museum
+### Level 2: The Oceanic Museum
 - A whole new level, bigger than Toybox Town and walked more like a visit: one way round,
   with side trips. It's night, the museum is closed, and it's all yours.
   - The Forecourt: the Pod lands on a moonlit quay in front of the museum's doors.
@@ -1184,7 +1165,9 @@ that detail is left out and the log says which one.
   a whale singing far off.
 - Level 2 is on the Pod's globe now.
 
-## Polish: invisible walls gone for good, and collecting feels better
+## November 10, 2026
+
+### Polish: invisible walls gone for good, and collecting feels better
 - Found the cause of the invisible walls: lots of props aren't solid themselves but have an
   invisible box beside them. When the level tidy-up nudged a prop (or took out a crowded
   tree), its box stayed behind. Now the box moves with its prop (or goes with its tree), and
@@ -1203,7 +1186,7 @@ that detail is left out and the log says which one.
     leaps up over Patch's head spinning, a fanfare plays, 1000 points, and a card shows
     how many of the level's buttons you've found. Heartstrings get a card too.
 
-## The Unpicker's entrance, gentler grey, and a few fixes
+### The Unpicker's entrance, gentler grey, and a few fixes
 - The opening now gives the Unpicker his own shot: the camera goes up to the crack in the lid
   and pushes in slowly as he lowers himself through, upside down, lit violet so he stands
   out, before the Fray pours out past him. (Before, the camera never looked at him.) The
@@ -1218,7 +1201,7 @@ that detail is left out and the log says which one.
   next step (so they won't wander over the ravine or the canal), and one that does end up
   with nothing under it goes back.
 
-## The Fray, redesigned: things from the Underside, and the Unpicker
+### The Fray, redesigned: things from the Underside, and the Unpicker
 - New story for the Fray: it isn't from Patch's world. It comes from the Underside, the back
   of the cloth, where nothing has ever had a colour. Its creatures eat colour.
 - All four creatures have new, uncanny bodies (my own designs, inspired by museum photos of
@@ -1243,7 +1226,7 @@ that detail is left out and the log says which one.
   him the first two times. He stops coming once the town is mended.
 - Removed the old tin-beetle Snarling.
 
-## Pod and Toybox Town fixes, funny pictures, a detailed planet
+### Pod and Toybox Town fixes, funny pictures, a detailed planet
 - Fixed the invisible wall in the Button Box doorway. Furniture made of parts spread apart
   (the pinwheel pots either side of the door) got one solid box round the lot, right across
   the doorway; now each part gets its own.
@@ -1272,12 +1255,12 @@ that detail is left out and the log says which one.
 - The burst of red errors after changing scripts while playing: Unity is now set to wait until
   you stop playing before it recompiles. Also cleared a compiler warning in Secrets.cs.
 
-## The Pod's soundwave moved out to the backdrop
+### The Pod's soundwave moved out to the backdrop
 - The ring of light now sits far out on the horizon (170 m away, well beyond the planets),
   drawn nine times bigger, with 144 bars, so it reads as a band of aurora light all the way
   round the sky instead of a fence right next to the Pod.
 
-## A quieter, snugger Pod
+### A quieter, snugger Pod
 - The "star pings" in the Pod's background hum were the chiming that got annoying: eight
   bright bell notes every twelve seconds, forever. Now there are three in the loop, an octave
   lower, a quarter as loud and with a soft start.
@@ -1286,7 +1269,7 @@ that detail is left out and the log says which one.
   away with the bean bag if it's switched off in the decorating menu.
 - The room's colours are a touch warmer (a little lamplight in the grade and the floor light).
 
-## Band quests with a twist, a wedding that grows, and the Pod's ring of light
+### Band quests with a twist, a wedding that grows, and the Pod's ring of light
 - The lute: Captain Buttonbeard, a pirate on top of Spindle Hill, has the string and thinks
   "lute" means "loot". He'll only swap it for his own treasure, buried under a stitched red X
   in the sandpit by his wrecked toy boat (out east, on the way to the Sky Hoops). Dig it up,
@@ -1317,7 +1300,7 @@ that detail is left out and the log says which one.
   a hair early (they take a moment to speak), and the plucked strings sit on the same beat
   grid as the harp.
 
-## Sharper picture, and a cleaner start to the opening
+### Sharper picture, and a cleaner start to the opening
 - Crisper writing: all the on-screen text is now drawn at the real size it appears on
   screen, instead of being drawn for a 1080-high screen and then shrunk or stretched to fit
   (which made letters soft, especially in a small Game window).
@@ -1329,7 +1312,7 @@ that detail is left out and the log says which one.
 - Patch is already standing outside the landed Pod when the story gets to him, instead of
   hanging in the doorway waiting to hop out.
 
-## A storybook opening for Toybox Town, told by the Storyteller
+### A storybook opening for Toybox Town, told by the Storyteller
 - New opening chapter for Level 1. It starts outside the toybox with a chapter card
   ("Chapter One: The Wedding That Nearly Wasn't"), dives over the wall into town on the
   wedding morning, visits the band while they still have all their music, then a crack opens
@@ -1345,14 +1328,14 @@ that detail is left out and the log says which one.
 - Patchwork > Replay Toybox Town Opening (next visit) plays the opening again once, even on
   a save that's already past it.
 
-## Fixed: the Pod vanishing
+### Fixed: the Pod vanishing
 - After pressing Play a second time without scripts reloading, Unity had sometimes thrown
   away the lighter cube / cylinder / ball shapes the game makes for itself, but the game
   still thought it had them, so every wall, floor and piece of furniture was given a shape
   that draws nothing. Only Patch and the big planets were left. It now checks the shapes
   are really still there and makes them again if not.
 
-## Water and wind forms redesigned again, and hats that fit
+### Water and wind forms redesigned again, and hats that fit
 - Water form: a doll from Patch's own family, sewn out of water. A see-through jelly toy
   with button eyes like Patch's, a seam of white stitches down its front and over its head,
   a drip standing up on top, stubby arms and legs, and a tiny goldfish doing laps of its
@@ -1364,7 +1347,7 @@ that detail is left out and the log says which one.
 - Hats fit both of them: the hat now sits on top of each form's own head, tips with it, and
   is sized to that head. The drip and the curl on top tuck away while a hat is on.
 
-## The wind form is a cloud child
+### The wind form is a cloud child
 - Wind form redesigned from a plain cloud into a floaty little cloud child whose body is
   only half there: a fluffy cloud head with a tuft blown up on top and the same face (it
   blinks now), a small puff of a body that thins into a curling wisp where legs would be,
@@ -1374,7 +1357,7 @@ that detail is left out and the log says which one.
   with a ripple running along the scarf, and it leans into the way it's going. Its hands pump
   as it travels, reach up when it jumps and spread wide like wings in a glide.
 
-## The water form is a little person now
+### The water form is a little person now
 - Water form redesigned from a plain bubble into a water-sprite doll with Patch's kind of
   proportions (big head, small body, stubby limbs): a jelly water-drop head with a curl of
   droplets on top, big blinking eyes, rosy cheeks and a stitched mouth; a yellow felt raincoat
@@ -1383,7 +1366,7 @@ that detail is left out and the log says which one.
   and leans into a run, and its head lolls like a full water balloon. It still wobbles like
   water when knocked about, and it's still short enough to slip through drain grates.
 
-## The sewing-box sky, and comforts in the Pod
+### The sewing-box sky, and comforts in the Pod
 - The things floating near the Pod now all come from one idea: a sewing box. A button moon,
   a cotton reel trailing its thread, a ball-of-yarn planet with knitting needles through it,
   a pincushion planet bristling with glass-headed pins, and a silver thimble station with lit
@@ -1394,7 +1377,7 @@ that detail is left out and the log says which one.
 - In the Pod: a wind chime on a long thread that rings up a five-note scale when Patch jumps
   into it, a lava lamp glowing on the window ledge, and a steaming mug of cocoa.
 
-## A dreamy Pod and a glowing night sky
+### A dreamy Pod and a glowing night sky
 - The Pod has a night-light mood: cool moonlight through the window, dusky lavender in the
   shadows, softer shadows and a strong glow round every lamp, star and fairy light.
 - The Pod's song only plays while Patch holds the controller. Picking a level fades it out
@@ -1406,14 +1389,16 @@ that detail is left out and the log says which one.
   front of the window.
 - Inside: glowing motes drift round the room, and a shy clockwork mouse lives aboard.
 
-## A dreamier Pod song
+## November 9, 2026
+
+### A dreamier Pod song
 - The song that plays while you hold the controller in the Pod is new: slow, floating and
   dreamy (a lilting 3/4 in D major, 104 BPM, 32 bars, no drums). Harp ripples up and down
   wide soft chords over a warm pad, the tune is on celesta and music box, a soft flute joins,
   a glassy wavering voice sings the "far away" middle section over two borrowed chords, and
   warm strings bring it home. Glockenspiel stars twinkle and bubbles drift up now and then.
 
-## A livelier town and a new theme tune
+### A livelier town and a new theme tune
 - New music for Toybox Town: a sweeping orchestral adventure theme in D major (132 BPM, 40
   bars). A twinkling harp-and-celesta intro, a main tune of big upward leaps over a falling
   bass, a lift through two borrowed chords into a soaring section with the tune an octave up
@@ -1428,7 +1413,7 @@ that detail is left out and the log says which one.
   every fifth. They grow back after a while.
 - Pompom smoke puffs rise from every chimney.
 
-## A tiny handmade world
+### A tiny handmade world
 - The miniature camera: in Toybox Town the far distance goes softly out of focus, like a
   close-up photo of a model on a table, so the level reads as a small handmade diorama. (Off
   on the Fast graphics setting.)
@@ -1442,7 +1427,7 @@ that detail is left out and the log says which one.
 - Map: turned labels (the ravine and canal names), the ribbon's tails and Patch's marker are
   drawn in the right place at any window size (they were being turned about the wrong point).
 
-## Art direction: a bright felt diorama
+### Art direction: a bright felt diorama
 - The inside of the toybox is lined with a child's sky wallpaper now: pale blue, cut-paper
   hills along the bottom and felt clouds higher up (it was dark navy damask, which read as
   a gloomy night sky all round the level). The lid is a warm coral.
@@ -1457,7 +1442,7 @@ that detail is left out and the log says which one.
   pastel roofs with a thin outline between them, instead of a speckled photo. Small props are
   left out of it, and long region tags stay inside the map's edge.
 
-## A world that's sewn, and notices you
+### A world that's sewn, and notices you
 - Patch sews as he goes: a double row of running stitches behind him in his form's colour,
   a ring of dashes where he jumps, and a cross stitch with bouncing pompoms where he lands
   hard. Stitches pop in, sit a few seconds and get pulled out again.
@@ -1472,14 +1457,16 @@ that detail is left out and the log says which one.
 - A giant crib mobile hangs from the nursery ceiling over the toybox, turning very slowly:
   a felt star and moon with stitched faces, a cloud, a heart, a sewing button and a paper plane.
 
-## Warmer meadows and a calmer map
+## November 6, 2026
+
+### Warmer meadows and a calmer map
 - The yarn grass is in warm skeins now: olive and moss greens, honey, marigold, coral, rose
   and rust.
 - The map's picture leaves out the grass and tiny decorations, so it shows clean shapes.
 - The map sits on one calm piece of fabric instead of a busy patchwork, and the button hints
   under it are in dark ink so they're easy to read.
 
-## Yarn meadows, a tidy map and solid ground at Toadstool Dell
+### Yarn meadows, a tidy map and solid ground at Toadstool Dell
 - Fixed falling through the ground near Toadstool Dell: the dell's coloured ground patch
   stretched right across the ravine, so it looked like ground where there was none. It now
   stops at the ravine's edge.
@@ -1495,7 +1482,7 @@ that detail is left out and the log says which one.
 - Clipping: rounder props are measured properly by the tidy-up, and the flowerpots that
   poked into the Big Top tent are gone.
 
-## Clearing up clipping in Toybox Town
+### Clearing up clipping in Toybox Town
 - After Level 1 is built, a tidy-up pass keeps props out of each other: where two trees grow
   right into each other the smaller one goes, and small props (mushrooms, pots, signs,
   lanterns, rocks, yarn balls) are moved just clear of tree trunks, of bigger things like the
@@ -1508,7 +1495,7 @@ that detail is left out and the log says which one.
 - The level check now judges trees by their trunk, and skips critters, birds and things that
   float or sail about.
 
-## Pod screensaver, quieter hoppers and a tidier Pod
+### Pod screensaver, quieter hoppers and a tidier Pod
 - The Tangle Hoppers' boing was the hopping heard all over the level. It now fades with
   distance and is silent more than 16 m away (their steam and pops fade the same way).
 - Leave Patch standing still in the Pod for 40 seconds and the camera floats out through the
@@ -1532,7 +1519,7 @@ that detail is left out and the log says which one.
   the merged scenery, treats a whole fern or tree as one prop, and ignores creatures, bubbles,
   pickups, floating toys and kite strings.
 
-## A readable map, nearby sounds and a cosier Pod
+### A readable map, nearby sounds and a cosier Pod
 - The map's names no longer pile up: big regions (the wood, the farm, the orchard, the dell,
   the meadows, Spindle Hill) are written across the map in large stitched letters with no pin
   (the ravine and the canal along their length), and every pin's name tag tries several spots
@@ -1551,7 +1538,7 @@ that detail is left out and the log says which one.
   ceiling, gingham curtains tied back either side of the window, framed felt pictures, a cork
   board of pinned notes, and a reading nook with books, a cup of tea and a little lamp.
 
-## Builds on other computers, and running faster
+### Builds on other computers, and running faster
 - Runs much faster: the level's still decorations (tens of thousands of little shapes) are now
   merged into a few hundred meshes when a level loads, one per material per 32 m patch of the
   map. The picture is the same; the computer has far less to do every frame. Anything a script
@@ -1572,7 +1559,9 @@ that detail is left out and the log says which one.
 - The map can take you straight back to where the Pod landed ("Travel back to the Pod"), and
   its layout is tidied so the tape measure and prompts don't overlap the edge.
 
-## Builds look the same as the editor
+## November 5, 2026
+
+### Builds look the same as the editor
 - Built games were running with no post-processing at all (no bloom, colour grading, warm and
   cool tint or vignette), so they looked flat compared with Play mode. The Player.log showed
   why: URP stripped some post-processing shaders it thought were unused (depth of field,
@@ -1581,7 +1570,7 @@ that detail is left out and the log says which one.
   "strip unused post-processing" in the URP global settings, and added a pre-build check
   (`PatchworkBuildChecks`) that turns it back off before every build if it ever gets reset.
 
-## Taller trees, a findable willow, new corners and a quilted map
+### Taller trees, a findable willow, new corners and a quilted map
 - Trees in the Whispering Wood are much taller with slimmer crowns, and each one claims room
   for its crown before it's planted, so they no longer clip into each other: pines 11-19 m
   (with a bare, stitched lower trunk and stubby old branches), birches 10-15 m, twisted trees
@@ -1603,7 +1592,7 @@ that detail is left out and the log says which one.
   marbles), a button compass, a tape measure, a spool and a pincushion. The map's camera is
   higher so the tall trees fit.
 
-## A magical wood, wild horses and biomes
+### A magical wood, wild horses and biomes
 - The Whispering Wood now fills the whole south-west of the toybox (everything west of the
   ravine and south of Spindle Hill), in three bands:
   - Birch Edge: white stitched birches, bramble bushes with berries, bluebells, fallen leaves
@@ -1631,7 +1620,7 @@ that detail is left out and the log says which one.
 - Editor only: after a level loads, a top-down survey of what's where is written to
   Logs/patchwork_layout_<level>.txt, for checking the layout for empty or crowded patches.
 
-## The outskirts of Toybox Town
+### The outskirts of Toybox Town
 - The Pod now lands with a bump: it sits tipped over in a crater it dug, with a walkable rim
   of churned-up earth, a scorched floor with cracks, turf clods and pebbles flung about, bits
   that fell off, and a long skid trench behind it. The model is cleaner and far more detailed:
@@ -1667,7 +1656,7 @@ that detail is left out and the log says which one.
   wander, graze, scurry off if you run at them, and squeak and hop if you bump them. Felt
   butterflies flutter over the open areas.
 
-## Hats that stay on
+### Hats that stay on
 - On keyboard, "Enter to start" on the title screen no longer draws the key on top of the
   words; the key cap is measured first. The same fix went into the floating "Talk" / "Grab" /
   "Pull" prompts and the "HOLD" swing prompt, which had the same overlap.
@@ -1678,7 +1667,7 @@ that detail is left out and the log says which one.
   switching Pod items on sparkles (off makes a puff); the decorating camera drifts gently;
   launching for a level gives a soft camera bump and controller rumble with the rocket.
 
-## A dreamier Pod
+### A dreamier Pod
 - The decorating camera now sits inside the Pod, up near the ceiling, looking down over the
   floor, rug and furniture (it was outside the wall before, so you couldn't see anything).
 - New Pod song while you hold the controller: same tune and chords, now played on toy piano,
@@ -1695,7 +1684,7 @@ that detail is left out and the log says which one.
   with a circus tent and a seedling, a compass-rose planet, a gingham hot-air balloon, a
   paper aeroplane looping round, and soft grey pencil-sketch clouds.
 
-## Running faster
+### Running faster
 - Fixed a compile error from the last batch (a sound name that didn't exist).
 - A tidy-up pass runs right after a level is built, so it draws much less without losing
   anything you can see:
@@ -1707,7 +1696,7 @@ that detail is left out and the log says which one.
     (past where the haze softens them anyway). Nothing you can touch is affected, and the Pod
     keeps every star.
 
-## A bigger Toybox Town, arriving by Pod, and decorating the Pod
+### A bigger Toybox Town, arriving by Pod, and decorating the Pod
 - Toybox Town is bigger: the toybox walls moved out from 90 to 115 metres, with new ground
   all round the edge of town.
   - Landing Meadow (south-east): your Pod lands here. The door swings open, Patch hops out,
@@ -1739,7 +1728,9 @@ that detail is left out and the log says which one.
 - Popping out of the Pod's launch tube now sounds like a cork pop and a springy slide-whistle
   with a little twinkle, instead of a whoosh.
 
-## The Big Top and Merit Patches
+## November 4, 2026
+
+### The Big Top and Merit Patches
 - A striped circus tent now stands near the start of Toybox Town. Inside is the Big Top:
   - The Grumblewool, the game's first boss: a huge grumpy ball of Fray yarn with
     knitting-needle horns, asleep in the ring until you ring the bell. It paws the ground and
@@ -1761,7 +1752,7 @@ that detail is left out and the log says which one.
 - Two more secret marbles (14 in all).
 - Fixed the nursery window frame flickering far behind the toybox.
 
-## Hearts, creatures and a calmer start
+### Hearts, creatures and a calmer start
 - Patch has three hearts. The Fray's creatures nip (lose a heart, get knocked back, flash for
   a moment); falling off the world costs a heart too. Out of hearts, Patch unravels and comes
   back at the last checkpoint with all three. Checkpoints patch you back up to full, and felt
@@ -1782,7 +1773,7 @@ that detail is left out and the log says which one.
 - Fewer drifting petals in town.
 - The level select now says "Let's go!" instead of "Set sail".
 
-## The Pod in space, and a Tape Ball for Toybox Town
+### The Pod in space, and a Tape Ball for Toybox Town
 - The Pod now floats in deep space: a black sky full of tiny stars drifting past the window
   (so it feels like it's flying), felt stars, a polka-dot planet with a zigzag ring, a big
   striped planet, a comet with a felt tail, the doughnut, toadstool, gears and moon, and
@@ -1807,7 +1798,7 @@ that detail is left out and the log says which one.
   at a teacup, a teddy bear and an armchair, and when it's big enough it floats up into the
   sky as a new star (and a fresh ball appears).
 
-## The Pod
+### The Pod
 - The hub is now the Pod: a cosy egg-shaped cardboard pod with ribbed walls, floating in a
   bright paper-white sky. The look follows the game's box-art collage: zigzag and polka-dot
   felt, a trail of felt stars, a toadstool, a frosted doughnut, clockwork gears and a felt
@@ -1826,7 +1817,7 @@ that detail is left out and the log says which one.
 - The title screen now circles slowly inside the pod.
 - The ship's practice spots (fountain, lifeboat swing, air vent) are gone with the Skiff's deck.
 
-## A look of its own, and Photo Mode
+### A look of its own, and Photo Mode
 - A new screen look (Pause > Settings > Look), drawn as one full-screen pass:
   - Storybook (the default): clean, thin plum ink lines on the edges and creases of every
     shape (drawn on the near side only, so they stay one line wide and never streak across
@@ -1843,7 +1834,7 @@ that detail is left out and the log says which one.
 - The floor crystals in the Drain Grotto are solid now (you could walk through them).
 - Fixed the barracks trapdoor lid flickering against the crate on top of it.
 
-## Secrets and hidden places
+### Secrets and hidden places
 - Twelve secret marbles hidden around Toybox Town, each found a different way:
   - Inside the Toy Shop: its front door now opens into a shop full of toys, with Mrs Thimble
     behind the counter (she drops hints about the other secrets), a music box you can play by
@@ -1869,7 +1860,9 @@ that detail is left out and the log says which one.
   editor's level check lists what moved.
 - Fixed the Toy Workshop pen walls flickering at the corners.
 
-## More to play with
+## November 3, 2026
+
+### More to play with
 - Grab: hold R2 (Shift) next to a crate, building block or beach ball to take hold of it,
   then walk to push it or back away to pull it. Patch's arms reach for it and he leans in.
   Yarn and Water can grab; Wind blows toys along with its gust instead. Running into balls
@@ -1895,7 +1888,9 @@ that detail is left out and the log says which one.
 - Controls: D-pad left / up / right change straight to Water / Yarn / Wind. D-pad down cycles
   Patch's face. The map moved to R3.
 
-## Ready for a first build
+## October 29, 2026
+
+### Ready for a first build
 - Cleaned out code the game no longer uses: the Test Gym, portals, moving platforms, the old
   Sewing Basket props, a few unused instruments, and Unity's sample scene and readme.
 - Builds keep every material look the game makes (no pink objects), anti-aliasing is on, the
@@ -1906,7 +1901,7 @@ that detail is left out and the log says which one.
 - Fixes from the level check: solid crayons, cannons, belfry roof and the Skiff's water barrel;
   threads moved out of the bandstand roof; flickering bench legs, line poles and spire cap.
 
-## Toys to play with, solid props and fixes
+### Toys to play with, solid props and fixes
 - Fixes:
   - The Mayor said the same thing whether or not you had the band pieces, and the opening
     cutscene never played. An old save from before the town rebuild was marking Toybox Town
@@ -1932,7 +1927,7 @@ that detail is left out and the log says which one.
   - Houses have lace curtains, gutters, drainpipes and sometimes ivy.
   - Smooth painted toys have a soft brushstroke texture.
 
-## Deep water and ink holes
+### Deep water and ink holes
 - The canal and the ravine stream are now deep water (5 m and 3 m).
   - The surface is crafted: glossy, see-through blue satin with stitched white wave lines,
     sequin glints and lace foam along the edges, over a dark deep bed.
@@ -1952,7 +1947,7 @@ that detail is left out and the log says which one.
   - The toy train's smoke looked like a mushroom.
   - The park pond can't be walked on any more.
 
-## Stylised Toybox Town, a map and new music
+### Stylised Toybox Town, a map and new music
 - New look over everything: soft glow on bright and glowing things, richer colour, warm
   highlights with cool shadows, and a gentle vignette. Each level can tune it.
 - Textures have much more detail:
@@ -1988,7 +1983,9 @@ that detail is left out and the log says which one.
   - Wind-up mice scurrying about, tin soldiers drilling in the barracks, and a carousel in
     the park.
 
-## A lived-in Toybox Town
+## October 28, 2026
+
+### A lived-in Toybox Town
 - The first time you visit Toybox Town, a cutscene shows the Fray arriving. The band is
   playing when a crack opens in the toybox lid and the Fray swoops out onto the bandstand. It
   snaps the lute string (which flies off to Spindle Hill), seizes up the trumpet, and blows
@@ -2025,7 +2022,7 @@ that detail is left out and the log says which one.
   stationmaster.
 - Butterflies flutter round the flower beds.
 
-## Toybox Town
+### Toybox Town
 - Level 1 is now Toybox Town: a little Victorian town built inside a giant open toybox, with
   cobbled streets, timber-framed shops with fish-scale roofs, gas lamps, a bandstand, a wedding
   arch and a clock tower. Everything stands on real ground: a ravine with a stream to the west, a
@@ -2054,7 +2051,7 @@ that detail is left out and the log says which one.
 - Fountains and updrafts bring their own sounds. Level 1's background is now breeze, distant
   birds and a far-off bell. Cobbles, brick and planks sound like wood underfoot.
 
-## The Fray and an open Level 1
+### The Fray and an open Level 1
 - Story: a grey static called the Fray has seeped into the world through a tear in the sky and
   unravels whatever it touches. Every place is held together by golden Heartstrings; finding
   them and threading them back mends it. Captain Yarny tells you about it on the Skiff.
@@ -2079,7 +2076,7 @@ that detail is left out and the log says which one.
   values in their own coloured chips).
 - The gold in the captain's cabin no longer shimmers.
 
-## Captain Yarny and a tidier Skiff
+### Captain Yarny and a tidier Skiff
 - Captain Yarny, an old yarn-ball pirate with an eyepatch, a grey yarn beard, a tricorn, a pencil
   peg leg, a crochet-hook hand and a yarn parrot, stands by the helm. Press Ability next to him to
   talk; he has an introduction the first time and different chat after that, depending on what
@@ -2097,7 +2094,7 @@ that detail is left out and the log says which one.
   buttons, a skull-and-needles flag, paper lanterns on the rails, tin-can barrels, rope coils,
   a painted stripe on the hull, cabin windows, and a desk, map, candle, clock and hammock inside.
 
-## The Cardboard Skiff
+### The Cardboard Skiff
 - Starting the game now shows the Little Colossus studio logo (with its own chime), then the
   Patchwork title screen over a slow fly-around of the hub. Any button starts.
 - The hub is now the Cardboard Skiff: a little cardboard ship under a patched felt balloon,
@@ -2116,7 +2113,7 @@ that detail is left out and the log says which one.
   (instead of the old sound that was like waves).
 - Footsteps on cardboard.
 
-## Level 1 rebuild
+### Level 1 rebuild
 - Level 1 is now eight sections that climb out of the sewing basket: the garden, a drain in the
   wicker wall, the dye pond fountain, Button Bridge, Pincushion Canyon (two swings in a row with
   a pincushion island between), the Breezy Meadow (a glide gap, then a gust gap), a tall wicker
@@ -2136,7 +2133,7 @@ that detail is left out and the log says which one.
 - Patch has a little voice: a "hup" on some jumps, a "yay" for golden buttons and an "aww" when
   he falls. Higher for Water, highest for Wind.
 
-## Settings, saves and tools
+### Settings, saves and tools
 - New Settings page in the pause menu: music, sound and rumble levels, camera speed, invert camera
   up/down and left/right, Yarn swing as hold or tap-on/tap-off, button prompts, Form Wheel button
   and VSync.
@@ -2149,7 +2146,7 @@ that detail is left out and the log says which one.
 - A secret: tap the face buttons over and over and Patch starts dancing to his own song,
   a different dance and song for each form, with a little cutscene camera.
 
-## Feel upgrades
+### Feel upgrades
 - The D-pad faces (happy, sad, angry) now work on all three forms: the Water bubble and the
   Wind cloud got their own frowns and eyebrows.
 - Jump height is now the same at any frame rate.
@@ -2163,7 +2160,7 @@ that detail is left out and the log says which one.
 - Music has a layer for each form that crossfades when you change: music box for Water,
   plucked strings for Yarn, a breathy flute for Wind.
 
-## Polish pass 3
+### Polish pass 3
 - Changing Music, Sound or Rumble in the pause menu plays a tick that goes up in pitch as the
   setting goes up, and down as it goes down.
 - Form Wheel: the description moved to its own card above the wheel, so the text no longer runs
@@ -2177,7 +2174,7 @@ that detail is left out and the log says which one.
 - New crafted fonts: Fredoka (soft and rounded, like felt letters) for normal text and Sniglet
   (puffy cut-out letters) for big titles.
 
-## Polish pass 2
+### Polish pass 2
 - Wind's gust no longer re-launches the glide, so Wind can't skip the Yarn swing any more.
   Made the Wind gap 7m so gliding alone gets you over.
 - Shiny things (thimbles, needles, the bubble) now reflect the room instead of looking grey.
@@ -2188,7 +2185,7 @@ that detail is left out and the log says which one.
 - Controller rumble on jump, land, bounce, gust, catching an anchor and while swinging.
 - The HUD no longer makes garbage every frame, and pressing Play twice in a row starts clean.
 
-## Polish pass 1
+### Polish pass 1
 - Set the company name to Little Colossus and gave the game a proper ID.
 - Turned on VSync, with a 120 fps cap as a backup.
 - Saved the shader-keeper materials into the project so builds don't lose the bumpy, glow
@@ -2201,7 +2198,9 @@ that detail is left out and the log says which one.
 - Compressed Patch's textures (about 43 MB down to about 3 MB) with no visible difference.
 - Fixed the hub sign's level name, and Level 1's tutorial cards now only show the first time.
 
-## Patch model
+## October 23, 2026
+
+### Patch model
 - Made a proper 3D model of Patch in Blender for the Yarn form: yarn-ball head with wound yarn,
   mismatched button eyes, cardboard eyebrows, a paper mouth, felt cheeks, and a stitched knit suit
   with a bowtie, pockets, coat tails and a worn knee patch. His right arm unravels into a yarn rope.
@@ -2210,20 +2209,22 @@ that detail is left out and the log says which one.
 - Baked his materials into one colour texture and one normal map so Unity can use them.
 - In game his animation follows what he's doing, and his yarn arm points at the anchor while swinging.
 
-## Build prep
+## October 22, 2026
+
+### Build prep
 - Added small materials in Resources so the build keeps the shader versions for the bumpy
   textures, glow and the see-through bubble (Unity strips unused ones from builds).
 - Gave those materials a real normal texture and the emissive flag, since URP was quietly
   turning their bumpy and glow settings off on import.
 - Fixed "Practise" -> "Practice" in the hub title.
 
-## Cleanup
+### Cleanup
 - Took out code that wasn't being used anymore (old flat textures, an unused material, a couple of
   icons, and some small helper functions).
 - You can now put the Form Wheel on L1 or R1 from the pause menu. The button prompts update too.
 - Rewrote my code comments so they're shorter and easier to read.
 
-## Prototype 3
+### Prototype 3
 - The form panel and tutorial cards now slide away on their own after a few seconds.
 - Tutorial cards have Water / Yarn / Wind themes, each with its own colours, little animations and sound.
 - Pause menu got a proper open animation and every option has an animated icon.
@@ -2232,7 +2233,7 @@ that detail is left out and the log says which one.
   knitting needles, thimbles and mushrooms.
 - New stuff to play with: bouncy pin-cushions, sliding button platforms, and thread spools to collect.
 
-## Prototype 2
+### Prototype 2
 - Fixed the PS5 button prompts (mouse wiggles were switching it to keyboard). Added a pause option to force them.
 - Made the sounds softer, added a bubbling sound for fountains and a whoosh for the gust.
 - Added background music.
@@ -2241,7 +2242,7 @@ that detail is left out and the log says which one.
 - Made menu text easier to read, closed in the maps with walls and a ceiling, and made a new portal.
 - Fixed the Water bubble's eyes sinking to the bottom.
 
-## Prototype 1
+### Prototype 1
 - Set up the Unity 6 URP project and Git.
 - Built the form system with Water, Yarn and Wind, the Form Wheel, HUD, Satchel and pause menu.
 - Made the Hub and Level 1.
