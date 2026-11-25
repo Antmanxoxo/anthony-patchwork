@@ -887,6 +887,15 @@ Stuff I need to remember about how Patchwork is put together.
 - **NoClimb (PlayerMotor).** After `Move`, if the most upward-facing thing touched has normal.y < 0.62 and a `NoClimb` component, the motor isn't grounded. Patch can't jump, slides down (fall speed capped at 14) and `Sliding` is true. `PatchworkPlayer.SlideDust` makes the puffs and the rustle.
 - **Level2Details.LeftBehind:** the visitors' things on five benches, placed with `on(bench, yaw, local)` (seat top 0.55).
 
+- **Town wall (Level1TownWall.cs).**
+  - The wall lines are `WallWest` -36.55 (the ravine's top), `WallEast` 31.55 (the canal's edge), `WallNorth` 58.5 (behind the barracks) and `WallSouth` -72 (behind Chimney Lane).
+  - `WallRun(a, b)` builds an axis-aligned length: a 3.6 m block, a plinth, a trim, batched battlements and one flat collider over them.
+  - `WallTower` builds a cylinder with a capsule collider, crenellations, arrow slits, a `TowerCone` roof and a pennant. Towers on the west and east lines are moved just inside the ravine or canal edge.
+  - `Gatehouse` builds two towers, a lintel 4.6 m up, the portcullis teeth, shields and banners.
+  - The gaps follow the old hedge and railing gaps: west z -22.5 to 18.5, the canal bridges, the canal steps (z 12.5 to 18), and the north-east corner for the xylophone bridge.
+  - The barracks' own north wall block was removed (the town wall replaces it). The ravine hedges are gone, and the canal railings now only run outside the wall.
+- **Medieval street style (TownKit).** `MakeHouse` has a jettied beam band at every floor line and no gutters. `StreetLamp` builds a wooden lantern post, with its light at the lantern. Level 1's `Walls`/`Roofs` palettes are medieval.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

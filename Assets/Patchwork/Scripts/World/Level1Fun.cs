@@ -38,7 +38,7 @@ namespace Patchwork
             Trail(kit, new Vector3(36f, -0.25f, -40f), new Vector3(36f, -0.25f, 40f), 17);
             // Round the duck pond and the carousel, and through the picnic park.
             Ring(kit, new Vector3(14f, 0f, 74f), 7.5f, 14, 1.1f);
-            Ring(kit, new Vector3(-22f, 0f, 63f), 6.5f, 14, 1.1f);
+            Ring(kit, new Vector3(-22f, 0f, 65f), 5.8f, 13, 1.1f);
             Trail(kit, new Vector3(-12f, 1.1f, 68f), new Vector3(-12f, 1.1f, 80f), 5);
             // Down in the ravine, and a gold one between the stepping stones.
             Trail(kit, new Vector3(-40f, -3.9f, -20f), new Vector3(-40f, -3.9f, 20f), 9);
@@ -280,7 +280,7 @@ namespace Patchwork
             c.Done = fresh => cPrize.Reveal();
 
             // On the barracks' back wall: wants the Sleepy Moon, which the first board gives you.
-            var d = StickerPlaque(kit, new Vector3(6f, 1.7f, 57.94f), Vector3.back, StickerId.Moon, "L1_sticker_moon");
+            var d = StickerPlaque(kit, new Vector3(9.5f, 1.7f, 57.94f), Vector3.back, StickerId.Moon, "L1_sticker_moon");
             var dPrize = PrizeBubble.Place(kit, new Vector3(4f, 1.6f, 55.5f), "prize_piratehat", true);
             d.Done = fresh => dPrize.Reveal();
         }

@@ -770,13 +770,11 @@ namespace Patchwork
             StringLights(kit, new Vector3(-28.4f, 5.4f, 8.05f), new Vector3(-28.4f, 5.4f, -8.95f), 0.8f);
             StringLights(kit, new Vector3(19.6f, 5.4f, 8.05f), new Vector3(19.6f, 5.4f, -8.05f), 0.8f);
 
-            // Hedges along the ravine (leaving the swing and the steps open), and round the barracks.
-            Hedge(kit, new Vector3(-36.2f, 0f, 16.5f), new Vector3(-36.2f, 0f, 60f));
-            Hedge(kit, new Vector3(-36.2f, 0f, -24f), new Vector3(-36.2f, 0f, -70f));
+            // Hedges round the barracks. (Along the ravine and the canal is the town wall now.)
             Hedge(kit, new Vector3(-17f, 0f, 33f), new Vector3(-17f, 0f, 57f));
             Hedge(kit, new Vector3(17f, 0f, 33f), new Vector3(17f, 0f, 57f));
             // Iron railings along the canal (gaps for the bridges and the steps).
-            float[][] west = { new[] { 3f, 12.5f }, new[] { 18f, 37f }, new[] { 43f, 58.2f }, new[] { 61.8f, 88f }, new[] { -3f, -37f }, new[] { -43f, -88f } };
+            float[][] west = { new[] { 53.8f, 58.2f }, new[] { 61.8f, 88f }, new[] { -72.6f, -88f } };
             foreach (var s in west) Railing(kit, new Vector3(CanalWest - 0.25f, 0f, s[0]), new Vector3(CanalWest - 0.25f, 0f, s[1]));
             float[][] east = { new[] { 3f, 37f }, new[] { 43f, 58.2f }, new[] { 61.8f, 88f }, new[] { -3f, -12.5f }, new[] { -18f, -37f }, new[] { -43f, -88f } };
             foreach (var s in east) Railing(kit, new Vector3(CanalEast + 0.25f, 0.05f, s[0]), new Vector3(CanalEast + 0.25f, 0.05f, s[1]));
@@ -1303,7 +1301,7 @@ namespace Patchwork
             // Tin soldiers drilling round the barracks yard.
             var drill = new[] { new Vector3(-9f, 0.05f, 37f), new Vector3(-9f, 0.05f, 54f), new Vector3(9f, 0.05f, 54f), new Vector3(9f, 0.05f, 37f) };
             for (int i = 0; i < 4; i++) MarchingSoldier(kit, drill, -i * 2.2f, i % 2 == 0 ? new Color(0.8f, 0.22f, 0.25f) : new Color(0.25f, 0.35f, 0.7f));
-            Carousel(kit, new Vector3(-22f, 0f, 63f));
+            Carousel(kit, new Vector3(-22f, 0f, 65f));
 
             DominoRun(kit);
             BubbleWand(kit, new Vector3(4f, 0f, 80f));
@@ -1317,7 +1315,7 @@ namespace Patchwork
 
             var pins = kit.Info.MapPins;
             pins.Add(new MapPin("Xylophone Bridge", new Vector3((CanalWest + CanalEast) * 0.5f, 0f, 60f)));
-            pins.Add(new MapPin("Carousel", new Vector3(-22f, 0f, 63f)));
+            pins.Add(new MapPin("Carousel", new Vector3(-22f, 0f, 65f)));
             pins.Add(new MapPin("Domino Run", new Vector3(24f, 0f, 44f)));
             pins.Add(new MapPin("Bubble Wand", new Vector3(4f, 0f, 80f)));
         }

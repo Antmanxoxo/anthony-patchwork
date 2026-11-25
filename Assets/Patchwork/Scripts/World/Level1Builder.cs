@@ -53,8 +53,10 @@ namespace Patchwork
 
         static readonly Color GrassCol = new Color(0.6f, 0.8f, 0.5f);   // fresh spring felt
         static readonly Color CobbleCol = new Color(0.72f, 0.68f, 0.64f);
-        static readonly Color[] Walls = { new Color(0.97f, 0.92f, 0.82f), new Color(0.95f, 0.85f, 0.78f), new Color(0.9f, 0.9f, 0.84f), new Color(0.98f, 0.88f, 0.7f), new Color(0.88f, 0.86f, 0.95f) };
-        static readonly Color[] Roofs = { new Color(0.62f, 0.3f, 0.32f), new Color(0.3f, 0.42f, 0.6f), new Color(0.4f, 0.55f, 0.42f), new Color(0.55f, 0.4f, 0.6f), new Color(0.7f, 0.45f, 0.3f) };
+        // A medieval village palette: limewashed and ochre plaster under clay-tile, slate, thatch
+        // and mossy roofs, so every street looks like it belongs to the same town.
+        static readonly Color[] Walls = { new Color(0.97f, 0.93f, 0.84f), new Color(0.94f, 0.84f, 0.64f), new Color(0.95f, 0.94f, 0.9f), new Color(0.94f, 0.84f, 0.77f), new Color(0.9f, 0.85f, 0.73f) };
+        static readonly Color[] Roofs = { new Color(0.68f, 0.35f, 0.27f), new Color(0.38f, 0.42f, 0.5f), new Color(0.8f, 0.66f, 0.38f), new Color(0.45f, 0.52f, 0.36f), new Color(0.58f, 0.27f, 0.26f) };
         static readonly Color[] SpoolThreads = { LevelKit.Palette.Rose, LevelKit.Palette.Sky, LevelKit.Palette.Butter, LevelKit.Palette.Sage, LevelKit.Palette.Lavender };
         static readonly Color[] FlowerColors = { LevelKit.Palette.Rose, LevelKit.Palette.Butter, LevelKit.Palette.Lavender, LevelKit.Palette.Peach, LevelKit.Palette.Sky, new Color(1f, 0.6f, 0.7f) };
 
@@ -125,6 +127,7 @@ namespace Patchwork
             Canal(kit);
             DyeWorks(kit);
             Rooftops(kit);
+            TownWall(kit);
             LandingMeadow(kit);
             BouncyCastle(kit);
             SkyHoops(kit);
@@ -523,7 +526,7 @@ namespace Patchwork
             kit.Block(new Vector3(0f, -0.1f, 45f), new Vector3(30f, 0.3f, 26f), CobbleCol, "BarracksYard", stone);
             kit.Block(new Vector3(-15.5f, 1.5f, 45f), new Vector3(1f, 3f, 26f), TownKit.Stone, "BarracksWall", stone);
             kit.Block(new Vector3(15.5f, 1.5f, 45f), new Vector3(1f, 3f, 26f), TownKit.Stone, "BarracksWall", stone);
-            kit.Block(new Vector3(0f, 1.5f, 58.5f), new Vector3(32f, 3f, 1f), TownKit.Stone, "BarracksWall", stone);
+            // (Its north side is the town wall, with the Castle Gate: see Level1TownWall.)
             // Striped sentry boxes, a flagpole and toy cannons.
             for (int s = -1; s <= 1; s += 2)
             {

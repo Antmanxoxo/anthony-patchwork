@@ -4,6 +4,23 @@ A dated record of every change to Patchwork, newest first. Each day lists the ch
 
 ## November 25, 2026
 
+### Toybox Town becomes a walled medieval village (part one)
+- **A town wall round the middle of town**, like a toy fort from a toybox:
+  - cream stone blocks with red and blue painted battlements you can walk along the top of
+  - round towers with pointed roofs, arrow slits and pennants
+  - arched gatehouses with the portcullis drawn up, the town's shield (a spool and a needle) and hanging banners
+- **The ravine and the canal are its moats.** The wall runs along the top of the ravine on the west and along the canal on the east, replacing the old hedges and railings there. The north side runs behind the barracks, which is now the castle yard. The south side runs behind Chimney Lane, with the old spire standing in the wall as one of its towers.
+- **The way in and out:**
+  - the **Castle Gate** through the barracks
+  - the **South Gate** below Chimney Lane
+  - the **East Gate** at the main canal bridge
+  - the open west side where the street meets the ravine swing and the steps
+  - small posterns by the carousel and in the south wall
+  - gaps at the small canal bridges and the steps down to the water, and the north-east corner open for the xylophone bridge
+  - the three gates are on the map
+- **The same look on every street:** the houses use one medieval palette (limewash and ochre plaster under clay-tile, slate, thatch and mossy roofs) with jettied upper floors, and the tin gutters and drainpipes are gone. The gas lamps are now lantern posts: a wooden post with an iron arm and a hanging lantern.
+- Moved to make room: the carousel and its bubble ring a little north, the carousel's hide-and-seek spot with it, and the Sleepy Moon sticker plaque along the castle yard wall.
+
 ### A new home for the project page
 - The project page has been redesigned with illustrated artwork made in the game's own fonts and colours: a quilted title banner, cards for Patch's three forms, postcards from each place, a Fray panel and stitched labels for each section.
 - New write-ups for the story, the places, the cast and the features, with dated highlights of recent work.

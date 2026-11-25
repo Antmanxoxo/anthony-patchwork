@@ -347,7 +347,7 @@ namespace Patchwork
 
         static void HideAndSeek(LevelKit kit)
         {
-            Vector3[] spots = { new Vector3(12f, 0f, 32.8f), new Vector3(-22f, 0f, 69.4f), new Vector3(-84f, 0f, -17.4f) };
+            Vector3[] spots = { new Vector3(12f, 0f, 32.8f), new Vector3(-22f, 0f, 71.8f), new Vector3(-84f, 0f, -17.4f) };
             float[] yaws = { 180f, 0f, 0f };
             bool done = GameState.IsCollected(MarbleIds[5]);
             var jack = kit.Volume<Peekaboo>(spots[0] + Vector3.up * 0.7f, new Vector3(1.8f, 2f, 1.8f), "Peekaboo");

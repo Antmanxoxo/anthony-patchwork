@@ -139,7 +139,13 @@ namespace Patchwork
                     kit.Deco(PrimitiveType.Cube, W(x, (h + 0.6f) * 0.5f, fz), RotSize(new Vector3(0.18f, h - 0.6f, 0.1f), yaw), beam);
                 }
                 for (float y = 3f; y < h - 0.5f; y += 3f)
+                {
                     kit.Deco(PrimitiveType.Cube, W(0f, y, fz), RotSize(new Vector3(w, 0.2f, 0.12f), yaw), beam);
+                    // The jetty: the upper floor's beam ends poke out over the street.
+                    kit.Deco(PrimitiveType.Cube, W(0f, y - 0.16f, side * (d * 0.5f + 0.16f)), RotSize(new Vector3(w + 0.3f, 0.26f, 0.3f), yaw), beam);
+                    for (float bx = -w * 0.5f + 0.4f; bx < w * 0.5f - 0.2f; bx += 1.2f)
+                        kit.Deco(PrimitiveType.Cube, W(bx, y - 0.38f, side * (d * 0.5f + 0.22f)), RotSize(new Vector3(0.16f, 0.2f, 0.36f), yaw), beam);
+                }
                 kit.Deco(PrimitiveType.Cube, W(0f, h - 0.1f, fz), RotSize(new Vector3(w + 0.1f, 0.2f, 0.12f), yaw), beam);
                 // A pair of diagonal braces on the upper floor.
                 if (h > 4.5f)
@@ -180,21 +186,7 @@ namespace Patchwork
             var roofMat = PatchworkAssets.Shingle(roof);
             GableRoof(kit, W(0f, h, 0f), w + 0.9f, d + 1.1f, rise, yaw, roofMat, plaster);
             house.RoofTop = pos.y + h + rise;
-            // Gutters under the eaves and a drainpipe down one corner on each long side.
-            var tin = PatchworkAssets.Plain(new Color(0.5f, 0.55f, 0.6f), 0.6f);
-            for (int side = -1; side <= 1; side += 2)
-            {
-                float ez = side * (d * 0.5f + 0.5f);
-                kit.Deco(PrimitiveType.Cylinder, W(0f, h - 0.14f, ez), new Vector3(0.2f, (w + 0.8f) * 0.5f, 0.2f), tin, new Vector3(0f, yaw, 90f));
-                float px = side * (w * 0.5f - 0.25f), pz = side * (d * 0.5f + 0.24f);
-                kit.Deco(PrimitiveType.Cylinder, W(px, (0.35f + h - 0.45f) * 0.5f, pz), new Vector3(0.17f, (h - 0.8f) * 0.5f, 0.17f), tin, new Vector3(0f, yaw, 0f));
-                Vector3 a = new Vector3(px, h - 0.45f, pz), b = new Vector3(px, h - 0.14f, ez);
-                var elbow = kit.Deco(PrimitiveType.Cylinder, W((a.x + b.x) * 0.5f, (a.y + b.y) * 0.5f, (a.z + b.z) * 0.5f), new Vector3(0.17f, (b - a).magnitude * 0.5f + 0.06f, 0.17f), tin);
-                elbow.rotation = r * Quaternion.FromToRotation(Vector3.up, (b - a).normalized);
-                kit.Deco(PrimitiveType.Cylinder, W(px, 0.38f, pz + side * 0.08f), new Vector3(0.22f, 0.06f, 0.22f), tin, new Vector3(90f, yaw, 0f));
-                for (float by = 1.2f; by < h - 0.8f; by += 2.4f)
-                    kit.Deco(PrimitiveType.Cube, W(px, by, pz - side * 0.1f), new Vector3(0.26f, 0.06f, 0.2f), tin, new Vector3(0f, yaw, 0f));
-            }
+            // (No tin gutters or drainpipes: the eaves just overhang, as in an old village.)
             // Some houses have ivy climbing one end wall.
             if (seed % 3 == 0)
             {
@@ -313,26 +305,35 @@ namespace Patchwork
 
         // ------------------------------------------------------------------ Street furniture
 
-        // A Victorian gas lamp on an iron post.
+        // A lantern post: a dark wooden post with an iron arm, and a lantern hanging from it.
         public static void StreetLamp(LevelKit kit, Vector3 feet, bool light = true)
         {
             var iron = PatchworkAssets.Plain(Iron, 0.55f);
-            kit.Deco(PrimitiveType.Cylinder, feet + Vector3.up * 0.25f, new Vector3(0.55f, 0.25f, 0.55f), iron);
-            kit.Deco(PrimitiveType.Cylinder, feet + Vector3.up * 2f, new Vector3(0.16f, 1.8f, 0.16f), iron);
-            kit.Deco(PrimitiveType.Sphere, feet + Vector3.up * 1.2f, Vector3.one * 0.28f, iron);
-            kit.Deco(PrimitiveType.Cylinder, feet + Vector3.up * 3.8f, new Vector3(0.36f, 0.06f, 0.36f), iron);
-            kit.Deco(PrimitiveType.Cube, feet + Vector3.up * 4.25f, new Vector3(0.42f, 0.7f, 0.42f), PatchworkAssets.Glow(WarmLight, 1.4f));
-            var cap = kit.Deco(PrimitiveType.Cube, feet + Vector3.up * 4.75f, new Vector3(0.5f, 0.5f, 0.5f), iron);
+            var post = PatchworkAssets.Wood(DarkWood);
+            kit.Deco(PrimitiveType.Cube, feet + Vector3.up * 0.2f, new Vector3(0.6f, 0.4f, 0.6f), PatchworkAssets.Cobble(Stone));
+            kit.Deco(PrimitiveType.Cube, feet + Vector3.up * 2.3f, new Vector3(0.26f, 4.2f, 0.26f), post);
+            kit.Deco(PrimitiveType.Cube, feet + Vector3.up * 4.45f, new Vector3(0.36f, 0.16f, 0.36f), post);
+            // The arm, with a little curl of iron under it.
+            kit.Deco(PrimitiveType.Cube, feet + new Vector3(0.55f, 4.2f, 0f), new Vector3(1.1f, 0.08f, 0.08f), iron);
+            var curl = kit.Deco(PrimitiveType.Cube, feet + new Vector3(0.3f, 3.95f, 0f), new Vector3(0.6f, 0.06f, 0.06f), iron);
+            curl.rotation = Quaternion.Euler(0f, 0f, 40f);
+            // The lantern: an iron cage round a warm glow, with a pointed cap.
+            Vector3 lan = feet + new Vector3(1f, 3.75f, 0f);
+            kit.Deco(PrimitiveType.Cube, lan + Vector3.up * 0.38f, new Vector3(0.04f, 0.2f, 0.04f), iron);
+            kit.Deco(PrimitiveType.Cube, lan, new Vector3(0.34f, 0.46f, 0.34f), PatchworkAssets.Glow(WarmLight, 1.4f));
+            for (int sx = -1; sx <= 1; sx += 2)
+                for (int sz = -1; sz <= 1; sz += 2)
+                    kit.Deco(PrimitiveType.Cube, lan + new Vector3(sx * 0.18f, 0f, sz * 0.18f), new Vector3(0.05f, 0.5f, 0.05f), iron);
+            kit.Deco(PrimitiveType.Cube, lan + Vector3.down * 0.26f, new Vector3(0.42f, 0.06f, 0.42f), iron);
+            var cap = kit.Deco(PrimitiveType.Cube, lan + Vector3.up * 0.3f, new Vector3(0.34f, 0.34f, 0.34f), iron);
             cap.rotation = Quaternion.Euler(45f, 45f, 0f);
-            cap.localScale = new Vector3(0.42f, 0.42f, 0.42f);
-            kit.Deco(PrimitiveType.Sphere, feet + Vector3.up * 5.1f, Vector3.one * 0.14f, PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f));
             var col = kit.Group("LampPost", feet + Vector3.up * 2f).gameObject.AddComponent<CapsuleCollider>();
             col.radius = 0.2f;
             col.height = 4f;
             if (!light) return;
             var go = new GameObject("LampLight");
             go.transform.SetParent(kit.Root, false);
-            go.transform.position = feet + Vector3.up * 4.2f;
+            go.transform.position = feet + new Vector3(1f, 3.75f, 0f);
             var l = go.AddComponent<Light>();
             l.type = LightType.Point;
             l.color = WarmLight;
