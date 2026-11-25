@@ -3,21 +3,28 @@ using UnityEngine;
 
 namespace Patchwork
 {
-    // The town wall: Toybox Town as a walled medieval village, like a toy fort out of a toybox.
+    // The town wall: Toybox Town as a walled medieval town, like a toy fort out of a toybox.
     // Cream stone blocks with painted battlements, round towers with pointed roofs and pennants,
-    // and arched gatehouses. It runs:
+    // and arched gatehouses. The old town's wall still runs:
     //   - west, along the top of the ravine (the ravine is the moat), open in the middle where
-    //     the west street, the swing and the steps down are
-    //   - east, along the canal (the canal is the moat), with gates at the bridges and the steps
-    //   - north, past the back of the barracks (the castle yard), with the Castle Gate in the
-    //     middle, a postern by the carousel, and the corner left open for the xylophone bridge
+    //     the west street, the swing and the steps down are, and now on north past the
+    //     Tournament Green to the keep, with posterns at the tape-measure bridge and the button
+    //     stones
+    //   - north, past the back of the barracks: now an inner wall, with the Castle Gate between
+    //     the castle yard and the Tournament Green
     //   - south, behind Chimney Lane, with the old spire as one of its towers, the South Gate
     //     and a postern
+    // and the new outer wall (taller, thicker) takes in the Common Quarter across the canal and
+    // the keep in the north: over the canal on two water gates, round the east side with the
+    // Toybox Gate (the way in from the Pod), the East Gate and a postern to the farm, and back
+    // round the keep with the North Gate.
     // Outside it are the outskirts: the fields and farm, the woods, Spindle Hill and the meadows.
     public static partial class Level1Builder
     {
         public const float WallWest = -36.55f, WallEast = 31.55f, WallNorth = 58.5f, WallSouth = -72f;
-        const float WallHeight = 3.6f, WallThick = 1f;
+        const float WallHeight = 5f, WallThick = 1f;
+        const float OuterHeight = 6.4f, OuterThick = 1.6f;
+        const float TowerExtra = 2f;   // the old towers, raised to stand over the taller walls
 
         static Material wallStone, wallPlinth, wallTrim, capRed, capBlue, roofRed, roofBlue, gold, slit;
 
@@ -46,22 +53,19 @@ namespace Patchwork
             WallTower(kit, root, new Vector3(W, 0f, -22.5f), 2f, 6.8f, false);
             WallTower(kit, root, new Vector3(W, 0f, -36f), 1.6f, 5.8f, true);
             WallTower(kit, root, new Vector3(W, 0f, S), 2.2f, 7.4f, false);
+            // ...and on north along the ravine to the keep, open at the two ravine crossings.
+            float tapeA = TapeZ - 2.6f, tapeB = TapeZ + 2.6f, stonesA = StonesZ - 2.6f, stonesB = StonesZ + 2.6f;
+            WallRun(kit, root, new Vector3(W, 0f, N), new Vector3(W, 0f, tapeA));
+            WallRun(kit, root, new Vector3(W, 0f, tapeB), new Vector3(W, 0f, stonesA));
+            WallRun(kit, root, new Vector3(W, 0f, stonesB), new Vector3(W, 0f, OuterWall[OuterWall.Length - 1].y));
+            WallTower(kit, root, new Vector3(W, 0f, tapeA), 1.4f, 5.6f, false);
+            WallTower(kit, root, new Vector3(W, 0f, tapeB), 1.4f, 5.6f, true);
+            WallTower(kit, root, new Vector3(W, 0f, stonesA), 1.4f, 5.6f, false);
+            WallTower(kit, root, new Vector3(W, 0f, stonesB), 1.4f, 5.6f, true);
 
-            // East, along the canal: the East Gate at the main bridge, gaps at the two small
-            // bridges (z +-40) and the steps down to the water (z 12.5 to 18), and the north end
-            // left open for the way to the xylophone bridge.
-            WallRun(kit, root, new Vector3(E, 0f, S), new Vector3(E, 0f, -43.4f));
-            WallRun(kit, root, new Vector3(E, 0f, -36.6f), new Vector3(E, 0f, -7.2f));
-            WallRun(kit, root, new Vector3(E, 0f, 7.2f), new Vector3(E, 0f, 12.5f));
-            WallRun(kit, root, new Vector3(E, 0f, 18f), new Vector3(E, 0f, 36.6f));
-            WallRun(kit, root, new Vector3(E, 0f, 43.4f), new Vector3(E, 0f, 52f));
+            // (The old east wall along the canal is gone: the canal runs through the middle of
+            // town now. Its south-east corner tower stays, where the outer wall starts.)
             WallTower(kit, root, new Vector3(E, 0f, S), 2.2f, 7.4f, true);
-            WallTower(kit, root, new Vector3(E, 0f, -43.4f), 1.4f, 5.6f, false);
-            WallTower(kit, root, new Vector3(E, 0f, -36.6f), 1.4f, 5.6f, true);
-            WallTower(kit, root, new Vector3(E, 0f, 36.6f), 1.4f, 5.6f, false);
-            WallTower(kit, root, new Vector3(E, 0f, 43.4f), 1.4f, 5.6f, true);
-            WallTower(kit, root, new Vector3(E, 0f, 52f), 1.8f, 6.4f, false);
-            Gatehouse(kit, root, new Vector3(E, 0f, 0f), false, 14.4f, "East Gate");
 
             // North, behind the barracks: the Castle Gate in the middle, a postern by the
             // carousel, and the north-east corner open for the xylophone bridge.
@@ -88,7 +92,7 @@ namespace Patchwork
             var pins = kit.Info.MapPins;
             pins.Add(new MapPin("Castle Gate", new Vector3(0f, 0f, N), MapPin.Kind.Area));
             pins.Add(new MapPin("South Gate", new Vector3(10f, 0f, S), MapPin.Kind.Area));
-            pins.Add(new MapPin("East Gate", new Vector3(E, 0f, 0f), MapPin.Kind.Area));
+            OuterTownWall(kit, root);
         }
 
         // A straight length of wall between two points on the ground (along x or along z).
@@ -131,6 +135,7 @@ namespace Patchwork
             // (On the west and east walls, just inside the edge of the ravine or the canal.)
             if (Mathf.Abs(feet.x - WallWest) < 0.01f) feet.x = RavineEast + r - 0.05f;
             else if (Mathf.Abs(feet.x - WallEast) < 0.01f) feet.x = CanalWest - r + 0.05f;
+            h += TowerExtra;
             var g = kit.Group("WallTower", feet);
             g.SetParent(root, true);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, h * 0.5f, 0f), new Vector3(r * 2f, h * 0.5f, r * 2f), wallStone, default(Vector3), g);
@@ -252,6 +257,295 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0.2f, 1.6f, 0f), new Vector3(0.02f, 0.25f, 0.02f), PatchworkAssets.Felt(new Color(0.85f, 0.75f, 0.55f)), default(Vector3), g);
             TownKit.Solid(kit, feet + Vector3.up * 0.5f, new Vector3(1.6f, 1f, 1.6f), 0f);
             ClearGrass(feet, 1.2f);
+        }
+
+        // ---------------------------------------------------------------- The outer wall
+
+        // The outer wall, from the old wall's south-east corner round to the ravine by the keep.
+        public static readonly Vector2[] OuterWall =
+        {
+            new Vector2(31.55f, -72f), new Vector2(41f, -72.5f), new Vector2(50f, -71.2f), new Vector2(66f, -67f), new Vector2(77f, -59f),
+            new Vector2(86f, -46f), new Vector2(92f, -26f), new Vector2(95.2f, 2f), new Vector2(96f, 32f), new Vector2(95f, 62f),
+            new Vector2(90f, 86f), new Vector2(80f, 99f), new Vector2(62f, 107f), new Vector2(44f, 110f), new Vector2(30f, 112.5f),
+            new Vector2(14f, 120f), new Vector2(-6f, 122f), new Vector2(-24f, 116f), new Vector2(WallWest, 104f),
+        };
+        public static readonly Vector3 MainGate = new Vector3(58f, 0f, -69.5f);
+        static readonly Vector3 EastGateAt = new Vector3(95.36f, 0f, 8f);
+        static readonly Vector3 NorthGateAt = new Vector3(8f, 0f, 120.6f);
+        static readonly Vector3 FarmGateAt = new Vector3(84.8f, 0f, 92.8f);
+
+        // Is p inside the town (the old town and the Common Quarter)?
+        public static bool InTown(Vector3 p)
+        {
+            var poly = new List<Vector2>(OuterWall);
+            poly.Add(new Vector2(WallWest, WallNorth));
+            poly.Add(new Vector2(WallWest, WallSouth));
+            bool inside = false;
+            for (int i = 0, j = poly.Count - 1; i < poly.Count; j = i++)
+            {
+                Vector2 a = poly[i], b = poly[j];
+                if ((a.y > p.z) != (b.y > p.z) && p.x < (b.x - a.x) * (p.z - a.y) / (b.y - a.y) + a.x) inside = !inside;
+            }
+            return inside;
+        }
+
+        // How far p is from the line of the outer wall.
+        public static float OuterWallDistance(Vector3 p)
+        {
+            var q = new Vector2(p.x, p.z);
+            float best = float.MaxValue;
+            for (int i = 0; i < OuterWall.Length - 1; i++)
+            {
+                Vector2 a = OuterWall[i], b = OuterWall[i + 1], ab = b - a;
+                float t = Mathf.Clamp01(Vector2.Dot(q - a, ab) / ab.sqrMagnitude);
+                best = Mathf.Min(best, Vector2.Distance(q, a + ab * t));
+            }
+            return best;
+        }
+
+        static void OuterTownWall(LevelKit kit, Transform root)
+        {
+            // The gaps: the gates (and the farm postern), and the two places it crosses the canal.
+            var gaps = new List<Vector4>();   // (x, z, half-width, kind) kind: 0 big gate, 1 gate, 2 postern, 3 water
+            gaps.Add(new Vector4(MainGate.x, MainGate.z, 7.2f, 0f));
+            gaps.Add(new Vector4(EastGateAt.x, EastGateAt.z, 5.6f, 1f));
+            gaps.Add(new Vector4(NorthGateAt.x, NorthGateAt.z, 5.6f, 1f));
+            gaps.Add(new Vector4(FarmGateAt.x, FarmGateAt.z, 2.4f, 2f));
+            foreach (var w in OuterWater()) gaps.Add(w);
+
+            for (int i = 0; i < OuterWall.Length - 1; i++)
+            {
+                Vector2 a = OuterWall[i], b = OuterWall[i + 1], ab = b - a;
+                float len = ab.magnitude;
+                Vector2 dir = ab / len;
+                // The bits of this stretch that are gaps.
+                var cuts = new List<Vector2>();
+                foreach (var g in gaps)
+                {
+                    Vector2 c = new Vector2(g.x, g.y);
+                    float t = Vector2.Dot(c - a, dir);
+                    if (t < -0.5f || t > len + 0.5f || Vector2.Distance(a + dir * Mathf.Clamp(t, 0f, len), c) > 1.5f) continue;
+                    cuts.Add(new Vector2(t - g.z, t + g.z));
+                }
+                cuts.Sort((x, y) => x.x.CompareTo(y.x));
+                float from = 0f;
+                foreach (var c in cuts)
+                {
+                    if (c.x > from + 0.4f) OuterRun(kit, root, a + dir * from, a + dir * Mathf.Min(c.x, len));
+                    from = Mathf.Max(from, c.y);
+                }
+                if (len > from + 0.4f) OuterRun(kit, root, a + dir * from, b);
+                // A tower at every corner (not where the wall meets the old one or the ravine;
+                // the old towers are there already).
+                bool byGate = false;
+                foreach (var g in gaps) if (Vector2.Distance(a, new Vector2(g.x, g.y)) < g.z + 4f) byGate = true;
+                if (i > 0 && !byGate) WallTower(kit, root, new Vector3(a.x, 0f, a.y), 2.5f, OuterHeight + 2.6f - TowerExtra, i % 2 == 0);
+            }
+            // The big corner tower where it meets the ravine, by the keep.
+            WallTower(kit, root, new Vector3(WallWest, 0f, OuterWall[OuterWall.Length - 1].y), 2.4f, OuterHeight + 2.4f - TowerExtra, false);
+
+            // The gates.
+            GrandGate(kit, root, MainGate, WallYawAt(MainGate), 14.4f, 1.35f, "Toybox Gate");
+            GrandGate(kit, root, EastGateAt, WallYawAt(EastGateAt), 11.2f, 1f, "East Gate");
+            GrandGate(kit, root, NorthGateAt, WallYawAt(NorthGateAt), 11.2f, 1f, "North Gate");
+            Postern(kit, root, FarmGateAt, WallYawAt(FarmGateAt));
+            foreach (var w in OuterWater()) WaterGate(kit, root, new Vector3(w.x, 0f, w.y), WallYawAt(new Vector3(w.x, 0f, w.y)), w.z);
+
+            var pins = kit.Info.MapPins;
+            pins.Add(new MapPin("Toybox Gate", MainGate, MapPin.Kind.Area));
+            pins.Add(new MapPin("East Gate", EastGateAt, MapPin.Kind.Area));
+            pins.Add(new MapPin("North Gate", NorthGateAt, MapPin.Kind.Area));
+            pins.Add(new MapPin("Farm Gate", FarmGateAt));
+        }
+
+        // Where the outer wall crosses the canal: the middle of the crossing, and half its width
+        // (from quay to quay, plus a little).
+        static List<Vector4> OuterWater()
+        {
+            var list = new List<Vector4>();
+            float mid = (CanalWest + CanalEast) * 0.5f;
+            for (int i = 0; i < OuterWall.Length - 1; i++)
+            {
+                Vector2 a = OuterWall[i], b = OuterWall[i + 1];
+                if ((a.x - mid) * (b.x - mid) > 0f) continue;
+                float t = (mid - a.x) / (b.x - a.x);
+                list.Add(new Vector4(mid, Mathf.Lerp(a.y, b.y, t), (CanalEast - CanalWest) * 0.5f + 0.6f, 3f));
+            }
+            return list;
+        }
+
+        // The direction the outer wall runs at p (as a yaw: the wall's length is along local z).
+        static float WallYawAt(Vector3 p)
+        {
+            var q = new Vector2(p.x, p.z);
+            float best = float.MaxValue, yaw = 0f;
+            for (int i = 0; i < OuterWall.Length - 1; i++)
+            {
+                Vector2 a = OuterWall[i], b = OuterWall[i + 1], ab = b - a;
+                float t = Mathf.Clamp01(Vector2.Dot(q - a, ab) / ab.sqrMagnitude);
+                float d = Vector2.Distance(q, a + ab * t);
+                if (d < best) { best = d; yaw = Mathf.Atan2(ab.x, ab.y) * Mathf.Rad2Deg; }
+            }
+            return yaw;
+        }
+
+        // A length of the outer wall, at any angle: taller and thicker than the old one, with a
+        // plinth, a trim, battlements and a walkway along the top.
+        static void OuterRun(LevelKit kit, Transform root, Vector2 a2, Vector2 b2)
+        {
+            Vector3 a = new Vector3(a2.x, 0f, a2.y), b = new Vector3(b2.x, 0f, b2.y);
+            Vector3 d = b - a;
+            float len = d.magnitude;
+            if (len < 0.4f) return;
+            float yaw = Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg;
+            var rot = Quaternion.Euler(0f, yaw, 0f);
+            Vector3 mid = (a + b) * 0.5f;
+            var body = kit.Block(mid + Vector3.up * OuterHeight * 0.5f, new Vector3(OuterThick, OuterHeight, len), new Color(0.9f, 0.85f, 0.75f), "TownWallRun", wallStone);
+            body.rotation = rot;
+            body.SetParent(root, true);
+            kit.Deco(PrimitiveType.Cube, mid + Vector3.up * 0.4f, new Vector3(OuterThick + 0.3f, 0.8f, len), wallPlinth, new Vector3(0f, yaw, 0f), root);
+            kit.Deco(PrimitiveType.Cube, mid + Vector3.up * (OuterHeight - 0.05f), new Vector3(OuterThick + 0.2f, 0.2f, len), wallTrim, new Vector3(0f, yaw, 0f), root);
+            // A string course halfway up, and buttresses every so often on the outside.
+            kit.Deco(PrimitiveType.Cube, mid + Vector3.up * (OuterHeight * 0.55f), new Vector3(OuterThick + 0.12f, 0.16f, len), wallPlinth, new Vector3(0f, yaw, 0f), root);
+            Vector3 dir = d / len, outward = rot * Vector3.right;
+            if (InTown(mid + outward * 3f)) outward = -outward;
+            var red = new MeshBatch();
+            var blue = new MeshBatch();
+            var buttress = new MeshBatch();
+            int count = Mathf.Max(1, Mathf.FloorToInt((len - 0.4f) / 1.5f));
+            float step = len / count;
+            for (int i = 0; i < count; i++)
+            {
+                Vector3 c = a + dir * (step * (i + 0.5f));
+                // Merlons on both edges of the walkway (the outer ones taller).
+                (i % 2 == 0 ? red : blue).Box(c + outward * (OuterThick * 0.5f - 0.22f) + Vector3.up * (OuterHeight + 0.45f), new Vector3(0.44f, 0.9f, 0.8f), rot);
+                if (i % 2 == 0) (i % 4 == 0 ? blue : red).Box(c - outward * (OuterThick * 0.5f - 0.18f) + Vector3.up * (OuterHeight + 0.22f), new Vector3(0.36f, 0.44f, 0.8f), rot);
+                if (i % 5 == 2) buttress.Box(c + outward * (OuterThick * 0.5f + 0.35f) + Vector3.up * (OuterHeight * 0.32f), new Vector3(0.7f, OuterHeight * 0.64f, 1.1f), rot);
+            }
+            red.Build(root, "Battlements", capRed, true);
+            blue.Build(root, "Battlements", capBlue, true);
+            buttress.Build(root, "Buttresses", wallPlinth, true);
+            TownKit.Solid(kit, mid + Vector3.up * (OuterHeight + 0.45f) + outward * (OuterThick * 0.5f - 0.22f), new Vector3(0.44f, 0.9f, len), yaw);
+        }
+
+        // A great gatehouse on the outer wall: two big round towers, a tall gate block between
+        // them with its own pitched roof, the portcullis drawn up, banners and the town's shield
+        // over the arch, and lanterns either side of the way through.
+        static void GrandGate(LevelKit kit, Transform root, Vector3 centre, float yaw, float span, float scale, string name)
+        {
+            var rot = Quaternion.Euler(0f, yaw, 0f);
+            Vector3 along = rot * Vector3.forward, outward = rot * Vector3.right;
+            if (InTown(centre + outward * 4f)) outward = -outward;
+            float half = span * 0.5f;
+            float towerR = 2.6f * scale, towerH = OuterHeight + 4.2f * scale;
+            for (int s = -1; s <= 1; s += 2)
+            {
+                // (The towers stand a little proud of the wall on the outside, as gate towers do.)
+                WallTower(kit, root, centre + along * s * half + outward * (towerR * 0.35f), towerR, towerH - TowerExtra, s < 0);
+            }
+            var g = kit.Group(name.Replace(" ", ""), centre);
+            g.SetParent(root, true);
+            g.rotation = Quaternion.LookRotation(outward, Vector3.up);
+            // In g: x along the wall, z out of town.
+            float clear = 5.4f * scale, beam = 2.6f * scale, inner = span - towerR * 1.6f, depth = 4.6f * scale;
+            float pier = 1.1f * scale, way = inner - pier * 2f;
+            System.Func<float, float, float, Vector3> W = (x, y, z) => centre + Quaternion.LookRotation(outward, Vector3.up) * new Vector3(x, y, z);
+            for (int s = -1; s <= 1; s += 2)
+            {
+                var p = kit.Block(W(s * (way * 0.5f + pier * 0.5f), (clear + beam) * 0.5f, 0f), new Vector3(pier, clear + beam, depth), new Color(0.9f, 0.85f, 0.75f), "GatePier", wallStone);
+                p.rotation = g.rotation;
+                p.SetParent(g, true);
+            }
+            var lintel = kit.Block(W(0f, clear + beam * 0.5f, 0f), new Vector3(way + 0.02f, beam, depth), new Color(0.9f, 0.85f, 0.75f), "GateArch", wallStone);
+            lintel.rotation = g.rotation;
+            lintel.SetParent(g, true);
+            // The rounded underside of the arch, a trim and the battlements on top.
+            var arch = kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, clear, 0f), new Vector3(way, depth * 0.5f + 0.02f, 1.4f * scale), wallTrim, new Vector3(90f, 0f, 0f), g);
+            arch.name = "GateArchCurve";
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, clear + beam, 0f), new Vector3(inner + 0.4f, 0.24f, depth + 0.3f), wallTrim, default(Vector3), g);
+            int teeth = Mathf.Max(3, Mathf.FloorToInt(inner / 1.3f));
+            for (int i = 0; i < teeth; i++)
+            {
+                float u = -inner * 0.5f + inner * (i + 0.5f) / teeth;
+                kit.Deco(PrimitiveType.Cube, new Vector3(u, clear + beam + 0.5f, depth * 0.5f - 0.2f), new Vector3(0.8f, 0.8f, 0.4f), i % 2 == 0 ? capRed : capBlue, default(Vector3), g);
+            }
+            // A pitched roof over the gate passage, behind the battlements.
+            var roof = TownKit.GableRoof(kit, W(0f, clear + beam + 0.1f, -depth * 0.12f), inner + 0.6f, depth * 0.8f, 2.6f * scale, yaw + 90f, roofRed, wallStone);
+            if (roof != null) roof.SetParent(g, true);
+            // The portcullis, drawn up: its iron teeth showing under the arch.
+            var iron = PatchworkAssets.Plain(TownKit.Iron, 0.5f);
+            for (float u = -way * 0.5f + 0.45f; u < way * 0.5f - 0.3f; u += 0.62f)
+                kit.Deco(PrimitiveType.Cube, new Vector3(u, clear - 0.2f, depth * 0.18f), new Vector3(0.14f, 0.7f, 0.14f), iron, default(Vector3), g);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, clear + 0.12f, depth * 0.18f), new Vector3(way, 0.16f, 0.16f), iron, default(Vector3), g);
+            // The shield over the arch, and long banners, on both faces.
+            for (int s = -1; s <= 1; s += 2)
+            {
+                var shield = kit.Group("TownShield", W(0f, clear + beam * 0.55f, s * (depth * 0.5f + 0.08f)));
+                shield.SetParent(g, true);
+                shield.rotation = Quaternion.LookRotation(outward * s, Vector3.up);
+                float k = scale * 1.4f;
+                kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(1.3f, 1.2f, 0.12f) * k, gold, default(Vector3), shield);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, 0.02f, 0.05f) * k, new Vector3(1.1f, 1.02f, 0.06f) * k, PatchworkAssets.Felt(new Color(0.3f, 0.45f, 0.72f)), default(Vector3), shield);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(0f, -0.55f, 0.04f) * k, new Vector3(1.1f, 0.5f, 0.12f) * k, PatchworkAssets.Felt(new Color(0.3f, 0.45f, 0.72f)), default(Vector3), shield);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -0.05f, 0.1f) * k, new Vector3(0.46f, 0.04f, 0.46f) * k, PatchworkAssets.Felt(LevelKit.Palette.Rose), new Vector3(90f, 0f, 0f), shield);
+                kit.Deco(PrimitiveType.Cube, new Vector3(0f, -0.05f, 0.14f) * k, new Vector3(0.08f, 0.95f, 0.03f) * k, PatchworkAssets.Plain(new Color(0.85f, 0.86f, 0.9f), 0.8f), new Vector3(0f, 0f, 35f), shield);
+                for (int b = -1; b <= 1; b += 2)
+                {
+                    var banner = kit.Group("GateBanner", W(b * (way * 0.5f + pier * 0.5f), clear + beam - 0.3f, s * (depth * 0.5f + 0.06f)));
+                    banner.SetParent(g, true);
+                    banner.rotation = Quaternion.LookRotation(outward * s, Vector3.up);
+                    float bl = (clear + beam) * 0.62f;
+                    kit.Deco(PrimitiveType.Cube, new Vector3(0f, -bl * 0.5f, 0f), new Vector3(1f * scale, bl, 0.04f), PatchworkAssets.Felt(b < 0 ? new Color(0.82f, 0.3f, 0.3f) : new Color(0.3f, 0.45f, 0.72f)), default(Vector3), banner);
+                    kit.Deco(PrimitiveType.Cube, new Vector3(0f, -bl * 0.72f, -0.03f), new Vector3(1f * scale, 0.24f, 0.03f), PatchworkAssets.Felt(LevelKit.Palette.Gold), default(Vector3), banner);
+                    kit.Deco(PrimitiveType.Cube, new Vector3(0f, -bl - 0.2f, 0f), new Vector3(0.7f * scale, 0.5f, 0.04f), PatchworkAssets.Felt(b < 0 ? new Color(0.82f, 0.3f, 0.3f) : new Color(0.3f, 0.45f, 0.72f)), new Vector3(0f, 0f, 45f), banner);
+                }
+            }
+            // Lanterns on brackets either side of the way through, on the outside face.
+            for (int s = -1; s <= 1; s += 2)
+                TownKit.StreetLamp(kit, W(s * (way * 0.5f + pier + 0.9f), 0f, depth * 0.5f + 1.3f));
+            ClearGrass(centre, span * 0.5f);
+        }
+
+        // A small arched postern through the outer wall.
+        static void Postern(LevelKit kit, Transform root, Vector3 centre, float yaw)
+        {
+            var rot = Quaternion.Euler(0f, yaw, 0f);
+            Vector3 along = rot * Vector3.forward;
+            for (int s = -1; s <= 1; s += 2)
+                WallTower(kit, root, centre + along * s * 2.4f, 1.3f, OuterHeight + 0.4f - TowerExtra, s > 0);
+            var lintel = kit.Block(centre + Vector3.up * (OuterHeight - 0.9f), new Vector3(OuterThick, 1.8f, 2.4f), new Color(0.9f, 0.85f, 0.75f), "PosternArch", wallStone);
+            lintel.rotation = rot;
+            lintel.SetParent(root, true);
+            kit.Deco(PrimitiveType.Cube, centre + Vector3.up * (OuterHeight + 0.45f), new Vector3(OuterThick + 0.04f, 0.9f, 0.8f), capRed, new Vector3(0f, yaw, 0f), root);
+        }
+
+        // Where the wall crosses the canal: an arch over the water, high enough for a swimmer
+        // (or a boat), with the portcullis drawn up and piers on both quays.
+        static void WaterGate(LevelKit kit, Transform root, Vector3 centre, float yaw, float halfWidth)
+        {
+            var rot = Quaternion.Euler(0f, yaw, 0f);
+            Vector3 along = rot * Vector3.forward;
+            float bottom = 2.8f, len = halfWidth * 2f + 0.4f;
+            var body = kit.Block(centre + Vector3.up * ((bottom + OuterHeight) * 0.5f), new Vector3(OuterThick, OuterHeight - bottom, len), new Color(0.9f, 0.85f, 0.75f), "WaterGateArch", wallStone);
+            body.rotation = rot;
+            body.SetParent(root, true);
+            kit.Deco(PrimitiveType.Cube, centre + Vector3.up * (OuterHeight - 0.05f), new Vector3(OuterThick + 0.2f, 0.2f, len), wallTrim, new Vector3(0f, yaw, 0f), root);
+            var arch = kit.Deco(PrimitiveType.Cylinder, centre + Vector3.up * bottom, new Vector3(2.4f, (OuterThick + 0.04f) * 0.5f, len - 1.2f), wallTrim, new Vector3(0f, yaw, 90f), root);
+            arch.name = "WaterArch";
+            var iron = PatchworkAssets.Plain(TownKit.Iron, 0.5f);
+            for (float u = -len * 0.5f + 0.6f; u < len * 0.5f - 0.5f; u += 0.6f)
+                kit.Deco(PrimitiveType.Cube, centre + along * u + Vector3.up * (bottom - 0.35f), new Vector3(0.12f, 0.8f, 0.12f), iron, new Vector3(0f, yaw, 0f), root);
+            for (int i = 0; i < Mathf.FloorToInt(len / 1.5f); i++)
+                kit.Deco(PrimitiveType.Cube, centre + along * (-len * 0.5f + 0.75f + i * 1.5f) + Vector3.up * (OuterHeight + 0.45f), new Vector3(OuterThick + 0.04f, 0.9f, 0.8f), i % 2 == 0 ? capRed : capBlue, new Vector3(0f, yaw, 0f), root);
+            TownKit.Solid(kit, centre + Vector3.up * (OuterHeight + 0.45f), new Vector3(OuterThick, 0.9f, len), yaw);
+            // Piers on the quays (not where an old corner tower already stands).
+            var oldCorner = new Vector3(CanalWest - 2.15f, 0f, WallSouth);
+            for (int s = -1; s <= 1; s += 2)
+            {
+                Vector3 at = centre + along * s * (halfWidth + 1.2f);
+                if (Vector3.Distance(at, oldCorner) < 3f) continue;
+                WallTower(kit, root, at, 1.5f, OuterHeight + 1.2f - TowerExtra, s < 0);
+            }
         }
 
         // A cone, point up, for the tower roofs.

@@ -42,8 +42,8 @@ namespace Patchwork
         static void Corners(LevelKit kit)
         {
             var P = kit.Info.MapPins;
-            if (ClearArea(new Vector3(94f, 0f, 69f), 9f, out Vector3 hill)) { PinwheelHill(kit, hill); P.Add(new MapPin("Pinwheel Hill", hill)); }
-            if (ClearArea(new Vector3(80f, 0f, -34f), 8f, out Vector3 pond)) { PaperBoatPond(kit, pond); P.Add(new MapPin("Paper Boat Pond", pond)); }
+            if (ClearArea(new Vector3(128f, 0f, 42f), 9f, out Vector3 hill)) { PinwheelHill(kit, hill); P.Add(new MapPin("Pinwheel Hill", hill)); }
+            if (ClearArea(new Vector3(108f, 0f, -62f), 8f, out Vector3 pond)) { PaperBoatPond(kit, pond); P.Add(new MapPin("Paper Boat Pond", pond)); }
             if (ClearArea(new Vector3(95f, 0f, -75f), 8f, out Vector3 picnic)) { GiantsPicnic(kit, picnic); P.Add(new MapPin("Giant's Picnic", picnic)); }
             if (ClearArea(new Vector3(-72f, 0f, 62f), 10f, out Vector3 grove)) { PomPomGrove(kit, grove); P.Add(new MapPin("Pom-Pom Grove", grove)); }
         }

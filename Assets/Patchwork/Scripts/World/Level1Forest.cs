@@ -63,7 +63,8 @@ namespace Patchwork
                     LanternPost(kit, new Vector3(x, 0f, -92f + s * 2.4f));
             LanternPost(kit, new Vector3(-54.5f, 0f, -26f));
             // And a little footbridge over the canal, so the Pod's meadow joins the orchard.
-            TownKit.Bridge(kit, new Vector3(CanalWest - 0.5f, 0.05f, -97f), new Vector3(CanalEast + 0.5f, 0.05f, -97f), 3f, 0.7f);
+            // (The canal is the River Weft out here, with soft banks, so the bridge is a little longer.)
+            TownKit.Bridge(kit, new Vector3(CanalWest - 4f, 0.05f, -97f), new Vector3(CanalEast + 5f, 0.05f, -97f), 3f, 1.6f);
         }
 
         static void LanternPost(LevelKit kit, Vector3 feet)

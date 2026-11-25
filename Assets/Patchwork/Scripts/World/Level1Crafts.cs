@@ -52,9 +52,9 @@ namespace Patchwork
             Vector3[] centres =
             {
                 new Vector3(75f, 0f, -100f), new Vector3(100f, 0f, 30f), new Vector3(100f, 0f, 95f), new Vector3(-6f, 0f, -101f),
-                new Vector3(94f, 0f, 69f), new Vector3(20f, 0f, 100f), new Vector3(60f, 0f, 10f), new Vector3(70f, 0f, 50f),
+                new Vector3(132f, 0f, 84f), new Vector3(20f, 0f, 100f), new Vector3(112f, 0f, 44f), new Vector3(96f, 0f, -140f),
                 new Vector3(-20f, 0f, 80f), new Vector3(55f, 0f, -60f), new Vector3(-70f, 0f, 70f), new Vector3(-95f, 0f, 60f),
-                new Vector3(0f, 0f, 70f), new Vector3(60f, 0f, -20f), new Vector3(-25f, 0f, -95f), new Vector3(85f, 0f, -30f),
+                new Vector3(0f, 0f, 70f), new Vector3(58f, 0f, -140f), new Vector3(-25f, 0f, -95f), new Vector3(104f, 0f, -36f),
             };
             foreach (var c in centres)
             {

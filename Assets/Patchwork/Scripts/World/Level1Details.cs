@@ -61,7 +61,8 @@ namespace Patchwork
             var area = new Vector2(Half - 0.5f, Half - 0.5f);
             YarnGrass.Patches(kit, -area, area, 0f, 70, patchCols, 5);
             YarnGrass.Patches(kit, new Vector2(-80f, 26f), new Vector2(-66f, 40f), HillTop, 6, patchCols, 9);   // the top of Spindle Hill
-            YarnGrass.Scatter(kit, -area, area, 0f, 1.7f, greens, 3, FlowerColors, 3);
+            // (A touch thinner than it was, now the box is bigger, so there's no more of it in all.)
+            YarnGrass.Scatter(kit, -area, area, 0f, 1.4f, greens, 3, FlowerColors, 3);
             YarnGrass.Scatter(kit, new Vector2(-80f, 26f), new Vector2(-66f, 40f), HillTop, 1.7f, greens, 3, FlowerColors, 4);
         }
 
@@ -375,6 +376,12 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cylinder, new Vector3(-230f, 140f, -260f), new Vector3(90f, 36f, 90f), PatchworkAssets.Glow(new Color(1f, 0.9f, 0.7f), 0.8f));
         }
 
+        // The north-east toy corner (the stack of alphabet blocks, its drums, marbles and a jack)
+        // and the Toybox Express were where the Common Quarter is now; they're out in the
+        // meadows past the east wall.
+        static readonly Vector3 ToyCorner = new Vector3(40f, 0f, 0f);
+        public static readonly Vector3 TrainCentre = new Vector3(125f, 0f, -73f);
+
         // ---------------------------------------------------------------- Giant toys round the edges
 
         static void AlphabetBlock(LevelKit kit, Vector3 center, float size, float yaw, Color body, Color face, int shape)
@@ -465,10 +472,12 @@ namespace Patchwork
             AlphabetBlock(kit, new Vector3(-77.5f, 2f, -73f), 4f, -8f, new Color(0.35f, 0.55f, 0.85f), new Color(0.98f, 0.9f, 0.75f), 1);
             AlphabetBlock(kit, new Vector3(-80f, 6f, -72.3f), 4f, 25f, new Color(0.95f, 0.75f, 0.3f), new Color(0.98f, 0.9f, 0.75f), 2);
             kit.ThreadLine(new Vector3(-80.5f, 8.8f, -72.5f), new Vector3(-79.5f, 8.8f, -72f), 2);
-            AlphabetBlock(kit, new Vector3(82f, 2.5f, 78f), 5f, 0f, new Color(0.45f, 0.7f, 0.45f), new Color(0.98f, 0.9f, 0.75f), 3);
-            AlphabetBlock(kit, new Vector3(76.5f, 2.5f, 79f), 5f, 12f, new Color(0.75f, 0.5f, 0.85f), new Color(0.98f, 0.9f, 0.75f), 0);
-            AlphabetBlock(kit, new Vector3(79.5f, 7.5f, 78.5f), 5f, -15f, new Color(0.95f, 0.55f, 0.4f), new Color(0.98f, 0.9f, 0.75f), 1);
-            kit.ThreadLine(new Vector3(79f, 10.8f, 78.5f), new Vector3(80f, 10.8f, 78.5f), 2);
+            // (The north-east stack stood where the Common Quarter is now: it's out past the east
+            // wall, with its drums and marbles, by ToyCorner.)
+            AlphabetBlock(kit, new Vector3(82f, 2.5f, 78f) + ToyCorner, 5f, 0f, new Color(0.45f, 0.7f, 0.45f), new Color(0.98f, 0.9f, 0.75f), 3);
+            AlphabetBlock(kit, new Vector3(76.5f, 2.5f, 79f) + ToyCorner, 5f, 12f, new Color(0.75f, 0.5f, 0.85f), new Color(0.98f, 0.9f, 0.75f), 0);
+            AlphabetBlock(kit, new Vector3(79.5f, 7.5f, 78.5f) + ToyCorner, 5f, -15f, new Color(0.95f, 0.55f, 0.4f), new Color(0.98f, 0.9f, 0.75f), 1);
+            kit.ThreadLine(new Vector3(79f, 10.8f, 78.5f) + ToyCorner, new Vector3(80f, 10.8f, 78.5f) + ToyCorner, 2);
             AlphabetBlock(kit, new Vector3(-30f, 1.5f, 84f), 3f, 30f, new Color(0.35f, 0.55f, 0.85f), new Color(0.98f, 0.9f, 0.75f), 2);
             AlphabetBlock(kit, new Vector3(64f, 1.5f, -84f), 3f, -20f, new Color(0.85f, 0.35f, 0.35f), new Color(0.98f, 0.9f, 0.75f), 3);
 
@@ -540,7 +549,7 @@ namespace Patchwork
 
             // Marbles you can stand on, and toy jacks.
             Color[] swirl = { new Color(0.95f, 0.4f, 0.45f), new Color(0.35f, 0.6f, 0.95f), new Color(0.98f, 0.8f, 0.3f), new Color(0.45f, 0.8f, 0.5f) };
-            Vector3[] marbles = { new Vector3(-74f, 0f, -60f), new Vector3(-58f, 0f, -66f), new Vector3(70f, 0f, 70f), new Vector3(86f, 0f, 60f), new Vector3(-16f, 0f, 63f), new Vector3(24f, 0f, -80f) };
+            Vector3[] marbles = { new Vector3(-74f, 0f, -60f), new Vector3(-58f, 0f, -66f), new Vector3(70f, 0f, 70f) + ToyCorner, new Vector3(86f, 0f, 60f) + ToyCorner, new Vector3(-16f, 0f, 63f), new Vector3(24f, 0f, -80f) };
             for (int i = 0; i < marbles.Length; i++)
             {
                 float r = 1f + (i % 3) * 0.35f;
@@ -551,7 +560,7 @@ namespace Patchwork
                 m.gameObject.AddComponent<SphereCollider>().radius = r;
                 ClearGrass(marbles[i], r);
             }
-            Vector3[] jacks = { new Vector3(-70f, 0f, -63f), new Vector3(74f, 0f, 66f), new Vector3(-26f, 0f, 76f) };
+            Vector3[] jacks = { new Vector3(-70f, 0f, -63f), new Vector3(74f, 0f, 66f) + ToyCorner, new Vector3(-26f, 0f, 76f) };
             foreach (var j in jacks)
             {
                 Solid(kit, j + Vector3.up * 0.9f, new Vector3(1.8f, 1.8f, 1.8f));
@@ -570,8 +579,8 @@ namespace Patchwork
             // Big balls of yarn with knitting needles stuck in them.
             kit.YarnBall(new Vector3(-90f, 0f, 10f), 2.4f, LevelKit.Palette.Lavender);
             kit.KnittingNeedle(new Vector3(-90.5f, 2.2f, 9f), new Vector3(-92f, 7f, 5f), LevelKit.Palette.Rose);
-            kit.YarnBall(new Vector3(84f, 0f, 30f), 2f, LevelKit.Palette.Butter);
-            kit.KnittingNeedle(new Vector3(83.5f, 2f, 30.5f), new Vector3(86f, 6.5f, 34f), LevelKit.Palette.Sky);
+            kit.YarnBall(new Vector3(116f, 0f, 30f), 2f, LevelKit.Palette.Butter);
+            kit.KnittingNeedle(new Vector3(115.5f, 2f, 30.5f), new Vector3(118f, 6.5f, 34f), LevelKit.Palette.Sky);
             kit.YarnBall(new Vector3(20f, 0f, 86f), 1.8f, LevelKit.Palette.Peach);
         }
 
@@ -863,11 +872,12 @@ namespace Patchwork
             var rock = PatchworkAssets.Cobble(new Color(0.68f, 0.66f, 0.62f));
             var rocks = new MeshBatch();
             var rng = new System.Random(17);
-            for (int i = 0; i < 60; i++)
+            for (int i = 0; i < 96; i++)
             {
-                float z = -86f + i * 2.9f + (float)rng.NextDouble();
+                float z = -Half + 10f + i * 2.9f + (float)rng.NextDouble();
                 float side = rng.NextDouble() < 0.5 ? -1f : 1f;
-                float x = x0 + side * (2.6f + (float)rng.NextDouble() * 3.6f);
+                float x = StreamX(z) + side * (2.7f + (float)rng.NextDouble() * 3.1f);
+                x = Mathf.Clamp(x, RavineWest + 0.8f, RavineEast - 0.8f);
                 float s = 0.4f + (float)rng.NextDouble() * 0.9f;
                 rocks.Ball(new Vector3(x, bed + s * 0.25f, z), new Vector3(s * 1.4f, s * 0.8f, s), 3, 6);
                 if (i % 2 == 0)
@@ -878,6 +888,7 @@ namespace Patchwork
             // A brick culvert at the north end where the stream comes in through the toybox wall.
             var brick = PatchworkAssets.Brick(new Color(0.7f, 0.45f, 0.38f));
             // (It sits over the deep stream channel, with the water pouring out at the surface.)
+            x0 = StreamX(Half);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(x0, StreamSurface + 0.6f, Half - 0.2f), new Vector3(4.6f, 0.3f, 4.6f), brick, new Vector3(90f, 0f, 0f));
             kit.Deco(PrimitiveType.Cylinder, new Vector3(x0, StreamSurface + 0.6f, Half - 0.55f), new Vector3(3.6f, 0.05f, 3.6f), PatchworkAssets.Plain(new Color(0.12f, 0.1f, 0.12f), 0.2f), new Vector3(90f, 0f, 0f));
             var fall = kit.Deco(PrimitiveType.Cube, new Vector3(x0, StreamSurface + 0.25f, Half - 0.9f), new Vector3(3.2f, 0.9f, 0.08f), PatchworkAssets.Bubble(new Color(0.65f, 0.85f, 1f, 0.6f)), new Vector3(-35f, 0f, 0f));
@@ -1050,7 +1061,7 @@ namespace Patchwork
 
         static void TrainLoop(LevelKit kit)
         {
-            Vector3 center = new Vector3(70f, 0f, -63f);
+            Vector3 center = TrainCentre;
             var pts = PathMover.Oval(center, 12f, 9f, 72);
             for (int i = 0; i < pts.Length; i++)
             {
@@ -1082,7 +1093,7 @@ namespace Patchwork
                 w.gameObject.AddComponent<Carrier>();
             }
             // A station with a roof on posts, a bench, a clock and a stationmaster.
-            Vector3 st = new Vector3(70f, 0f, -51.2f);
+            Vector3 st = TrainCentre + new Vector3(0f, 0f, 11.8f);
             var planks = PatchworkAssets.Planks(new Color(0.7f, 0.52f, 0.38f));
             kit.Block(st + new Vector3(0f, 0.2f, 0f), new Vector3(10f, 0.4f, 2.4f), new Color(0.7f, 0.52f, 0.38f), "Platform", planks);
             for (int i = -2; i <= 2; i++)
@@ -1283,13 +1294,13 @@ namespace Patchwork
             kit.ThreadLine(new Vector3(-3.6f, 6f, 7f), new Vector3(-3.6f, 6f, 7f), 1);
             kit.ThreadLine(new Vector3(0f, 7f, 7f), new Vector3(0f, 7f, 7f), 1);
             kit.ThreadLine(new Vector3(3.6f, 6f, 7f), new Vector3(3.6f, 6f, 7f), 1);
-            kit.AddDrumPad(new Vector3(77f, 0f, 72f), 16f, new Color(0.3f, 0.5f, 0.85f));
-            kit.AddDrumPad(new Vector3(83.6f, 5f, 78f), 16f, new Color(0.95f, 0.75f, 0.3f));
+            kit.AddDrumPad(new Vector3(77f, 0f, 72f) + ToyCorner, 16f, new Color(0.3f, 0.5f, 0.85f));
+            kit.AddDrumPad(new Vector3(83.6f, 5f, 78f) + ToyCorner, 16f, new Color(0.95f, 0.75f, 0.3f));
             kit.AddDrumPad(new Vector3(-77f, 0f, -68.5f), 21f, new Color(0.45f, 0.7f, 0.45f));
             kit.AddDrumPad(new Vector3(-8.5f, 0f, -38f), 21f, new Color(0.75f, 0.5f, 0.85f));
             kit.Hint(new Vector3(-7.5f, 1.5f, 9.5f), new Vector3(3f, 3f, 3f), "Toy Drums",
                 "Jump on a toy drum to bounce up high. There are drums all over town. Where do they lead?");
-            ClearGrass(new Vector3(77f, 0f, 72f), 1.4f);
+            ClearGrass(new Vector3(77f, 0f, 72f) + ToyCorner, 1.4f);
             ClearGrass(new Vector3(-77f, 0f, -68.5f), 1.4f);
 
             // Wind-up mice scurrying round the bandstand, the pond and the cottage.
@@ -1674,8 +1685,8 @@ namespace Patchwork
         static void Butterflies(LevelKit kit)
         {
             Vector3[] spots = { new Vector3(-12f, 0.5f, 12f), new Vector3(12f, 0.5f, 12f), new Vector3(13f, 0.5f, -9f), new Vector3(-73f, 0.5f, -11f), new Vector3(-58f, 0.5f, -18f),
-                                new Vector3(-12f, 0.5f, 72f), new Vector3(14f, 0.5f, 74f), new Vector3(-24f, 0.5f, 80f), new Vector3(52f, 0.5f, 20f), OnHill(new Vector3(-67f, 4.5f, 33f)),
-                                new Vector3(0f, 0.5f, -4f), new Vector3(68f, 0.5f, -44f) };
+                                new Vector3(-12f, 0.5f, 72f), new Vector3(14f, 0.5f, 74f), new Vector3(-24f, 0.5f, 80f), new Vector3(60f, 0.5f, -140f), OnHill(new Vector3(-67f, 4.5f, 33f)),
+                                new Vector3(0f, 0.5f, -4f), new Vector3(96f, 0.5f, -96f) };
             Color[] wings = { new Color(1f, 0.6f, 0.7f), new Color(0.6f, 0.8f, 1f), new Color(1f, 0.85f, 0.4f), new Color(0.8f, 0.65f, 1f), new Color(1f, 0.7f, 0.45f) };
             for (int i = 0; i < spots.Length; i++)
             {

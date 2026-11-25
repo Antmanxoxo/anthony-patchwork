@@ -426,47 +426,50 @@ namespace Patchwork
 
         // ---------------------------------------------------------------- 8. Football
 
+        // (The pitch was where the Common Quarter is now; it's out past the East Gate.)
+        const float FootballShift = 40f;
+
         static void Football(LevelKit kit)
         {
-            Vector3 g = new Vector3(85.5f, 0f, -12f);
+            Vector3 g = new Vector3(85.5f + FootballShift, 0f, -12f);
             var white = PatchworkAssets.Plain(new Color(0.97f, 0.97f, 0.95f), 0.6f);
             // Posts and crossbar on the mouth, a frame at the back, and a string net.
             for (int s = -1; s <= 1; s += 2)
             {
-                Vector3 post = new Vector3(84.5f, 1.1f, g.z + s * 2.4f);
+                Vector3 post = new Vector3(84.5f + FootballShift, 1.1f, g.z + s * 2.4f);
                 kit.Deco(PrimitiveType.Cylinder, post, new Vector3(0.18f, 1.1f, 0.18f), white);
                 Solid(kit, post, new Vector3(0.2f, 2.2f, 0.2f));
-                kit.Deco(PrimitiveType.Cylinder, new Vector3(86.5f, 1.1f, g.z + s * 2.4f), new Vector3(0.1f, 1.1f, 0.1f), white);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(86.5f + FootballShift, 1.1f, g.z + s * 2.4f), new Vector3(0.1f, 1.1f, 0.1f), white);
             }
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(84.5f, 2.2f, g.z), new Vector3(0.18f, 2.45f, 0.18f), white, new Vector3(90f, 0f, 0f));
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(84.5f + FootballShift, 2.2f, g.z), new Vector3(0.18f, 2.45f, 0.18f), white, new Vector3(90f, 0f, 0f));
             var net = PatchworkAssets.Yarn(new Color(0.95f, 0.95f, 0.95f));
             for (int i = 0; i <= 8; i++)
             {
                 float z = g.z - 2.4f + i * 0.6f;
-                kit.Deco(PrimitiveType.Cylinder, new Vector3(86.5f, 1.1f, z), new Vector3(0.03f, 1.1f, 0.03f), net);
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(86.5f + FootballShift, 1.1f, z), new Vector3(0.03f, 1.1f, 0.03f), net);
             }
             for (int i = 0; i <= 4; i++)
-                kit.Deco(PrimitiveType.Cylinder, new Vector3(86.5f, 0.2f + i * 0.5f, g.z), new Vector3(0.03f, 2.4f, 0.03f), net, new Vector3(90f, 0f, 0f));
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(86.5f + FootballShift, 0.2f + i * 0.5f, g.z), new Vector3(0.03f, 2.4f, 0.03f), net, new Vector3(90f, 0f, 0f));
             Solid(kit, new Vector3(86.6f, 1.1f, g.z), new Vector3(0.1f, 2.2f, 4.8f));
             Solid(kit, new Vector3(85.5f, 1.1f, g.z - 2.5f), new Vector3(2f, 2.2f, 0.1f));
             Solid(kit, new Vector3(85.5f, 1.1f, g.z + 2.5f), new Vector3(2f, 2.2f, 0.1f));
             Solid(kit, new Vector3(85.5f, 2.3f, g.z), new Vector3(2f, 0.1f, 4.8f));
             // Pitch markings.
             var chalk = PatchworkAssets.Felt(new Color(0.98f, 0.98f, 0.95f));
-            kit.Deco(PrimitiveType.Cube, new Vector3(82.5f, 0.02f, g.z), new Vector3(0.12f, 0.02f, 9f), chalk);
-            kit.Deco(PrimitiveType.Cube, new Vector3(78.5f, 0.02f, g.z - 4.5f), new Vector3(8f, 0.02f, 0.12f), chalk);
-            kit.Deco(PrimitiveType.Cube, new Vector3(78.5f, 0.02f, g.z + 4.5f), new Vector3(8f, 0.02f, 0.12f), chalk);
-            kit.Deco(PrimitiveType.Cylinder, new Vector3(74f, 0.02f, g.z), new Vector3(0.3f, 0.01f, 0.3f), chalk);
-            ClearGrass(new Vector3(80f, 0f, g.z), 7f);
-            var ball = Grabbable.BeachBall(kit, new Vector3(74f, 0f, g.z), 0.6f);
+            kit.Deco(PrimitiveType.Cube, new Vector3(82.5f + FootballShift, 0.02f, g.z), new Vector3(0.12f, 0.02f, 9f), chalk);
+            kit.Deco(PrimitiveType.Cube, new Vector3(78.5f + FootballShift, 0.02f, g.z - 4.5f), new Vector3(8f, 0.02f, 0.12f), chalk);
+            kit.Deco(PrimitiveType.Cube, new Vector3(78.5f + FootballShift, 0.02f, g.z + 4.5f), new Vector3(8f, 0.02f, 0.12f), chalk);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(74f + FootballShift, 0.02f, g.z), new Vector3(0.3f, 0.01f, 0.3f), chalk);
+            ClearGrass(new Vector3(80f + FootballShift, 0f, g.z), 7f);
+            var ball = Grabbable.BeachBall(kit, new Vector3(74f + FootballShift, 0f, g.z), 0.6f);
             var goal = new GameObject("GoalNet");
             goal.transform.SetParent(kit.Root, false);
             goal.transform.position = g;
             var gn = goal.AddComponent<GoalNet>();
             gn.Ball = ball;
             gn.Half = new Vector3(1f, 1.1f, 2.3f);
-            gn.Marble = SecretMarble.Place(kit, new Vector3(82f, 1.8f, g.z), MarbleIds[7], MarbleColor(7), true);
-            kit.Hint(new Vector3(74f, 1.5f, g.z - 3f), new Vector3(5f, 3f, 4f), "Toy Football",
+            gn.Marble = SecretMarble.Place(kit, new Vector3(82f + FootballShift, 1.8f, g.z), MarbleIds[7], MarbleColor(7), true);
+            kit.Hint(new Vector3(74f + FootballShift, 1.5f, g.z - 3f), new Vector3(5f, 3f, 4f), "Toy Football",
                 "Kick the ball into the net! Run into it, push it with {Grab}, or blow it along with Wind's gust.");
         }
 

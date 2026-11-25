@@ -36,10 +36,12 @@ namespace Patchwork
         public static readonly string[] HeartstringIds = { "L1_hs_knots", "L1_hs_race", "L1_hs_tangle", "L1_hs_belfry", "L1_hs_cloud", "L1_hs_bubbles" };
         public const int HeartstringsNeeded = 0;   // all optional in Toybox Town; the band is the goal
 
-        // You arrive by Pod, which lands in Landing Meadow (the south-east, past the canal), and
-        // walk into town from there. The square's own checkpoint is where the old start was.
-        static readonly Vector3 SpawnPoint = new Vector3(50f, 0f, -98f);
-        static readonly Vector3 PodLanding = new Vector3(50f, 0f, -103f);
+        // You arrive by Pod, which lands in Landing Meadow, out in the south-east corner of the
+        // toybox, and walk into town along the King's Road (see Level1Approach). The square's
+        // own checkpoint is where the very first start was.
+        static readonly Vector3 SpawnPoint = new Vector3(108f, 0f, -134f);
+        static readonly Vector3 PodLanding = new Vector3(108f, 0f, -139f);
+        const float SpawnFacing = -38f;   // looking up the road at the town
         static readonly Vector3 SquareSpot = new Vector3(0f, 0f, -14f);
         static readonly Vector3 Bandstand = new Vector3(0f, 0f, 7f);
         static readonly Vector3 Tower = new Vector3(0f, 0f, 27f);
@@ -47,8 +49,9 @@ namespace Patchwork
         public static Vector3 DyeWorksPoint { get { return Mill; } }
         public static Vector3 ClockTowerPoint { get { return Tower; } }
         const float RavineEast = -37f, RavineWest = -51f, CanalWest = 32f, CanalEast = 40f, Half = BoxHalf;
-        // Half the width of the giant toybox (it was 90 before the town grew).
-        public const float BoxHalf = 115f;
+        // Half the width of the giant toybox (90 at first, 115 when the town grew, 150 now it's a
+        // walled town with a road in from the Pod).
+        public const float BoxHalf = 150f;
         const float StreamWest = -46f, StreamEast = -42f, StreamSurface = -5.35f, CanalSurface = -0.6f;
 
         static readonly Color GrassCol = new Color(0.6f, 0.8f, 0.5f);   // fresh spring felt
@@ -69,7 +72,7 @@ namespace Patchwork
             info.Title = "Level 1 · Toybox Town";
             info.Subtitle = "The Fray spoiled the band on the Mayor's wedding day. Help them play again!";
             info.Spawn = SpawnPoint + Vector3.up * 0.1f;
-            info.SpawnYaw = 0f;
+            info.SpawnYaw = SpawnFacing;
             info.KillY = -20f;
             info.FailY = -9f;   // the ravine and the canal are real places you can walk out of
             info.Sky = new Color(0.8f, 0.9f, 0.97f);
@@ -101,7 +104,7 @@ namespace Patchwork
             P.Add(new MapPin("Inkwell Canal", new Vector3((CanalWest + CanalEast) * 0.5f, 0f, 30f), MapPin.Kind.Area));
             P.Add(new MapPin("Dye Works", Mill + new Vector3(0f, 0f, -6f)));
             P.Add(new MapPin("Tea House", new Vector3(53f, 0f, -30f), MapPin.Kind.Shop));
-            P.Add(new MapPin("Toybox Express", new Vector3(70f, 0f, -51f)));
+            P.Add(new MapPin("Toybox Express", TrainCentre + new Vector3(0f, 0f, 12f)));
             P.Add(new MapPin("Chimney Lane", new Vector3(0f, 0f, -46f)));
             P.Add(new MapPin("Weathervane", new Vector3(0f, 0f, -72f)));
             P.Add(new MapPin("Landing Meadow", PodLanding, MapPin.Kind.Area));
@@ -128,6 +131,7 @@ namespace Patchwork
             DyeWorks(kit);
             Rooftops(kit);
             TownWall(kit);
+            City(kit);
             LandingMeadow(kit);
             BouncyCastle(kit);
             SkyHoops(kit);
@@ -153,6 +157,8 @@ namespace Patchwork
             NurseryMobile(kit);
             PuffballMeadows(kit);
             StorytellerRemarks(kit);
+            Approach(kit);
+            CityClearance(kit);
             Declutter.Run(kit.Root);   // props built by different parts of the level, kept out of each other
             // The soft little things lean and wobble when Patch brushes past or lands nearby.
             PropWobble.Attach(kit.Root, "Flower", "Mushroom", "FlowerPot", "Signpost", "LanternPost", "PinwheelFlower", "Lantern", "Barrel");
@@ -175,29 +181,31 @@ namespace Patchwork
         static void Ground(LevelKit kit)
         {
             var grass = PatchworkAssets.Grass(GrassCol);
-            kit.Block(new Vector3((RavineEast + CanalWest) * 0.5f, -1f, 0f), new Vector3(CanalWest - RavineEast, 2f, Half * 2f), GrassCol, "TownGround", grass);
-            kit.Block(new Vector3((CanalEast + Half) * 0.5f, -1f, 0f), new Vector3(Half - CanalEast, 2f, Half * 2f), GrassCol, "EastGround", grass);
+            // Inside the walls (and the strip either side of them) the ground is flat: the old
+            // town west of the canal, the Common Quarter east of it. Beyond the water gates the
+            // meadows are one carved mesh so the River Weft can wind (see Level1Rivers).
+            float zs = CanalSouthEnd, zn = CanalNorthEnd, zc = (zs + zn) * 0.5f, zl = zn - zs;
+            kit.Block(new Vector3((RavineEast + CanalWest) * 0.5f, -1f, zc), new Vector3(CanalWest - RavineEast, 2f, zl), GrassCol, "TownGround", grass);
+            kit.Block(new Vector3((CanalEast + Half) * 0.5f, -1f, zc), new Vector3(Half - CanalEast, 2f, zl), GrassCol, "EastGround", grass);
             kit.Block(new Vector3((-Half + RavineWest) * 0.5f, -1f, 0f), new Vector3(RavineWest + Half, 2f, Half * 2f), GrassCol, "HillGround", grass);
-            // The ravine: 5 m deep with cobbled banks, and a deep stream channel down the middle.
-            // The canal: 5 m deep, brimming with water. Only Water Form can swim in them.
+            // The ravine: 5 m deep between brick walls, its floor and winding brook built with
+            // the rivers. The canal: 5 m deep between stone quays, brimming with water, inside
+            // the walls only. Only Water Form can swim in them.
             var brick = PatchworkAssets.Brick(new Color(0.7f, 0.45f, 0.38f));
             var bankStone = PatchworkAssets.Cobble(new Color(0.6f, 0.58f, 0.55f));
             var deepBed = PatchworkAssets.Felt(new Color(0.12f, 0.2f, 0.42f));
-            kit.Block(new Vector3((RavineWest + StreamWest) * 0.5f, -6.5f, 0f), new Vector3(StreamWest - RavineWest, 3f, Half * 2f), GrassCol, "RavineBank", bankStone);
-            kit.Block(new Vector3((StreamEast + RavineEast) * 0.5f, -6.5f, 0f), new Vector3(RavineEast - StreamEast, 3f, Half * 2f), GrassCol, "RavineBank", bankStone);
-            kit.Block(new Vector3((StreamWest + StreamEast) * 0.5f, -9f, 0f), new Vector3(StreamEast - StreamWest, 2f, Half * 2f), GrassCol, "StreamBed", deepBed);
             kit.Block(new Vector3(RavineEast - 0.1f, -2.5f, 0f), new Vector3(0.2f, 5f, Half * 2f), new Color(0.7f, 0.45f, 0.38f), "RavineWall", brick);
             kit.Block(new Vector3(RavineWest + 0.1f, -2.5f, 0f), new Vector3(0.2f, 5f, Half * 2f), new Color(0.7f, 0.45f, 0.38f), "RavineWall", brick);
-            DeepWater(kit, StreamWest, StreamEast, StreamSurface, -8f, 0.05f);
-            // Stepping-stone pillars across the stream.
-            foreach (float sx in new[] { StreamWest + 1f, StreamEast - 1f })
+            // Stepping-stone pillars across the brook (it runs straight here).
+            foreach (float sx in new[] { StreamX(-30f) - 1f, StreamX(-30f) + 1f })
                 kit.Block(new Vector3(sx, -6.55f, -30f), new Vector3(1.2f, 3f, 1.2f), TownKit.Stone, "SteppingStone", bankStone);
 
-            kit.Block(new Vector3((CanalWest + CanalEast) * 0.5f, -6f, 0f), new Vector3(CanalEast - CanalWest, 2f, Half * 2f), GrassCol, "CanalBed", deepBed);
+            kit.Block(new Vector3((CanalWest + CanalEast) * 0.5f, -6f, zc), new Vector3(CanalEast - CanalWest, 2f, zl), GrassCol, "CanalBed", deepBed);
             var stone = PatchworkAssets.Cobble(TownKit.Stone);
-            kit.Block(new Vector3(CanalWest + 0.1f, -2.5f, 0f), new Vector3(0.2f, 5f, Half * 2f), TownKit.Stone, "CanalWall", stone);
-            kit.Block(new Vector3(CanalEast - 0.1f, -2.5f, 0f), new Vector3(0.2f, 5f, Half * 2f), TownKit.Stone, "CanalWall", stone);
-            DeepWater(kit, CanalWest + 0.2f, CanalEast - 0.2f, CanalSurface, -5f, 0.08f);
+            kit.Block(new Vector3(CanalWest + 0.1f, -2.5f, zc), new Vector3(0.2f, 5f, zl), TownKit.Stone, "CanalWall", stone);
+            kit.Block(new Vector3(CanalEast - 0.1f, -2.5f, zc), new Vector3(0.2f, 5f, zl), TownKit.Stone, "CanalWall", stone);
+            DeepWater(kit, CanalWest + 0.2f, CanalEast - 0.2f, CanalSurface, -5f, 0.08f, zs, zn);
+            RiverGround(kit);
             // Steps back up out of the ravine (east side).
             TownKit.Stairs(kit, new Vector3(RavineEast - 1.5f, -5f, 6f), 0f, 5, 1f, 1.4f, 2.6f, stone);
             TownKit.Stairs(kit, new Vector3(RavineEast - 1.5f, -5f, -14f), 180f, 5, 1f, 1.4f, 2.6f, stone);
@@ -206,36 +214,36 @@ namespace Patchwork
         // Deep, slowly flowing water from x0 to x1 the whole length of the box: a crafted satin
         // surface (see-through, so the dark deep bed shows), lace foam along the edges, and the
         // swimming volume underneath.
-        static void DeepWater(LevelKit kit, float x0, float x1, float surface, float bottom, float flow)
+        static void DeepWater(LevelKit kit, float x0, float x1, float surface, float bottom, float flow, float z0, float z1)
         {
-            float w = x1 - x0, cx = (x0 + x1) * 0.5f;
+            float w = x1 - x0, cx = (x0 + x1) * 0.5f, cz = (z0 + z1) * 0.5f, len = z1 - z0;
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             Object.DestroyImmediate(go.GetComponent<Collider>());
             go.name = "DeepWater";
             go.transform.SetParent(kit.Root, false);
-            go.transform.position = new Vector3(cx, surface - 0.03f, 0f);
-            go.transform.localScale = new Vector3(w, 0.06f, Half * 2f);
-            var mat = PatchworkAssets.CraftWater(0.86f, new Vector2(Mathf.Max(1f, w / 5f), Half * 2f / 5f));
+            go.transform.position = new Vector3(cx, surface - 0.03f, cz);
+            go.transform.localScale = new Vector3(w, 0.06f, len);
+            var mat = PatchworkAssets.CraftWater(0.86f, new Vector2(Mathf.Max(1f, w / 5f), len / 5f));
             go.GetComponent<Renderer>().sharedMaterial = mat;
             go.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             var drift = go.AddComponent<PaintLake>();
             drift.Drift = new Vector2(0f, flow);
             drift.Setup(mat);
             // A second, darker layer a little lower gives the water some depth.
-            var under = kit.Deco(PrimitiveType.Cube, new Vector3(cx, surface - 0.9f, 0f), new Vector3(w, 0.05f, Half * 2f), PatchworkAssets.Bubble(new Color(0.12f, 0.3f, 0.6f, 0.5f)));
+            var under = kit.Deco(PrimitiveType.Cube, new Vector3(cx, surface - 0.9f, cz), new Vector3(w, 0.05f, len), PatchworkAssets.Bubble(new Color(0.12f, 0.3f, 0.6f, 0.5f)));
             under.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             // Lace foam where the water meets the walls.
             var lace = PatchworkAssets.Felt(new Color(0.96f, 0.98f, 1f));
             for (int s = -1; s <= 1; s += 2)
             {
-                var strip = kit.Deco(PrimitiveType.Cube, new Vector3(cx + s * (w * 0.5f - 0.12f), surface + 0.015f, 0f), new Vector3(0.24f, 0.03f, Half * 2f), lace);
+                var strip = kit.Deco(PrimitiveType.Cube, new Vector3(cx + s * (w * 0.5f - 0.12f), surface + 0.015f, cz), new Vector3(0.24f, 0.03f, len), lace);
                 strip.name = "Foam";
                 var batch = new MeshBatch();
-                for (float z = -Half + 0.3f; z < Half; z += 0.6f)
+                for (float z = z0 + 0.3f; z < z1; z += 0.6f)
                     batch.Ball(new Vector3(cx + s * (w * 0.5f - 0.26f), surface + 0.02f, z), new Vector3(0.28f, 0.05f, 0.28f), 2, 6);
                 batch.Build(kit.Root, "FoamScallops", lace);
             }
-            var body = kit.Volume<WaterBody>(new Vector3(cx, (bottom + surface + 0.6f) * 0.5f, 0f), new Vector3(w, surface + 0.6f - bottom, Half * 2f), "WaterBody");
+            var body = kit.Volume<WaterBody>(new Vector3(cx, (bottom + surface + 0.6f) * 0.5f, cz), new Vector3(w, surface + 0.6f - bottom, len), "WaterBody");
             body.SurfaceY = surface;
         }
 
@@ -836,8 +844,12 @@ namespace Patchwork
             AmbientZones.Create(parent)
                 // The streets of Toybox Town, from the ravine's edge to the canal.
                 .Add(Sfx.Ambient(Sfx.AmbientClip.Town), 0.4f, p => AmbientZones.Box(p, RavineEast + 2f, CanalWest - 3f, -80f, 66f, 9f))
+                // ...and the Common Quarter across the canal, and the keep's end of town.
+                .Add(Sfx.Ambient(Sfx.AmbientClip.Town), 0.4f, p => AmbientZones.Box(p, CanalEast + 2f, 92f, -64f, 104f, 9f))
                 // The canal: loudest down by the water, still there from the street beside it.
-                .Add(Sfx.Ambient(Sfx.AmbientClip.Lapping), 0.5f, p => AmbientZones.Box(p, CanalWest, CanalEast, -Half, Half, 7f) * (p.y < 1.5f ? 1f : 0.7f))
+                .Add(Sfx.Ambient(Sfx.AmbientClip.Lapping), 0.5f, p => AmbientZones.Box(p, CanalWest, CanalEast, CanalSouthEnd, CanalNorthEnd, 7f) * (p.y < 1.5f ? 1f : 0.7f))
+                // The River Weft outside the walls.
+                .Add(Sfx.Ambient(Sfx.AmbientClip.Stream), 0.45f, p => Mathf.Clamp01(1f - Mathf.Max(0f, RiverEdgeDistance(p)) / 9f))
                 // The duck pond in Picnic Park laps a little too.
                 .Add(Sfx.Ambient(Sfx.AmbientClip.Lapping), 0.25f, p => AmbientZones.Round(p, new Vector3(14f, 0f, 74f), 6f, 6f))
                 // The brook at the bottom of Thread Ravine (fainter from up on the edge).

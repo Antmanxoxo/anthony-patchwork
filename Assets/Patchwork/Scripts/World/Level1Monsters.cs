@@ -26,7 +26,7 @@ namespace Patchwork
             {
                 new Vector2(13f, -26f), new Vector2(-13f, -26f), new Vector2(64f, 8f), new Vector2(107.5f, -20f), new Vector2(-64f, -12f),
                 new Vector2(0f, 27f), new Vector2(-70f, 36f), new Vector2(-84f, -20f), new Vector2(50f, -92f), new Vector2(20f, 72f),
-                new Vector2(-30f, 60f), new Vector2(84f, 60f), new Vector2(-100f, 30f), new Vector2(40f, -40f),
+                new Vector2(-30f, 60f), new Vector2(78f, 46f), new Vector2(-100f, 30f), new Vector2(40f, -40f),
             };
 
             Vector3[] snarlings =

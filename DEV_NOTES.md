@@ -902,6 +902,27 @@ Stuff I need to remember about how Patchwork is put together.
   - `SkyHoop.Create` beads use iron `Plain` (gold when passed) plus two ribbons. The challenge title is "Tilting Rings".
   - `Heraldic` colours (Level1TownWall) are used for street bunting. `TownWell` replaces `PostBox`. `PostBox`, `PennyFarthing` and `StringLights` are no longer called.
 
+- **Bigger box, rivers, approach (Level1Rivers, Level1Approach).** `BoxHalf` is 150.
+  - The flat town boxes (`TownGround`, `EastGround`) and the canal blocks now only run between `CanalSouthEnd` (-73) and `CanalNorthEnd` (111), the two water gates.
+  - North and south of those, `RiverGround` builds `SouthMeadow` and `NorthMeadow` as height-field meshes (`HeightField`, 1.5 m cells, a dry grass part and a wet sand part, both with MeshColliders). `MeadowHeight` carves the River Weft's channel along `RiverSouth` and `RiverNorth` (Chaikin-smoothed control points), and `RiverHalfWidth(t)` widens it from 4 m to 5.6 m.
+  - `RibbonWater` lays the water along any path: a world-mapped `CraftWater` ribbon with `PaintLake` drift, a darker layer under it, foam scallops on both shores, and a chain of `WaterBody` boxes (about 3 m long each, slightly overlapping; the water only acts below `SurfaceY`, so the bank inside a box doesn't matter).
+  - The ravine floor is a height-field too (`RavineFloorHeight`). The brook follows `StreamX(z)`, which is pinned to -44 at the stepping stones (z -30). `RavineDressing` rocks and the doves present use `StreamX`.
+  - `RiverEdgeDistance(p)` is used for the river's ambient sound and to keep props out of the water.
+  - `RoadIn` runs from `SpawnPoint` (108, -134; facing `SpawnFacing`, -38°) to `MainGate`. `Ribbon` lays it as a raised strip with a collider, so grass doesn't grow through. The road is skipped over the `StoneBridge`, which goes where the road is closest to the river.
+  - `Hamlet` places cottages (snapped to quarter-turns, as `MakeHouse` bodies are axis-aligned) and stalls along the last third of the road, checked with `Physics.CheckBox` and `Taken`. `Fields` lays hedged plots with crop batches, skipping any plot near the river or road or with something solid in it. `NewLand` fills the outer band with trees, orchard rows and flowers.
+  - Grass scatter density is 1.4 (from 1.7) over the bigger box.
+- **The outer wall (Level1TownWall).** `OuterWall` is a polyline from the old south-east corner tower to the ravine by the keep.
+  - `OuterTownWall` cuts gaps for the gates, the Farm Gate and the two canal crossings (`OuterWater`), and builds `OuterRun` stretches (6.4 m high and 1.6 m thick, at any angle, with buttresses and a merlon collider). It puts a tower at each corner that isn't near a gap.
+  - `GrandGate(centre, yaw, span, scale)` builds a rotated gatehouse; `Postern` and `WaterGate` build the small openings.
+  - `InTown(p)` and `OuterWallDistance(p)` are the helpers for "is this inside the town?".
+  - The old east wall along the canal is gone. The west wall continues north to z 104 with posterns at `TapeZ` and `StonesZ`. `WallHeight` is 5 (from 3.6), and `WallTower` adds `TowerExtra` (2 m) to every tower.
+- **The Common Quarter and the keep (Level1City).** `City` runs right after `TownWall`.
+  - `CityLots` holds the generated houses as (x, z, front width, depth, wall height, facing, wall colour, roof colour); the plan was made to keep clear of the Dye Works, the Workshop and the Tea House.
+  - Streets are `Ribbon`s (`HighStreet` path, `CrossStreets`, `CastleWay` north of the green, `FarmLane`); `CitySquares` are paved discs with `ClearGrass`.
+  - Landmarks: `Guardhouse`, `MarketCross`, `ChapelOfStStitch` (`Chapel` rect) and `Keep` (`Bailey` rect, `KeepAt`). The keep's turrets reach about 41 m.
+  - Every house, street, square and landmark adds a footprint to `cityFootprints`. `CityClearance` runs just before `Declutter`: any top-level child that isn't the city's and is plain (`Plain`: nothing but Spinner/Rocker/Blinker/FlagWave/OwnedMesh behaviours) and sits in a footprint, or on the outer wall's line, is deactivated, along with any `Solid` box inside it. Anything that isn't plain is logged as a warning instead, to move by hand.
+  - Moved for the quarter: `TrainCentre` (125, -73) for the train, station, its bubbles and prize; `ToyCorner` (+40 x) for the north-east alphabet stack, drums, marbles and jack; `FootballShift` (+40 x). New `ClearArea` targets for Pinwheel Hill and Paper Boat Pond, new puffball centres, `KiteHill` at (60, 126), and new trails out of the East Gate, the Farm Gate and the button-stones postern.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

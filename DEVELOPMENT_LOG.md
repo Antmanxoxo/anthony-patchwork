@@ -4,6 +4,30 @@ A dated record of every change to Patchwork, newest first. Each day lists the ch
 
 ## November 25, 2026
 
+### Toybox Town grows into a walled market town (part three)
+- **A bigger toybox.** The box is 300 m across now (it was 230), with new land all round the old meadows: more wood to the west and south-west, orchard rows to the north, and fields and wildflowers down the east side.
+- **A long way in.** The Pod now comes down in a meadow in the far south-east corner. From there you see the whole town across the fields: the wall and its towers, the keep and the chapel spire over the roofs. The **King's Road** winds up to it:
+  - over the River Weft on a humpbacked stone bridge
+  - past lantern posts and signposts
+  - through a little hamlet of thatched cottages, market stalls and a well outside the walls
+  - to the **Toybox Gate**, a great gatehouse with two big towers, its own roof, banners and the town's shield
+- **A town wall round both halves of town.** The new outer wall is taller and thicker than the old one, with buttresses and a walkway along the top. It takes in the Common Quarter across the canal and crosses the canal on two arched **water gates** (swimmers can still go under them). Its gates are the Toybox Gate, the **East Gate** and the **North Gate**, plus a small **Farm Gate** postern. The old wall carries on north along the ravine, with posterns at the tape-measure bridge and the button stones. Its north side is now an inner wall between the castle yard and the Tournament Green. Every old tower is taller, to stand over the walls.
+- **The Common Quarter,** laid out like a real market town:
+  - the **High Street** curves up the middle from the Toybox Gate, lined with three- and four-storey houses wall to wall, shop signs, lanterns and bunting
+  - cross streets join it to the canal quay: Bridge Row, Tanners' Lane, Mill Street, Spinners' Lane, Quay Lane and Bell Lane
+  - **Gate Square** has a market cross, stalls and a stone guardhouse with a sentry box
+  - **Mill Square** sits in front of the Dye Works, and East Gate Road leads off it
+  - **Chapel Square** is in front of **St. Stitch's**, a chapel with buttresses, coloured-glass windows, a rose window and a bell tower with a slate spire
+  - the Dye Works, the Toy Workshop and the Tea House stay where they were, now set into the streets
+- **The keep** stands in its own walled bailey at the north end of town, past the Tournament Green. It's a great square tower with four turrets, banners, lit windows and a tall slate roof with a flag: the tallest thing in Toybox Town.
+- **Winding rivers.** Inside the walls the canal is still a straight cut between stone quays. Outside, it becomes the River Weft, with soft grassy banks, a sandy shore, reeds and bulrushes, river stones and lily pads. It winds off east under the road bridge and out of the box, and north past the farm. Down in Thread Ravine the brook now meanders from bank to bank over its stony bed, with little foamy riffles, and still runs straight through the stepping stones.
+- **Moved to make room:**
+  - the Toybox Express and its station, out to the east meadow
+  - the alphabet-block stack, its drums, marbles and the prize on top, the yarn ball, the toy football pitch, Pinwheel Hill, Paper Boat Pond and Kite Hill, all out past the walls
+  - some puffball patches, butterflies, a beach ball, a wild horse and two signposts
+  - the trails to the farm and the meadow now leave by the Farm Gate and the East Gate
+  - small decorations that ended up inside a new house or street are tidied away automatically
+
 ### Toybox Town becomes a walled medieval village (part two)
 - **A jousting carousel.** Its roof is a tournament pavilion's: a pointed canopy with a blue band, red and white pennant flaps round the edge and a flag on top. The horses wear caparisons in their knights' colours, with little shields and striped lances.
 - **The bubble wand is now the Bubbling Cauldron:** a great iron pot on three legs over a little fire, with a shelf of jars beside it. The bubbles and the climb work the same. At the top is a lookout platform on a pole, with the same Heartstring (now called "The Cauldron's Lookout").

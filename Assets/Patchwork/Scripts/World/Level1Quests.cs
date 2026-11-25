@@ -309,7 +309,7 @@ namespace Patchwork
             kit.Deco(PrimitiveType.Cube, raft + Vector3.up * 0.03f, new Vector3(1.7f, 0.14f, 1.7f), PatchworkAssets.Planks(new Color(0.7f, 0.52f, 0.36f)), new Vector3(0f, 18f, 0f));
             Present(kit, Level1Director.Balloons, raft + Vector3.up * 0.85f, new Color(0.35f, 0.7f, 0.95f), new Color(1f, 0.95f, 0.9f));
             // Paper doves: down in the ravine, on the far (west) bank near the north end.
-            Present(kit, Level1Director.Doves, new Vector3((RavineWest + StreamWest) * 0.5f, -5f + 1.2f, 58f), new Color(0.97f, 0.95f, 0.9f), new Color(0.95f, 0.5f, 0.6f));
+            Present(kit, Level1Director.Doves, new Vector3(StreamX(58f) + (StreamX(58f) > -44f ? -3.6f : 3.6f), -5f + 1.2f, 58f), new Color(0.97f, 0.95f, 0.9f), new Color(0.95f, 0.5f, 0.6f));
             // Bunting: delivered to the wrong end of the toybox, in the far north-east corner.
             Present(kit, Level1Director.Bunting, ClearGround(new Vector3(106f, 0f, 106f)) + Vector3.up * 1.2f, new Color(0.45f, 0.8f, 0.55f), new Color(1f, 0.6f, 0.7f));
         }

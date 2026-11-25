@@ -55,9 +55,9 @@ namespace Patchwork
             Ring(kit, Tower + Vector3.up * 23.5f, 2.6f, 6, 0.8f, 50);
             // Over the Dye Works, along the station platform and on the tunnel roof.
             Trail(kit, new Vector3(56f, 0f, 8f), new Vector3(72f, 0f, 8f), 8, 1.2f);
-            Trail(kit, new Vector3(66f, 1.5f, -51.2f), new Vector3(74f, 1.5f, -51.2f), 4);
-            ScoreBubbles.Place(kit, new Vector3(82f, 3.9f, -61.4f), 50);
-            ScoreBubbles.Place(kit, new Vector3(82f, 3.9f, -64.6f), 50);
+            Trail(kit, TrainCentre + new Vector3(-4f, 1.5f, 11.8f), TrainCentre + new Vector3(4f, 1.5f, 11.8f), 4);
+            ScoreBubbles.Place(kit, TrainCentre + new Vector3(12f, 3.9f, 1.6f), 50);
+            ScoreBubbles.Place(kit, TrainCentre + new Vector3(12f, 3.9f, -1.6f), 50);
             // The Toy Workshop: inside the pen, and up on the shelf.
             Ring(kit, new Vector3(58f, 0f, 50.5f), 2.2f, 8, 1.1f);
             Trail(kit, new Vector3(66.2f, 8.9f, 47f), new Vector3(69.8f, 8.9f, 47f), 4, -1f, 50);
@@ -103,7 +103,7 @@ namespace Patchwork
             // Beach balls to kick about.
             Grabbable.BeachBall(kit, new Vector3(9f, 0f, -6f), 0.75f);
             Grabbable.BeachBall(kit, new Vector3(-1f, 0f, 64f), 0.9f);
-            Grabbable.BeachBall(kit, new Vector3(56f, 0f, 35f), 0.75f);
+            Grabbable.BeachBall(kit, new Vector3(66f, 0f, -56f), 0.75f);
             Grabbable.BeachBall(kit, OnHill(new Vector3(-65f, 4f, 27.5f)), 0.7f);
             // A tower of building blocks in the park, just asking to be knocked over.
             Color[] cols = { new Color(0.9f, 0.35f, 0.35f), new Color(0.35f, 0.6f, 0.9f), new Color(1f, 0.8f, 0.3f), new Color(0.45f, 0.75f, 0.45f), new Color(0.75f, 0.5f, 0.85f) };
@@ -341,10 +341,10 @@ namespace Patchwork
             // Under the xylophone bridge, only reachable by swimming.
             PrizeBubble.Place(kit, new Vector3((CanalWest + CanalEast) * 0.5f, 0.2f, 57f), "deco_duck");
             // On top of the alphabet block stacks.
-            PrizeBubble.Place(kit, new Vector3(79.5f, 12.2f, 78.5f), "prize_rainbow");
+            PrizeBubble.Place(kit, new Vector3(79.5f, 12.2f, 78.5f) + ToyCorner, "prize_rainbow");
             PrizeBubble.Place(kit, new Vector3(-80f, 10.2f, -72.3f), "prize_paw");
             // On the train tunnel's roof: ride the Toybox Express and hop off on top.
-            PrizeBubble.Place(kit, new Vector3(82f, 4.4f, -63f), "prize_propeller");
+            PrizeBubble.Place(kit, TrainCentre + new Vector3(12f, 4.4f, 0f), "prize_propeller");
             // On top of the weathervane spire.
             PrizeBubble.Place(kit, new Vector3(2f, 17.4f, -74f), "deco_lanterns");
             // On the spool tower on Spindle Hill.

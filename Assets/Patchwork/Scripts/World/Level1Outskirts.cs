@@ -1190,7 +1190,7 @@ namespace Patchwork
             Signpost(kit, new Vector3(-55.5f, 0f, -24f), new[] { 90f, 225f, 300f }, new[] { SignTown, SignWood, SignWood });
             Signpost(kit, new Vector3(4.5f, 0f, -85.5f), new[] { 0f, 270f, 115f }, new[] { SignTown, SignWood, SignPod });
             Signpost(kit, new Vector3(-5f, 0f, -94f), new[] { 270f, 90f, 0f }, new[] { SignWood, SignPod, SignTown });
-            Signpost(kit, new Vector3(64f, 0f, 55f), new[] { 30f, 95f, 270f }, new[] { SignFarm, SignMeadow, SignTown });
+            Signpost(kit, new Vector3(88f, 0f, 96.5f), new[] { 30f, 95f, 220f }, new[] { SignFarm, SignMeadow, SignTown });
             Signpost(kit, new Vector3(-14f, 0f, 84.5f), new[] { 290f, 45f, 180f }, new[] { SignDell, SignTown, SignTown });
             Signpost(kit, new Vector3(52f, 0f, -88f), new[] { 270f, 0f, 60f }, new[] { SignOrchard, SignTown, SignMeadow });
         }
@@ -1239,7 +1239,7 @@ namespace Patchwork
             Butterflies(kit, new Vector3(102f, 0f, 32f), 8, 30f, 4);
             Butterflies(kit, new Vector3(66f, 0f, -98f), 6, 30f, 5);
             Campsite(kit, new Vector3(-99f, 0f, -16f));
-            KiteHill(kit, new Vector3(-6f, 0f, 106f));
+            KiteHill(kit, new Vector3(60f, 0f, 126f));
             Sandpit(kit, new Vector3(101f, 0f, -48f));
         }
 
@@ -1415,12 +1415,12 @@ namespace Patchwork
                 new[] { new Vector3(0f, 0f, -80f), new Vector3(1f, 0f, -96f) },
                 // The Pod's meadow east to the sandpit and the Sky Hoops.
                 new[] { new Vector3(58f, 0f, -86f), new Vector3(80f, 0f, -66f), new Vector3(96f, 0f, -52f) },
-                // The canal promenade out to the Wildflower Meadow.
-                new[] { new Vector3(47f, 0f, 20f), new Vector3(70f, 0f, 24f), new Vector3(92f, 0f, 28f) },
-                // The toy workshop north to the farm.
-                new[] { new Vector3(64f, 0f, 52f), new Vector3(70f, 0f, 66f), new Vector3(78f, 0f, 84f), new Vector3(86f, 0f, 92f), new Vector3(93f, 0f, 99f) },
-                // The picnic park west to the dell.
-                new[] { new Vector3(-16f, 0f, 82f), new Vector3(-24f, 0f, 90f), new Vector3(-30f, 0f, 96f), new Vector3(-44f, 0f, 101f), new Vector3(-52f, 0f, 104f) },
+                // Out of the East Gate to the Wildflower Meadow.
+                new[] { new Vector3(98.5f, 0f, 8f), new Vector3(100f, 0f, 18f), new Vector3(100f, 0f, 27f) },
+                // Out of the Farm Gate to the farm.
+                new[] { new Vector3(86.8f, 0f, 95f), new Vector3(93f, 0f, 99f) },
+                // The picnic park west to the button-stones postern (and over the ravine to the dell).
+                new[] { new Vector3(-16f, 0f, 82f), new Vector3(-26f, 0f, 81f), new Vector3(-34f, 0f, 80.5f) },
             };
         }
 
@@ -1504,7 +1504,7 @@ namespace Patchwork
             // Wild yarn horses, in ones and twos out in the open country. Hop on to ride!
             Color[] coats = { new Color(0.97f, 0.93f, 0.85f), new Color(0.72f, 0.45f, 0.3f), new Color(0.7f, 0.7f, 0.76f), new Color(1f, 0.75f, 0.82f), new Color(0.6f, 0.75f, 0.95f), new Color(0.3f, 0.26f, 0.3f) };
             Color[] manes = { new Color(1f, 0.6f, 0.7f), new Color(0.98f, 0.9f, 0.7f), new Color(0.4f, 0.4f, 0.5f), new Color(0.75f, 0.55f, 0.95f), new Color(1f, 0.85f, 0.4f), new Color(0.95f, 0.95f, 0.95f) };
-            Vector3[] herd = { new Vector3(100f, 0f, 38f), new Vector3(106f, 0f, 22f), new Vector3(104f, 0f, 84f), new Vector3(84f, 0f, -100f), new Vector3(-76f, 0f, -18f), new Vector3(-44f, 0f, 92f), new Vector3(-95f, 0f, 26f), new Vector3(46f, 0f, 104f) };
+            Vector3[] herd = { new Vector3(100f, 0f, 38f), new Vector3(106f, 0f, 22f), new Vector3(104f, 0f, 84f), new Vector3(84f, 0f, -100f), new Vector3(-76f, 0f, -18f), new Vector3(-44f, 0f, 92f), new Vector3(-95f, 0f, 26f), new Vector3(54f, 0f, 128f) };
             for (int i = 0; i < herd.Length; i++)
             {
                 if (!FindSpot(herd[i], 1.2f, out Vector3 hp)) continue;

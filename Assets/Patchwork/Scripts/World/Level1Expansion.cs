@@ -35,7 +35,7 @@ namespace Patchwork
                 });
             };
             kit.Hint(SpawnPoint + new Vector3(0f, 1.5f, 2f), new Vector3(8f, 4f, 6f), "Landing Meadow",
-                "The Pod came down with a bit of a bump! Follow the stepping stones (and the bubbles) north to the bridge into town. Walk back up to the hatch any time to fly home.");
+                "The Pod came down with a bit of a bump! That's Toybox Town up the road. Follow the King's Road over the river to the Toybox Gate. Walk back up to the hatch any time to fly home.");
 
             // Patch hops out of the Pod's door when you arrive.
             var go = new GameObject("PodArrival");
@@ -51,34 +51,45 @@ namespace Patchwork
             arrive.CameraFrom = SpawnPoint + new Vector3(-6f, 3.4f, 7f);
             arrive.CameraAt = PodLanding + new Vector3(0f, 2.2f, 0f);
 
-            // Stepping stones north to the Tea House lane, then west to the south bridge.
+            // A few stepping stones from the Pod to the start of the King's Road (and a trail of
+            // bubbles up the road itself, see Approach).
             var stones = new[] { PatchworkAssets.Felt(new Color(0.98f, 0.93f, 0.85f)), PatchworkAssets.Felt(new Color(0.98f, 0.75f, 0.8f)), PatchworkAssets.Felt(new Color(0.85f, 0.9f, 1f)) };
-            var path = new List<Vector3>();
-            for (float z = -90.5f; z <= -45f; z += 2.4f) path.Add(new Vector3(50f + Mathf.Sin(z * 0.15f) * 1.2f, 0f, z));
-            for (float x = 48f; x >= 41.5f; x -= 2.4f) path.Add(new Vector3(x, 0f, -42.5f));
-            for (int i = 0; i < path.Count; i++)
+            for (int i = 0; i < 3; i++)
             {
-                var p = path[i];
+                var p = SpawnPoint + new Vector3(Mathf.Sin(i * 1.3f) * 0.6f, 0f, -1.2f - i * 2.2f);
                 kit.Deco(PrimitiveType.Cylinder, p + Vector3.up * 0.02f, new Vector3(1.5f, 0.02f, 1.2f), stones[i % stones.Length], new Vector3(0f, i * 37f, 0f));
-                if (i % 3 == 1) ScoreBubbles.Place(kit, p + Vector3.up * 1.2f, 10);
+            }
+            {
+                var road = RoadIn;
+                float run = 0f, next = 6f;
+                for (int i = 1; i < road.Length; i++)
+                {
+                    run += Vector2.Distance(road[i - 1], road[i]);
+                    if (run < next || run > 70f) continue;
+                    next = run + 5.5f;
+                    ScoreBubbles.Place(kit, new Vector3(road[i].x, 1.2f, road[i].y), 10);
+                }
             }
 
-            // A welcome arch of flowers at the start of the path, and meadow flowers all round.
-            TownKit.FlowerArch(kit, SpawnPoint + new Vector3(0f, 0f, 7.5f), 0f, 4f);
+            // A welcome arch of flowers where the road starts, and meadow flowers all round.
+            TownKit.FlowerArch(kit, SpawnPoint + new Vector3(-0.9f, 0f, 6.5f), -14f, 4f);
             var rng = new System.Random(21);
-            for (int i = 0; i < 60; i++)
+            for (int i = 0; i < 70; i++)
             {
-                Vector3 p = new Vector3(44f + (float)rng.NextDouble() * 60f, 0f, -112f + (float)rng.NextDouble() * 22f);
-                if (Mathf.Abs(p.x - 50f) < 2.5f) continue;   // keep the path clear
+                Vector3 p = PodLanding + new Vector3(((float)rng.NextDouble() - 0.5f) * 40f, 0f, ((float)rng.NextDouble() - 0.5f) * 22f);
                 if ((p - PodLanding).sqrMagnitude < 13f * 13f) continue;
-                if (p.x > 58f && p.x < 82f && Mathf.Abs(p.z - PodLanding.z) < 3f) continue;   // the skid trench
+                if (p.x > PodLanding.x + 8f && p.x < PodLanding.x + 32f && Mathf.Abs(p.z - PodLanding.z) < 3f) continue;   // the skid trench
+                float t;
+                if (PathDistance(new Vector2(p.x, p.z), RoadIn, out t) < 4f) continue;   // keep the road clear
+                if (Mathf.Abs(p.x) > Half - 1.5f || Mathf.Abs(p.z) > Half - 1.5f || RiverEdgeDistance(p) < 1.5f) continue;
                 kit.Flower(p, FlowerColors[i % FlowerColors.Length]);
             }
             for (int i = 0; i < 6; i++)
-                kit.YarnTree(new Vector3(60f + i * 8f + (i % 2) * 3f, 0f, -110.5f + (i % 2) * 1.2f), 5f + (i % 3), FlowerColors[i % FlowerColors.Length]);
-            // A picnic blanket with a basket, for the view.
-            kit.Deco(PrimitiveType.Cube, new Vector3(60f, 0.02f, -94f), new Vector3(4f, 0.02f, 3f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Gingham, new Color(0.99f, 0.96f, 0.9f), new Color(0.9f, 0.3f, 0.35f)), new Vector3(0f, 15f, 0f));
-            kit.Deco(PrimitiveType.Cube, new Vector3(60.5f, 0.35f, -94.2f), new Vector3(1f, 0.6f, 0.7f), PatchworkAssets.Wood(new Color(0.8f, 0.6f, 0.4f)), new Vector3(0f, 15f, 0f));
+                kit.YarnTree(PodLanding + new Vector3(-22f + i * 7f + (i % 2) * 3f, 0f, -8.5f + (i % 2) * 1.2f), 5f + (i % 3), FlowerColors[i % FlowerColors.Length]);
+            // A picnic blanket with a basket, for the view up the road.
+            Vector3 picnic = SpawnPoint + new Vector3(-7f, 0f, 3f);
+            kit.Deco(PrimitiveType.Cube, picnic + new Vector3(0f, 0.02f, 0f), new Vector3(4f, 0.02f, 3f), PatchworkAssets.Print(PatchworkAssets.PrintKind.Gingham, new Color(0.99f, 0.96f, 0.9f), new Color(0.9f, 0.3f, 0.35f)), new Vector3(0f, 15f, 0f));
+            kit.Deco(PrimitiveType.Cube, picnic + new Vector3(0.5f, 0.35f, -0.2f), new Vector3(1f, 0.6f, 0.7f), PatchworkAssets.Wood(new Color(0.8f, 0.6f, 0.4f)), new Vector3(0f, 15f, 0f));
         }
 
         // ---------------------------------------------------------------- The Bouncy Castle
