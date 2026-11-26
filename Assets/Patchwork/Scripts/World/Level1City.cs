@@ -209,6 +209,7 @@ namespace Patchwork
             TownKit.Bench(kit, new Vector3(CitySquares[1].x + 4.2f, 0.06f, CitySquares[1].y - 4.4f), 180f);
             ChapelOfStStitch(kit);
             Keep(kit);
+            CityLife(kit);
 
             for (int i = first; i < kit.Root.childCount; i++) cityThings.Add(kit.Root.GetChild(i));
         }

@@ -2,6 +2,20 @@
 
 A dated record of every change to Patchwork, newest first. Each day lists the changes made that day.
 
+## November 26, 2026
+
+### Life in the Common Quarter and on the road in
+- **New townsfolk to talk to:**
+  - Warden Pewter, the tin soldier on duty inside the Toybox Gate, who points the way to Wedding Square
+  - Mistress Marigold, selling felt cabbages at the Gate Square market
+  - Brother Bellweather at the door of St. Stitch's
+  - Sentry Gauntlet, outside the keep's gate
+  - Crane-keeper Wick on the quay
+  - Old Tiller, fishing off his jetty on the River Weft by the road bridge
+- **A working quay.** A wooden treadwheel crane, with its wheel turning and a bale swinging from the jib. A barge loaded with bales and barrels, tied up to iron bollards. Crates and barrels stacked along the quay.
+- **More life in the streets.** A cart and a barrel in Mill Square, crates by the Gate Square stalls, flower tubs at the chapel door, and banners hanging from the High Street's upper floors.
+- **Along the King's Road:** a little wayside shrine with a candle past the bridge, a hay cart on the verge, and rubber ducks paddling down a bend of the river.
+
 ## November 25, 2026
 
 ### Toybox Town grows into a walled market town (part three)

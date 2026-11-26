@@ -112,6 +112,7 @@ namespace Patchwork
             Signpost(kit, new Vector3(sb.x, 0f, sb.y), new[] { -30f, 150f }, new[] { LevelKit.Palette.Butter, LevelKit.Palette.Sage });
 
             Hamlet(kit, root, road);
+            ApproachLife(kit, road, bc, bdir);
             Fields(kit);
             NewLand(kit);
         }
