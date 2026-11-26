@@ -113,8 +113,38 @@ namespace Patchwork
 
             Hamlet(kit, root, road);
             ApproachLife(kit, road, bc, bdir);
+            GateTracks(kit, root, earth, verge);
             Fields(kit);
             NewLand(kit);
+        }
+
+        // Dirt tracks out of the East and North Gates, so every gate leads somewhere: east to the
+        // Wildflower Meadow, north up through the orchard. (Fields and trees keep off them.)
+        static readonly List<Vector2[]> tracks = new List<Vector2[]>();
+
+        static void GateTracks(LevelKit kit, Transform root, Material earth, Material verge)
+        {
+            tracks.Clear();
+            tracks.Add(Smooth(new[] { new Vector2(EastGateAt.x + 2.4f, EastGateAt.z), new Vector2(104f, 8f), new Vector2(109f, 13f), new Vector2(111f, 19f) }, 3));
+            tracks.Add(Smooth(new[] { new Vector2(NorthGateAt.x, NorthGateAt.z + 2.6f), new Vector2(9f, 130f), new Vector2(12.5f, 138f), new Vector2(15f, 146f) }, 3));
+            foreach (var t in tracks)
+            {
+                Ribbon(kit, root, "TrackVerge", t, 4.4f, 0.025f, verge);
+                Ribbon(kit, root, "Track", t, 3.2f, 0.045f, earth);
+                Vector2 end = t[t.Length - 1], d = (end - t[t.Length - 2]).normalized;
+                Vector2 sp = end + new Vector2(-d.y, d.x) * 2.6f;
+                Signpost(kit, new Vector3(sp.x, 0f, sp.y), new[] { Mathf.Atan2(d.x, d.y) * Mathf.Rad2Deg, Mathf.Atan2(-d.x, -d.y) * Mathf.Rad2Deg }, new[] { LevelKit.Palette.Sage, LevelKit.Palette.Rose });
+            }
+        }
+
+        static bool OnTrack(Vector3 p, float pad)
+        {
+            foreach (var t in tracks)
+            {
+                float a;
+                if (PathDistance(new Vector2(p.x, p.z), t, out a) < 2.2f + pad) return true;
+            }
+            return false;
         }
 
         // A humpbacked stone bridge: a deck that rises and falls, parapets with a coping and
@@ -265,7 +295,7 @@ namespace Patchwork
                         var p = new Vector3(x, 0f, z);
                         if (RiverEdgeDistance(p) < 3f) blocked = true;
                         float t;
-                        if (PathDistance(new Vector2(x, z), RoadIn, out t) < 5f) blocked = true;
+                        if (PathDistance(new Vector2(x, z), RoadIn, out t) < 5f || OnTrack(p, 1f)) blocked = true;
                     }
                 if (blocked || Physics.CheckBox(c + Vector3.up * 1.6f, new Vector3(size.x * 0.5f, 1.3f, size.y * 0.5f), Quaternion.identity, ~(1 << 2), QueryTriggerInteraction.Ignore)) continue;
                 kit.Block(c + Vector3.up * 0.02f, new Vector3(size.x, 0.1f, size.y), new Color(0.6f, 0.44f, 0.32f), "FieldSoil", soil);
@@ -297,7 +327,7 @@ namespace Patchwork
             System.Func<float> R = () => (float)rng.NextDouble();
             int mask = ~(1 << 2);
             System.Func<Vector3, float, bool> clear = (p, r) =>
-                !Physics.CheckSphere(p + Vector3.up * (r + 0.3f), r, mask, QueryTriggerInteraction.Ignore) && !Taken(p, r) && RiverEdgeDistance(p) > r + 2f;
+                !Physics.CheckSphere(p + Vector3.up * (r + 0.3f), r, mask, QueryTriggerInteraction.Ignore) && !Taken(p, r) && RiverEdgeDistance(p) > r + 2f && !OnTrack(p, r);
             Color[] greens = { new Color(0.34f, 0.52f, 0.3f), new Color(0.4f, 0.58f, 0.32f), new Color(0.3f, 0.48f, 0.34f) };
             // The wood carries on west and south-west, right up to the toybox walls.
             for (int i = 0; i < 240; i++)

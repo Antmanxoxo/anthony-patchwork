@@ -15,6 +15,7 @@ A dated record of every change to Patchwork, newest first. Each day lists the ch
 - **A working quay.** A wooden treadwheel crane, with its wheel turning and a bale swinging from the jib. A barge loaded with bales and barrels, tied up to iron bollards. Crates and barrels stacked along the quay.
 - **More life in the streets.** A cart and a barrel in Mill Square, crates by the Gate Square stalls, flower tubs at the chapel door, and banners hanging from the High Street's upper floors.
 - **Along the King's Road:** a little wayside shrine with a candle past the bridge, a hay cart on the verge, and rubber ducks paddling down a bend of the river.
+- **Every gate leads somewhere.** Dirt tracks run out of the East Gate towards the Wildflower Meadow and out of the North Gate up through the orchard, each with a signpost at the end. The fields and trees keep clear of them.
 
 ## November 25, 2026
 

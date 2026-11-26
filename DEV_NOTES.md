@@ -924,6 +924,7 @@ Stuff I need to remember about how Patchwork is put together.
   - Moved for the quarter: `TrainCentre` (125, -73) for the train, station, its bubbles and prize; `ToyCorner` (+40 x) for the north-east alphabet stack, drums, marbles and jack; `FootballShift` (+40 x). New `ClearArea` targets for Pinwheel Hill and Paper Boat Pond, new puffball centres, `KiteHill` at (60, 126), and new trails out of the East Gate, the Farm Gate and the button-stones postern.
 
 - **City life (Level1CityLife).** `CityLife` runs at the end of `City`, so its things count as the city's and `CityClearance` leaves them alone. It adds the quarter's NPCs (built with `Toy`), `QuayCrane` (its treadwheel uses a `Spinner` and its bale a `Rocker`, with two `Solid` boxes), `Barge`, bollards, cargo, square clutter and High Street banners. `ApproachLife` runs from `Approach` after `Hamlet`. It adds Old Tiller's jetty near the river point closest to a spot beside the bridge, a shrine, a hay cart (each checked with `Physics.CheckSphere`) and three ducks on a `PathMover` loop down the middle of `RiverSouth`.
+- **Gate tracks (Level1Approach).** `GateTracks` lays dirt `Ribbon`s out of the East and North Gates into `tracks`, with signposts at their ends. `Fields` and `NewLand` skip anything `OnTrack`.
 
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
