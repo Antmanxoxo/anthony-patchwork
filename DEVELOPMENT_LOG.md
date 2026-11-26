@@ -14,7 +14,10 @@ A dated record of every change to Patchwork, newest first. Each day lists the ch
   - Herald Fanfaronne up in the stand and Sir Thimble of the Red to talk to
 - **A windmill** on the fields by the Pod's meadow: a stone tower with a shingled cap, four latticed sails turning towards the road, a fenced yard and sacks of flour. It's the first thing you see moving when you land.
 - **The Weft Mill**, a thatched watermill on the river's long bend, its wheel turning in the stream with a churn of foam.
-- All three are on the map.
+- **The Old Watchtower**, a tumbledown stone tower deep in the west wood. It has ivy up its sides, fallen stones round its foot and steps winding round the outside to a lookout with a cache of bubbles, and from the top you can see the whole town over the trees.
+- **The Weft Ford**, a line of stepping stones across the river north of town, with a cairn on each bank.
+- **A smithy in the keep's bailey**, with a glowing forge and chimney, an anvil on a stump, a rack of horseshoes and a trough. The bailey's straw target has moved to the other side of the yard.
+- All of the new landmarks are on the map.
 
 ### Life in the Common Quarter and on the road in
 - **New townsfolk to talk to:**

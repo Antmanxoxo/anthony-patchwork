@@ -15,6 +15,144 @@ namespace Patchwork
             Lists(kit, new Vector3(-2f, 0f, -139f));
             Windmill(kit, new Vector3(88f, 0f, -141f));
             WeftMill(kit, new Vector3(50f, 0f, -131f));
+            Watchtower(kit, new Vector3(-134f, 0f, 42f));
+            Ford(kit, new Vector2(44f, 141f));
+            Smithy(kit);
+        }
+
+        // ---------------------------------------------------------------- The old watchtower
+
+        // A tumbledown watchtower deep in the west wood: a round stone tower with a broken top,
+        // steps winding up the outside, and a little cache of bubbles at the top for anyone who
+        // climbs it. From up there you can see the whole town over the treetops.
+        static void Watchtower(LevelKit kit, Vector3 feet)
+        {
+            var stone = PatchworkAssets.Cobble(new Color(0.72f, 0.7f, 0.66f));
+            var moss = PatchworkAssets.Felt(new Color(0.42f, 0.58f, 0.34f));
+            var g = kit.Group("OldWatchtower", feet);
+            const float r = 3.2f, h = 9f;
+            for (int i = 0; i < 5; i++)
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, h * (i + 0.5f) / 5f, 0f), new Vector3(r * 2f - i * 0.1f, h / 10f, r * 2f - i * 0.1f), stone, default(Vector3), g);
+            var col = g.gameObject.AddComponent<CapsuleCollider>();
+            col.center = new Vector3(0f, (h - 0.3f) * 0.5f, 0f);
+            col.radius = r - 0.1f;
+            col.height = h - 0.3f;
+            // The broken top: a ring of merlons with gaps, some fallen.
+            var rng = new System.Random(9);
+            for (int k = 0; k < 12; k++)
+            {
+                if (k % 4 == 1) continue;
+                float a = k * 30f * Mathf.Deg2Rad;
+                float mh = 0.6f + (float)rng.NextDouble() * 1.2f;
+                kit.Deco(PrimitiveType.Cube, new Vector3(Mathf.Cos(a) * (r - 0.3f), h + mh * 0.5f, Mathf.Sin(a) * (r - 0.3f)), new Vector3(0.9f, mh, 0.7f), stone, new Vector3(0f, -a * Mathf.Rad2Deg, 0f), g);
+            }
+            for (int k = 0; k < 5; k++)
+            {
+                float a = (float)rng.NextDouble() * Mathf.PI * 2f, d = r + 1.2f + (float)rng.NextDouble() * 2.5f;
+                kit.Deco(PrimitiveType.Cube, new Vector3(Mathf.Cos(a) * d, 0.3f, Mathf.Sin(a) * d), new Vector3(0.9f, 0.6f, 0.7f), stone, new Vector3((float)rng.NextDouble() * 30f, (float)rng.NextDouble() * 360f, 12f), g);
+            }
+            // Ivy patches up the side.
+            for (int k = 0; k < 7; k++)
+            {
+                float a = (k * 47f + 20f) * Mathf.Deg2Rad;
+                kit.Deco(PrimitiveType.Sphere, new Vector3(Mathf.Cos(a) * (r + 0.02f), 1.2f + k * 1.1f, Mathf.Sin(a) * (r + 0.02f)), new Vector3(1.4f, 1.6f, 0.3f), moss, new Vector3(0f, -a * Mathf.Rad2Deg + 90f, 0f), g);
+            }
+            // The steps: blocks spiralling up the outside, a full turn and a half to the top.
+            const int steps = 26;
+            for (int k = 0; k < steps; k++)
+            {
+                float a = k * (540f / steps) * Mathf.Deg2Rad;
+                float y = (k + 1) * (h / steps);
+                Vector3 p = feet + new Vector3(Mathf.Cos(a) * (r + 0.7f), y - 0.2f, Mathf.Sin(a) * (r + 0.7f));
+                var step = kit.Block(p, new Vector3(1.5f, 0.4f, 1.1f), new Color(0.72f, 0.7f, 0.66f), "TowerStep", stone);
+                step.rotation = Quaternion.Euler(0f, -a * Mathf.Rad2Deg, 0f);
+            }
+            // The floor at the top, and the cache.
+            kit.Block(feet + Vector3.up * (h - 0.1f), new Vector3(r * 1.7f, 0.2f, r * 1.7f), new Color(0.6f, 0.45f, 0.3f), "TowerTop", PatchworkAssets.Planks(new Color(0.6f, 0.45f, 0.3f)));
+            for (int k = 0; k < 5; k++)
+            {
+                float a = k * 72f * Mathf.Deg2Rad;
+                ScoreBubbles.Place(kit, feet + new Vector3(Mathf.Cos(a) * 1.2f, h + 1f, Mathf.Sin(a) * 1.2f), 50);
+            }
+            Take(feet, r + 4f);
+            ClearGrass(feet, r + 1f);
+            kit.Info.MapPins.Add(new MapPin("Old Watchtower", feet));
+        }
+
+        // ---------------------------------------------------------------- The ford
+
+        // Stepping stones across the River Weft north of town, on a straight stretch near
+        // `near`: big flat-topped boulders a hop apart, with a little cairn on each bank.
+        static void Ford(LevelKit kit, Vector2 near)
+        {
+            var path = RiverNorth;
+            int ni = 1;
+            for (int i = 1; i < path.Length - 1; i++)
+                if ((path[i] - near).sqrMagnitude < (path[ni] - near).sqrMagnitude) ni = i;
+            Vector2 p = path[ni], d = (path[ni + 1] - path[ni - 1]).normalized, n = new Vector2(-d.y, d.x);
+            float t;
+            PathDistance(p, path, out t);
+            float hw = RiverHalfWidth(t);
+            var stone = PatchworkAssets.Cobble(new Color(0.74f, 0.72f, 0.68f));
+            int count = Mathf.CeilToInt((hw * 2f + 1f) / 1.9f);
+            for (int k = 0; k < count; k++)
+            {
+                float u = -hw - 0.2f + (k + 0.5f) * ((hw * 2f + 0.4f) / count);
+                Vector2 q = p + n * u + d * (k % 2 == 0 ? 0.35f : -0.35f);
+                float top = 0.12f;
+                float bottom = MeadowHeight(q.x, q.y) - 0.3f;
+                var b = kit.Block(new Vector3(q.x, (top + bottom) * 0.5f, q.y), new Vector3(1.3f, top - bottom, 1.2f), new Color(0.74f, 0.72f, 0.68f), "FordStone", stone);
+                b.rotation = Quaternion.Euler(0f, k * 23f, 0f);
+                kit.Deco(PrimitiveType.Sphere, new Vector3(q.x, top, q.y), new Vector3(1.4f, 0.3f, 1.3f), stone, new Vector3(0f, k * 23f, 0f));
+            }
+            for (int s = -1; s <= 1; s += 2)
+            {
+                Vector2 c = p + n * s * (hw + 3.4f);
+                for (int k = 0; k < 3; k++)
+                    kit.Deco(PrimitiveType.Sphere, new Vector3(c.x, 0.25f + k * 0.4f, c.y), Vector3.one * (0.8f - k * 0.2f), stone, new Vector3(0f, k * 40f, 0f));
+            }
+            kit.Info.MapPins.Add(new MapPin("Weft Ford", new Vector3(p.x, 0f, p.y)));
+        }
+
+        // ---------------------------------------------------------------- The smithy
+
+        // The keep's smithy in a corner of the bailey: a lean-to roof on posts over a glowing
+        // forge, an anvil on its block, a rack of horseshoes and a water trough.
+        static void Smithy(LevelKit kit)
+        {
+            int first = kit.Root.childCount;
+            var feet = new Vector3(Bailey.z - 3.6f, 0.05f, Bailey.w - 3f);
+            var g = kit.Group("Smithy", feet);
+            var darkWood = PatchworkAssets.Wood(TownKit.DarkWood);
+            var iron = PatchworkAssets.Plain(TownKit.Iron, 0.5f);
+            var brick = PatchworkAssets.Brick(new Color(0.62f, 0.4f, 0.34f));
+            for (int sx = -1; sx <= 1; sx += 2)
+                kit.Deco(PrimitiveType.Cube, new Vector3(sx * 2.2f, 1.4f, -1.6f), new Vector3(0.2f, 2.8f, 0.2f), darkWood, default(Vector3), g);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0f, 3f, 0f), new Vector3(5f, 0.12f, 3.8f), PatchworkAssets.Shingle(new Color(0.45f, 0.36f, 0.3f)), new Vector3(-12f, 0f, 0f), g);
+            // The forge: a brick hearth with coals that glow, and a chimney.
+            kit.Deco(PrimitiveType.Cube, new Vector3(-1f, 0.55f, 1.1f), new Vector3(1.8f, 1.1f, 1.2f), brick, default(Vector3), g);
+            kit.Deco(PrimitiveType.Cube, new Vector3(-1f, 1.12f, 1.1f), new Vector3(1.4f, 0.06f, 0.8f), PatchworkAssets.Glow(new Color(1f, 0.45f, 0.2f), 1.2f), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cube, new Vector3(-1f, 2.6f, 1.4f), new Vector3(0.8f, 3f, 0.6f), brick, default(Vector3), g);
+            var glow = new GameObject("ForgeGlow").AddComponent<Light>();
+            glow.transform.SetParent(g, false);
+            glow.transform.localPosition = new Vector3(-1f, 1.5f, 0.6f);
+            glow.type = LightType.Point;
+            glow.color = new Color(1f, 0.55f, 0.25f);
+            glow.range = 5f;
+            glow.intensity = 1.6f;
+            // The anvil on a stump.
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(1.2f, 0.35f, 0.2f), new Vector3(0.7f, 0.35f, 0.7f), PatchworkAssets.Wood(new Color(0.55f, 0.4f, 0.28f)), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cube, new Vector3(1.2f, 0.85f, 0.2f), new Vector3(0.9f, 0.3f, 0.4f), iron, default(Vector3), g);
+            kit.Deco(PrimitiveType.Sphere, new Vector3(1.75f, 0.88f, 0.2f), new Vector3(0.4f, 0.2f, 0.25f), iron, default(Vector3), g);
+            TownKit.Solid(kit, feet + new Vector3(1.2f, 0.5f, 0.2f), new Vector3(0.8f, 1f, 0.8f), 0f);
+            // A rack of horseshoes on the back post, and the trough.
+            for (int k = 0; k < 4; k++)
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(2.1f, 1.2f + k * 0.35f, -1.45f), new Vector3(0.3f, 0.02f, 0.3f), iron, new Vector3(90f, 0f, 0f), g);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0.2f, 0.35f, -1.1f), new Vector3(1.6f, 0.7f, 0.7f), PatchworkAssets.Planks(new Color(0.55f, 0.4f, 0.28f)), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0.2f, 0.62f, -1.1f), new Vector3(1.4f, 0.04f, 0.5f), PatchworkAssets.CraftWater(0.9f, Vector2.one), default(Vector3), g);
+            TownKit.Solid(kit, feet + new Vector3(-1f, 0.55f, 1.1f), new Vector3(1.8f, 1.1f, 1.2f), 0f);
+            // It's inside the keep's bailey, so it counts as part of the town (the tidy-up leaves it be).
+            for (int i = first; i < kit.Root.childCount; i++) cityThings.Add(kit.Root.GetChild(i));
         }
 
         static readonly Color KnightRed = new Color(0.82f, 0.3f, 0.3f), KnightBlue = new Color(0.3f, 0.45f, 0.72f);

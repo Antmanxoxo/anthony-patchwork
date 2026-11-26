@@ -929,6 +929,9 @@ Stuff I need to remember about how Patchwork is put together.
   - `Windmill` at (88, -141), with the sails on a `Spinner` hub, and the whole group turned 210 degrees.
   - `WeftMill` finds the `RiverSouth` point nearest (50, -131), puts a `MakeHouse` on that bank and a `Spinner` wheel at the water's edge.
   - The three field plots that overlapped them were removed.
+  - `Watchtower` at (-134, 42): a capsule collider kept just under the `TowerTop` floor block (top at 9), 26 `TowerStep` blocks spiralling 540 degrees round it, and 50-point bubbles at the top.
+  - `Ford` puts solid `FordStone` blocks (tops at 0.12) across the `RiverNorth` point nearest (44, 141).
+  - `Smithy` sits in the bailey's north-east corner, with a point light for the forge. It adds its root children to `cityThings` so `CityClearance` doesn't clear it.
 - **Gate tracks (Level1Approach).** `GateTracks` lays dirt `Ribbon`s out of the East and North Gates into `tracks`, with signposts at their ends. `Fields` and `NewLand` skip anything `OnTrack`.
 
 ## The map (MapScreen.cs)

@@ -428,7 +428,7 @@ namespace Patchwork
             // Life in the bailey: a well, barrels and a straw practice target.
             TownWell(kit, new Vector3(x0 + 5f, 0.05f, z1 - 4.5f));
             for (int i = 0; i < 3; i++) TownKit.Crate(kit, new Vector3(x0 + 3f + i * 1.2f, 0.05f, z0 + 2.6f), 1f, i * 20f);
-            var target = kit.Group("PracticeTarget", new Vector3(x1 - 5f, 0f, z0 + 4f));
+            var target = kit.Group("PracticeTarget", new Vector3(x0 + 2.8f, 0f, gz - 2f));
             target.SetParent(root, true);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.3f, 0f), new Vector3(1.8f, 0.2f, 1.8f), PatchworkAssets.Felt(new Color(0.95f, 0.85f, 0.5f)), new Vector3(90f, 0f, 0f), target);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, 1.3f, -0.18f), new Vector3(1.1f, 0.05f, 1.1f), PatchworkAssets.Felt(new Color(0.82f, 0.3f, 0.3f)), new Vector3(90f, 0f, 0f), target);
