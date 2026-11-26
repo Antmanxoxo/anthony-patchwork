@@ -114,6 +114,7 @@ namespace Patchwork
             Hamlet(kit, root, road);
             ApproachLife(kit, road, bc, bdir);
             GateTracks(kit, root, earth, verge);
+            Countryside(kit);
             Fields(kit);
             NewLand(kit);
         }
@@ -278,8 +279,7 @@ namespace Patchwork
             var plots = new[]
             {
                 new Vector4(112f, -104f, 138f, -86f), new Vector4(118f, -58f, 144f, -36f),
-                new Vector4(130f, -30f, 146f, -6f), new Vector4(122f, 0f, 144f, 22f), new Vector4(70f, -146f, 96f, -134f),
-                new Vector4(-30f, -146f, -4f, -132f), new Vector4(2f, -146f, 26f, -132f), new Vector4(80f, 118f, 104f, 140f),
+                new Vector4(130f, -30f, 146f, -6f), new Vector4(122f, 0f, 144f, 22f), new Vector4(80f, 118f, 104f, 140f),
                 new Vector4(110f, 118f, 140f, 140f),
             };
             int field = 0;

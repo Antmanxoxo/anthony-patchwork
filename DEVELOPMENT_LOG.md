@@ -4,6 +4,18 @@ A dated record of every change to Patchwork, newest first. Each day lists the ch
 
 ## November 26, 2026
 
+### Landmarks in the countryside
+- **The Lists**, a tournament ground in the new land south of the orchard:
+  - a sand tilting lane with a red-and-white tilt barrier down the middle
+  - a three-tier stand you can climb, under a striped awning with pennants and the knights' shields along the front
+  - round striped pavilions at each end, red camp and blue camp
+  - banner poles along the rail
+  - a spinning quintain, with a line of bubbles to collect as you run the lane
+  - Herald Fanfaronne up in the stand and Sir Thimble of the Red to talk to
+- **A windmill** on the fields by the Pod's meadow: a stone tower with a shingled cap, four latticed sails turning towards the road, a fenced yard and sacks of flour. It's the first thing you see moving when you land.
+- **The Weft Mill**, a thatched watermill on the river's long bend, its wheel turning in the stream with a churn of foam.
+- All three are on the map.
+
 ### Life in the Common Quarter and on the road in
 - **New townsfolk to talk to:**
   - Warden Pewter, the tin soldier on duty inside the Toybox Gate, who points the way to Wedding Square
