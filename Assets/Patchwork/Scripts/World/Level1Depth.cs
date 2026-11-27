@@ -15,12 +15,16 @@ namespace Patchwork
     //   - the windmill's gallery: plank steps round the back of the mill, clear of the sails
     //   - the Woodcutters' Camp in the west wood, with something buried by a ribboned stump
     //   - a trail of bubbles down the River Weft, for anyone who'd rather swim
+    //   - the Lookout Oak by the Pod's meadow: steps round a giant oak to a crow's nest
+    //   - the Wishing Well in Gate Hamlet: Water can slip down it to Wellbert's well-bottom
+    //   - the Lily Pad Run on the north river: hop upstream from the ford to a willow island
     //   - Crier Hollerby in Gate Square, who knows a rumour about every one of them
     // Built after the city's tidy-up, so nothing here is cleared away by it.
     public static partial class Level1Builder
     {
         static readonly Vector3 CellarRoom = new Vector3(310f, 0f, -200f);
         static readonly Vector3 BurrowRoom = new Vector3(310f, 0f, -262f);
+        static readonly Vector3 WellRoom = new Vector3(310f, 0f, -320f);
         const float CellarZ = 72f, BurrowZ = 40f;
 
         static void Depth(LevelKit kit)
@@ -34,6 +38,9 @@ namespace Patchwork
             MillGallery(kit, WindmillAt);
             WoodcuttersCamp(kit);
             RiverTrail(kit);
+            LookoutOak(kit);
+            WishingWell(kit);
+            LilyPadRun(kit);
             TownCrier(kit);
         }
 
@@ -858,6 +865,323 @@ namespace Patchwork
             }
         }
 
+        // ---------------------------------------------------------------- The Lookout Oak
+
+        // A giant old oak on the meadow east of where the Pod lands. Plank steps wind up round
+        // its trunk to a crow's nest under a striped awning, with a telescope pointed at the
+        // town, a sea chest, and Lookout Lark, who sees everything first.
+        static void LookoutOak(LevelKit kit)
+        {
+            Vector3 t;
+            if (!ClearArea(new Vector3(130f, 0f, -133f), 6.5f, out t))
+            {
+                Debug.Log("[Level1] No clear spot by the Pod's meadow for the Lookout Oak.");
+                return;
+            }
+            ClearForDepth(kit, new Rect(t.x - 6.5f, t.z - 6.5f, 13f, 13f), "the Lookout Oak");
+            var g = kit.Group("LookoutOak", Vector3.zero);
+            var bark = PatchworkAssets.Wood(new Color(0.5f, 0.36f, 0.26f));
+            var plankCol = new Color(0.72f, 0.55f, 0.38f);
+            var planks = PatchworkAssets.Planks(plankCol);
+            var darkWood = PatchworkAssets.Wood(TownKit.DarkWood);
+            const float trunkH = 13f, deckY = 8f;
+            // The trunk, a little narrower as it goes up, on a spread of roots.
+            for (int i = 0; i < 3; i++)
+            {
+                float r = 1.5f - i * 0.2f;
+                kit.Deco(PrimitiveType.Cylinder, t + Vector3.up * (trunkH / 6f + i * trunkH / 3f), new Vector3(r * 2f, trunkH / 6f, r * 2f), bark, default(Vector3), g);
+            }
+            for (int k = 0; k < 6; k++)
+            {
+                float a = k * 60f + 15f;
+                kit.Deco(PrimitiveType.Sphere, t + Quaternion.Euler(0f, a, 0f) * Vector3.forward * 1.5f + Vector3.up * 0.15f, new Vector3(0.8f, 0.5f, 1.8f), bark, new Vector3(0f, a, 0f), g);
+            }
+            var trunk = new GameObject("OakTrunk");
+            trunk.transform.SetParent(kit.Root, false);
+            trunk.transform.position = t;
+            var col = trunk.AddComponent<CapsuleCollider>();
+            col.radius = 1.35f;
+            col.height = trunkH;
+            col.center = new Vector3(0f, trunkH * 0.5f, 0f);
+            // Ten steps round the trunk: from the east, round by the south and west, to the
+            // north, where the last one comes up level with the deck.
+            for (int i = 1; i <= 10; i++)
+            {
+                float a = -(10 - i) * 30f, top = 0.8f * i;
+                Vector3 dir = Quaternion.Euler(0f, a, 0f) * Vector3.forward;
+                Vector3 p = t + dir * 2.4f;
+                var step = kit.Block(new Vector3(p.x, top - 0.125f, p.z), new Vector3(1.3f, 0.25f, 1.6f), plankCol, "OakStep", planks);
+                step.rotation = Quaternion.Euler(0f, a, 0f);
+                kit.Deco(PrimitiveType.Cube, t + dir * 1.9f + Vector3.up * (top - 0.4f), new Vector3(0.14f, 0.5f, 0.9f), darkWood, new Vector3(-25f, a, 0f), g);
+                if (i % 3 == 0) ScoreBubbles.Place(kit, new Vector3(p.x, top + 1f, p.z), 10);
+            }
+            // The deck, east of the trunk, on joists, with rails round three sides.
+            Vector3 deck = t + new Vector3(3.3f, 0f, 0f);
+            kit.Block(deck + Vector3.up * (deckY - 0.125f), new Vector3(5.2f, 0.25f, 5.6f), plankCol, "OakDeck", planks);
+            for (int k = 0; k < 4; k++)
+                kit.Deco(PrimitiveType.Cube, deck + new Vector3(k * 0.9f - 1.35f, deckY - 0.5f, 0f), new Vector3(0.18f, 0.6f, 5.4f), darkWood, default(Vector3), g);
+            for (int k = 0; k <= 6; k++)
+            {
+                float z = -2.7f + k * 0.9f;
+                kit.Deco(PrimitiveType.Cylinder, deck + new Vector3(2.5f, deckY + 0.45f, z), new Vector3(0.1f, 0.45f, 0.1f), darkWood, default(Vector3), g);
+            }
+            kit.Deco(PrimitiveType.Cube, deck + new Vector3(2.5f, deckY + 0.9f, 0f), new Vector3(0.08f, 0.08f, 5.5f), darkWood, default(Vector3), g);
+            for (int s = -1; s <= 1; s += 2)
+            {
+                kit.Deco(PrimitiveType.Cube, deck + new Vector3(0.6f, deckY + 0.9f, s * 2.7f), new Vector3(3.8f, 0.08f, 0.08f), darkWood, default(Vector3), g);
+                for (int k = 0; k < 4; k++)
+                    kit.Deco(PrimitiveType.Cylinder, deck + new Vector3(-1.1f + k * 1.2f, deckY + 0.45f, s * 2.7f), new Vector3(0.1f, 0.45f, 0.1f), darkWood, default(Vector3), g);
+            }
+            // A striped awning on four posts, a pennant above it.
+            var stripes = PatchworkAssets.Print(PatchworkAssets.PrintKind.Stripes, new Color(0.97f, 0.94f, 0.88f), new Color(0.3f, 0.55f, 0.78f));
+            for (int sx = -1; sx <= 1; sx += 2)
+                for (int sz = -1; sz <= 1; sz += 2)
+                    kit.Deco(PrimitiveType.Cylinder, deck + new Vector3(0.4f + sx * 2f, deckY + 1.35f, sz * 2.4f), new Vector3(0.12f, 1.35f, 0.12f), darkWood, default(Vector3), g);
+            for (int s = -1; s <= 1; s += 2)
+                kit.Deco(PrimitiveType.Cube, deck + new Vector3(0.4f, deckY + 3.05f, s * 1.3f), new Vector3(4.8f, 0.08f, 2.9f), stripes, new Vector3(s * 22f, 0f, 0f), g);
+            kit.Deco(PrimitiveType.Cylinder, deck + new Vector3(2.6f, deckY + 4.2f, 0f), new Vector3(0.08f, 1.6f, 0.08f), darkWood, default(Vector3), g);
+            var flag = kit.Group("OakPennant", deck + new Vector3(2.6f, deckY + 5.4f, 0f));
+            flag.SetParent(g, true);
+            kit.Deco(PrimitiveType.Cube, new Vector3(0.7f, 0f, 0f), new Vector3(1.4f, 0.6f, 0.04f), PatchworkAssets.Felt(new Color(0.95f, 0.75f, 0.3f)), default(Vector3), flag);
+            flag.gameObject.AddComponent<FlagWave>();
+            // A telescope on a tripod, pointed at the town.
+            Vector3 scope = deck + new Vector3(1.6f, deckY, -1.4f);
+            Vector3 toTown = new Vector3(MainGate.x - scope.x, 0f, MainGate.z - scope.z);
+            float scopeYaw = Mathf.Atan2(toTown.x, toTown.z) * Mathf.Rad2Deg;
+            for (int k = 0; k < 3; k++)
+                kit.Deco(PrimitiveType.Cylinder, scope + Quaternion.Euler(0f, k * 120f, 0f) * new Vector3(0f, 0.55f, 0.25f), new Vector3(0.05f, 0.6f, 0.05f), darkWood, new Vector3(-15f, k * 120f, 0f), g);
+            kit.Deco(PrimitiveType.Cylinder, scope + Vector3.up * 1.25f, new Vector3(0.2f, 0.55f, 0.2f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.7f), new Vector3(80f, scopeYaw, 0f), g);
+            kit.Deco(PrimitiveType.Cylinder, scope + Vector3.up * 1.25f + Quaternion.Euler(0f, scopeYaw, 0f) * new Vector3(0f, 0.1f, 0.5f), new Vector3(0.26f, 0.06f, 0.26f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.7f), new Vector3(80f, scopeYaw, 0f), g);
+            // The sea chest, with the marble on its lid.
+            Vector3 chest = deck + new Vector3(-0.6f, deckY, -2f);
+            kit.Block(chest + Vector3.up * 0.3f, new Vector3(1.1f, 0.6f, 0.7f), new Color(0.55f, 0.35f, 0.25f), "OakChest", PatchworkAssets.Planks(new Color(0.55f, 0.35f, 0.25f)));
+            kit.Deco(PrimitiveType.Cylinder, chest + Vector3.up * 0.6f, new Vector3(0.7f, 0.55f, 0.7f), PatchworkAssets.Planks(new Color(0.55f, 0.35f, 0.25f)), new Vector3(0f, 0f, 90f), g);
+            for (int s = -1; s <= 1; s += 2)
+                kit.Deco(PrimitiveType.Cube, chest + new Vector3(s * 0.4f, 0.5f, 0f), new Vector3(0.08f, 0.62f, 0.74f), PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.7f), default(Vector3), g);
+            SecretMarble.Place(kit, chest + Vector3.up * 1.4f, MarbleIds[23], MarbleColor(23));
+            // The canopy: big knitted pompoms of leaves, with felt blossom.
+            Color[] leaf = { new Color(0.45f, 0.68f, 0.4f), new Color(0.52f, 0.74f, 0.42f), new Color(0.4f, 0.62f, 0.38f) };
+            Vector3[] puffs = { new Vector3(0f, 14.6f, 0f), new Vector3(-2.6f, 12.3f, -1.6f), new Vector3(-1.6f, 12.8f, 2.2f), new Vector3(1f, 13.4f, -3f), new Vector3(1.6f, 14f, 2.6f) };
+            float[] size = { 7.5f, 4.6f, 4.2f, 4f, 4.2f };
+            for (int i = 0; i < puffs.Length; i++)
+            {
+                kit.Deco(PrimitiveType.Sphere, t + puffs[i], new Vector3(size[i], size[i] * 0.7f, size[i]), PatchworkAssets.Knit(leaf[i % leaf.Length]), new Vector3(0f, i * 40f, 0f), g);
+                for (int b = 0; b < 4; b++)
+                {
+                    Vector3 o = Quaternion.Euler(0f, b * 90f + i * 25f, 0f) * new Vector3(size[i] * 0.48f, size[i] * 0.12f, 0f);
+                    kit.Deco(PrimitiveType.Sphere, t + puffs[i] + o, Vector3.one * 0.35f, PatchworkAssets.Felt(FlowerColors[(i + b) % FlowerColors.Length]), default(Vector3), g);
+                }
+            }
+            // A tyre swing hung from the deck's east edge.
+            var swing = kit.Group("TyreSwing", deck + new Vector3(2.2f, deckY - 0.25f, 0f));
+            swing.SetParent(g, true);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -3.3f, 0f), new Vector3(0.03f, 3.3f, 0.03f), PatchworkAssets.Yarn(new Color(0.9f, 0.8f, 0.55f)), default(Vector3), swing);
+            kit.Deco(PrimitiveType.Cylinder, new Vector3(0f, -6.9f, 0f), new Vector3(1f, 0.16f, 1f), PatchworkAssets.Plain(new Color(0.2f, 0.2f, 0.24f), 0.3f), new Vector3(90f, 0f, 0f), swing);
+            var sway = swing.gameObject.AddComponent<Rocker>();
+            sway.Axis = Vector3.forward;
+            sway.Amount = 4f;
+            sway.Speed = 0.7f;
+            ClearGrass(t, 4.5f);
+            // Lookout Lark, watching the town.
+            var lark = Toy(kit, deck + new Vector3(1.4f, deckY + 0.05f, 1.2f), scopeYaw, ToyNpc.Kind.Bird, "Lookout Lark", new Color(0.45f, 0.62f, 0.85f), new Color(0.98f, 0.85f, 0.5f),
+                ToyNpc.Instrument.None, 1.4f, new Color(0.35f, 0.5f, 0.75f));
+            lark.Lines = () => new[]
+            {
+                "Ahoy! Lookout Lark, eyes of the meadow! I saw your Pod come down before anyone. Big bump. Lovely landing.",
+                "Through the telescope you can see the whole town: the keep, the chapel, the canal, the Common Quarter. On a clear day, the edge of the box.",
+                "When the Fray come over the hills, I see them first and ring... well, I shout. I'm getting a bell. Probably.",
+                "That chest's for anyone who climbs all the way up. Help yourself.",
+            };
+            kit.Hint(t + new Vector3(2.4f, 1.5f, 0f), new Vector3(3f, 3f, 3f), "The Lookout Oak",
+                "Steps wind up round the old oak to a crow's nest. You can see the whole toybox from up there.");
+            kit.Info.MapPins.Add(new MapPin("Lookout Oak", t));
+        }
+
+        // ---------------------------------------------------------------- The Wishing Well
+
+        // Gate Hamlet's well grants wishes, they say, to the right sort of visitor: something
+        // runny can slip down it to the bottom, where Wellbert keeps every wish anyone ever
+        // dropped. A marble somebody dropped in by mistake sits on his top ledge.
+        static void WishingWell(LevelKit kit)
+        {
+            // (Where Hamlet put the well; it's only there if nothing was in the way.)
+            var road = RoadIn;
+            int wi = Mathf.Clamp(Mathf.RoundToInt(road.Length * 0.8f), 1, road.Length - 2);
+            Vector2 w = road[wi];
+            Vector2 wd = (road[Mathf.Clamp(Mathf.RoundToInt(road.Length * 0.8f) + 1, 1, road.Length - 1)] - w).normalized;
+            Vector2 wq = w + new Vector2(-wd.y, wd.x) * -5.5f;
+            var wellAt = new Vector3(wq.x, 0f, wq.y);
+            bool found = false;
+            for (int i = 0; i < kit.Root.childCount && !found; i++)
+            {
+                var c = kit.Root.GetChild(i);
+                if (c.name == "Well" && c.gameObject.activeSelf && (c.position - wellAt).sqrMagnitude < 0.1f) found = true;
+            }
+            if (!found)
+            {
+                Debug.Log("[Level1] Gate Hamlet has no well, so no way down to the Wishing Well.");
+                return;
+            }
+            Vector3 o = WellRoom;
+            var size = new Vector3(12f, 7f, 12f);
+            var down = WarpAt(kit, wellAt + new Vector3(0f, 1.45f, 0f), new Vector3(1.3f, 0.9f, 1.3f), o + new Vector3(-3.6f, 0f, -3.6f), 45f, false, "");
+            down.WaterOnly = true;
+            kit.Hint(wellAt + new Vector3(0f, 1.5f, 0f), new Vector3(4.5f, 3f, 4.5f), "The Wishing Well",
+                "Folk say if you drop in a wish, something drops out. Only something runny could fit down it, though.");
+
+            Room(kit, o, size, PatchworkAssets.Felt(new Color(0.45f, 0.55f, 0.42f)), PatchworkAssets.Cobble(new Color(0.62f, 0.62f, 0.6f)),
+                PatchworkAssets.Cobble(new Color(0.5f, 0.5f, 0.5f)), "WellBottom");
+            var g = kit.Group("WellBottom", Vector3.zero);
+            // A shaft of daylight down the middle, onto a shallow pool full of wishes.
+            kit.Deco(PrimitiveType.Cylinder, o + new Vector3(0f, size.y * 0.5f, 0f), new Vector3(2.2f, size.y * 0.5f, 2.2f), PatchworkAssets.Bubble(new Color(1f, 0.97f, 0.85f, 0.18f)), default(Vector3), g)
+                .GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            kit.Deco(PrimitiveType.Cylinder, o + new Vector3(0f, size.y - 0.02f, 0f), new Vector3(2.2f, 0.02f, 2.2f), PatchworkAssets.Glow(new Color(0.85f, 0.93f, 1f), 1.2f), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, o + new Vector3(0f, 0.02f, 0f), new Vector3(5f, 0.02f, 5f), PatchworkAssets.Bubble(new Color(0.45f, 0.7f, 0.95f, 0.75f)), default(Vector3), g);
+            var gold = PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.8f);
+            var rng = new System.Random(31);
+            for (int i = 0; i < 30; i++)
+            {
+                float a = (float)(rng.NextDouble() * Mathf.PI * 2.0), r = (float)(rng.NextDouble() * 2.2);
+                kit.Deco(PrimitiveType.Cylinder, o + new Vector3(Mathf.Cos(a) * r, 0.045f, Mathf.Sin(a) * r), new Vector3(0.22f, 0.01f, 0.22f), gold, new Vector3(0f, 0f, (float)(rng.NextDouble() * 20.0 - 10.0)), g);
+            }
+            WarmLight(g, o + new Vector3(0f, 4f, 0f), 12f, 1.1f, new Color(0.85f, 0.92f, 1f));
+            // Ferns and moss on the walls, and a few lost wishes: a toy boat, a ball, a key.
+            var moss = PatchworkAssets.Felt(new Color(0.4f, 0.6f, 0.36f));
+            for (int i = 0; i < 10; i++)
+            {
+                float x = (i % 2 == 0 ? -1f : 1f) * (size.x * 0.5f - 0.15f);
+                kit.Deco(PrimitiveType.Sphere, o + new Vector3(x, 0.8f + (i * 0.73f) % 4.5f, -4.5f + i), new Vector3(0.3f, 0.9f, 1.2f), moss, default(Vector3), g);
+            }
+            kit.Deco(PrimitiveType.Cube, o + new Vector3(1.2f, 0.12f, -1.3f), new Vector3(0.7f, 0.18f, 0.3f), PatchworkAssets.Felt(new Color(0.85f, 0.3f, 0.3f)), new Vector3(0f, 30f, 0f), g);
+            kit.Deco(PrimitiveType.Cube, o + new Vector3(1.2f, 0.4f, -1.3f), new Vector3(0.02f, 0.4f, 0.3f), PatchworkAssets.Felt(new Color(0.98f, 0.96f, 0.9f)), new Vector3(0f, 30f, 0f), g);
+            kit.Deco(PrimitiveType.Sphere, o + new Vector3(-1.4f, 0.2f, 1.1f), Vector3.one * 0.4f, PatchworkAssets.Felt(new Color(0.4f, 0.6f, 0.95f)), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cube, o + new Vector3(0.6f, 0.05f, 1.6f), new Vector3(0.5f, 0.04f, 0.12f), gold, new Vector3(0f, 70f, 0f), g);
+            // Ledges up the walls, stone by stone, to the top ledge.
+            Vector3[] ledges = { new Vector3(4.6f, 1f, 3f), new Vector3(3.4f, 2f, 4.8f), new Vector3(1.2f, 3f, 4.8f), new Vector3(-1f, 4f, 4.8f), new Vector3(-3.6f, 4.8f, 4.8f) };
+            for (int i = 0; i < ledges.Length; i++)
+            {
+                var l = ledges[i];
+                bool last = i == ledges.Length - 1;
+                kit.Block(o + new Vector3(l.x, l.y - 0.15f, l.z), new Vector3(last ? 2.6f : 1.5f, 0.3f, last ? 2.2f : 1.5f), new Color(0.62f, 0.62f, 0.6f), "WellLedge",
+                    PatchworkAssets.Cobble(new Color(0.66f, 0.65f, 0.62f)));
+                kit.Deco(PrimitiveType.Cube, o + new Vector3(l.x, l.y - 0.45f, l.z + 0.3f), new Vector3(0.5f, 0.3f, 0.9f), PatchworkAssets.Cobble(new Color(0.55f, 0.55f, 0.53f)), default(Vector3), g);
+            }
+            SecretMarble.Place(kit, o + new Vector3(-3.6f, 5.8f, 4.9f), MarbleIds[24], MarbleColor(24));
+            // The bucket, on its rope down the shaft: ride it back up.
+            Vector3 bucket = o + new Vector3(0f, 0f, 0f);
+            kit.Deco(PrimitiveType.Cylinder, bucket + Vector3.up * (size.y * 0.5f + 0.7f), new Vector3(0.04f, size.y * 0.5f - 0.7f, 0.04f), PatchworkAssets.Yarn(new Color(0.9f, 0.8f, 0.55f)), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, bucket + Vector3.up * 0.75f, new Vector3(0.8f, 0.35f, 0.8f), PatchworkAssets.Planks(new Color(0.6f, 0.42f, 0.28f)), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, bucket + Vector3.up * 1.08f, new Vector3(0.84f, 0.03f, 0.84f), PatchworkAssets.Plain(TownKit.Iron, 0.5f), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cube, bucket + Vector3.up * 1.35f, new Vector3(0.8f, 0.04f, 0.04f), PatchworkAssets.Plain(TownKit.Iron, 0.5f), new Vector3(0f, 0f, 0f), g);
+            Solid(kit, bucket + Vector3.up * 0.55f, new Vector3(0.75f, 1.1f, 0.75f));
+            Vector3 exit;
+            if (!FindSpot(wellAt + new Vector3(wd.x, 0f, wd.y) * 2.4f, 0.5f, out exit)) exit = wellAt + new Vector3(wd.x, 0f, wd.y) * 2.4f;
+            WarpAt(kit, bucket + new Vector3(0f, 1.2f, -0.9f), new Vector3(1.8f, 2.4f, 1.2f), exit, Mathf.Atan2(wd.x, wd.y) * Mathf.Rad2Deg, true, "Ride the bucket up");
+            var wellbert = Toy(kit, o + new Vector3(3.2f, 0.05f, -2.6f), -60f, ToyNpc.Kind.JackInBox, "Wellbert", new Color(0.5f, 0.72f, 0.9f), new Color(0.98f, 0.82f, 0.4f),
+                ToyNpc.Instrument.None, 1.25f, new Color(0.4f, 0.6f, 0.85f));
+            wellbert.Lines = () => new[]
+            {
+                "Boing! A visitor! Nobody visits the bottom of a well. They just drop wishes on my head.",
+                "I keep every one. That's a wish for a pony, that's a wish for rain, and that one's for a better hat.",
+                "Somebody wished for a marble once, then dropped it in by mistake. It's up on the top ledge. You have it; it was never really wished for.",
+                "Ride the bucket back up when you're done. Mind your head on the way.",
+            };
+            kit.Hint(o + new Vector3(-3.6f, 1.5f, -3.6f), new Vector3(4f, 3f, 4f), "The Bottom of the Well",
+                "Full of wishes, and somebody who keeps them. The bucket in the middle rides back up.");
+        }
+
+        // ---------------------------------------------------------------- The Lily Pad Run
+
+        // Upstream from the Weft Ford, a line of lily pads weaves out along the river to a sandy
+        // island with a little willow, where Tilda Tench's lucky float came to rest (and
+        // something shinier besides). Hop out from the middle of the ford.
+        static void LilyPadRun(LevelKit kit)
+        {
+            var path = RiverNorth;
+            var near = new Vector2(44f, 141f);   // (as Countryside's Ford)
+            int ni = 1;
+            for (int i = 1; i < path.Length - 1; i++)
+                if ((path[i] - near).sqrMagnitude < (path[ni] - near).sqrMagnitude) ni = i;
+            var lengths = new float[path.Length];
+            for (int i = 1; i < path.Length; i++) lengths[i] = lengths[i - 1] + Vector2.Distance(path[i - 1], path[i]);
+            float total = lengths[path.Length - 1], ford = lengths[ni];
+            System.Func<float, Vector2> at = s =>
+            {
+                s = Mathf.Clamp(s, 0f, total);
+                int i = 1;
+                while (i < path.Length - 1 && lengths[i] < s) i++;
+                float seg = lengths[i] - lengths[i - 1];
+                return Vector2.Lerp(path[i - 1], path[i], seg > 0f ? (s - lengths[i - 1]) / seg : 0f);
+            };
+            System.Func<float, Vector2> side = s =>
+            {
+                Vector2 d = (at(s + 0.5f) - at(s - 0.5f)).normalized;
+                return new Vector2(-d.y, d.x);
+            };
+            var green = PatchworkAssets.Felt(new Color(0.42f, 0.66f, 0.38f));
+            var paler = PatchworkAssets.Felt(new Color(0.56f, 0.76f, 0.46f));
+            var g = kit.Group("LilyPadRun", Vector3.zero);
+            float top = CanalSurface + 0.08f;
+            for (int k = 0; k < 10; k++)
+            {
+                float s = ford + 2.4f + k * 2f;
+                Vector2 q = at(s) + side(s) * 1.8f * Mathf.Sin(k * 0.8f);
+                float bottom = MeadowHeight(q.x, q.y) - 0.3f;
+                var pad = kit.Block(new Vector3(q.x, (top + bottom) * 0.5f, q.y), new Vector3(1.2f, top - bottom, 1.2f), new Color(0.42f, 0.66f, 0.38f), "LilyPad");
+                pad.GetComponent<Renderer>().enabled = false;
+                kit.Deco(PrimitiveType.Cylinder, new Vector3(q.x, top - 0.03f, q.y), new Vector3(1.45f, 0.03f, 1.45f), k % 2 == 0 ? green : paler, new Vector3(0f, k * 47f, 0f), g);
+                kit.Deco(PrimitiveType.Cube, new Vector3(q.x, top + 0.005f, q.y) + Quaternion.Euler(0f, k * 47f, 0f) * new Vector3(0f, 0f, 0.45f), new Vector3(0.06f, 0.02f, 0.55f),
+                    PatchworkAssets.Felt(new Color(0.3f, 0.5f, 0.3f)), new Vector3(0f, k * 47f, 0f), g);
+                if (k % 3 == 1)
+                {
+                    Vector3 f = new Vector3(q.x, top + 0.1f, q.y) + Quaternion.Euler(0f, k * 47f + 120f, 0f) * new Vector3(0f, 0f, 0.4f);
+                    for (int p = 0; p < 5; p++)
+                        kit.Deco(PrimitiveType.Sphere, f + Quaternion.Euler(0f, p * 72f, 0f) * new Vector3(0f, 0f, 0.1f), new Vector3(0.12f, 0.08f, 0.2f), PatchworkAssets.Felt(new Color(1f, 0.72f, 0.8f)), new Vector3(0f, p * 72f, 0f), g);
+                    kit.Deco(PrimitiveType.Sphere, f + Vector3.up * 0.03f, Vector3.one * 0.09f, PatchworkAssets.Felt(new Color(1f, 0.88f, 0.4f)), default(Vector3), g);
+                }
+                if (k % 3 == 2) ScoreBubbles.Place(kit, new Vector3(q.x, top + 1f, q.y), 10);
+            }
+            // The island: a sandbar with a willow, an old stump and the lost float.
+            float si = ford + 2.4f + 9f * 2f + 3.2f;
+            Vector2 c2 = at(si);
+            Vector3 isle = new Vector3(c2.x, 0f, c2.y);
+            float isleTop = 0.15f, isleBottom = MeadowHeight(c2.x, c2.y) - 0.3f;
+            var bar = kit.Block(new Vector3(isle.x, (isleTop + isleBottom) * 0.5f, isle.z), new Vector3(3.4f, isleTop - isleBottom, 3.4f), new Color(0.9f, 0.82f, 0.6f), "WillowIsland");
+            bar.rotation = Quaternion.Euler(0f, 30f, 0f);
+            bar.GetComponent<Renderer>().enabled = false;
+            kit.Deco(PrimitiveType.Sphere, isle + Vector3.up * (isleTop - 0.3f), new Vector3(4.4f, 0.6f, 4.1f), PatchworkAssets.Felt(new Color(0.92f, 0.84f, 0.62f)), new Vector3(0f, 30f, 0f), g);
+            kit.Deco(PrimitiveType.Sphere, isle + new Vector3(0.6f, isleTop - 0.2f, 0.7f), new Vector3(2.2f, 0.5f, 2f), PatchworkAssets.Felt(new Color(0.55f, 0.75f, 0.45f)), default(Vector3), g);
+            kit.YarnTree(isle + new Vector3(0.7f, isleTop, 0.8f), 3.4f, new Color(0.62f, 0.8f, 0.5f));
+            var bark = PatchworkAssets.Wood(new Color(0.48f, 0.34f, 0.24f));
+            kit.Deco(PrimitiveType.Cylinder, isle + new Vector3(-0.7f, isleTop + 0.3f, -0.5f), new Vector3(0.6f, 0.3f, 0.6f), bark, default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, isle + new Vector3(-0.7f, isleTop + 0.61f, -0.5f), new Vector3(0.56f, 0.01f, 0.56f), PatchworkAssets.Felt(new Color(0.92f, 0.8f, 0.6f)), default(Vector3), g);
+            kit.Deco(PrimitiveType.Sphere, isle + new Vector3(0.9f, isleTop + 0.1f, -1.2f), new Vector3(0.3f, 0.3f, 0.3f), PatchworkAssets.Plain(new Color(0.9f, 0.25f, 0.25f), 0.7f), default(Vector3), g);
+            kit.Deco(PrimitiveType.Sphere, isle + new Vector3(0.9f, isleTop + 0.24f, -1.2f), new Vector3(0.28f, 0.16f, 0.28f), PatchworkAssets.Plain(new Color(0.98f, 0.97f, 0.95f), 0.7f), default(Vector3), g);
+            kit.Deco(PrimitiveType.Cylinder, isle + new Vector3(0.9f, isleTop + 0.45f, -1.2f), new Vector3(0.03f, 0.15f, 0.03f), PatchworkAssets.Plain(new Color(0.9f, 0.25f, 0.25f), 0.7f), default(Vector3), g);
+            SecretMarble.Place(kit, isle + new Vector3(-0.7f, isleTop + 1.5f, -0.5f), MarbleIds[25], MarbleColor(25));
+            // Tilda, on the bank by the ford with her rod and bucket.
+            Vector2 fp = path[ni], fn = side(ford);
+            float fhw = RiverHalfWidth(total > 0f ? ford / total : 0f);
+            Vector2 tq = fp + fn * (fhw + 2.2f) - (at(ford + 1f) - at(ford - 1f)).normalized * 2.5f;
+            Vector3 tilda;
+            if (FindSpot(new Vector3(tq.x, 0f, tq.y), 0.6f, out tilda))
+            {
+                float faceYaw = Mathf.Atan2(-fn.x, -fn.y) * Mathf.Rad2Deg;
+                var npc = Toy(kit, tilda + Vector3.up * 0.05f, faceYaw, ToyNpc.Kind.RagDoll, "Tilda Tench", new Color(0.4f, 0.55f, 0.7f), new Color(0.95f, 0.88f, 0.7f),
+                    ToyNpc.Instrument.None, 1.1f, new Color(0.35f, 0.5f, 0.6f));
+                npc.Lines = () => new[]
+                {
+                    "Shh! You'll scare the fish. Not that there are any. They're all felt, and they don't bite.",
+                    "See the little island upstream, with the willow? My lucky float washed up out there. Something shinier too, by the glint of it.",
+                    "Hop out along the lily pads from the middle of the ford. They'll hold you up fine.",
+                };
+                var rodRot = Quaternion.Euler(0f, faceYaw, 0f);
+                kit.Deco(PrimitiveType.Cylinder, tilda + rodRot * new Vector3(0.5f, 1.2f, 1f), new Vector3(0.05f, 1.4f, 0.05f), PatchworkAssets.Wood(new Color(0.7f, 0.55f, 0.35f)), new Vector3(55f, faceYaw, 0f), g);
+                kit.Deco(PrimitiveType.Cylinder, tilda + rodRot * new Vector3(-0.6f, 0.25f, 0.2f), new Vector3(0.5f, 0.25f, 0.5f), PatchworkAssets.Plain(new Color(0.55f, 0.6f, 0.68f), 0.6f), default(Vector3), g);
+            }
+            kit.Hint(isle + new Vector3(0f, 1.5f, 0f), new Vector3(4f, 3f, 4f), "Willow Island", "A sandbar in the river, a willow, and a lost fishing float.");
+        }
+
         // ---------------------------------------------------------------- Crier Hollerby
 
         // The town crier in Gate Square, with a rumour for every one of the places above.
@@ -876,6 +1200,8 @@ namespace Patchwork
                 "Mistress Clipwell swears there's a marble in the heart of the Bramble Maze. Bring string!",
                 "The squires are running their trial at the Lists. Beat the stopwatch and you'll be knighted! Well. Given a marble.",
                 "And the miller's lost something up on his windmill, and Burl the woodcutter's buried something in the west wood. Busy town, this!",
+                "Out by the Pod's meadow, a lookout in the old oak can see the whole toybox. And in Gate Hamlet, they say the well grants wishes. To the right sort of visitor.",
+                "Tilda Tench at the north ford has lost her lucky float on the willow island. Hop the lily pads, she says. Don't dawdle, she says.",
             };
         }
     }
