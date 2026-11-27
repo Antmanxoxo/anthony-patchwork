@@ -934,6 +934,11 @@ Stuff I need to remember about how Patchwork is put together.
   - `Smithy` sits in the bailey's north-east corner, with a point light for the forge. It adds its root children to `cityThings` so `CityClearance` doesn't clear it.
 - **Gate tracks (Level1Approach).** `GateTracks` lays dirt `Ribbon`s out of the East and North Gates into `tracks`, with signposts at their ends. `Fields` and `NewLand` skip anything `OnTrack`.
 
+- **Costumes (ToyNpc.Dress).** `ToyNpc.Costume` has Burgher, Lady, Maiden, Commoner, Knight, Herald, Minstrel and Monk. `Build` marks each kind's own hat parts with `Hat()`; `Dress(c, tint)` hides them (`dropHat`) and adds the costume using per-kind head and chest metrics. Bunnies get body pieces only, and JackInBox and Pirate are skipped. In Level 1 the `Toy` helper dresses everyone through `CostumeFor` (by name first, then by kind) and `CostumeTint`. The stranded Wisp is dressed directly.
+- **Goblin Fray (FrayKin).** `FrayBodies.Goblin` is true when `FrayTheme.Style` is Toy (Level 1). `Walker`, `Hopper`, `Flit`, `Gawp` and `UnravelledKing` add their goblin gear at the end (`Ears`, `Pennant`, `EnsureGoblin` materials). Other levels are unchanged.
+- **Mountain backdrop (Level1Backdrop).** `MountainBackdrop` replaces the old cut-paper hills in `Toybox`. `FlatRange` builds one range per wall as a `FlatMesh`: a face, a darker outline under the cut edge, a cardboard top edge and snow caps, at insets 0.4, 1.8 and 3 m from the wall. Ridges come from `Peaks` (seeded, per wall), and the north far range dips round x 0 for the lid crack. Only the front hills are solid (a MeshCollider plus `NoClimb`). Gaps are left for the river exits, the ravine and the crayons; the crayons now lean on the foothills. Clouds moved in front of the far range. NewLand trees and orchard rows keep 6 m from the walls.
+- **Opening (ToyboxIntro).** The second shot follows a quadratic curve from outside the box, past `MainGate`, to above the old town's south end.
+
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
   levels with `MapCameraHeight` under 20 (indoors) get `Lamplit`, which levels out the dark

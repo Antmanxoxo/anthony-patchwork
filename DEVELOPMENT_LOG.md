@@ -4,6 +4,24 @@ A dated record of every change to Patchwork, newest first. Each day lists the ch
 
 ## November 26, 2026
 
+### Medieval Toybox Town: costumes, goblin Fray and painted mountains
+- **Everyone's in costume for a medieval town:**
+  - Mayor Bramblebutton wears a claret velvet chaperon with a hanging tail, a fur-trimmed robe and a gold chain of office
+  - his bride, Lady Lacewing, wears a tall hennin with a floating veil and a gold girdle
+  - the band are minstrels in floppy feathered caps and short capes, with Corporal Brassby as the herald in a quartered tabard
+  - the soldiers are knights in kettle helms with plumes and tabards with a cross
+  - Brother Bellweather wears a monk's habit with the hood up
+  - everyone else wears felt caps, kerchiefs, aprons and rope belts
+  - the circus folk keep their own clothes
+- **The Fray goes goblin in Toybox Town.** The creatures from the Underside keep their wrong look (eyes on stalks, too-wide mouths, legs too long) but dress in what they've scavenged:
+  - Snarlings are goblin footsoldiers with long pointed ears, hooked noses and dented pot helms their eyes poke out through, carrying a wooden buckler or a torn war-pennant
+  - Tangle Hoppers are goblins in a sack, with a rope belt and the clan's pennant
+  - Static Moths are imps with little curled horns and a barbed tail
+  - Static Spitters are goblin chieftains with big ears, a nose ring and a crown of rusty spikes
+  - the Unravelled King wears a tarnished iron crown round his thimble and a ragged mantle
+- **Mountains round the toybox.** The cut-paper hills on the walls are now a stage set of painted cardboard flats, three deep: tall blue mountains with snowy peaks (and a little painted castle on a far crag), teal foothills fringed with cut-out pines, and low green hills in front. Up close it's still a toybox, with cardboard edges, masking tape over the joins and wooden stage braces. The north range dips so the crack in the lid stays in view, and there are gaps where the rivers and the ravine run under the walls.
+- **The opening cutscene** now swoops in past the mountains, up the King's Road and over the Toybox Gate and the roofs, with the keep standing over it all, before crossing into Wedding Square.
+
 ### Landmarks in the countryside
 - **The Lists**, a tournament ground in the new land south of the orchard:
   - a sand tilting lane with a red-and-white tilt barrier down the middle

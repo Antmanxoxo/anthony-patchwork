@@ -10,6 +10,8 @@ namespace Patchwork
     {
         public enum Kind { Teddy, RagDoll, TinSoldier, Nutcracker, JackInBox, Bunny, Bird, Pirate }
         public enum Instrument { None, Lute, Trumpet, Pipe, Drum }
+        // Medieval dress for Toybox Town, put on over the toy (see Dress).
+        public enum Costume { None, Burgher, Lady, Maiden, Commoner, Knight, Herald, Minstrel, Monk }
 
         public string Name = "Toy";
         public Color Tag = new Color(0.45f, 0.35f, 0.6f);
@@ -108,8 +110,14 @@ namespace Patchwork
             }
         }
 
+        // The bits of each toy's own hat, so a costume can swap it for another.
+        readonly List<Transform> hat = new List<Transform>();
+        Kind builtKind;
+        Transform Hat(Transform t) { hat.Add(t); return t; }
+
         void Build(Kind kind, Color main, Color accent)
         {
+            builtKind = kind;
             body = new GameObject("Body").transform;
             body.SetParent(transform, false);
             head = new GameObject("Head").transform;
@@ -146,9 +154,9 @@ namespace Patchwork
                     // Monocle.
                     Part(PrimitiveType.Cylinder, head, new Vector3(0.14f, 0.08f, 0.34f), new Vector3(0.17f, 0.01f, 0.17f), gold, new Vector3(80f, 0f, 0f));
                     // Top hat.
-                    Part(PrimitiveType.Cylinder, head, new Vector3(0f, 0.36f, 0f), new Vector3(0.7f, 0.025f, 0.7f), black);
-                    Part(PrimitiveType.Cylinder, head, new Vector3(0f, 0.6f, 0f), new Vector3(0.44f, 0.24f, 0.44f), black);
-                    Part(PrimitiveType.Cylinder, head, new Vector3(0f, 0.43f, 0f), new Vector3(0.45f, 0.05f, 0.45f), PatchworkAssets.Felt(new Color(0.7f, 0.2f, 0.3f)));
+                    Hat(Part(PrimitiveType.Cylinder, head, new Vector3(0f, 0.36f, 0f), new Vector3(0.7f, 0.025f, 0.7f), black));
+                    Hat(Part(PrimitiveType.Cylinder, head, new Vector3(0f, 0.6f, 0f), new Vector3(0.44f, 0.24f, 0.44f), black));
+                    Hat(Part(PrimitiveType.Cylinder, head, new Vector3(0f, 0.43f, 0f), new Vector3(0.45f, 0.05f, 0.45f), PatchworkAssets.Felt(new Color(0.7f, 0.2f, 0.3f))));
                     arm = Part(PrimitiveType.Capsule, body, new Vector3(0.52f, 0.95f, 0.05f), new Vector3(0.24f, 0.3f, 0.24f), acc, new Vector3(0f, 0f, 25f));
                     Part(PrimitiveType.Capsule, body, new Vector3(-0.52f, 0.95f, 0.05f), new Vector3(0.24f, 0.3f, 0.24f), acc, new Vector3(0f, 0f, -25f));
                     break;
@@ -207,18 +215,18 @@ namespace Patchwork
                     if (nut)
                     {
                         Part(PrimitiveType.Cube, head, new Vector3(0f, -0.2f, 0.12f), new Vector3(0.36f, 0.12f, 0.24f), PatchworkAssets.Wood(new Color(0.95f, 0.9f, 0.85f)));   // jaw / beard
-                        Part(PrimitiveType.Cylinder, head, new Vector3(0f, 0.3f, 0f), new Vector3(0.46f, 0.16f, 0.46f), tin);
+                        Hat(Part(PrimitiveType.Cylinder, head, new Vector3(0f, 0.3f, 0f), new Vector3(0.46f, 0.16f, 0.46f), tin));
                         for (int i = 0; i < 5; i++)
                         {
                             float a = i / 5f * Mathf.PI * 2f;
-                            Part(PrimitiveType.Cube, head, new Vector3(Mathf.Sin(a) * 0.2f, 0.5f, Mathf.Cos(a) * 0.2f), new Vector3(0.08f, 0.14f, 0.08f), gold);
+                            Hat(Part(PrimitiveType.Cube, head, new Vector3(Mathf.Sin(a) * 0.2f, 0.5f, Mathf.Cos(a) * 0.2f), new Vector3(0.08f, 0.14f, 0.08f), gold));
                         }
                     }
                     else
                     {
-                        Part(PrimitiveType.Cylinder, head, new Vector3(0f, 0.42f, 0f), new Vector3(0.44f, 0.3f, 0.44f), PatchworkAssets.Knit(new Color(0.12f, 0.1f, 0.12f)));
-                        Part(PrimitiveType.Cube, head, new Vector3(0f, 0.36f, 0.2f), new Vector3(0.06f, 0.4f, 0.04f), gold);
-                        Part(PrimitiveType.Sphere, head, new Vector3(0.18f, 0.6f, 0.06f), new Vector3(0.1f, 0.18f, 0.1f), PatchworkAssets.Felt(new Color(0.95f, 0.95f, 0.95f)));
+                        Hat(Part(PrimitiveType.Cylinder, head, new Vector3(0f, 0.42f, 0f), new Vector3(0.44f, 0.3f, 0.44f), PatchworkAssets.Knit(new Color(0.12f, 0.1f, 0.12f))));
+                        Hat(Part(PrimitiveType.Cube, head, new Vector3(0f, 0.36f, 0.2f), new Vector3(0.06f, 0.4f, 0.04f), gold));
+                        Hat(Part(PrimitiveType.Sphere, head, new Vector3(0.18f, 0.6f, 0.06f), new Vector3(0.1f, 0.18f, 0.1f), PatchworkAssets.Felt(new Color(0.95f, 0.95f, 0.95f))));
                     }
                     arm = Part(PrimitiveType.Capsule, body, new Vector3(0.36f, 0.95f, 0.06f), new Vector3(0.16f, 0.28f, 0.16f), tin, new Vector3(0f, 0f, 12f));
                     Part(PrimitiveType.Capsule, body, new Vector3(-0.36f, 0.95f, 0.06f), new Vector3(0.16f, 0.28f, 0.16f), tin, new Vector3(0f, 0f, -12f));
@@ -320,11 +328,190 @@ namespace Patchwork
                     Part(PrimitiveType.Sphere, head, Vector3.zero, Vector3.one * 0.5f, PatchworkAssets.Yarn(main));
                     Part(PrimitiveType.Cube, head, new Vector3(0f, -0.04f, 0.27f), new Vector3(0.1f, 0.1f, 0.16f), PatchworkAssets.Felt(new Color(1f, 0.7f, 0.25f)), new Vector3(0f, 0f, 45f));
                     Eyes(head, 0.11f, 0.06f, 0.2f, false);
-                    Part(PrimitiveType.Cylinder, head, new Vector3(0.03f, 0.24f, -0.02f), new Vector3(0.5f, 0.06f, 0.5f), PatchworkAssets.Felt(accent), new Vector3(-8f, 0f, 10f));
-                    Part(PrimitiveType.Sphere, head, new Vector3(0.05f, 0.3f, -0.02f), Vector3.one * 0.08f, PatchworkAssets.Felt(accent));
+                    Hat(Part(PrimitiveType.Cylinder, head, new Vector3(0.03f, 0.24f, -0.02f), new Vector3(0.5f, 0.06f, 0.5f), PatchworkAssets.Felt(accent), new Vector3(-8f, 0f, 10f)));
+                    Hat(Part(PrimitiveType.Sphere, head, new Vector3(0.05f, 0.3f, -0.02f), Vector3.one * 0.08f, PatchworkAssets.Felt(accent)));
                     break;
                 }
             }
+        }
+
+        // ------------------------------------------------------------------ Costumes
+
+        // Dress the toy for a medieval town, in `tint` (and gold, cream and brown). Takes off its
+        // own hat where the costume brings another. Does nothing for a costume that doesn't fit
+        // its shape (a bunny's ears won't go under a hat).
+        public void Dress(Costume c, Color tint)
+        {
+            if (c == Costume.None || body == null || head == null) return;
+            // Where its head and chest are, for this kind of toy: hat base height and radius,
+            // chest height, how far forward the chest is, chest half-width and shoulder height.
+            float hy, hr, cy, cz, cw, sy;
+            switch (builtKind)
+            {
+                case Kind.Teddy: hy = 0.3f; hr = 0.32f; cy = 0.9f; cz = 0.42f; cw = 0.46f; sy = 1.22f; break;
+                case Kind.RagDoll: hy = 0.28f; hr = 0.3f; cy = 0.9f; cz = 0.24f; cw = 0.3f; sy = 1.1f; break;
+                case Kind.TinSoldier: case Kind.Nutcracker: hy = 0.19f; hr = 0.22f; cy = 0.92f; cz = 0.27f; cw = 0.32f; sy = 1.24f; break;
+                case Kind.Bird: hy = 0.2f; hr = 0.25f; cy = 0.55f; cz = 0.37f; cw = 0.3f; sy = 0.95f; break;
+                case Kind.Bunny: hy = -1f; hr = 0f; cy = 0.52f; cz = 0.34f; cw = 0.28f; sy = 0.86f; break;
+                default: return;
+            }
+            bool hats = hy > 0f;
+            var cloth = PatchworkAssets.Felt(tint);
+            var dark = PatchworkAssets.Felt(Color.Lerp(tint, Color.black, 0.35f));
+            var gold = PatchworkAssets.Plain(LevelKit.Palette.Gold, 0.75f);
+            var cream = PatchworkAssets.Felt(new Color(0.97f, 0.93f, 0.85f));
+            var brown = PatchworkAssets.Felt(new Color(0.48f, 0.36f, 0.28f));
+            System.Action dropHat = () => { foreach (var t in hat) if (t != null) t.gameObject.SetActive(false); };
+            switch (c)
+            {
+                case Costume.Burgher:
+                {
+                    // A velvet chaperon with a hanging tail, a fur-trimmed robe and a gold chain of office.
+                    if (hats)
+                    {
+                        dropHat();
+                        Part(PrimitiveType.Sphere, head, new Vector3(0f, hy + 0.04f, -0.02f), new Vector3(hr * 2.15f, hr * 0.7f, hr * 2.1f), dark);
+                        Part(PrimitiveType.Sphere, head, new Vector3(0.04f, hy + hr * 0.5f, -0.04f), new Vector3(hr * 1.7f, hr * 1f, hr * 1.7f), cloth, new Vector3(0f, 0f, -12f));
+                        Part(PrimitiveType.Capsule, head, new Vector3(-hr * 1.05f, hy - 0.12f, -0.06f), new Vector3(0.13f, 0.28f, 0.1f), cloth, new Vector3(0f, 0f, -12f));
+                    }
+                    Part(PrimitiveType.Cylinder, body, new Vector3(0f, cy - 0.1f, -0.1f), new Vector3(cw * 2.3f, 0.52f, cw * 1.9f), cloth);
+                    var ermine = Part(PrimitiveType.Sphere, body, new Vector3(0f, sy, -0.02f), new Vector3(cw * 2.2f, 0.2f, cw * 1.7f), cream);
+                    for (int i = 0; i < 6; i++)
+                    {
+                        float a = i / 6f * Mathf.PI * 2f;
+                        Part(PrimitiveType.Sphere, ermine, new Vector3(Mathf.Sin(a) * 0.42f, 0.2f, Mathf.Cos(a) * 0.42f), new Vector3(0.05f, 0.25f, 0.06f), PatchworkAssets.Felt(new Color(0.12f, 0.1f, 0.12f)));
+                    }
+                    for (int i = 0; i < 9; i++)
+                    {
+                        float a = Mathf.Lerp(-1.1f, 1.1f, i / 8f);
+                        Part(PrimitiveType.Sphere, body, new Vector3(Mathf.Sin(a) * cw * 0.8f, sy - 0.08f - (1f - Mathf.Cos(a)) * 0.55f, cz + 0.04f - (1f - Mathf.Cos(a)) * 0.12f), Vector3.one * 0.07f, gold);
+                    }
+                    Part(PrimitiveType.Cylinder, body, new Vector3(0f, sy - 0.32f, cz + 0.06f), new Vector3(0.16f, 0.02f, 0.16f), gold, new Vector3(90f, 0f, 0f));
+                    break;
+                }
+                case Costume.Lady:
+                {
+                    // A tall pointed hennin with a floating veil, and a gold girdle.
+                    if (hats)
+                    {
+                        dropHat();
+                        var hen = new GameObject("Hennin").transform;
+                        hen.SetParent(head, false);
+                        hen.localPosition = new Vector3(0f, hy - 0.04f, -0.04f);
+                        hen.localRotation = Quaternion.Euler(-24f, 0f, 0f);
+                        for (int i = 0; i < 6; i++)
+                        {
+                            float k = i / 6f;
+                            Part(PrimitiveType.Cylinder, hen, new Vector3(0f, 0.06f + i * 0.13f, 0f), new Vector3(Mathf.Lerp(0.32f, 0.05f, k), 0.07f, Mathf.Lerp(0.32f, 0.05f, k)), cloth);
+                        }
+                        Part(PrimitiveType.Cylinder, hen, new Vector3(0f, 0.03f, 0f), new Vector3(0.36f, 0.04f, 0.36f), gold);
+                        var veil = Part(PrimitiveType.Cube, hen, new Vector3(0f, 0.1f, -0.2f), new Vector3(0.34f, 1.25f, 0.02f), PatchworkAssets.Bubble(new Color(1f, 0.96f, 0.98f, 0.55f)), new Vector3(28f, 0f, 0f));
+                        var drift = veil.gameObject.AddComponent<Rocker>();
+                        drift.Axis = Vector3.right;
+                        drift.Amount = 5f;
+                        drift.Speed = 0.8f;
+                    }
+                    Part(PrimitiveType.Cylinder, body, new Vector3(0f, cy - 0.2f, 0f), new Vector3(cw * 2.1f, 0.03f, cw * 1.85f), gold);
+                    Part(PrimitiveType.Cube, body, new Vector3(0f, cy - 0.45f, cz + 0.22f), new Vector3(0.05f, 0.5f, 0.02f), gold);
+                    break;
+                }
+                case Costume.Maiden:
+                {
+                    // A kerchief tied over the hair, and an apron.
+                    if (hats)
+                    {
+                        dropHat();
+                        Part(PrimitiveType.Sphere, head, new Vector3(0f, hy - 0.04f, -0.03f), new Vector3(hr * 2.15f, hr * 0.85f, hr * 2.1f), cloth);
+                        Part(PrimitiveType.Sphere, head, new Vector3(0f, hy - 0.16f, -hr * 1.02f), new Vector3(0.12f, 0.1f, 0.1f), dark);
+                    }
+                    Part(PrimitiveType.Cube, body, new Vector3(0f, 0.52f, cz + 0.21f), new Vector3(0.42f, 0.55f, 0.02f), cream, new Vector3(-6f, 0f, 0f));
+                    Part(PrimitiveType.Cylinder, body, new Vector3(0f, cy - 0.17f, 0f), new Vector3(cw * 2.1f, 0.025f, cw * 1.85f), cream);
+                    break;
+                }
+                case Costume.Commoner:
+                {
+                    // A soft felt cap pulled on at an angle, and a rope belt.
+                    if (hats)
+                    {
+                        dropHat();
+                        Part(PrimitiveType.Sphere, head, new Vector3(0.03f, hy + 0.02f, -0.02f), new Vector3(hr * 1.9f, hr * 0.75f, hr * 1.9f), cloth, new Vector3(-8f, 0f, -14f));
+                        Part(PrimitiveType.Capsule, head, new Vector3(0.1f, hy + hr * 0.42f, -0.06f), new Vector3(0.06f, 0.08f, 0.06f), dark, new Vector3(0f, 0f, -40f));
+                    }
+                    Part(PrimitiveType.Cylinder, body, new Vector3(0f, cy - 0.22f, 0f), new Vector3(cw * 2.15f, 0.025f, cw * 1.9f), brown);
+                    break;
+                }
+                case Costume.Knight:
+                case Costume.Herald:
+                {
+                    bool herald = c == Costume.Herald;
+                    // A tabard over the coat, front and back: a knight's with a cross on it, a
+                    // herald's quartered.
+                    for (int side = -1; side <= 1; side += 2)
+                    {
+                        float z = side > 0 ? cz + 0.01f : -cz - 0.01f;
+                        if (herald)
+                        {
+                            for (int q = 0; q < 4; q++)
+                                Part(PrimitiveType.Cube, body, new Vector3((q % 2 == 0 ? -1f : 1f) * cw * 0.35f, cy + (q < 2 ? 0.16f : -0.16f), z), new Vector3(cw * 0.7f, 0.32f, 0.02f), (q == 0 || q == 3) ? cloth : PatchworkAssets.Felt(LevelKit.Palette.Gold));
+                        }
+                        else
+                        {
+                            Part(PrimitiveType.Cube, body, new Vector3(0f, cy - 0.02f, z), new Vector3(cw * 1.4f, 0.68f, 0.02f), cloth);
+                            Part(PrimitiveType.Cube, body, new Vector3(0f, cy, z + side * 0.008f), new Vector3(0.07f, 0.5f, 0.02f), cream);
+                            Part(PrimitiveType.Cube, body, new Vector3(0f, cy + 0.08f, z + side * 0.008f), new Vector3(cw * 1.1f, 0.07f, 0.02f), cream);
+                        }
+                    }
+                    Part(PrimitiveType.Cylinder, body, new Vector3(0f, cy - 0.3f, 0f), new Vector3(cw * 2.2f, 0.03f, cw * 1.95f), brown);
+                    if (!hats) break;
+                    dropHat();
+                    if (herald) MinstrelCap(hy, hr, cloth, dark, gold);
+                    else
+                    {
+                        // A kettle helm with a brim and a plume.
+                        var steel = PatchworkAssets.Plain(new Color(0.78f, 0.8f, 0.86f), 0.85f);
+                        Part(PrimitiveType.Sphere, head, new Vector3(0f, hy + 0.04f, 0f), new Vector3(hr * 2.3f, hr * 1.7f, hr * 2.3f), steel);
+                        Part(PrimitiveType.Cylinder, head, new Vector3(0f, hy - 0.01f, 0f), new Vector3(hr * 3.3f, 0.02f, hr * 3.3f), steel);
+                        Part(PrimitiveType.Cube, head, new Vector3(0f, hy - 0.06f, hr * 1.02f), new Vector3(0.04f, 0.16f, 0.03f), steel);
+                        for (int i = 0; i < 3; i++)
+                            Part(PrimitiveType.Sphere, head, new Vector3(0f, hy + hr * 0.95f + i * 0.07f, -0.04f - i * 0.08f), new Vector3(0.1f, 0.14f, 0.16f), cloth);
+                    }
+                    break;
+                }
+                case Costume.Minstrel:
+                {
+                    if (hats) { dropHat(); MinstrelCap(hy, hr, cloth, dark, gold); }
+                    // A short cape over the shoulders.
+                    Part(PrimitiveType.Sphere, body, new Vector3(0f, sy - 0.04f, -0.08f), new Vector3(cw * 2.3f, 0.26f, cw * 1.9f), dark);
+                    break;
+                }
+                case Costume.Monk:
+                {
+                    // A brown habit with its hood up and a rope belt.
+                    if (hats)
+                    {
+                        dropHat();
+                        Part(PrimitiveType.Sphere, head, new Vector3(0f, 0.02f, -0.08f), new Vector3(hr * 2.6f, hr * 2.6f, hr * 2.3f), brown);
+                        Part(PrimitiveType.Sphere, head, new Vector3(0f, -0.2f, -0.12f), new Vector3(hr * 2.8f, hr * 1f, hr * 2.4f), brown);
+                    }
+                    Part(PrimitiveType.Cylinder, body, new Vector3(0f, cy - 0.25f, 0f), new Vector3(cw * 2.5f, 0.6f, cw * 2.25f), brown);
+                    Part(PrimitiveType.Cylinder, body, new Vector3(0f, cy - 0.15f, 0f), new Vector3(cw * 2.6f, 0.03f, cw * 2.35f), cream);
+                    Part(PrimitiveType.Capsule, body, new Vector3(cw * 0.5f, cy - 0.45f, cz + 0.12f), new Vector3(0.04f, 0.2f, 0.04f), cream);
+                    break;
+                }
+            }
+        }
+
+        // A floppy brimless cap worn at a tilt, with a long feather.
+        void MinstrelCap(float hy, float hr, Material cloth, Material dark, Material gold)
+        {
+            Part(PrimitiveType.Sphere, head, new Vector3(0.04f, hy + 0.03f, -0.02f), new Vector3(hr * 2.3f, hr * 0.55f, hr * 2.2f), cloth, new Vector3(-6f, 0f, -16f));
+            Part(PrimitiveType.Cylinder, head, new Vector3(0.02f, hy - 0.01f, 0f), new Vector3(hr * 2.05f, 0.03f, hr * 2.05f), dark, new Vector3(-6f, 0f, -16f));
+            var feather = Part(PrimitiveType.Capsule, head, new Vector3(-hr * 0.6f, hy + 0.2f, -hr * 0.5f), new Vector3(0.06f, 0.26f, 0.02f), PatchworkAssets.Felt(new Color(0.98f, 0.92f, 0.6f)), new Vector3(-35f, 0f, 30f));
+            Part(PrimitiveType.Sphere, head, new Vector3(-hr * 0.35f, hy + 0.05f, -hr * 0.2f), Vector3.one * 0.06f, gold);
+            var sway = feather.gameObject.AddComponent<Rocker>();
+            sway.Axis = Vector3.right;
+            sway.Amount = 8f;
+            sway.Speed = 1.3f;
         }
 
         void BuildInstrument(Instrument inst)

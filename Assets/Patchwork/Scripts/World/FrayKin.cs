@@ -23,9 +23,63 @@ namespace Patchwork
     public static class FrayBodies
     {
         static Material fur, furDark, scale, eyeBlack, pupil, tongue, tooth, mouthDark, wing, steel;
+        static Material rust, rustDark, leather, rag, earSkin, earInner, oldWood;
         static Material[] faded;
 
-        public static void ResetStatics() { fur = null; faded = null; }
+        public static void ResetStatics() { fur = null; faded = null; rust = null; }
+
+        // In Toybox Town (a medieval town in a toybox) the creatures that come through dress the
+        // part, in what they've scavenged: goblin ears, dented pot helms, rusty crowns, scraps of
+        // banner. Underneath they're the same wrong things.
+        public static bool Goblin { get { return FrayTheme.Style == FrayStyle.Toy; } }
+
+        static void EnsureGoblin()
+        {
+            Ensure();
+            if (rust != null) return;
+            rust = PatchworkAssets.Plain(new Color(0.52f, 0.44f, 0.4f), 0.55f);
+            rustDark = PatchworkAssets.Plain(new Color(0.34f, 0.3f, 0.3f), 0.5f);
+            leather = PatchworkAssets.Felt(new Color(0.36f, 0.31f, 0.3f));
+            rag = PatchworkAssets.Felt(new Color(0.56f, 0.54f, 0.6f));
+            earSkin = PatchworkAssets.Knit(new Color(0.56f, 0.6f, 0.52f));    // the only hint of goblin green, and that's going grey too
+            earInner = PatchworkAssets.Felt(new Color(0.5f, 0.42f, 0.46f));
+            oldWood = PatchworkAssets.Wood(new Color(0.42f, 0.38f, 0.36f));
+        }
+
+        // Long pointed goblin ears, sticking out sideways and a bit up, one droopier than the
+        // other, with a nick out of one and a ring through the other.
+        static void Ears(Transform body, Vector3 at, float size, float seed)
+        {
+            for (int s = -1; s <= 1; s += 2)
+            {
+                var ear = Pivot(body, "GoblinEar", new Vector3(s * at.x, at.y, at.z));
+                float droop = s < 0 ? 62f : 78f + Mathf.Repeat(seed * 13f, 14f);
+                ear.localRotation = Quaternion.Euler(0f, -s * 18f, -s * droop);
+                P(PrimitiveType.Capsule, ear, new Vector3(0f, 0.22f * size, 0f), new Vector3(0.14f, 0.26f, 0.06f) * size, earSkin);
+                P(PrimitiveType.Capsule, ear, new Vector3(0f, 0.2f * size, 0.02f * size), new Vector3(0.08f, 0.19f, 0.03f) * size, earInner);
+                if (s < 0) P(PrimitiveType.Sphere, ear, new Vector3(0.06f * size, 0.3f * size, 0f), new Vector3(0.06f, 0.08f, 0.08f) * size, mouthDark);
+                else P(PrimitiveType.Cylinder, ear, new Vector3(0f, 0.12f * size, 0f), new Vector3(0.1f, 0.01f, 0.1f) * size, rust, new Vector3(0f, 0f, 90f));
+                var flop = ear.gameObject.AddComponent<Rocker>();
+                flop.Axis = Vector3.forward;
+                flop.Amount = 6f;
+                flop.Speed = 1.1f + s * 0.2f;
+            }
+        }
+
+        // A tattered war-pennant on a crooked stick, the device on it torn half away.
+        static void Pennant(Transform parent, Vector3 at, Vector3 lean, float size)
+        {
+            var pole = Pivot(parent, "Pennant", at);
+            pole.localRotation = Quaternion.FromToRotation(Vector3.up, lean.normalized);
+            P(PrimitiveType.Cylinder, pole, new Vector3(0f, 0.55f * size, 0f), new Vector3(0.04f, 0.55f, 0.04f) * size, oldWood);
+            P(PrimitiveType.Cube, pole, new Vector3(0.2f * size, 0.95f * size, 0f), new Vector3(0.38f, 0.24f, 0.02f) * size, rag);
+            P(PrimitiveType.Cube, pole, new Vector3(0.36f * size, 0.88f * size, 0f), new Vector3(0.14f, 0.12f, 0.021f) * size, rag, new Vector3(0f, 0f, 30f));
+            P(PrimitiveType.Sphere, pole, new Vector3(0.18f * size, 0.96f * size, 0.012f), new Vector3(0.12f, 0.12f, 0.01f) * size, faded[0]);
+            var flap = pole.gameObject.AddComponent<Rocker>();
+            flap.Axis = Vector3.up;
+            flap.Amount = 10f;
+            flap.Speed = 1.4f;
+        }
 
         static void Ensure()
         {
@@ -127,6 +181,26 @@ namespace Patchwork
             P(PrimitiveType.Capsule, body, new Vector3(0.06f, -0.14f, 0.5f), new Vector3(0.15f, 0.17f, 0.06f), tongue, new Vector3(-18f, 0f, 8f));
             eyeL = EyeStalk(body, new Vector3(-0.15f, 0.48f, 0.08f), new Vector3(-0.3f, 1f, 0.05f), 0.5f + Mathf.Repeat(seed, 0.25f), 0.24f, seed);
             eyeR = EyeStalk(body, new Vector3(0.15f, 0.48f, 0.08f), new Vector3(0.3f, 1f, 0.05f), 0.72f - Mathf.Repeat(seed, 0.25f), 0.24f, seed + 1.3f);
+            if (!Goblin) return;
+            // A goblin footsoldier: ears, a hooked nose, a dented pot helm the eyes poke out
+            // through, and either a round wooden buckler strapped to its side or a pennant on its back.
+            EnsureGoblin();
+            Ears(body, new Vector3(0.44f, 0.22f, 0.02f), 1f, seed);
+            P(PrimitiveType.Capsule, body, new Vector3(0f, 0.2f, 0.49f), new Vector3(0.1f, 0.13f, 0.1f), earSkin, new Vector3(70f, 0f, 0f));
+            P(PrimitiveType.Sphere, body, new Vector3(0.04f, 0.13f, 0.58f), Vector3.one * 0.05f, earSkin);
+            P(PrimitiveType.Sphere, body, new Vector3(0f, 0.46f, -0.04f), new Vector3(0.6f, 0.3f, 0.6f), rust, new Vector3(0f, 0f, 6f));
+            P(PrimitiveType.Cylinder, body, new Vector3(0f, 0.42f, -0.04f), new Vector3(0.68f, 0.02f, 0.68f), rustDark, new Vector3(0f, 0f, 6f));
+            P(PrimitiveType.Capsule, body, new Vector3(0.02f, 0.66f, -0.06f), new Vector3(0.05f, 0.09f, 0.05f), rustDark);
+            P(PrimitiveType.Sphere, body, new Vector3(-0.18f, 0.55f, 0.16f), Vector3.one * 0.06f, rustDark);   // a dent
+            if (Mathf.Repeat(seed, 2f) < 1f)
+            {
+                var shield = Pivot(body, "Buckler", new Vector3(0.48f, 0f, 0.06f));
+                shield.localRotation = Quaternion.Euler(0f, 0f, 90f);
+                P(PrimitiveType.Cylinder, shield, Vector3.zero, new Vector3(0.44f, 0.03f, 0.44f), oldWood);
+                P(PrimitiveType.Sphere, shield, new Vector3(0f, 0.03f, 0f), new Vector3(0.14f, 0.06f, 0.14f), rust);
+                P(PrimitiveType.Cube, shield, new Vector3(0f, 0.035f, 0f), new Vector3(0.42f, 0.01f, 0.05f), rustDark, new Vector3(0f, 25f, 0f));
+            }
+            else Pennant(body, new Vector3(-0.1f, 0.2f, -0.38f), new Vector3(-0.15f, 1f, -0.25f), 1.1f);
         }
 
         // The Tangle Hopper: a striped sock of a thing on one fat leg, its mouth on top.
@@ -151,6 +225,14 @@ namespace Patchwork
             P(PrimitiveType.Capsule, body, new Vector3(-0.1f, 0.5f, 0.34f), new Vector3(0.14f, 0.2f, 0.06f), tongue, new Vector3(70f, -15f, 0f));
             EyeStalk(body, new Vector3(-0.28f, 0.42f, 0f), new Vector3(-0.7f, 1f, 0f), 0.22f, 0.2f, seed);
             EyeStalk(body, new Vector3(0.28f, 0.42f, 0f), new Vector3(0.7f, 1f, 0f), 0.34f, 0.2f, seed + 2.1f);
+            if (!Goblin) return;
+            // A goblin in a sack: ears out of the top band, a rope belt, and the clan's pennant
+            // stuck through the belt.
+            EnsureGoblin();
+            Ears(body, new Vector3(0.36f, 0.38f, -0.02f), 0.9f, seed);
+            P(PrimitiveType.Cylinder, body, new Vector3(0f, 0.1f, 0f), new Vector3(0.84f, 0.04f, 0.84f), leather);
+            P(PrimitiveType.Sphere, body, new Vector3(0.36f, 0.08f, 0.22f), new Vector3(0.1f, 0.12f, 0.08f), leather);
+            Pennant(body, new Vector3(-0.34f, 0.08f, -0.14f), new Vector3(-0.35f, 1f, -0.2f), 1f);
         }
 
         // The Static Moth: a puff of fur with one eye, two feelers and ragged wings, its little
@@ -181,6 +263,17 @@ namespace Patchwork
                 for (int i = 0; i < 3; i++)
                     P(PrimitiveType.Sphere, w, new Vector3(s * (0.5f + i * 0.08f), 0f, 0.22f - i * 0.24f), new Vector3(0.8f - i * 0.12f, 0.04f, 0.4f), i == 1 ? fur : wing, new Vector3(0f, -s * (i - 1) * 22f, 0f));
             }
+            if (!Goblin) return;
+            // An imp: two little curled horns and a barbed tail.
+            EnsureGoblin();
+            for (int s = -1; s <= 1; s += 2)
+            {
+                P(PrimitiveType.Capsule, body, new Vector3(s * 0.2f, 0.3f, -0.02f), new Vector3(0.07f, 0.12f, 0.07f), rustDark, new Vector3(-15f, 0f, -s * 25f));
+                P(PrimitiveType.Capsule, body, new Vector3(s * 0.27f, 0.42f, -0.08f), new Vector3(0.05f, 0.08f, 0.05f), rustDark, new Vector3(-50f, 0f, -s * 55f));
+            }
+            for (int i = 0; i < 4; i++)
+                P(PrimitiveType.Sphere, body, new Vector3(0f, -0.2f - i * 0.08f, -0.32f - i * 0.12f), Vector3.one * (0.09f - i * 0.012f), furDark);
+            P(PrimitiveType.Cube, body, new Vector3(0f, -0.52f, -0.8f), new Vector3(0.12f, 0.12f, 0.02f), rustDark, new Vector3(-30f, 0f, 45f));
         }
 
         // The Static Spitter: nearly all mouth, with its eyes up on top and hands for feet.
@@ -206,6 +299,22 @@ namespace Patchwork
             }
             EyeStalk(body, new Vector3(-0.26f, 0.62f, 0.1f), new Vector3(-0.35f, 1f, 0.1f), 0.16f, 0.3f, seed);
             EyeStalk(body, new Vector3(0.26f, 0.62f, 0.1f), new Vector3(0.35f, 1f, 0.1f), 0.28f, 0.3f, seed + 0.7f);
+            if (Goblin)
+            {
+                // A goblin chieftain: big ears, a nose with a ring through it, and a crown of
+                // rusty spikes jammed on between its eyes.
+                EnsureGoblin();
+                Ears(body, new Vector3(0.5f, 0.3f, 0.04f), 1.25f, seed);
+                P(PrimitiveType.Capsule, body, new Vector3(0f, 0.24f, 0.47f), new Vector3(0.13f, 0.16f, 0.13f), earSkin, new Vector3(75f, 0f, 0f));
+                P(PrimitiveType.Cylinder, body, new Vector3(0f, 0.12f, 0.57f), new Vector3(0.12f, 0.012f, 0.12f), rust, new Vector3(90f, 0f, 0f));
+                P(PrimitiveType.Cylinder, body, new Vector3(0f, 0.66f, 0f), new Vector3(0.5f, 0.06f, 0.46f), rust);
+                for (int i = 0; i < 6; i++)
+                {
+                    float a = i / 6f * Mathf.PI * 2f + 0.3f;
+                    P(PrimitiveType.Capsule, body, new Vector3(Mathf.Sin(a) * 0.23f, 0.76f, Mathf.Cos(a) * 0.21f), new Vector3(0.05f, 0.1f + (i % 2) * 0.04f, 0.05f), rust, new Vector3(Mathf.Cos(a) * 12f, 0f, -Mathf.Sin(a) * 12f));
+                }
+                P(PrimitiveType.Sphere, body, new Vector3(0f, 0.68f, 0.24f), Vector3.one * 0.07f, faded[1]);
+            }
             return mouth;
         }
 
@@ -289,6 +398,23 @@ namespace Patchwork
                 float a = (i - 2) * 0.55f;
                 Vector3 lean = new Vector3(Mathf.Sin(a) * 1.1f, 0.55f + (i % 2) * 0.3f, 0.35f);
                 EyeStalk(head, new Vector3(Mathf.Sin(a) * 0.3f, 0.1f, 0.12f), lean, 0.45f + (i * 37 % 5) * 0.12f, 0.2f, i * 1.9f);
+            }
+            if (Goblin)
+            {
+                // In Toybox Town he wears a crown: a tarnished iron ring of spikes round his
+                // thimble, set with stones gone grey. And a ragged mantle over his shoulders.
+                EnsureGoblin();
+                P(PrimitiveType.Cylinder, head, new Vector3(0f, 0.3f, -0.02f), new Vector3(0.6f, 0.06f, 0.6f), rustDark);
+                for (int i = 0; i < 7; i++)
+                {
+                    float a = i / 7f * Mathf.PI * 2f;
+                    P(PrimitiveType.Capsule, head, new Vector3(Mathf.Sin(a) * 0.29f, 0.44f, Mathf.Cos(a) * 0.29f - 0.02f), new Vector3(0.05f, 0.12f, 0.05f), rustDark, new Vector3(Mathf.Cos(a) * 10f, 0f, -Mathf.Sin(a) * 10f));
+                    if (i % 2 == 0) P(PrimitiveType.Sphere, head, new Vector3(Mathf.Sin(a) * 0.305f, 0.3f, Mathf.Cos(a) * 0.305f - 0.02f), Vector3.one * 0.06f, faded[i % faded.Length]);
+                }
+                var mantle = Pivot(root, "Mantle", new Vector3(0f, 4.3f, -0.12f));
+                P(PrimitiveType.Sphere, mantle, Vector3.zero, new Vector3(1.1f, 0.34f, 0.7f), furDark);
+                for (int i = 0; i < 5; i++)
+                    P(PrimitiveType.Cube, mantle, new Vector3(-0.44f + i * 0.22f, -0.55f - (i % 2) * 0.18f, -0.28f), new Vector3(0.22f, 1f + (i % 3) * 0.25f, 0.03f), i % 2 == 0 ? furDark : rag, new Vector3(-6f, 0f, (i - 2) * 4f));
             }
             var nod = head.gameObject.AddComponent<Rocker>();
             nod.Axis = new Vector3(0.2f, 0f, 1f);

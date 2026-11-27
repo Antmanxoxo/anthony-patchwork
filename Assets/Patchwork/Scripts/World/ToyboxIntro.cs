@@ -161,7 +161,7 @@ namespace Patchwork
             var band = Bandstand();
             Vector3 hill = Level1Builder.OnHill(new Vector3(-67f, 6f, 31f));
             Vector3 dye = Level1Builder.DyeWorksPoint;
-            Vector3 outside = new Vector3(0f, 150f, -200f), overWall = new Vector3(0f, 44f, -82f);
+            Vector3 outside = new Vector3(40f, 150f, -230f), overWall = new Vector3(14f, 18f, -30f);
             if (t < TTown)
             {
                 // The toybox from outside, in the nursery, under its mobile.
@@ -172,12 +172,18 @@ namespace Patchwork
             }
             else if (t < TBand)
             {
-                // Down over the wall and into town.
+                // Down past the mountains and over the town wall: a long swoop up the King's Road,
+                // over the Toybox Gate and the roofs of the Common Quarter, with the keep standing
+                // over it all, then round across the canal into Wedding Square.
                 Narrator.Card(null, null);
                 Caption(game, "Inside it lay Toybox Town, which was having the finest morning of its life. The Mayor was getting married.");
                 float k = Ease((t - TTown) / (TBand - TTown));
                 Vector3 from = outside + new Vector3(Mathf.Sin(1.2f) * 30f, -14f, 18f);
-                Shot(Vector3.Lerp(from, overWall, k) + Vector3.up * Mathf.Sin(k * Mathf.PI) * 10f, Vector3.Lerp(new Vector3(0f, 26f, 0f), band + Vector3.up * 3f, k));
+                Vector3 gate = Level1Builder.MainGate + new Vector3(4f, 30f, -26f);
+                Vector3 path = Vector3.Lerp(Vector3.Lerp(from, gate, k), Vector3.Lerp(gate, overWall, k), k);
+                Vector3 look = k < 0.55f ? Vector3.Lerp(new Vector3(20f, 22f, 20f), new Vector3(10f, 18f, 60f), k / 0.55f)
+                                         : Vector3.Lerp(new Vector3(10f, 18f, 60f), band + Vector3.up * 3f, (k - 0.55f) / 0.45f);
+                Shot(path, look);
             }
             else if (t < TCrack)
             {

@@ -332,8 +332,8 @@ namespace Patchwork
             // The wood carries on west and south-west, right up to the toybox walls.
             for (int i = 0; i < 240; i++)
             {
-                Vector3 p = R() < 0.55f ? new Vector3(-Half + 3f + R() * 34f, 0f, -Half + 3f + R() * (Half * 2f - 6f))
-                                         : new Vector3(-Half + 3f + R() * (Half - 40f), 0f, -Half + 3f + R() * 33f);
+                Vector3 p = R() < 0.55f ? new Vector3(-Half + 6f + R() * 31f, 0f, -Half + 6f + R() * (Half * 2f - 12f))
+                                         : new Vector3(-Half + 6f + R() * (Half - 43f), 0f, -Half + 6f + R() * 30f);
                 if (p.x > RavineWest - 4f || !clear(p, 2.2f)) continue;
                 PomTree(kit, p, 6f + R() * 4f, greens[i % greens.Length]);
             }
@@ -341,14 +341,14 @@ namespace Patchwork
             for (int row = 0; row < 4; row++)
                 for (int k = 0; k < 9; k++)
                 {
-                    Vector3 p = new Vector3(-30f + k * 7f + (row % 2) * 3.5f, 0f, 126f + row * 6.5f);
+                    Vector3 p = new Vector3(-30f + k * 7f + (row % 2) * 3.5f, 0f, 125f + row * 6f);
                     if (!clear(p, 1.6f)) continue;
                     kit.YarnTree(p, 4.5f + R() * 1.5f, FlowerColors[(row + k) % FlowerColors.Length]);
                 }
             // Wildflowers and the odd tree on the east side, between the fields.
             for (int i = 0; i < 160; i++)
             {
-                Vector3 p = new Vector3(Half - 36f + R() * 33f, 0f, -Half + 4f + R() * (Half * 2f - 8f));
+                Vector3 p = new Vector3(Half - 36f + R() * 30f, 0f, -Half + 6f + R() * (Half * 2f - 12f));
                 if (RiverEdgeDistance(p) < 2f) continue;
                 if (i % 8 == 0) { if (clear(p, 2f)) PomTree(kit, p, 5f + R() * 3f, greens[i % greens.Length]); }
                 else if (!Physics.CheckSphere(p + Vector3.up * 0.5f, 0.3f, mask, QueryTriggerInteraction.Ignore)) kit.Flower(p, FlowerColors[i % FlowerColors.Length]);

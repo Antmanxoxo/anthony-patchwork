@@ -276,8 +276,7 @@ namespace Patchwork
             for (int sx = -1; sx <= 1; sx += 2)
                 for (int sz = -1; sz <= 1; sz += 2)
                     kit.Deco(PrimitiveType.Sphere, new Vector3(sx * (Half + 1f), h - 1.2f, sz * (Half + 1f)), Vector3.one * 4f, brass);
-            // Cut-paper hills and felt clouds on the inside of every wall.
-            var hillCols = new[] { new Color(0.6f, 0.8f, 0.62f), new Color(0.5f, 0.74f, 0.6f), new Color(0.72f, 0.86f, 0.62f), new Color(0.56f, 0.78f, 0.7f) };
+            // Painted cardboard mountains all round (see Level1Backdrop), and felt clouds over them.
             var cloudMat = PatchworkAssets.Felt(new Color(0.99f, 0.98f, 0.95f));
             var scenery = kit.Group("BoxScenery", Vector3.zero);
             var wallRng = new System.Random(77);
@@ -288,24 +287,16 @@ namespace Patchwork
                 Vector3 n = wall == 0 ? Vector3.left : wall == 1 ? Vector3.right : wall == 2 ? Vector3.back : Vector3.forward;
                 Vector3 basePos = -n * (Half - 0.25f);
                 float yaw = wall < 2 ? 90f : 0f;
-                // Two rows of hills: a tall pale row at the back, a lower greener row in front.
-                for (int row = 0; row < 2; row++)
-                    for (float a = -Half + 14f; a < Half - 6f; a += 34f + (float)wallRng.NextDouble() * 12f)
-                    {
-                        float wide = 52f + (float)wallRng.NextDouble() * 30f, tall = (row == 0 ? 30f : 18f) + (float)wallRng.NextDouble() * 10f;
-                        var hill = kit.Deco(PrimitiveType.Sphere, basePos + u * (a + row * 17f) + n * (row * 0.5f) + Vector3.up * -2f, new Vector3(wide, tall, 0.9f),
-                            PatchworkAssets.Felt(hillCols[(wall + row * 2 + wallRng.Next(2)) % hillCols.Length]), new Vector3(0f, yaw, 0f), scenery);
-                        NoShade(hill);
-                    }
                 for (int c = 0; c < 4; c++)
                 {
-                    float a = -Half + 26f + c * 56f + (float)wallRng.NextDouble() * 18f, y = 25f + (float)wallRng.NextDouble() * 12f, sc = 0.8f + (float)wallRng.NextDouble() * 0.6f;
-                    Vector3 at = basePos + u * a + n * 0.3f + Vector3.up * y;
+                    float a = -Half + 26f + c * 70f + (float)wallRng.NextDouble() * 18f, y = 31f + (float)wallRng.NextDouble() * 8f, sc = 0.8f + (float)wallRng.NextDouble() * 0.6f;
+                    Vector3 at = basePos + u * a + n * 1.1f + Vector3.up * y;
                     NoShade(kit.Deco(PrimitiveType.Sphere, at, new Vector3(18f, 7f, 0.7f) * sc, cloudMat, new Vector3(0f, yaw, 0f), scenery));
                     NoShade(kit.Deco(PrimitiveType.Sphere, at + (u * -4f + Vector3.up * 2.6f) * sc, new Vector3(9f, 7.5f, 0.75f) * sc, cloudMat, new Vector3(0f, yaw, 0f), scenery));
                     NoShade(kit.Deco(PrimitiveType.Sphere, at + (u * 3.4f + Vector3.up * 3.2f) * sc, new Vector3(10f, 8.5f, 0.8f) * sc, cloudMat, new Vector3(0f, yaw, 0f), scenery));
                 }
             }
+            MountainBackdrop(kit, scenery);
             // The lid, propped open behind the north wall.
             var lid = kit.Deco(PrimitiveType.Cube, Vector3.zero, new Vector3(Half * 2f + 4f, 2f, 110f), PatchworkAssets.Felt(new Color(0.97f, 0.76f, 0.68f)));
             lid.rotation = Quaternion.Euler(-72f, 0f, 0f);
@@ -902,6 +893,7 @@ namespace Patchwork
             // Wisp, the best piper in town, stranded and tangled in the Fray.
             var stranded = ToyNpc.Create(kit, spire + new Vector3(1.4f, 16f, 0.8f), 0f, ToyNpc.Kind.Bird, "Wisp", new Color(0.45f, 0.65f, 0.95f), new Color(0.95f, 0.5f, 0.55f));
             stranded.LookAtPatch = true;
+            stranded.Dress(ToyNpc.Costume.Minstrel, CostumeTint("Wisp", new Color(0.45f, 0.65f, 0.95f), new Color(0.95f, 0.5f, 0.55f)));
             director.StrandedPiper = stranded;
             BandPieceAt(kit, Level1Director.PiperId, BandPiece.Part.Piper, "Wisp the Piper", spire + new Vector3(1.4f, 17f, 0.8f), stranded);
             FrayTendril(kit, region, spire + new Vector3(-2.6f, 16f, 0.2f), 2.4f);
@@ -1005,6 +997,7 @@ namespace Patchwork
             var npc = ToyNpc.Create(kit, feet, yaw, kind, name, main, accent, inst);
             npc.VoicePitch = pitch;
             npc.Tag = tag;
+            npc.Dress(CostumeFor(name, kind), CostumeTint(name, main, accent));
             if (talk)
             {
                 var zone = kit.Volume<TalkZone>(feet + Vector3.up * 1.2f, new Vector3(3.8f, 3.2f, 3.8f), "Talk_" + name);
@@ -1012,6 +1005,44 @@ namespace Patchwork
                 zone.transform.SetParent(npc.transform, true);
             }
             return npc;
+        }
+
+        // Everyone in Toybox Town dresses for a medieval town: the Mayor as a burgher with his
+        // chain of office, his bride in a hennin and veil, the band as minstrels with a herald on
+        // trumpet, the soldiers as knights, and everyone else in caps, kerchiefs and aprons.
+        // (The circus folk in the Big Top keep their own clothes.)
+        static ToyNpc.Costume CostumeFor(string name, ToyNpc.Kind kind)
+        {
+            switch (name)
+            {
+                case "Mayor Bramblebutton": return ToyNpc.Costume.Burgher;
+                case "Lady Lacewing": return ToyNpc.Costume.Lady;
+                case "Corporal Brassby": case "Herald Fanfaronne": return ToyNpc.Costume.Herald;
+                case "Pip Plunkett": case "Wisp": return ToyNpc.Costume.Minstrel;
+                case "Bumble": return ToyNpc.Costume.Herald;
+                case "Brother Bellweather": return ToyNpc.Costume.Monk;
+                case "Ringmaster Rufus": return ToyNpc.Costume.None;
+            }
+            switch (kind)
+            {
+                case ToyNpc.Kind.Teddy: return ToyNpc.Costume.Commoner;
+                case ToyNpc.Kind.RagDoll: return ToyNpc.Costume.Maiden;
+                case ToyNpc.Kind.TinSoldier: return ToyNpc.Costume.Knight;
+                case ToyNpc.Kind.Bird: return ToyNpc.Costume.Minstrel;
+                default: return ToyNpc.Costume.None;
+            }
+        }
+
+        static Color CostumeTint(string name, Color main, Color accent)
+        {
+            switch (name)
+            {
+                case "Mayor Bramblebutton": return new Color(0.5f, 0.16f, 0.24f);   // claret velvet
+                case "Lady Lacewing": return new Color(0.98f, 0.86f, 0.9f);
+                case "Brother Bellweather": return new Color(0.48f, 0.36f, 0.28f);
+            }
+            // Something that goes with what they're already wearing.
+            return Color.Lerp(accent, main, 0.35f);
         }
 
         static void Townsfolk(LevelKit kit)

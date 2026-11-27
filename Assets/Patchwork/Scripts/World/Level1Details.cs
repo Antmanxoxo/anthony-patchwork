@@ -486,12 +486,12 @@ namespace Patchwork
             for (int i = 0; i < 5; i++)
             {
                 float x = -20f + i * 3.4f;
-                Crayon(kit, new Vector3(x, 0.7f, Half - 9f - (i % 2) * 1.5f), new Vector3(x + 1.5f, 15f + (i % 3) * 1.5f, Half - 0.9f), crayons[i]);
+                Crayon(kit, new Vector3(x, 0.7f, Half - 10f - (i % 2) * 1.5f), new Vector3(x + 1.5f, 15f + (i % 3) * 1.5f, Half - 2.1f), crayons[i]);
             }
             for (int i = 0; i < 3; i++)
             {
                 float z = -40f + i * 3.2f;
-                Crayon(kit, new Vector3(Half - 8f, 0.7f, z), new Vector3(Half - 0.9f, 14f + i, z - 1f), crayons[(i + 2) % 5]);
+                Crayon(kit, new Vector3(Half - 9f, 0.7f, z), new Vector3(Half - 2.1f, 14f + i, z - 1f), crayons[(i + 2) % 5]);
             }
 
             // A rocking horse in the north-west corner, rocking gently.
