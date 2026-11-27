@@ -5,7 +5,7 @@ A dated record of every change to Patchwork, newest first. Each day lists the ch
 ## November 26, 2026
 
 ### Every part of Toybox Town gets something to find
-Ten new secret marbles (26 in all), each with someone nearby to point the way:
+Eleven new secret marbles (27 in all), each with someone nearby to point the way:
 - **The Masons' Scaffold.** Plank ramps zig-zag eighteen metres up the keep's south face, landing to landing, to a top deck with a mortar tub, a stack of new stone and a board sticking out over the bailey to glide from. Mason Mortarby works in the bailey below; his apprentice left something shiny at the top.
 - **The Smugglers' Cellar.** A grate in the canal wall by the quay has one bar bent aside, and only Water can squeeze through. Behind it is an old jam cellar full of barrels of sweets, humbug crates and toffees, where Captain Treacle smuggles sweets past the Mayor's toll. Someone has stacked his crates into a staircase up to a high shelf.
 - **Hob's Burrow.** A little round green door with round windows, a lamp and toadstools in the west wall of Thread Ravine. Inside, Old Hob, who used to mind the seams the Fray come through, sits by his hearth with a mantel of colours he stole back from the Unravelled King. He has plenty to say about the Underside. Glowing toadstools make steps up to his root shelf.
@@ -16,6 +16,7 @@ Ten new secret marbles (26 in all), each with someone nearby to point the way:
 - **The Lookout Oak** by the Pod's meadow: plank steps wind round a giant knitted oak to a crow's nest with a striped awning, a telescope trained on the town, a sea chest and a tyre swing. Lookout Lark saw your Pod land before anyone.
 - **The Wishing Well** in Gate Hamlet. Only Water can slip down it, to a mossy well-bottom where a shaft of daylight falls on a pool of wishes. Wellbert the jack-in-the-box keeps every one, and a marble waits on the top ledge. Ride the bucket back up.
 - **The Lily Pad Run** on the north river. From the middle of the Weft Ford, lily pads (some in flower) weave upstream to a sandy island with a willow, where Tilda Tench's lucky float washed up.
+- **The Harvest Rush** in the cabbage field on the King's Road: step on the stopwatch at the gap in the hedge and run the furrows up and down in 34 seconds. Farmer Furrow and his barrow of cabbages wait by the gate.
 - **A bubble trail down the River Weft**, weaving from the canal's end for anyone who'd rather swim.
 - **Crier Hollerby** in Gate Square has a rumour about every one of these.
 

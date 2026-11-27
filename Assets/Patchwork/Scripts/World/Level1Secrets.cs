@@ -15,7 +15,8 @@ namespace Patchwork
             "L1_marble_whack", "L1_marble_trapeze", "L1_marble_wood", "L1_marble_moon",
             // (Level1Depth)
             "L1_marble_scaffold", "L1_marble_cellar", "L1_marble_burrow", "L1_marble_maze", "L1_marble_squire", "L1_marble_sails",
-            "L1_marble_woodcutter", "L1_marble_lookout", "L1_marble_well", "L1_marble_lilypad"
+            "L1_marble_woodcutter", "L1_marble_lookout", "L1_marble_well", "L1_marble_lilypad",
+            "L1_marble_harvest"
         };
 
         static readonly Vector3 ShopRoom = new Vector3(250f, 0f, -200f);

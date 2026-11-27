@@ -18,6 +18,7 @@ namespace Patchwork
     //   - the Lookout Oak by the Pod's meadow: steps round a giant oak to a crow's nest
     //   - the Wishing Well in Gate Hamlet: Water can slip down it to Wellbert's well-bottom
     //   - the Lily Pad Run on the north river: hop upstream from the ford to a willow island
+    //   - the Harvest Rush in the cabbage field by the road: a timed run up and down the rows
     //   - Crier Hollerby in Gate Square, who knows a rumour about every one of them
     // Built after the city's tidy-up, so nothing here is cleared away by it.
     public static partial class Level1Builder
@@ -41,6 +42,7 @@ namespace Patchwork
             LookoutOak(kit);
             WishingWell(kit);
             LilyPadRun(kit);
+            HarvestRush(kit);
             TownCrier(kit);
         }
 
@@ -1182,6 +1184,67 @@ namespace Patchwork
             kit.Hint(isle + new Vector3(0f, 1.5f, 0f), new Vector3(4f, 3f, 4f), "Willow Island", "A sandbar in the river, a willow, and a lost fishing float.");
         }
 
+        // ---------------------------------------------------------------- The Harvest Rush
+
+        // The cabbage field beside the King's Road, south of the town (if Fields could fit it
+        // in): step on the stopwatch at the gap in the hedge, then run the furrows up and down,
+        // catching every bubble before Farmer Furrow's time is up.
+        static void HarvestRush(LevelKit kit)
+        {
+            var f = new Vector4(112f, -104f, 138f, -86f);   // (Fields' first plot)
+            var c = new Vector3((f.x + f.z) * 0.5f, 0f, (f.y + f.w) * 0.5f);
+            bool found = false;
+            for (int i = 0; i < kit.Root.childCount && !found; i++)
+            {
+                var t = kit.Root.GetChild(i);
+                if (t.name == "FieldSoil" && t.gameObject.activeSelf && Mathf.Abs(t.position.x - c.x) < 0.1f && Mathf.Abs(t.position.z - c.z) < 0.1f) found = true;
+            }
+            if (!found) return;
+            Vector3 btn = new Vector3(f.x - 1.6f, 0f, f.w - 2f);   // just outside the gap in the west hedge
+            var rush = kit.Volume<BubbleRush>(btn + Vector3.up * 0.6f, new Vector3(1.8f, 1.4f, 1.8f), "BubbleRush");
+            rush.Title = "The Harvest Rush";
+            rush.Duration = 34f;
+            rush.Button = StopwatchButton(kit, btn, rush.transform);
+            var purple = PatchworkAssets.Glow(new Color(0.75f, 0.5f, 1f), 0.8f);
+            // Up and down the furrows (between the rows), from the gap to the far corner.
+            for (int lane = 0; lane < 4; lane++)
+            {
+                float z = f.w - 2.4f - lane * 4.4f;
+                for (int k = 0; k < 5; k++)
+                {
+                    float u = (k + 0.5f) / 5f;
+                    float x = lane % 2 == 0 ? Mathf.Lerp(f.x + 2f, f.z - 2f, u) : Mathf.Lerp(f.z - 2f, f.x + 2f, u);
+                    RushBubbleAt(kit, rush, new Vector3(x, 1.2f, z), purple);
+                }
+            }
+            rush.Marble = SecretMarble.Place(kit, btn + new Vector3(0f, 2.2f, 0f), MarbleIds[26], MarbleColor(26), true);
+            kit.Hint(btn + new Vector3(-1.6f, 1.5f, 0f), new Vector3(2.4f, 3f, 4f), "The Harvest Rush",
+                "Step on the stopwatch, then run the furrows up and down and catch every bubble before the time's up!");
+            // A barrow of cabbages by the gap, and the farmer.
+            Vector3 barrow = btn + new Vector3(-0.4f, 0f, -2.6f);
+            var wood = PatchworkAssets.Wood(new Color(0.62f, 0.44f, 0.3f));
+            var g = kit.Group("HarvestBarrow", Vector3.zero);
+            kit.Deco(PrimitiveType.Cube, barrow + new Vector3(0f, 0.6f, 0f), new Vector3(1.1f, 0.5f, 0.8f), wood, new Vector3(0f, 0f, -8f), g);
+            kit.Deco(PrimitiveType.Cylinder, barrow + new Vector3(0.65f, 0.3f, 0f), new Vector3(0.6f, 0.05f, 0.6f), PatchworkAssets.Wood(TownKit.DarkWood), new Vector3(90f, 0f, 0f), g);
+            for (int s = -1; s <= 1; s += 2)
+                kit.Deco(PrimitiveType.Cylinder, barrow + new Vector3(-0.9f, 0.55f, s * 0.3f), new Vector3(0.06f, 0.4f, 0.06f), wood, new Vector3(0f, 0f, 75f), g);
+            for (int k = 0; k < 4; k++)
+                kit.Deco(PrimitiveType.Sphere, barrow + new Vector3(-0.3f + (k % 2) * 0.55f, 0.95f + (k / 2) * 0.2f, (k % 2 == 0 ? -0.15f : 0.15f)), new Vector3(0.5f, 0.42f, 0.5f), PatchworkAssets.Felt(new Color(0.55f, 0.78f, 0.45f)), default(Vector3), g);
+            Solid(kit, barrow + Vector3.up * 0.5f, new Vector3(1.4f, 1f, 0.9f));
+            Vector3 fp;
+            if (FindSpot(btn + new Vector3(-1.4f, 0f, 2.4f), 0.6f, out fp))
+            {
+                var farmer = Toy(kit, fp + Vector3.up * 0.05f, 110f, ToyNpc.Kind.Teddy, "Farmer Furrow", new Color(0.78f, 0.6f, 0.42f), new Color(0.45f, 0.6f, 0.38f),
+                    ToyNpc.Instrument.None, 0.85f, new Color(0.55f, 0.5f, 0.35f));
+                farmer.Lines = () => new[]
+                {
+                    "Furrow's the name, cabbages are the game. Best cabbages in the box, and the only ones, if I'm honest.",
+                    "Harvest's in, and the bubbles have got into the rows again. Step on the stopwatch and clear the furrows for me, quick as you can.",
+                    "Up one furrow, down the next, all the way to the far hedge. Beat the clock and there's a marble for your trouble.",
+                };
+            }
+        }
+
         // ---------------------------------------------------------------- Crier Hollerby
 
         // The town crier in Gate Square, with a rumour for every one of the places above.
@@ -1202,6 +1265,7 @@ namespace Patchwork
                 "And the miller's lost something up on his windmill, and Burl the woodcutter's buried something in the west wood. Busy town, this!",
                 "Out by the Pod's meadow, a lookout in the old oak can see the whole toybox. And in Gate Hamlet, they say the well grants wishes. To the right sort of visitor.",
                 "Tilda Tench at the north ford has lost her lucky float on the willow island. Hop the lily pads, she says. Don't dawdle, she says.",
+                "Farmer Furrow wants a hand with the harvest, out in the cabbage field on the King's Road. Quick hands, mind!",
             };
         }
     }
