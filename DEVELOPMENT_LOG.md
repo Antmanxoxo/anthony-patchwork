@@ -4,6 +4,18 @@ A dated record of every change to Patchwork, newest first. Each day lists the ch
 
 ## November 26, 2026
 
+### Every part of Toybox Town gets something to find
+Seven new secret marbles (23 in all), each with someone nearby to point the way:
+- **The Masons' Scaffold.** Plank ramps zig-zag eighteen metres up the keep's south face, landing to landing, to a top deck with a mortar tub, a stack of new stone and a board sticking out over the bailey to glide from. Mason Mortarby works in the bailey below; his apprentice left something shiny at the top.
+- **The Smugglers' Cellar.** A grate in the canal wall by the quay has one bar bent aside, and only Water can squeeze through. Behind it is an old jam cellar full of barrels of sweets, humbug crates and toffees, where Captain Treacle smuggles sweets past the Mayor's toll. Someone has stacked his crates into a staircase up to a high shelf.
+- **Hob's Burrow.** A little round green door with round windows, a lamp and toadstools in the west wall of Thread Ravine. Inside, Old Hob, who used to mind the seams the Fray come through, sits by his hearth with a mantel of colours he stole back from the Unravelled King. He has plenty to say about the Underside. Glowing toadstools make steps up to his root shelf.
+- **The Bramble Maze.** A maze of tall hedges on the green west of the barracks, with topiary gateposts and a sundial under a rose arch at its heart. Mistress Clipwell has clipped it every Tuesday for forty years. The camera rises over it so you can see the way.
+- **The Squire's Trial at the Lists.** Step on the stopwatch and run up the lane, round the quintain and back down the other side in thirty seconds, vaulting hay bales to catch every bubble. Squire Bodkin explains the rules.
+- **The windmill's gallery.** Plank steps on brackets wind up round the back of the mill, well clear of the sails, to a railed gallery round the tower. Miller Grist lost his best marble up there when the Fray spun his sails.
+- **The Woodcutters' Camp** in the west wood: a lean-to, a crackling campfire, a log pile, a chopping block with a toy axe and a sawhorse. Woodcutter Burl buried his lucky marble by the stump with the red ribbon.
+- **A bubble trail down the River Weft**, weaving from the canal's end for anyone who'd rather swim.
+- **Crier Hollerby** in Gate Square has a rumour about every one of these.
+
 ### Medieval Toybox Town: costumes, goblin Fray and painted mountains
 - **Everyone's in costume for a medieval town:**
   - Mayor Bramblebutton wears a claret velvet chaperon with a hanging tail, a fur-trimmed robe and a gold chain of office

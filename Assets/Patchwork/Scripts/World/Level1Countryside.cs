@@ -10,10 +10,12 @@ namespace Patchwork
     //   - the Weft Mill, a little watermill on the river's long bend
     public static partial class Level1Builder
     {
+        static readonly Vector3 ListsAt = new Vector3(-2f, 0f, -139f), WindmillAt = new Vector3(88f, 0f, -141f);
+
         static void Countryside(LevelKit kit)
         {
-            Lists(kit, new Vector3(-2f, 0f, -139f));
-            Windmill(kit, new Vector3(88f, 0f, -141f));
+            Lists(kit, ListsAt);
+            Windmill(kit, WindmillAt);
             WeftMill(kit, new Vector3(50f, 0f, -131f));
             Watchtower(kit, new Vector3(-134f, 0f, 42f));
             Ford(kit, new Vector2(44f, 141f));

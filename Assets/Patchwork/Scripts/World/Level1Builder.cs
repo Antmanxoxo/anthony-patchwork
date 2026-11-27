@@ -159,6 +159,7 @@ namespace Patchwork
             StorytellerRemarks(kit);
             Approach(kit);
             CityClearance(kit);
+            Depth(kit);   // (after the tidy-up, which would otherwise clear some of it away)
             Declutter.Run(kit.Root);   // props built by different parts of the level, kept out of each other
             // The soft little things lean and wobble when Patch brushes past or lands nearby.
             PropWobble.Attach(kit.Root, "Flower", "Mushroom", "FlowerPot", "Signpost", "LanternPost", "PinwheelFlower", "Lantern", "Barrel");
@@ -1020,7 +1021,8 @@ namespace Patchwork
                 case "Corporal Brassby": case "Herald Fanfaronne": return ToyNpc.Costume.Herald;
                 case "Pip Plunkett": case "Wisp": return ToyNpc.Costume.Minstrel;
                 case "Bumble": return ToyNpc.Costume.Herald;
-                case "Brother Bellweather": return ToyNpc.Costume.Monk;
+                case "Brother Bellweather": case "Old Hob": return ToyNpc.Costume.Monk;
+                case "Crier Hollerby": return ToyNpc.Costume.Herald;
                 case "Ringmaster Rufus": return ToyNpc.Costume.None;
             }
             switch (kind)

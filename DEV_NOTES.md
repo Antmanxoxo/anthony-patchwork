@@ -938,6 +938,17 @@ Stuff I need to remember about how Patchwork is put together.
 - **Goblin Fray (FrayKin).** `FrayBodies.Goblin` is true when `FrayTheme.Style` is Toy (Level 1). `Walker`, `Hopper`, `Flit`, `Gawp` and `UnravelledKing` add their goblin gear at the end (`Ears`, `Pennant`, `EnsureGoblin` materials). Other levels are unchanged.
 - **Mountain backdrop (Level1Backdrop).** `MountainBackdrop` replaces the old cut-paper hills in `Toybox`. `FlatRange` builds one range per wall as a `FlatMesh`: a face, a darker outline under the cut edge, a cardboard top edge and snow caps, at insets 0.4, 1.8 and 3 m from the wall. Ridges come from `Peaks` (seeded, per wall), and the north far range dips round x 0 for the lid crack. Only the front hills are solid (a MeshCollider plus `NoClimb`). Gaps are left for the river exits, the ravine and the crayons; the crayons now lean on the foothills. Clouds moved in front of the far range. NewLand trees and orchard rows keep 6 m from the walls.
 - **Opening (ToyboxIntro).** The second shot follows a quadratic curve from outside the box, past `MainGate`, to above the old town's south end.
+- **Depth (Level1Depth).** `Depth` runs after `CityClearance` (so the clearance can't take any of it away) and before `Declutter`. `ClearForDepth` clears small, plain props out of a rect first (used for the maze and the camp). New marbles are `MarbleIds[16..22]`.
+  - `KeepScaffold`: 9 flights of 2 m, rotated `ScaffoldRamp` blocks in two 1.4 m lanes against the keep's south face (`KeepAt.z - 6`), between the corner turrets. Even flights go west to east on the inner lane, odd ones come back on the outer lane, with `ScaffoldLanding`s at the ends. The top extension runs along the outer lane only, because the inner lane has the last flight under it.
+  - `SmugglersCellar`: a `Room` at `CellarRoom` (310, 0, -200). It's reached by a `WaterOnly` warp at the canal's west wall (z `CellarZ` 72), and you leave by a press-to-enter door back to the quay at z 74.5.
+  - `HobsBurrow`: a press-to-enter round door on the ravine's west wall at z `BurrowZ` 40 leads to a `Room` at `BurrowRoom` (310, 0, -262). The toadstool steps are invisible blocks under scaled caps.
+  - `BrambleMaze`: a 5 x 8 grid of 3 m cells at x -34.5, z 31, carved by a seeded backtracker with three extra openings. The heart is the cell furthest from the gate (found by BFS). Hedge runs are merged. The east-west hedges are a hair thinner and lower and stop just short of the north-south ones, so their faces never sit together.
+  - `SquiresTrial`: a `BubbleRush` of 19 bubbles and 5 hay bales at `ListsAt` (30 s).
+  - `MillGallery`: 8 steps at r 5.4 from 140° down to -42°, and a gallery at r 3.8 from 282° to 498°. That leaves out the 150°-270° arc in front of the sails (the mill faces 210°).
+  - `WoodcuttersCamp`: placed with `ClearArea` near (-118, 30), with a `DigSpot`.
+  - `RiverTrail`: 24 bubbles every 4.5 m along `RiverSouth`, starting 24 m in.
+  - `TownCrier`: placed with `FindSpot` near (66, -55).
+  - `ListsAt` and `WindmillAt` are now constants in Level1Countryside. `CostumeFor` dresses Old Hob as a monk and Crier Hollerby as a herald.
 
 ## The map (MapScreen.cs)
 - Painted once from an overhead camera. Outdoor levels get the felt look (`Stylize`);
