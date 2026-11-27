@@ -388,14 +388,14 @@ namespace Patchwork
             }
             // A step, a doormat, a lamp on a crooked post and toadstools.
             kit.Deco(PrimitiveType.Cube, new Vector3(wall + 0.6f, floor + 0.02f, BurrowZ), new Vector3(1f, 0.04f, 1.6f), PatchworkAssets.Felt(new Color(0.75f, 0.45f, 0.3f)), default(Vector3), g);
-            Vector3 lampFoot = new Vector3(wall + 1.1f, floor, BurrowZ + 1.6f);
+            Vector3 lampFoot = new Vector3(wall + 1.1f, floor, BurrowZ + 3.5f);
             kit.Deco(PrimitiveType.Cylinder, lampFoot + Vector3.up * 1.1f, new Vector3(0.1f, 1.1f, 0.1f), darkWood, new Vector3(0f, 0f, -6f), g);
             kit.Deco(PrimitiveType.Cube, lampFoot + new Vector3(-0.1f, 2.15f, 0f), new Vector3(0.5f, 0.06f, 0.06f), darkWood, default(Vector3), g);
             kit.Deco(PrimitiveType.Sphere, lampFoot + new Vector3(-0.3f, 1.85f, 0f), new Vector3(0.3f, 0.38f, 0.3f), PatchworkAssets.Glow(new Color(1f, 0.78f, 0.4f), 1.6f), default(Vector3), g);
             WarmLight(g, lampFoot + new Vector3(0.4f, 1.8f, 0f), 7f, 1.1f, new Color(1f, 0.78f, 0.45f));
             Mushroom(kit, new Vector3(wall + 0.7f, floor, BurrowZ - 1.9f), 0.7f, new Color(0.95f, 0.4f, 0.4f), false);
             Mushroom(kit, new Vector3(wall + 1.2f, floor, BurrowZ - 2.6f), 0.45f, new Color(0.7f, 0.85f, 1f), true);
-            Mushroom(kit, new Vector3(wall + 0.5f, floor, BurrowZ + 3.3f), 0.55f, new Color(1f, 0.75f, 0.4f), true);
+            Mushroom(kit, new Vector3(wall + 0.6f, floor, BurrowZ + 4.4f), 0.55f, new Color(1f, 0.75f, 0.4f), true);
             // A stovepipe poking out of the ravine's lip, the only sign from up top.
             kit.Deco(PrimitiveType.Cylinder, new Vector3(RavineWest - 1.2f, 0.6f, BurrowZ + 0.8f), new Vector3(0.35f, 0.6f, 0.35f), PatchworkAssets.Plain(TownKit.Iron, 0.5f), default(Vector3), g);
             kit.Deco(PrimitiveType.Cylinder, new Vector3(RavineWest - 1.2f, 1.25f, BurrowZ + 0.8f), new Vector3(0.5f, 0.05f, 0.5f), PatchworkAssets.Plain(TownKit.Iron, 0.5f), default(Vector3), g);
@@ -508,22 +508,22 @@ namespace Patchwork
         // sits on a little plinth in its heart (the cell furthest from the way in).
         static void BrambleMaze(LevelKit kit)
         {
-            const int W = 5, H = 8;
-            const float cell = 3f, hedgeH = 2.3f, hedgeW = 0.8f;
-            const float x0 = -34.5f, z0 = 31f;
-            const int gateCell = 2;
+            const int W = 6, H = 9;
+            const float cell = 2.6f, hedgeH = 2.3f, hedgeW = 0.8f;
+            const float x0 = -35.4f, z0 = 31f;
+            const int gateCell = 3;
             float x1 = x0 + W * cell, z1 = z0 + H * cell;
             var centre = new Vector3((x0 + x1) * 0.5f, 0f, (z0 + z1) * 0.5f);
             ClearForDepth(kit, new Rect(x0 - 0.6f, z0 - 0.6f, W * cell + 1.2f, H * cell + 1.2f), "the Bramble Maze");
 
             // A maze carved by a random walk that backs up when it's stuck (so every cell can
-            // be reached, by exactly one way), then a few walls knocked through so there's more
+            // be reached, by exactly one way), then two walls knocked through so there's more
             // than one way round.
             var vWall = new bool[W + 1, H];
             var hWall = new bool[W, H + 1];
             for (int i = 0; i <= W; i++) for (int j = 0; j < H; j++) vWall[i, j] = true;
             for (int i = 0; i < W; i++) for (int j = 0; j <= H; j++) hWall[i, j] = true;
-            var rng = new System.Random(1207);
+            var rng = new System.Random(1278);   // (a good one: a long way to the heart, and eight dead ends)
             var seen = new bool[W, H];
             var stack = new Stack<Vector2Int>();
             stack.Push(new Vector2Int(gateCell, 0));
@@ -549,7 +549,7 @@ namespace Patchwork
                 seen[n.x, n.y] = true;
                 stack.Push(n);
             }
-            for (int k = 0; k < 3; k++)
+            for (int k = 0; k < 2; k++)
             {
                 int i = 1 + rng.Next(W - 1), j = rng.Next(H);
                 vWall[i, j] = false;
