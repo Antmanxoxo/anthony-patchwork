@@ -1124,7 +1124,7 @@ namespace Patchwork
             float top = CanalSurface + 0.08f;
             for (int k = 0; k < 10; k++)
             {
-                float s = ford + 2.4f + k * 2f;
+                float s = ford - 2.4f - k * 2f;   // (upstream: the river flows out of the box, away from the town)
                 Vector2 q = at(s) + side(s) * 1.8f * Mathf.Sin(k * 0.8f);
                 float bottom = MeadowHeight(q.x, q.y) - 0.3f;
                 var pad = kit.Block(new Vector3(q.x, (top + bottom) * 0.5f, q.y), new Vector3(1.2f, top - bottom, 1.2f), new Color(0.42f, 0.66f, 0.38f), "LilyPad");
@@ -1142,7 +1142,7 @@ namespace Patchwork
                 if (k % 3 == 2) ScoreBubbles.Place(kit, new Vector3(q.x, top + 1f, q.y), 10);
             }
             // The island: a sandbar with a willow, an old stump and the lost float.
-            float si = ford + 2.4f + 9f * 2f + 3.2f;
+            float si = ford - 2.4f - 9f * 2f - 3.2f;
             Vector2 c2 = at(si);
             Vector3 isle = new Vector3(c2.x, 0f, c2.y);
             float isleTop = 0.15f, isleBottom = MeadowHeight(c2.x, c2.y) - 0.3f;

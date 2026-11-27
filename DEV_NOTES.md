@@ -949,7 +949,7 @@ Stuff I need to remember about how Patchwork is put together.
   - `RiverTrail`: 24 bubbles every 4.5 m along `RiverSouth`, starting 24 m in.
   - `LookoutOak`: placed with `ClearArea` near (130, -133). The trunk has a capsule collider, with 10 steps at r 2.4 from 90° round to 0°, each 0.8 m higher. The deck sits east of the trunk at 8 m, so only the three lowest steps are under it.
   - `WishingWell`: finds Gate Hamlet's well where `Hamlet` puts it, if it was built. A `WaterOnly` warp sits on its rim and leads to a `Room` at `WellRoom` (310, 0, -320). You leave through a press-to-enter bucket that takes you back beside the well.
-  - `LilyPadRun`: 10 pads every 2 m along `RiverNorth`, from 2.4 m past the ford, weaving 1.8 m either side. Each is an invisible block from the riverbed to just above the surface. The island is 3.2 m past the last pad.
+  - `LilyPadRun`: 10 pads every 2 m along `RiverNorth`, going upstream (toward the town) from 2.4 m short of the ford, weaving 1.8 m either side. Each is an invisible block from the riverbed to just above the surface. The island is 3.2 m beyond the last pad, about (34.5, 122).
   - `TownCrier`: placed with `FindSpot` near (66, -55).
   - `ListsAt` and `WindmillAt` are now constants in Level1Countryside. `CostumeFor` dresses Old Hob as a monk and Crier Hollerby as a herald.
 
